@@ -1,6 +1,6 @@
 {
-  "add": "+ ",
-  "subtract": "- ",
+  "add": "+",
+  "subtract": "-",
   "percent": "%",
   " : ": " : ",
   "null": "",

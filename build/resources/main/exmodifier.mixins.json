@@ -5,7 +5,9 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "exmodifier.refmap.json",
   "mixins": [
+    "ApothToolTipFixMixin",
     "ItemMixin",
+    "ItemStackMixin",
     "ShiftTakMixin",
     "SmiMixin",
     "ToolTipMixin"
