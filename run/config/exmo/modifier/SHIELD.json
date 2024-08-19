@@ -1,0 +1,1751 @@
+{
+  "type": "SHIELD",
+    "fire1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":3,
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "weight":0,
+          "value": 0.2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174001",
+          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "autoUUID": true,          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "123e4567-e89b-12d3-a456-426614174004",
+          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "autoUUID": true,
+          "operation":"add"
+        },
+        "minecraft:generic.armor_toughness": {
+            "weight":0,
+          "value": 2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174002",
+          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "autoUUID": true,
+          "operation":"add"
+        }
+      }
+    },
+    "fire2": {
+        "weight": 4,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:fire_spell_power": {
+            "weight":0,
+            "value": 0.15,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "irons_spellbooks:cooldown_reduction": {
+              "weight":0,
+            "value": 0.1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.max_health": {
+              "weight":0,
+            "value": 4,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+      "fire3": {
+        "weight": 10,
+        "isRandom":false,
+        "Randomnum":2,
+        "attrGethers": {
+          "irons_spellbooks:fire_spell_power": {
+            "weight":0,
+            "value": 0.1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.armor": {
+              "weight":0,
+            "value": 2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"ice1": {
+        "weight": 2,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:ice_spell_power": {
+            "weight":0,
+            "value": 0.2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "irons_spellbooks:cast_time_reduction": {
+              "weight":0,
+            "value": 0.1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.armor_toughness": {
+              "weight":0,
+            "value": 1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"ice2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":3,
+          "attrGethers": {
+            "irons_spellbooks:ice_spell_power": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "irons_spellbooks:cooldown_reduction": {
+                "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174004",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 4,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"ice3": {
+          "weight": 10,
+          "isRandom":false,
+          "Randomnum":2,
+          "attrGethers": {
+            "irons_spellbooks:ice_spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"lightning1": {
+        "weight": 2,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:lightning_spell_power": {
+            "weight":0,
+            "value": 0.2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "irons_spellbooks:cast_time_reduction": {
+              "weight":0,
+            "value": 0.1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.armor_toughness": {
+              "weight":0,
+            "value": 1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"lightning2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":3,
+          "attrGethers": {
+            "irons_spellbooks:lightning_spell_power": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "irons_spellbooks:cooldown_reduction": {
+                "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174004",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 4,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"lightning3": {
+          "weight": 10,
+          "isRandom":false,
+          "Randomnum":2,
+          "attrGethers": {
+            "irons_spellbooks:lightning_spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"holy1": {
+        "weight": 2,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:holy_spell_power": {
+            "weight":0,
+            "value": 0.2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "irons_spellbooks:cast_time_reduction": {
+              "weight":0,
+            "value": 0.1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.armor_toughness": {
+              "weight":0,
+            "value": 1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"holy2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":3,
+          "attrGethers": {
+            "irons_spellbooks:holy_spell_power": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "irons_spellbooks:cooldown_reduction": {
+                "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174004",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 4,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"holy3": {
+          "weight": 10,
+          "isRandom":false,
+          "Randomnum":2,
+          "attrGethers": {
+            "irons_spellbooks:holy_spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"ender1": {
+        "weight": 2,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:ender_spell_power": {
+            "weight":0,
+            "value": 0.2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "irons_spellbooks:cast_time_reduction": {
+              "weight":0,
+            "value": 0.1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.armor_toughness": {
+              "weight":0,
+            "value": 1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"ender2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":3,
+          "attrGethers": {
+            "irons_spellbooks:ender_spell_power": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "irons_spellbooks:cooldown_reduction": {
+                "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174004",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 4,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"ender3": {
+          "weight": 10,
+          "isRandom":false,
+          "Randomnum":2,
+          "attrGethers": {
+            "irons_spellbooks:ender_spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"blood1": {
+        "weight": 2,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:blood_spell_power": {
+            "weight":0,
+            "value": 0.2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "irons_spellbooks:cast_time_reduction": {
+              "weight":0,
+            "value": 0.1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.armor_toughness": {
+              "weight":0,
+            "value": 1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"blood2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":3,
+          "attrGethers": {
+            "irons_spellbooks:blood_spell_power": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "irons_spellbooks:cooldown_reduction": {
+                "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174004",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 4,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"blood3": {
+          "weight": 10,
+          "isRandom":false,
+          "Randomnum":2,
+          "attrGethers": {
+            "irons_spellbooks:blood_spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"evocation1": {
+        "weight": 2,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:evocation_spell_power": {
+            "weight":0,
+            "value": 0.2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "irons_spellbooks:cast_time_reduction": {
+              "weight":0,
+            "value": 0.1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.armor_toughness": {
+              "weight":0,
+            "value": 1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"evocation2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":3,
+          "attrGethers": {
+            "irons_spellbooks:evocation_spell_power": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "irons_spellbooks:cooldown_reduction": {
+                "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174004",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 4,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"evocation3": {
+          "weight": 10,
+          "isRandom":false,
+          "Randomnum":2,
+          "attrGethers": {
+            "irons_spellbooks:evocation_spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"poison1": {
+        "weight": 2,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:poison_spell_power": {
+            "weight":0,
+            "value": 0.2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "irons_spellbooks:cast_time_reduction": {
+              "weight":0,
+            "value": 0.1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.armor_toughness": {
+              "weight":0,
+            "value": 1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"poison2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":3,
+          "attrGethers": {
+            "irons_spellbooks:poison_spell_power": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "irons_spellbooks:cooldown_reduction": {
+                "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174004",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 4,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"poison3": {
+          "weight": 10,
+          "isRandom":false,
+          "Randomnum":2,
+          "attrGethers": {
+            "irons_spellbooks:poison_spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"ironmag1": {
+        "weight": 2,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:spell_power": {
+            "weight":0,
+            "value": 0.15,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "irons_spellbooks:max_mana": {
+              "weight":0,
+            "value": 50,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "twtp:mianshan": {
+              "weight":0,
+            "value": 1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"ironmag2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":3,
+          "attrGethers": {
+            "irons_spellbooks:spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 3,
+              "uuid": "123e4567-e89b-12d3-a456-426614174004",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"ironmag3": {
+          "weight": 10,
+          "isRandom":false,
+          "Randomnum":2,
+          "attrGethers": {
+            "irons_spellbooks:spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+
+"summon1": {
+        "weight": 2,
+        "isRandom":false,
+        "Randomnum":3,
+        "attrGethers": {
+          "irons_spellbooks:summon_damage": {
+            "weight":0,
+            "value": 0.2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174001",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "twtp:mianshan": {
+              "weight":0,
+            "value": 2,
+            "uuid": "123e4567-e89b-12d3-a456-426614174004",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          },
+          "minecraft:generic.armor_toughness": {
+              "weight":0,
+            "value": 1,
+            "uuid": "123e4567-e89b-12d3-a456-426614174002",
+            "modifierName": "CustomAttributesModifier",
+            "slot": "auto",
+          "autoUUID": true,            "operation":"add"
+          }
+        }
+      },
+"summon2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":3,
+          "attrGethers": {
+            "irons_spellbooks:summon_spell_power": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "twtp:mianshan": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174004",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 4,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"summon3": {
+          "weight": 10,
+          "isRandom":false,
+          "Randomnum":2,
+          "attrGethers": {
+            "irons_spellbooks:summon_spell_power": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack1": {
+          "weight": 2,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.attack_damage": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "apotheosis:crit_chance": {
+                "weight":0,
+                "value": 0.01,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "apotheosis:crit_damage": {
+                "weight":0,
+              "value": 0.05,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack2": {
+          "weight": 2,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.attack_damage": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "attack_again:attack_probability": {
+                "weight":0,
+                "value": 0.01,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "attack_again:attack_damage": {
+                "weight":0,
+              "value": 0.05,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack3": {
+          "weight": 2,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.attack_damage": {
+              "weight":0,
+              "value": 0.15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "apotheosis:current_hp_damage": {
+                "weight":0,
+                "value": 0.002,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "apotheosis:piercing": {
+                "weight":0,
+              "value": 0.01,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack4": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.attack_damage": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.attack_speed": {
+                "weight":0,
+                "value": 0.06,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack5": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "apotheosis:crit_chance": {
+              "weight":0,
+              "value": 0.01,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "attack_again:attack_probability": {
+                "weight":0,
+                "value": 0.01,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 3,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack6": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.attack_speed": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "attack_again:attack_damage": {
+                "weight":0,
+                "value": 0.06,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack7": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.attack_speed": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "apotheosis:crit_damage": {
+                "weight":0,
+                "value": 0.05,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack8": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "apotheosis:piercing": {
+              "weight":0,
+              "value": 0.02,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "twtp:alldamage": {
+                "weight":0,
+                "value": 10,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack9": {
+          "weight": 30,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.attack_damage": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"attack10": {
+          "weight": 30,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.attack_damage": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"axe1": {
+          "weight": 2,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "twtp:axedamage": {
+              "weight":0,
+              "value": 20,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "apotheosis:current_hp_damage": {
+                "weight":0,
+                "value": 0.004,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "twtp:mianshan": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 5,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"axe2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "twtp:axedamage": {
+              "weight":0,
+              "value": 15,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "apotheosis:piercing": {
+                "weight":0,
+              "value": 0.02,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"axe3": {
+          "weight": 30,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "twtp:axedamage": {
+              "weight":0,
+              "value": 20,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 3,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"ele1": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "twtp:zhenshan": {
+              "weight":0,
+              "value": 5,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.attack_speed": {
+                "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"ele2": {
+          "weight": 8,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "apotheosis:cold_damage": {
+              "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "apotheosis:fire_damage": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"ele3": {
+          "weight": 30,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "apotheosis:cold_damage": {
+              "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 3,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+
+"ele4": {
+          "weight": 30,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "apotheosis:fire_damage": {
+              "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 3,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+
+"bow1": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "apotheosis:arrow_damage": {
+              "weight":0,
+              "value": 0.3,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "apotheosis:piercing": {
+                "weight":0,
+              "value": 0.03,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.movement_speed": {
+                "weight":0,
+              "value": 0.03,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 5,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"bow2": {
+          "weight": 8,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "apotheosis:arrow_damage": {
+              "weight":0,
+              "value": 0.2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "apotheosis:piercing": {
+                "weight":0,
+              "value": 0.02,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+
+"bow3": {
+          "weight": 30,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "apotheosis:arrow_damage": {
+              "weight":0,
+              "value": 0.1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.max_health": {
+                "weight":0,
+              "value": 3,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"def1": {
+          "weight": 2,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.max_health": {
+              "weight":0,
+              "value": 8,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+                "value": 3,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "twtp:mianshan": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"def2": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.max_health": {
+              "weight":0,
+              "value": 6,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+                "value": 3,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"def3": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.max_health": {
+              "weight":0,
+              "value": 6,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+                "value": 3,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "twtp:mianshan": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+
+"def4": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.max_health": {
+              "weight":0,
+              "value": 6,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "twtp:mianshan": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+
+"def5": {
+          "weight": 4,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.armor": {
+                "weight":0,
+                "value": 2,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "twtp:mianshan": {
+                "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"def6": {
+          "weight": 30,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.max_health": {
+              "weight":0,
+              "value": 3,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor": {
+                "weight":0,
+                "value": 2,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              }
+        }
+    },
+"def7": {
+          "weight": 30,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.max_health": {
+              "weight":0,
+              "value": 3,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+
+"def8": {
+          "weight": 30,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.armor": {
+                "weight":0,
+                "value": 2,
+                "uuid": "123e4567-e89b-12d3-a456-426614174001",
+                "modifierName": "CustomAttributesModifier",
+                "slot": "auto",
+          "autoUUID": true,                "operation":"add"
+              },
+            "minecraft:generic.armor_toughness": {
+                "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174002",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"def9": {
+          "weight": 100,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.max_health": {
+              "weight":0,
+              "value": 2,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"def10": {
+          "weight": 100,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.armor": {
+              "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        },
+"def11": {
+          "weight": 100,
+          "isRandom":false,
+          "Randomnum":4,
+          "attrGethers": {
+            "minecraft:generic.armor_toughness": {
+              "weight":0,
+              "value": 1,
+              "uuid": "123e4567-e89b-12d3-a456-426614174001",
+              "modifierName": "CustomAttributesModifier",
+              "slot": "auto",
+          "autoUUID": true,              "operation":"add"
+            }
+          }
+        }
+}

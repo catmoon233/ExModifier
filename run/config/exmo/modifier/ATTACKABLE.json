@@ -1,0 +1,2109 @@
+{
+"type": "ATTACKABLE",
+"W-fire1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-fire2": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-fire3": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-fire4": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-fire5": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-fire6": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:max_mana": {
+            "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ice1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ice_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ice2": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ice_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ice3": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ice_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ice4": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ice_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ice5": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ice_spell_power": {
+          "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ice6": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ice_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:max_mana": {
+            "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-lightning1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:lightning_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-lightning2": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:lightning_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-lightning3": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:lightning_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-lightning4": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:lightning_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-lightning5": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:lightning_spell_power": {
+          "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-lightning6": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:lightning_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:max_mana": {
+            "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-holy1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:holy_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-holy2": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:holy_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-holy3": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:holy_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-holy4": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:holy_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-holy5": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:holy_spell_power": {
+          "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-holy6": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:holy_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:max_mana": {
+            "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ender1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ender_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ender2": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ender_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ender3": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ender_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ender4": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ender_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ender5": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ender_spell_power": {
+          "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-ender6": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:ender_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:max_mana": {
+            "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-blood1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:blood_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-blood2": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:blood_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-blood3": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:blood_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-blood4": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:blood_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-blood5": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:blood_spell_power": {
+          "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-blood6": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:blood_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:max_mana": {
+            "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-evocation1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:evocation_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-evocation2": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:evocation_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-evocation3": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:evocation_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-evocation4": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:evocation_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-evocation5": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:evocation_spell_power": {
+          "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-evocation6": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:evocation_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:max_mana": {
+            "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-poison1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:poison_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-poison2": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:poison_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-poison": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:poison_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-poison4": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:poison_spell_power": {
+          "weight":0,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-poison5": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:poison_spell_power": {
+          "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-poison6": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:poison_spell_power": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:max_mana": {
+            "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-spell1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:spell_power": {
+          "weight":0,
+          "value": 0.5,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "ars_nouveau:max_mana": {
+            "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-spell2": {
+      "weight": 4,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:spell_power": {
+          "weight":0,
+          "value": 0.20,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-spell3": {
+      "weight": 10,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:spell_power": {
+          "weight":0,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-spell4": {
+      "weight": 30,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:max_mana": {
+            "weight":0,
+          "value": 20,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-summon1": {
+      "weight": 2,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "irons_spellbooks:summon_damage": {
+          "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cooldown_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+            "weight":0,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },   
+"W-allspell1": {
+      "weight": 300,
+      "isRandom":true,
+      "Randomnum":1,
+      "attrGethers": {
+        "irons_spellbooks:spell_power": {
+          "weight":10,
+          "value": 0.15,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "rons_spellbooks:summon_damage": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:fire_spell_power": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:ice_spell_power": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:lightning_spell_power": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:holy_spell_power": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:ender_spell_power": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:blood_spell_power": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:evocation_spell_power": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:poison_spell_power": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-attack1": {
+      "weight": 30,
+      "isRandom":true,
+      "Randomnum":4,
+      "attrGethers": {
+        "minecraft:generic.attack_damage": {
+          "weight":10,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,
+          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "attack_again:attack_probability": {
+            "weight":10,
+          "value": 0.04,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:crit_chance": {
+            "weight":10,
+          "value": 0.04,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:piercing": {
+            "weight":10,
+          "value": 0.04,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:crit_damage": {
+          "weight":10,
+        "value": 0.15,
+        "uuid": "",
+        "modifierName": "CustomAttributesModifier",
+        "slot": "chest",
+        "operation":"add"
+       },
+      "attack_again:attack_damage": {
+        "weight":10,
+      "value": 0.15,
+      "uuid": "",
+      "modifierName": "CustomAttributesModifier",
+      "slot": "chest",
+      "operation":"add"
+     },    
+     "attack_again:attack_frequency": {
+      "weight":5,
+    "value": 1,
+    "uuid": "",
+    "modifierName": "CustomAttributesModifier",
+    "slot": "chest",
+    "operation":"add"
+   },  
+   "apotheosis:current_hp_damage": {
+    "weight":10,
+  "value": 0.005,
+  "uuid": "",
+  "modifierName": "CustomAttributesModifier",
+  "slot": "chest",
+  "operation":"add"
+ },  
+ "twtp:zhenshan": {
+  "weight":10,
+"value": 10,
+"uuid": "",
+"modifierName": "CustomAttributesModifier",
+"slot": "chest",
+"operation":"add"
+}
+}
+}, 
+"W-attack2": {
+      "weight": 50,
+      "isRandom":true,
+      "Randomnum":3,
+      "attrGethers": {
+        "minecraft:generic.attack_damage": {
+          "weight":10,
+          "value": 0.25,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "attack_again:attack_probability": {
+            "weight":10,
+          "value": 0.03,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:crit_chance": {
+            "weight":10,
+          "value": 0.03,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:piercing": {
+            "weight":10,
+          "value": 0.03,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:crit_damage": {
+          "weight":10,
+        "value": 0.1,
+        "uuid": "",
+        "modifierName": "CustomAttributesModifier",
+        "slot": "chest",
+        "operation":"add"
+       },
+      "attack_again:attack_damage": {
+        "weight":10,
+      "value": 0.1,
+      "uuid": "",
+      "modifierName": "CustomAttributesModifier",
+      "slot": "chest",
+      "operation":"add"
+     },     
+ "twtp:zhenshan": {
+  "weight":10,
+"value": 6,
+"uuid": "",
+"modifierName": "CustomAttributesModifier",
+"slot": "chest",
+"operation":"add"
+}
+}
+}, 
+"W-attack3": {
+      "weight": 120,
+      "isRandom":true,
+      "Randomnum":2,
+      "attrGethers": {
+        "minecraft:generic.attack_damage": {
+          "weight":10,
+          "value": 0.2,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "attack_again:attack_probability": {
+            "weight":10,
+          "value": 0.02,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:crit_chance": {
+            "weight":10,
+          "value": 0.02,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:piercing": {
+            "weight":10,
+          "value": 0.02,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:crit_damage": {
+          "weight":10,
+        "value": 0.08,
+        "uuid": "",
+        "modifierName": "CustomAttributesModifier",
+        "slot": "chest",
+        "operation":"add"
+       },
+       "apotheosis:fire_damage": {
+        "weight":10,
+      "value": 4,
+      "uuid": "",
+      "modifierName": "CustomAttributesModifier",
+      "slot": "chest",
+      "operation":"add"
+     },
+     "apotheosis:cold_damage": {
+      "weight":10,
+    "value": 4,
+    "uuid": "",
+    "modifierName": "CustomAttributesModifier",
+    "slot": "chest",
+    "operation":"add"
+   },
+      "attack_again:attack_damage": {
+        "weight":10,
+      "value": 0.08,
+      "uuid": "",
+      "modifierName": "CustomAttributesModifier",
+      "slot": "chest",
+      "operation":"add"
+     },     
+ "twtp:zhenshan": {
+  "weight":10,
+"value": 3,
+"uuid": "",
+"modifierName": "CustomAttributesModifier",
+"slot": "chest",
+"operation":"add"
+}
+}
+}, 
+"W-attack4": {
+      "weight": 300,
+      "isRandom":true,
+      "Randomnum":1,
+      "attrGethers": {
+        "minecraft:generic.attack_damage": {
+          "weight":80,
+          "value": 0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "attack_again:attack_probability": {
+            "weight":10,
+          "value": 0.02,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:crit_chance": {
+            "weight":10,
+          "value": 0.02,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:piercing": {
+            "weight":10,
+          "value": 0.02,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:crit_damage": {
+          "weight":10,
+        "value": 0.08,
+        "uuid": "",
+        "modifierName": "CustomAttributesModifier",
+        "slot": "chest",
+        "operation":"add"
+       },
+      "attack_again:attack_damage": {
+        "weight":10,
+      "value": 0.08,
+      "uuid": "",
+      "modifierName": "CustomAttributesModifier",
+      "slot": "chest",
+      "operation":"add"
+     },     
+ "twtp:zhenshan": {
+  "weight":10,
+"value": 1,
+"uuid": "",
+"modifierName": "CustomAttributesModifier",
+"slot": "chest",
+"operation":"add"
+}
+}
+}, 
+"W-bow1": {
+      "weight": 60,
+      "isRandom":true,
+      "Randomnum":4,
+      "attrGethers": {
+        "twtp:alldamage": {
+          "weight":10,
+          "value": 30,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:arrow_damage": {
+            "weight":50,
+          "value": 0.3,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:piercing": {
+            "weight":10,
+          "value": 0.05,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:poison_spell_power": {
+            "weight":10,
+          "value": 0.5,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "apotheosis:arrow_velocity": {
+          "weight":10,
+        "value": 0.2,
+        "uuid": "",
+        "modifierName": "CustomAttributesModifier",
+        "slot": "chest",
+        "operation":"add"
+       },
+      "minecraft:generic.movement_speed": {
+        "weight":10,
+      "value": 0.1,
+      "uuid": "",
+      "modifierName": "CustomAttributesModifier",
+      "slot": "chest",
+      "operation":"add"
+     },     
+ "minecraft:generic.luck": {
+  "weight":10,
+"value": 5,
+"uuid": "",
+"modifierName": "CustomAttributesModifier",
+"slot": "chest",
+"operation":"add"
+}
+}
+},
+"W-attack5": {
+      "weight": 60,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "minecraft:generic.attack_damage": {
+          "weight":0,
+          "value": -0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+    },
+"W-attack6": {
+      "weight": 60,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "minecraft:generic.attack_speed": {
+          "weight":0,
+          "value": -0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    },
+"W-attack7": {
+      "weight": 60,
+      "isRandom":false,
+      "Randomnum":4,
+      "attrGethers": {
+        "forge:attack_range": {
+          "weight":0,
+          "value": -0.1,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        }
+      }
+    }
+  },
+"W-god1": {
+      "weight": 1,
+      "isRandom":false,
+      "Randomnum":5,
+      "attrGethers": {
+        "twtp:alldamage": {
+          "weight":0,
+          "value": 50,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "irons_spellbooks:spell_power": {
+            "weight":0,
+          "value": 0.5,
+          "uuid": "",
+          "autoUUID": true,          "modifierName": "CustomAttributesModifier",
+          "slot": "auto",
+          "operation":"add"
+        },
+        "attack_again:attack_frequency": {
+          "weight":0,
+        "value": 1,
+        "uuid": "",
+        "modifierName": "CustomAttributesModifier",
+        "slot": "chest",
+        "operation":"add"
+      },  
+      "twtp:zhenshan": {
+        "weight":0,
+      "value": 10,
+      "uuid": "",
+      "modifierName": "CustomAttributesModifier",
+      "slot": "chest",
+      "operation":"add"
+    },      
+   "apotheosis:current_hp_damage": {
+    "weight":0,
+  "value": 0.006,
+  "uuid": "",
+  "modifierName": "CustomAttributesModifier",
+  "slot": "chest",
+  "operation":"add"
+ }
+}
+}
+}

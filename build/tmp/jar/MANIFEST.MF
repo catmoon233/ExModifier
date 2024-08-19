@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Specification-Title: exmodifier
+Specification-Vendor: canyuesama
+Specification-Version: 1
+Implementation-Title: exmodifier
+Implementation-Version: 1.0-SNAPSHOT
+Implementation-Vendor: canyuesama
+Implementation-Timestamp: 2024-08-19T04:39:47+0800
+MixinConfigs: exmodifier.mixins.json
+

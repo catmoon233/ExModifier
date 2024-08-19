@@ -1,0 +1,2 @@
+net/exmo/exmodifier/mixins/ItemMixin tag f_41590_
+net/exmo/exmodifier/mixins/SmiMixin shrinkStackInSlot (I)V m_40270_

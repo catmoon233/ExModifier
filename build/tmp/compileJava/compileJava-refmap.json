@@ -1,0 +1,36 @@
+{
+  "mappings": {
+    "net/exmo/exmodifier/mixins/ItemMixin": {
+      "getAttributeModifiers": "Lnet/minecraft/world/item/ItemStack;m_41638_(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;"
+    },
+    "net/exmo/exmodifier/mixins/ShiftTakMixin": {
+      "quickMoveStack": "Lnet/minecraft/world/inventory/ItemCombinerMenu;m_7648_(Lnet/minecraft/world/entity/player/Player;I)Lnet/minecraft/world/item/ItemStack;"
+    },
+    "net/exmo/exmodifier/mixins/ToolTipMixin": {
+      "getTooltipLines": "Lnet/minecraft/world/item/ItemStack;m_41651_(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;"
+    },
+    "net/exmo/exmodifier/mixins/SmiMixin": {
+      "mayPickup": "Lnet/minecraft/world/inventory/SmithingMenu;m_6560_(Lnet/minecraft/world/entity/player/Player;Z)Z",
+      "onTake": "Lnet/minecraft/world/inventory/SmithingMenu;m_142365_(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;)V",
+      "createResult": "Lnet/minecraft/world/inventory/SmithingMenu;m_6640_()V"
+    }
+  },
+  "data": {
+    "searge": {
+      "net/exmo/exmodifier/mixins/ItemMixin": {
+        "getAttributeModifiers": "Lnet/minecraft/world/item/ItemStack;m_41638_(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;"
+      },
+      "net/exmo/exmodifier/mixins/ShiftTakMixin": {
+        "quickMoveStack": "Lnet/minecraft/world/inventory/ItemCombinerMenu;m_7648_(Lnet/minecraft/world/entity/player/Player;I)Lnet/minecraft/world/item/ItemStack;"
+      },
+      "net/exmo/exmodifier/mixins/ToolTipMixin": {
+        "getTooltipLines": "Lnet/minecraft/world/item/ItemStack;m_41651_(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;"
+      },
+      "net/exmo/exmodifier/mixins/SmiMixin": {
+        "mayPickup": "Lnet/minecraft/world/inventory/SmithingMenu;m_6560_(Lnet/minecraft/world/entity/player/Player;Z)Z",
+        "onTake": "Lnet/minecraft/world/inventory/SmithingMenu;m_142365_(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;)V",
+        "createResult": "Lnet/minecraft/world/inventory/SmithingMenu;m_6640_()V"
+      }
+    }
+  }
+}
