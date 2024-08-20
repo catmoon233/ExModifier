@@ -1,0 +1,17 @@
+Java Launcher: C:\Program Files\Java\jdk-17\bin\java.exe
+Arguments: '--task, SRG_TO_MCP, --input, G:\MC\ExModifier\libs\Bookshelf-13.3.56.jar, --output, C:\Users\canyuesama\.gradle\caches\forge_gradle\deobf_dependencies\net\darkhax\bookshelf\Bookshelf\13.3.56_mapped_official_1.18.2\Bookshelf-13.3.56_mapped_official_1.18.2.jar, --mcp, C:\Users\canyuesama\.gradle\caches\forge_gradle\mcp_repo\net\minecraft\mapping\1.18.2\mapping-1.18.2-mapping.zip, --strip-signatures'
+Classpath:
+ - C:\Users\canyuesama\.gradle\caches\forge_gradle\maven_downloader\net\minecraftforge\installertools\1.3.2\installertools-1.3.2-fatjar.jar
+Working directory: G:\MC\ExModifier\build\_RenameSrg2Mcp_1411844756
+Main class: net.minecraftforge.installertools.ConsoleTool
+====================================
+Task: SRG_TO_MCP
+Input:  G:\MC\ExModifier\libs\Bookshelf-13.3.56.jar
+Output: C:\Users\canyuesama\.gradle\caches\forge_gradle\deobf_dependencies\net\darkhax\bookshelf\Bookshelf\13.3.56_mapped_official_1.18.2\Bookshelf-13.3.56_mapped_official_1.18.2.jar
+MCP:    C:\Users\canyuesama\.gradle\caches\forge_gradle\mcp_repo\net\minecraft\mapping\1.18.2\mapping-1.18.2-mapping.zip
+Loading MCP Data
+Processing ZIP file
+Stripped Manifest of sha digests
+Stripped signature entry data META-INF/DARKHAXM.SF
+Stripped signature entry data META-INF/DARKHAXM.RSA
+Process complete
