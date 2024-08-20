@@ -1709,15 +1709,14 @@
         "value": 0.15,
         "uuid": "",
         "modifierName": "CustomAttributesModifier",
-        "slot": "chest",
-        "operation":"add"
+        "slot": "auto",        "operation":"add"
        },
       "attack_again:attack_damage": {
         "weight":10,
       "value": 0.15,
       "uuid": "",
       "modifierName": "CustomAttributesModifier",
-      "slot": "chest",
+      "slot": "auto",
       "operation":"add"
      },    
      "attack_again:attack_frequency": {
@@ -1725,7 +1724,7 @@
     "value": 1,
     "uuid": "",
     "modifierName": "CustomAttributesModifier",
-    "slot": "chest",
+    "slot": "auto",
     "operation":"add"
    },  
    "apotheosis:current_hp_damage": {
@@ -1733,16 +1732,14 @@
   "value": 0.005,
   "uuid": "",
   "modifierName": "CustomAttributesModifier",
-  "slot": "chest",
-  "operation":"add"
+  "slot": "auto",  "operation":"add"
  },  
  "twtp:zhenshan": {
   "weight":10,
 "value": 10,
 "uuid": "",
 "modifierName": "CustomAttributesModifier",
-"slot": "chest",
-"operation":"add"
+"slot": "auto","operation":"add"
 }
 }
 }, 
@@ -1788,24 +1785,21 @@
         "value": 0.1,
         "uuid": "",
         "modifierName": "CustomAttributesModifier",
-        "slot": "chest",
-        "operation":"add"
+        "slot": "auto",        "operation":"add"
        },
       "attack_again:attack_damage": {
         "weight":10,
       "value": 0.1,
       "uuid": "",
       "modifierName": "CustomAttributesModifier",
-      "slot": "chest",
-      "operation":"add"
+      "slot": "auto",      "operation":"add"
      },     
  "twtp:zhenshan": {
   "weight":10,
 "value": 6,
 "uuid": "",
 "modifierName": "CustomAttributesModifier",
-"slot": "chest",
-"operation":"add"
+"slot": "auto","operation":"add"
 }
 }
 }, 
@@ -1851,40 +1845,35 @@
         "value": 0.08,
         "uuid": "",
         "modifierName": "CustomAttributesModifier",
-        "slot": "chest",
-        "operation":"add"
+        "slot": "auto",        "operation":"add"
        },
        "apotheosis:fire_damage": {
         "weight":10,
       "value": 4,
       "uuid": "",
       "modifierName": "CustomAttributesModifier",
-      "slot": "chest",
-      "operation":"add"
+      "slot": "auto",      "operation":"add"
      },
      "apotheosis:cold_damage": {
       "weight":10,
     "value": 4,
     "uuid": "",
     "modifierName": "CustomAttributesModifier",
-    "slot": "chest",
-    "operation":"add"
+    "slot": "auto",    "operation":"add"
    },
       "attack_again:attack_damage": {
         "weight":10,
       "value": 0.08,
       "uuid": "",
       "modifierName": "CustomAttributesModifier",
-      "slot": "chest",
-      "operation":"add"
+      "slot": "auto",      "operation":"add"
      },     
  "twtp:zhenshan": {
   "weight":10,
 "value": 3,
 "uuid": "",
 "modifierName": "CustomAttributesModifier",
-"slot": "chest",
-"operation":"add"
+"slot": "auto","operation":"add"
 }
 }
 }, 
@@ -1930,24 +1919,21 @@
         "value": 0.08,
         "uuid": "",
         "modifierName": "CustomAttributesModifier",
-        "slot": "chest",
-        "operation":"add"
+        "slot": "auto",        "operation":"add"
        },
       "attack_again:attack_damage": {
         "weight":10,
       "value": 0.08,
       "uuid": "",
       "modifierName": "CustomAttributesModifier",
-      "slot": "chest",
-      "operation":"add"
+      "slot": "auto",      "operation":"add"
      },     
  "twtp:zhenshan": {
   "weight":10,
 "value": 1,
 "uuid": "",
 "modifierName": "CustomAttributesModifier",
-"slot": "chest",
-"operation":"add"
+"slot": "auto","operation":"add"
 }
 }
 }, 
@@ -1993,24 +1979,21 @@
         "value": 0.2,
         "uuid": "",
         "modifierName": "CustomAttributesModifier",
-        "slot": "chest",
-        "operation":"add"
+        "slot": "auto",        "operation":"add"
        },
       "minecraft:generic.movement_speed": {
         "weight":10,
       "value": 0.1,
       "uuid": "",
       "modifierName": "CustomAttributesModifier",
-      "slot": "chest",
-      "operation":"add"
+      "slot": "auto",      "operation":"add"
      },     
  "minecraft:generic.luck": {
   "weight":10,
 "value": 5,
 "uuid": "",
 "modifierName": "CustomAttributesModifier",
-"slot": "chest",
-"operation":"add"
+"slot": "auto","operation":"add"
 }
 }
 },
@@ -2085,24 +2068,21 @@
         "value": 1,
         "uuid": "",
         "modifierName": "CustomAttributesModifier",
-        "slot": "chest",
-        "operation":"add"
+        "slot": "auto",        "operation":"add"
       },  
       "twtp:zhenshan": {
         "weight":0,
       "value": 10,
       "uuid": "",
       "modifierName": "CustomAttributesModifier",
-      "slot": "chest",
-      "operation":"add"
+      "slot": "auto",      "operation":"add"
     },      
    "apotheosis:current_hp_damage": {
     "weight":0,
   "value": 0.006,
   "uuid": "",
   "modifierName": "CustomAttributesModifier",
-  "slot": "chest",
-  "operation":"add"
+  "slot": "auto",  "operation":"add"
  }
 }
 }

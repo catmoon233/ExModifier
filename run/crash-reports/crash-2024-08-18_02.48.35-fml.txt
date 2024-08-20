@@ -37,9 +37,9 @@ A detailed walkthrough of the error, its code path and all known details is as f
 Thread: Render thread
 Suspected Mod: 
 	ExModifier (exmodifier), Version: 1.0-SNAPSHOT
-		at TRANSFORMER/exmodifier@1.0-SNAPSHOT/net.exmo.exmodifier.util.exconfigHandle.<clinit>(exconfigHandle.java:21)
+		at TRANSFORMER/exmodifier@1.0-SNAPSHOT/net.exmo.exmodifier.util.ExConfigHandle.<clinit>(exconfigHandle.java:21)
 Stacktrace:
-	at net.exmo.exmodifier.util.exconfigHandle.<clinit>(exconfigHandle.java:21) ~[%2385!/:?] {re:classloading}
+	at net.exmo.exmodifier.util.ExConfigHandle.<clinit>(exconfigHandle.java:21) ~[%2385!/:?] {re:classloading}
 -- MOD exmodifier --
 Details:
 	Caused by 0: java.lang.ExceptionInInitializerError
@@ -64,9 +64,9 @@ Details:
 		java.lang.ExceptionInInitializerError: null
 	Mod Version: 1.0-SNAPSHOT
 	Mod Issue URL: NOT PROVIDED
-	Exception message: java.lang.NullPointerException: Cannot invoke "java.util.Map.put(Object, Object)" because "net.exmo.exmodifier.util.exconfigHandle.valueByKey" is null
+	Exception message: java.lang.NullPointerException: Cannot invoke "java.util.Map.put(Object, Object)" because "net.exmo.exmodifier.util.ExConfigHandle.valueByKey" is null
 Stacktrace:
-	at net.exmo.exmodifier.util.exconfigHandle.<clinit>(exconfigHandle.java:21) ~[%2385!/:?] {re:classloading}
+	at net.exmo.exmodifier.util.ExConfigHandle.<clinit>(exconfigHandle.java:21) ~[%2385!/:?] {re:classloading}
 	at net.exmo.exmodifier.content.modifier.ModifierHandle.readConfig(ModifierHandle.java:105) ~[%2385!/:?] {re:classloading}
 	at net.exmo.exmodifier.content.modifier.ModifierHandle.init(ModifierHandle.java:31) ~[%2385!/:?] {re:classloading}
 	at net.minecraftforge.eventbus.ASMEventHandler_2_ModifierHandle_init_FMLCommonSetupEvent.invoke(.dynamic) ~[?:?] {}

@@ -6,7 +6,6 @@
   "refmap": "exmodifier.refmap.json",
   "mixins": [
     "ApothToolTipFixMixin",
-    "ItemMixin",
     "ItemStackMixin",
     "ShiftTakMixin",
     "SmiMixin",

@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.mixins;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
@@ -46,11 +47,14 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.generateEntryTooltip;
+import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEntrysFromItemStack;
+
 @Mixin(ItemStack.class)
 public abstract class ToolTipMixin {
     @ModifyVariable(at =@At("STORE"), method = "getTooltipLines", ordinal = 0)
     private Multimap<Attribute, AttributeModifier> changev(Multimap<Attribute, AttributeModifier> multimap) {
-        List<ModifierEntry> entrys = ModifierHandle.getEntrysFromItemStack((ItemStack)(Object)this);
+        List<ModifierEntry> entrys = getEntrysFromItemStack((ItemStack)(Object)this);
         List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
         for (ModifierEntry entry : entrys) {
@@ -74,4 +78,24 @@ public abstract class ToolTipMixin {
 
         return multimap;
     }
+    @ModifyReturnValue(at =@At("RETURN"), method = "getTooltipLines")
+    public List<Component> getTooltipLines(List<Component> tooltip, Player player, TooltipFlag flag) {
+        ItemStack stack = (ItemStack)(Object)this ;
+        if (stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") > 0) {
+
+            if (stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied0").equals("UNKNOWN")) {
+                tooltip.add(new TranslatableComponent("null"));
+                tooltip.add(new TranslatableComponent("modifiler.entry.UNKNOWN"));
+            }else {
+                for (ModifierEntry modifierEntry : getEntrysFromItemStack(stack)) {
+                    tooltip.add(new TranslatableComponent("null"));
+                    tooltip.addAll(generateEntryTooltip(modifierEntry, player,stack));
+
+                }
+            }
+
+        }
+        return tooltip;
+    }
+
 }

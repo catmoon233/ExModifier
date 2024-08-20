@@ -155,7 +155,7 @@ public  class ItemAttrUtil {
         return false;
     }
 
-    public static boolean hasAttributeModifierCompoundTag(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
+    public static boolean hasAttributeModifierCompoundTagNoAmount(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
         if (itemStack.getTag() != null && itemStack.getTag().contains("ExAttributeModifiers", 9)) {
             ListTag listtag = itemStack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
             for (int i = 0; i < listtag.size(); i++) {
@@ -196,6 +196,28 @@ public  class ItemAttrUtil {
         return false;
     }
 
+    public static void removeAttributeModifierNoAmout(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
+        if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute))return;
+        if (itemStack.getTag() != null && itemStack.getTag().contains("ExAttributeModifiers", 9)) {
+            ListTag listtag = itemStack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
+            for (int i = 0; i < listtag.size(); ) { // 注意这里使用i而不是i++
+                CompoundTag compoundTag = listtag.getCompound(i);
+                if (
+                        compoundTag.contains("AttributeName") &&
+                                compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+                                compoundTag.contains("Name") &&
+                                compoundTag.getString("Name").equals(pModifier.getName()) &&
+                                compoundTag.contains("Operation") &&
+                                compoundTag.getInt("Operation") == pModifier.getOperation().toValue() &&
+                                (!compoundTag.contains("Slot") || (pSlot == null || compoundTag.contains("Slot") && compoundTag.getString("Slot").equals(pSlot.getName())))
+                ) {
+                    listtag.remove(i);
+                } else {
+                    i++;
+                }
+            }
+        }
+    }
     public static void removeAttributeModifier(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
         if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute))return;
         if (itemStack.getTag() != null && itemStack.getTag().contains("ExAttributeModifiers", 9)) {
@@ -205,6 +227,30 @@ public  class ItemAttrUtil {
                 if (
                         compoundTag.contains("AttributeName") &&
                                 compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+                                compoundTag.contains("Name") &&
+                                compoundTag.getDouble("Amount") == pModifier.getAmount() &&
+                                compoundTag.getString("Name").equals(pModifier.getName()) &&
+                                compoundTag.contains("Operation") &&
+                                compoundTag.getInt("Operation") == pModifier.getOperation().toValue() &&
+                                (!compoundTag.contains("Slot") || (pSlot == null || compoundTag.contains("Slot") && compoundTag.getString("Slot").equals(pSlot.getName())))
+                ) {
+                    listtag.remove(i);
+                } else {
+                    i++;
+                }
+            }
+        }
+    }
+    public static void removeAttributeModifierINUUID(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
+        if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute))return;
+        if (itemStack.getTag() != null && itemStack.getTag().contains("ExAttributeModifiers", 9)) {
+            ListTag listtag = itemStack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
+            for (int i = 0; i < listtag.size(); ) { // 注意这里使用i而不是i++
+                CompoundTag compoundTag = listtag.getCompound(i);
+                if (
+                        compoundTag.contains("AttributeName") &&
+                                compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+                                compoundTag.getDouble("Amount") == pModifier.getAmount() &&
                                 compoundTag.contains("Name") &&
                                 compoundTag.getString("Name").equals(pModifier.getName()) &&
                                 compoundTag.contains("Operation") &&

@@ -13,6 +13,7 @@ import java.util.List;
 public class ModifierEntry {
     public float weight;
     public static enum Type {
+        ALL,
         UNKNOWN,
         ATTACKABLE,
         ARMOR,
@@ -38,9 +39,38 @@ public class ModifierEntry {
         OFFHAND,
         MAINHAND,
        OFFHAND_HAND,
+        ;
+
+
+        public record values() {
+            public static final List<Type> values = List.of(Type.values());
+        }
+    }
+    public static EquipmentSlot TypeToEquipmentSlot(Type type) {
+        switch (type) {
+            case HAND -> {
+                return EquipmentSlot.MAINHAND;
+            }
+            case OFFHAND -> {
+                return EquipmentSlot.OFFHAND;
+            }
+            case MAINHAND -> {
+                return EquipmentSlot.MAINHAND;
+            }
+            case OFFHAND_HAND -> {
+                return EquipmentSlot.OFFHAND;
+            }
+            case CHESTPLATE -> {
+                return EquipmentSlot.CHEST;
+            }
+        }
+        return null;
     }
     public static Type StringToType(String type) {
         switch (type) {
+            case "ALL" -> {
+                return Type.ALL;
+            }
             case "UNKNOWN" -> {
                 return Type.UNKNOWN;
             }
@@ -165,7 +195,15 @@ public class ModifierEntry {
             return Type.ARMOR;
         return Type.UNKNOWN;
     }
-    public boolean isRandom;
+    public static Type findTypeFormEntry(ModifierEntry modifierEntry)
+    {
+        for (Type type1 : Type.values())
+        {
+            if (type1.toString().substring(0,2).equals(modifierEntry.id.substring(0,2)))return type1;
+        }
+        return Type.UNKNOWN;
+    }
+    public boolean isRandom = true;
     public Type type;
     public String id;
     public int RandomNum;

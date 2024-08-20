@@ -44,10 +44,10 @@ Stacktrace:
 Details:
 	Mod File: /G:/MC/ExModifier/build/resources/main/
 	Failure message: ExModifier (exmodifier) encountered an error during the common_setup event phase
-		java.lang.NullPointerException: Cannot invoke "java.util.Set.iterator()" because the return value of "net.exmo.exmodifier.content.modifier.moconfig.readEntrys()" is null
+		java.lang.NullPointerException: Cannot invoke "java.util.Set.iterator()" because the return value of "net.exmo.exmodifier.content.modifier.MoConfig.readEntrys()" is null
 	Mod Version: 1.0-SNAPSHOT
 	Mod Issue URL: NOT PROVIDED
-	Exception message: java.lang.NullPointerException: Cannot invoke "java.util.Set.iterator()" because the return value of "net.exmo.exmodifier.content.modifier.moconfig.readEntrys()" is null
+	Exception message: java.lang.NullPointerException: Cannot invoke "java.util.Set.iterator()" because the return value of "net.exmo.exmodifier.content.modifier.MoConfig.readEntrys()" is null
 Stacktrace:
 	at net.exmo.exmodifier.content.modifier.ModifierHandle.readConfig(ModifierHandle.java:256) ~[%2385!/:?] {re:mixin,re:classloading}
 	at net.exmo.exmodifier.content.modifier.ModifierHandle.init(ModifierHandle.java:40) ~[%2385!/:?] {re:mixin,re:classloading}

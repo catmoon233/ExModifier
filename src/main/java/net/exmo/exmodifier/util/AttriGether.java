@@ -3,6 +3,7 @@ package net.exmo.exmodifier.util;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
 
@@ -16,7 +17,11 @@ public class AttriGether {
         this.attribute = attribute;
         this.modifier = modifier;
         this.slot =     slot;
+        ItemStack itemStack;
+
     }
+
+
     public AttriGether(Attribute attribute, AttributeModifier modifier) {
         this.attribute = attribute;
         this.modifier = modifier;

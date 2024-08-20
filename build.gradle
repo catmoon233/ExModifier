@@ -144,6 +144,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation fg.deobf("curse.maven:patchouli-306770:3846086")
     implementation fg.deobf("curse.maven:apotheosis-313970:4634636")
     implementation fg.deobf("curse.maven:max-health-fix-492246:5127466")

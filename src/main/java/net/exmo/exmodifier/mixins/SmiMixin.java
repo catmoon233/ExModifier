@@ -40,8 +40,8 @@ public abstract class SmiMixin extends ItemCombinerMenu {
             p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
             p_39791_.getOrCreateTag().putBoolean("modifier_refresh", false);
             p_39791_.getOrCreateTag().putInt("exmodifier_armor_modifier_applied", 0);
-
-            ModifierHandle.CommonEvent.RandomEntry(p_39791_, p_39791_.getOrCreateTag().getInt("modifier_refresh_rarity"), p_39791_.getOrCreateTag().getInt("modifier_refresh_add"));
+            if (p_39790_.level.isClientSide)return;
+            ModifierHandle.CommonEvent.RandomEntry(p_39791_, p_39791_.getOrCreateTag().getInt("mod  ifier_refresh_rarity"), p_39791_.getOrCreateTag().getInt("modifier_refresh_add"));
         }
     }
 

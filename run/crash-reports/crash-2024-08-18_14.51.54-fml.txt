@@ -49,7 +49,7 @@ Details:
 Stacktrace:
 	at java.util.UUID.fromString1(UUID.java:264) ~[?:?] {re:mixin}
 	at java.util.UUID.fromString(UUID.java:258) ~[?:?] {re:mixin}
-	at net.exmo.exmodifier.util.exconfigHandle.autoUUid(exconfigHandle.java:45) ~[%2385!/:?] {re:classloading}
+	at net.exmo.exmodifier.util.ExConfigHandle.autoUUid(exconfigHandle.java:45) ~[%2385!/:?] {re:classloading}
 	at net.exmo.exmodifier.content.modifier.ModifierHandle.readConfig(ModifierHandle.java:181) ~[%2385!/:?] {re:classloading}
 	at net.exmo.exmodifier.content.modifier.ModifierHandle.init(ModifierHandle.java:39) ~[%2385!/:?] {re:classloading}
 	at net.minecraftforge.eventbus.ASMEventHandler_4_ModifierHandle_init_FMLCommonSetupEvent.invoke(.dynamic) ~[?:?] {}

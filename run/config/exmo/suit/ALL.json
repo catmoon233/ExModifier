@@ -1,0 +1,125 @@
+{
+  "type": "ALL",
+  "def11": {
+    "1": {
+      "effect": {
+        "minecraft:speed": {
+          "level": 1
+        }
+      },
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "autoUUID": true,
+          "value": 0.2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174001",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+          "autoUUID": true,
+          "value": 0.1,
+          "uuid": "123e4567-e89b-12d3-a456-426614174004",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        },
+        "minecraft:generic.armor_toughness": {
+          "autoUUID": true,
+          "value": 2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174002",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        }
+      }
+    },
+    "2": {
+      "effect": {
+        "minecraft:speed": {
+          "level": 2
+        }
+      },
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "autoUUID": true,
+          "value": 0.2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174001",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+          "autoUUID": true,
+          "value": 0.1,
+          "uuid": "123e4567-e89b-12d3-a456-426614174004",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        },
+        "minecraft:generic.armor_toughness": {
+          "autoUUID": true,
+          "value": 2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174002",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        }
+      }
+    },
+    "3": {
+      "effect": {
+        "minecraft:speed": {
+          "level": 3
+        }
+      },
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "autoUUID": true,
+          "value": 0.2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174001",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+          "autoUUID": true,
+          "value": 0.1,
+          "uuid": "123e4567-e89b-12d3-a456-426614174004",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        },
+        "minecraft:generic.armor_toughness": {
+          "autoUUID": true,
+          "value": 2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174002",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        }
+      }
+    },
+    "4": {
+      "effect": {
+        "minecraft:speed": {
+          "level": 4
+        }
+      },
+      "attrGethers": {
+        "irons_spellbooks:fire_spell_power": {
+          "autoUUID": true,
+          "value": 0.2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174001",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        },
+        "irons_spellbooks:cast_time_reduction": {
+          "autoUUID": true,
+          "value": 0.1,
+          "uuid": "123e4567-e89b-12d3-a456-426614174004",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        },
+        "minecraft:generic.armor_toughness": {
+          "autoUUID": true,
+          "value": 2,
+          "uuid": "123e4567-e89b-12d3-a456-426614174002",
+          "modifierName": "CustomAttributesModifier",
+          "operation":"add"
+        }
+      }
+    }
+  }
+}

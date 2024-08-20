@@ -17,7 +17,11 @@ public class ModifierAttriGether extends AttriGether {
         super(attribute, modifier,slot);
     }
 
+    public ModifierAttriGether(Attribute attribute, AttributeModifier modifier) {
+        super(attribute, modifier);
+    }
+
     public boolean isHasUUID() {
-        return this.modifier.getId().toString().equals("00000000-0000-0000-0000-000000000000");
+        return !this.modifier.getId().toString().equals("");
     }
 }
