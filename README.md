@@ -1,7 +1,7 @@
 # ExModifier
 
 ### json编写
-示例:
+#### 示例:
 #### Exemple.json
 ```
 {
@@ -36,7 +36,7 @@
 "HAND","OFFHAND","MAINHAND","OFFHAND_HAND"
 ~~~
 "Exemple":必选，词条id，最终id为 类型前2个字符+id<br>
-"weight":必选，权重，<br>
+"weight":必选，权重<br>
 "isRandom":可选，是否随机属性，为false则"Randomnum"无效，默认为true<br>
 "Randomnum":必选，随机属性数<br>
 "id1":必选，属性id<br>
