@@ -35,18 +35,18 @@
 "SHIELD","PICKAXE","AXE","SHOVEL","HOE,SWORD","TRINKET",
 "HAND","OFFHAND","MAINHAND","OFFHAND_HAND"
 ~~~
-"Exemple":必选，词条id，最终id为 类型前2个字符+id
-"weight":必选，权重，
-"isRandom":可选，是否随机属性，为false则"Randomnum"无效，默认为true
-"Randomnum":必选，随机属性数
-"id1":必选，属性id
-"value":必选，属性值
-"uuid":可选，UUID
-"modifierName":可选，属性名
-"slot":必选，装备槽位，为"auto"时自动匹配
-"autoName":当"modifierName"为空时必选且值填true
-"isAutoEquipmentSlot":可选，为true时自动匹配装备槽位
-"autoUUID":当UUID为空时必选，且填true
+"Exemple":必选，词条id，最终id为 类型前2个字符+id<br>
+"weight":必选，权重，<br>
+"isRandom":可选，是否随机属性，为false则"Randomnum"无效，默认为true<br>
+"Randomnum":必选，随机属性数<br>
+"id1":必选，属性id<br>
+"value":必选，属性值<br>
+"uuid":可选，UUID<br>
+"modifierName":可选，属性名<br>
+"slot":必选，装备槽位，为"auto"时自动匹配<br>
+"autoName":当"modifierName"为空时必选且值填true<br>
+"isAutoEquipmentSlot":可选，为true时自动匹配装备槽位<br>
+"autoUUID":当UUID为空时必选，且填true<br>
 "operation":必选，属性操作符，可选项有:
 ~~~
 "add","multiply","multiply_base","multiply_total", 
