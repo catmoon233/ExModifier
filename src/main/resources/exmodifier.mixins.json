@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.exmo.exmodifier.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "exmodifier.refmap.json",
+  "mixins": [
+    "ItemStackMixin",
+    "SmiMixin",
+    "ApothToolTipFixMixin",
+    "ToolTipMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
