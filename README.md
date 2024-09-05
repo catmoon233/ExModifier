@@ -31,7 +31,7 @@
     "Exemple": {
       "weight": 2,
       "isRandom":false,
-      "Randomnum":3,
+      "RandomNum":3,
       "attrGethers": {
         "id1": {
           "weight":0,//此处同上文weight，随机属性时权重
