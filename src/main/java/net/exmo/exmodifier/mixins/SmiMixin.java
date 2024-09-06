@@ -2,6 +2,7 @@ package net.exmo.exmodifier.mixins;
 
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.WashingMaterials;
+import net.exmo.exmodifier.events.ExRefreshEvent;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -10,6 +11,7 @@ import net.minecraft.world.inventory.ItemCombinerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.SmithingMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -46,6 +48,7 @@ public abstract class SmiMixin extends ItemCombinerMenu {
             p_39791_.getOrCreateTag().putInt("exmodifier_armor_modifier_applied", 0);
             if (p_39790_.level.isClientSide)return;
             List<String> curios = CuriosUtil.getSlotsFromItemstack(p_39791_);
+            MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, p_39791_.getOrCreateTag().getInt("modifier_refresh_add"), p_39791_.getOrCreateTag().getInt("modifier_refresh_rarity"), p_39791_.getOrCreateTag().getString("wash_item")));
             if (curios.isEmpty()) ModifierHandle.CommonEvent.RandomEntry(p_39791_, p_39791_.getOrCreateTag().getInt("modifier_refresh_rarity"), p_39791_.getOrCreateTag().getInt("modifier_refresh_add"), p_39791_.getOrCreateTag().getString("wash_item"));
             else   RandomEntryCurios(p_39791_, p_39791_.getOrCreateTag().getInt("modifier_refresh_rarity"), p_39791_.getOrCreateTag().getInt("modifier_refresh_add"),p_39791_.getOrCreateTag().getString("wash_item"));
 

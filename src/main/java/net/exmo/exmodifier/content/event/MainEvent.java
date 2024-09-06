@@ -1,4 +1,4 @@
-package net.exmo.exmodifier.content;
+package net.exmo.exmodifier.content.event;
 
 import com.mojang.datafixers.util.Either;
 import net.exmo.exmodifier.Exmodifier;
@@ -8,6 +8,7 @@ import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.events.ExSuitApplyOnChangeEvent;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.EntityAttrUtil;
@@ -18,7 +19,9 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraftforge.client.event.RenderTooltipEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
@@ -208,7 +211,7 @@ public class MainEvent {
                         SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
                     }else {
 
-                        if (hasAttr(stack)) {
+                        if (hasAttr(stack)||stack.getItem() instanceof ShieldItem) {
                             if (stack.getTag() == null || (!stack.getTag().contains("exmodifier_armor_modifier_applied"))) {
                                 RandomEntry(stack, 0, refresh_time,"none");
                                 if (stack.getTag() != null) {
@@ -274,11 +277,16 @@ public class MainEvent {
                             }
                             ExSuitHandle.addSuitLevel(player, suit.id, 1);
                             Exmodifier.LOGGER.debug("Suit found amout" + ExSuitHandle.GetSuitLevel(player, suit.id));
+                            ExSuitApplyOnChangeEvent event1 = new ExSuitApplyOnChangeEvent(player, suit,i, WEAR);
+                            MinecraftForge.EVENT_BUS .post(event1);
                             List<ModifierAttriGether> attriGethers = suit.attriGether.get(ExSuitHandle.GetSuitLevel(player, suit.id));
-                            if (attriGethers == null) continue;
-                            for (ModifierAttriGether attrGether : attriGethers) { //应用套装效果
-                                EntityAttrUtil.entityAddAttrTF(attrGether.attribute, attrGether.getModifier(), player, WEAR);
-                                //     Exmodifier.LOGGER.debug("Suit apply attrgether" + attrGether.attribute.getDescriptionId());
+                            if (attriGethers != null) {
+                                for (ModifierAttriGether attrGether : attriGethers) { //应用套装效果
+                                    if (!attrGether.OnlyItems.isEmpty())continue;
+
+                                    EntityAttrUtil.entityAddAttrTF(attrGether.attribute, attrGether.getModifier(), player, WEAR);
+                                    if (attrGether.attribute!=null) Exmodifier.LOGGER.debug("Suit apply attrgether" + attrGether.attribute.getDescriptionId());
+                                }
                             }
 
                             player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> { //添加套装列表
@@ -322,12 +330,15 @@ public class MainEvent {
                             }
                             ExSuitHandle.RemoveSuitLevel(player, suit.id, 1);
                             Exmodifier.LOGGER.debug("Suit found amout" + ExSuitHandle.GetSuitLevel(player, suit.id));
-
+                            ExSuitApplyOnChangeEvent event1 = new ExSuitApplyOnChangeEvent(player, suit,i, TAKE);
+                            MinecraftForge.EVENT_BUS .post(event1);
                             List<ModifierAttriGether> attriGethers = suit.attriGether.get(ExSuitHandle.GetSuitLevel(player, suit.id) + 1);
-                            if (attriGethers == null) continue;
-                            for (ModifierAttriGether attrGether : attriGethers) { //移除套装效果
-                                EntityAttrUtil.entityAddAttrTF(attrGether.attribute, attrGether.getModifier(), player, TAKE);
-                                //      Exmodifier.LOGGER.debug("Suit remove attrgether" + attrGether.attribute.getDescriptionId());
+                            if (attriGethers != null) {
+                                for (ModifierAttriGether attrGether : attriGethers) { //移除套装效果
+                                    if (!attrGether.OnlyItems.isEmpty())continue;
+                                    EntityAttrUtil.entityAddAttrTF(attrGether.attribute, attrGether.getModifier(), player, TAKE);
+                                    //      Exmodifier.LOGGER.debug("Suit remove attrgether" + attrGether.attribute.getDescriptionId());
+                                }
                             }
                             player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
                                 if (ExSuitHandle.GetSuitLevel(player, suit.id) > 0) {

@@ -96,7 +96,7 @@ public class ExSuitHandle {
     }
     public static void RegisterExSuit(ExSuit exSuit){
         LoadExSuit.put(exSuit.id,exSuit);
-        Exmodifier.LOGGER.info("Registered ExSuit: "+exSuit.id);
+        Exmodifier.LOGGER.info("Registered ExSuit: "+ exSuit);
     }
     public static Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/suit");
     public static List<MoConfig> FoundSuitConfigs = new ArrayList<>();
@@ -238,6 +238,17 @@ public class ExSuitHandle {
 
         ModifierAttriGether attrGether = new ModifierAttriGether(attribute, modifier);
         attrGether.hasUUID = attrGetherObj.has("uuid");
+        if (attrGetherObj.has("OnlyItems")){
+            for (JsonElement item : attrGetherObj.getAsJsonArray("OnlyItems")){
+                attrGether.OnlyItems.add(item.getAsString());
+            }
+        }
+        if (attrGetherObj.has("OnlySlots")){
+            for (JsonElement item : attrGetherObj.getAsJsonArray("OnlySlots")){
+                attrGether.OnlySlots.add(item.getAsString());
+                Exmodifier.LOGGER.debug("Adding Slot: " + item.getAsString());
+            }
+        }
         Exmodifier.LOGGER.debug("Attribute: " + attribute + " key: " + attrGetherEntry.getKey());
         ExConfigHandle.autoUUID++;
         return attrGether;

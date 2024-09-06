@@ -1,9 +1,13 @@
 package net.exmo.exmodifier.util;
 
+import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AttriGether {
     public EquipmentSlot slot;

@@ -3,9 +3,11 @@ package net.exmo.exmodifier.content.suit;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.util.AttriGetherPlus;
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +16,28 @@ public class ExSuit {
     public boolean hasMobEffect = false;
     public ModifierEntry.Type type;
     public String id;
+
+    public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
+        return attriGether;
+    }    public Map<Integer, List<ModifierAttriGether>> getAttriGetherC() {
+        return new HashMap<>(attriGether);
+
+    }
+
+    @Override
+    public String toString() {
+        return "ExSuit{" +
+                "setting=" + setting +
+                ", hasMobEffect=" + hasMobEffect +
+                ", type=" + type +
+                ", id='" + id + '\'' +
+                ", entry=" + entry +
+                ", attriGether=" + attriGether +
+                ", effect=" + effect +
+                ", itemDamage=" + itemDamage +
+                '}';
+    }
+
     public String getSetting(String key){
         if (setting.containsKey(key))
             return setting.get(key);
@@ -22,6 +46,7 @@ public class ExSuit {
     public List<ModifierEntry> entry = new ArrayList<>();
     public Map<Integer,List< ModifierAttriGether>> attriGether = new java.util.HashMap<>();
     private   Map<Integer,List<MobEffectInstance> > effect = new java.util.HashMap<>();
+    public Map<String,Float> itemDamage = new java.util.HashMap<>();
     public ExSuit(){
 
     }
