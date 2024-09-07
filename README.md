@@ -71,16 +71,6 @@
 &emsp;&emsp;&emsp;&emsp;|_ item：物品命名空间id<br>
 &emsp;&emsp;|_ "isRandom"：可选，是否随机属性，为false时则"RandomNum"无效，默认为true<br>
 &emsp;&emsp;|_ "RandomNum"：可选，随机属性数，默认为全部<br>
-<!--"type"：必选，类型，可选项有:
-~~~
-"ALL","UNKNOWN","ATTACKABLE","ARMOR","WEAPON",
-"HELMET","CHESTPLATE","LEGGINGS","BOOTS","RANGED","MISC",
-"FISHING_ROD","TRIDENT","CROSSBOW","BOW",
-"SHIELD","PICKAXE","AXE","SHOVEL","HOE,SWORD","TRINKET",
-"HAND","OFFHAND","MAINHAND","OFFHAND_HAND"
-~~~
-"Exemple"：必选，词条id，最终id为 类型前2个字符+id<br>
--->
 &emsp;&emsp;|_ {} "attrGethers"：必选，属性id组<br>
 &emsp;&emsp;&emsp;|_ {}：一个或多个属性<br>
 &emsp;&emsp;&emsp;&emsp;|_ {} id：必选，属性id<br>
