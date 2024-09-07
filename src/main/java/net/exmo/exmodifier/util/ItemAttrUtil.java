@@ -32,7 +32,7 @@ public  class ItemAttrUtil {
             String itemKey = ForgeRegistries.ITEMS.getKey(itemStack.getItem()).toString();
             //   System.out.println("1: " +itemKey +" 2:"+id);
             if (Objects.equals(id, itemKey)) {
-                EquipmentSlot slot = attrgroup.getSlot();
+                EquipmentSlot slot = attrgroup.getEquipmentSlot();
                 if (slot != null) {
                     // 对EquipmentSlot使用equals进行比较，这里假设EquipmentSlot类正确实现了equals方法
                     //   System.out.println("1: " +slot +" 2:"+itemStack.getEquipmentSlot());
@@ -65,7 +65,7 @@ public  class ItemAttrUtil {
         }
 
         // 提供getter方法以获取成员变量的值（如果需要访问）
-        public EquipmentSlot getSlot() {
+        public EquipmentSlot getEquipmentSlot() {
             return slot;
         }
 

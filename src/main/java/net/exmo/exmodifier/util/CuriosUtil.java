@@ -14,11 +14,14 @@ import java.util.List;
 import java.util.Set;
 
 public class CuriosUtil {
-
     public static List<String> getSlotsFromItemstack(ItemStack itemStack) {
-        Set<String> curioTags = CuriosApi.getCuriosHelper().getCurioTags(itemStack.getItem());
-        return new ArrayList<>(curioTags);
-    }
+        if (CuriosUtil.isCuriosItem(itemStack)) {
+            Set<String> curioTags = CuriosApi.getCuriosHelper().getCurioTags(itemStack.getItem());
+            return new ArrayList<>(curioTags);
+        }
+        return new ArrayList<>();
+        }
+
     public static boolean isCuriosItem(ItemStack itemStack){
         return CuriosApi.getCuriosHelper().getCurio(itemStack).isPresent();
     }

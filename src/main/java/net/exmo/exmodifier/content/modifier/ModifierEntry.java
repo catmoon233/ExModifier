@@ -14,6 +14,7 @@ import java.util.List;
 
 public class ModifierEntry {
     public float weight;
+   // public double level;
     public static enum Type {
         CURIOS,
         ALL,

@@ -1,6 +1,6 @@
 package net.exmo.exmodifier.compat;
 
-import net.exmo.exmodifier.content.MainEvent;
+import net.exmo.exmodifier.content.event.MainEvent;
 import net.exmo.exmodifier.util.AttriGether;
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.minecraft.world.entity.EquipmentSlot;

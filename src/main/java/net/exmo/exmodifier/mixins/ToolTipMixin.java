@@ -2,7 +2,7 @@ package net.exmo.exmodifier.mixins;
 
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.exmo.exmodifier.content.MainEvent;
+import net.exmo.exmodifier.content.event.MainEvent;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.minecraft.network.chat.Component;

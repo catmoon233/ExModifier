@@ -78,6 +78,8 @@ public class ExModifiervaV {
             clone.Suits = original.Suits;
             if (!event.isWasDeath())
             {
+                clone.syncContent = original.syncContent;
+                clone.itemsDamage = original.itemsDamage;
                 clone.SuitsNum = original.SuitsNum;
             }
 
@@ -246,7 +248,8 @@ public class ExModifiervaV {
     public static class PlayerVariables {
         public  List<String> Suits = new ArrayList<>();
         public Map<String, Integer> SuitsNum = new HashMap<>();
-
+        public Map<String, Float> itemsDamage = new HashMap<>();
+        public Map<String,String> syncContent = new HashMap<>();
         public ItemStack Sitemstack = ItemStack.EMPTY;
 
         public void syncPlayerVariables(Entity entity) {
@@ -263,12 +266,24 @@ public class ExModifiervaV {
                 taskListTag.add(StringTag.valueOf(value));
             }
             nbt.put("Suits", taskListTag);
+
             CompoundTag SuitsNuma = new CompoundTag();
             for (Map.Entry<String, Integer> entry : SuitsNum.entrySet()) {
                 SuitsNuma.putString(entry.getKey(), entry.getValue().toString());
             }
             nbt.put("SuitsNum", SuitsNuma);
 
+            CompoundTag AddDamageTags = new CompoundTag();
+            for (Map.Entry<String, Float> entry : itemsDamage.entrySet()) {
+                AddDamageTags.putString(entry.getKey(), entry.getValue().toString());
+            }
+            nbt.put("itemsDamage", AddDamageTags);
+
+            CompoundTag SyncContentTags = new CompoundTag();
+            for (Map.Entry<String, String> entry : syncContent.entrySet()) {
+                SyncContentTags.putString(entry.getKey(), entry.getValue());
+            }
+            nbt.put("syncContent", SyncContentTags);
             return nbt;
         }
 
@@ -281,12 +296,24 @@ public class ExModifiervaV {
                 SuitsList.add(taskListTag.getString(i));
             }
             Suits = SuitsList;
+
             CompoundTag SuitsNuma = nbt.getCompound("SuitsNum");
             for (String key : SuitsNuma.getAllKeys()) {
                 String value = SuitsNuma.getString(key);
                 SuitsNum.put(key, Integer.parseInt(value));
             }
 
+            CompoundTag syncContenta = nbt.getCompound("syncContent");
+            for (String key : syncContenta.getAllKeys()) {
+                String value = syncContenta.getString(key);
+                syncContent.put(key,value);
+            }
+
+            CompoundTag itemsDamaget = nbt.getCompound("itemsDamage");
+            for (String key : itemsDamaget.getAllKeys()) {
+                String value = itemsDamaget.getString(key);
+                itemsDamage.put(key, Float.parseFloat(value));
+            }
         }
     }
 
@@ -314,6 +341,8 @@ public class ExModifiervaV {
                     variables.Sitemstack = message.data.Sitemstack;
                     variables.Suits = message.data.Suits;
                     variables.SuitsNum = message.data.SuitsNum;
+                    variables.itemsDamage = message.data.itemsDamage;
+                    variables.syncContent = message.data.syncContent;
 
                 }
             });

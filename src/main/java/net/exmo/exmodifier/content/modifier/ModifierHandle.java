@@ -1,6 +1,5 @@
 package net.exmo.exmodifier.content.modifier;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -8,6 +7,10 @@ import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.events.ExAddEntryAttrigetherEvent;
+import net.exmo.exmodifier.events.ExAddEntryAttrigethersEvent;
+import net.exmo.exmodifier.events.ExApplyEntryAttrigetherEvent;
+import net.exmo.exmodifier.events.ExEntryTooltipEvent;
 import net.exmo.exmodifier.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -19,12 +22,13 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.antlr.v4.runtime.misc.MultiMap;
+
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -144,7 +148,9 @@ public class ModifierHandle {
                     }
                 }
             }
-            return tooltips;
+            ExEntryTooltipEvent event = new ExEntryTooltipEvent(modifierEntry, player, itemStack, tooltips);
+            MinecraftForge.EVENT_BUS.post(event);
+            return event.tooltip;
         }
         @SubscribeEvent
         public static void ItemTooltip(ItemTooltipEvent event) {
@@ -181,7 +187,7 @@ public class ModifierHandle {
                     numAddedModifiers++;
                     Exmodifier.LOGGER.debug("add entry ing: " + modifierEntry.id);
 
-                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry);
+                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
                     Exmodifier.LOGGER.debug("add entry end: " + modifierEntry.id +" "+attriGethers);
                     finalAttriGethers.addAll(attriGethers);
                 }
@@ -215,15 +221,17 @@ public class ModifierHandle {
                     numAddedModifiers++;
                     Exmodifier.LOGGER.debug("add entry ing: " + modifierEntry.id);
 
-                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry);
-                    finalAttriGethers.addAll(attriGethers);
+                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
+                    ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, slot, refreshments, attriGethers,modifierEntry,modifierEntries);
+                    MinecraftForge.EVENT_BUS.post(event);
+                    finalAttriGethers.addAll(event.attriGether);
                 }
             }
 
             applyModifiers(stack, finalAttriGethers, slot);
         }
 
-        private static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry) {
+        private static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry,ItemStack stack) {
             List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
             if (modifierEntry.RandomNum > 0) {
@@ -253,7 +261,9 @@ public class ModifierHandle {
                     if (!attriGethers.contains(selectedAttriGether)) {
                         if (selectedAttriGether != null)    {
                             if (selectedAttriGether.getAttribute()!=null){
-                                attriGethers.add(selectedAttriGether);
+                                ExAddEntryAttrigetherEvent event = new ExAddEntryAttrigetherEvent(modifierEntry, selectedAttriGether, stack);
+                                MinecraftForge.EVENT_BUS.post(event);
+                                attriGethers.add(event.selectedAttriGether);
                                 Exmodifier.LOGGER.debug("add Random entry: " + selectedAttriGether.getAttribute().getDescriptionId());
                             }
                         }
@@ -288,7 +298,9 @@ public class ModifierHandle {
             }
             attriMap.forEach((key, value)->{
                 value.forEach((attribute, modifier) -> {
-                    CuriosUtil.addAttributeModifierApi(stack,new AttriGether(attribute,modifier),key);
+                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attribute,modifier), true, key);
+                    MinecraftForge.EVENT_BUS.post(event);
+                    CuriosUtil.addAttributeModifierApi(event.stack,event.attriGether,event.curiosSlot);
                 });
             });
         }
@@ -298,7 +310,9 @@ public class ModifierHandle {
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
                     attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName()+stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
-                    ItemAttrUtil.addItemAttributeModifier(stack, attriGether.attribute, attriGether.modifier, applicableSlot);
+                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, attriGether, applicableSlot);
+                    MinecraftForge.EVENT_BUS.post(event);
+                    ItemAttrUtil.addItemAttributeModifier(event.stack,event.attriGether.attribute, event.attriGether.modifier, event.slot);
                 } else {
                     Exmodifier.LOGGER.debug("attribute is not exists");
                 }
@@ -449,8 +463,9 @@ public class ModifierHandle {
     public static boolean hasLeggingsConfig = false;
     public static boolean hasBootsConfig = false;
     public static boolean hasSwordConfig = false;
-    public static final Path WashingMaterialsConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/WashingMaterials.json");
-    public static final Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/modifier");
+    public static final Path WashingMaterialsConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/WashingMaterials.json");
+   // public static final Path ConfigPath = FMLPaths.MODSDIR.get().resolve("data/exmodifier/modifier");
+  public static Path ConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/modifier");
     public static List<MoConfig> Foundmoconfigs = new ArrayList<>();
     public static List<WashingMaterials> materialsList = new ArrayList<>();
     public static Map<String,ModifierEntry> modifierEntryMap = new HashMap<>();
