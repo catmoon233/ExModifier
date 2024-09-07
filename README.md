@@ -23,7 +23,7 @@
 # ExModifier
 
 ### json编写
-#### 示例:
+<!--#### 示例:
 #### Exemple.json
 ```
 {
@@ -48,7 +48,7 @@
     }
   }
 ```
-#### 详解:
+#### 详解:-->
 {}：根标签<br>
 &emsp;|_ "type"：必选，类型，可选项有:
 ~~~
@@ -82,18 +82,17 @@
 "Exemple"：必选，词条id，最终id为 类型前2个字符+id<br>
 -->
 &emsp;&emsp;|_ {} "attrGethers"：必选，属性id组<br>
-&emsp;&emsp;&emsp;|_ {}：一个或多个属性
+&emsp;&emsp;&emsp;|_ {}：一个或多个属性<br>
 &emsp;&emsp;&emsp;&emsp;|_ {} id：必选，属性id<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;|_ "value"：必选，属性值<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;|_ "uuid"：可选，UUID<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;|_ "modifierName"：可选，属性名，当"uuid"为空时建议本项也为空，避免uuid重复<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;|_ "modifierName"：可选，属性名，"uuid"为空时建议本项为空，避免uuid重复<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;|_ "slot"：必选，装备槽位，为"auto"时自动匹配<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;|_ "autoName"：可选，"modifierName"为空时自动为true<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;|_ "isAutoEquipmentSlot"：可选，为true时自动匹配装备槽位<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;|_ "autoUUID"：可选，"uuid"为空时自动为true，本项根据"modifierName"生成uuid<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;|_ "autoUUID"：可选，"uuid"为空时为true，本项根据"modifierName"生成uuid<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;|_ "operation"：必选，属性操作符，可选项有:
 ~~~
 "add","multiply","multiply_base","multiply_total", 
 "mainhand","offhand","head","chest","legs","feet"
 ~~~
-编写完成后，将json文件
