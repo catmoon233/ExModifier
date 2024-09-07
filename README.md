@@ -61,14 +61,14 @@
 &emsp;|_ {} id：词条id，最终id为 类型前2个字符+id<br>
 &emsp;&emsp;|_ "weight"：必选，权重<br>
 &emsp;&emsp;|_ [] "OnlyItems"：可选，表示本词条仅在所包含物品上生效<br>
-&emsp;&emsp;&emsp;|_ []：一个或多个物品<br>
-&emsp;&emsp;&emsp;&emsp;|_ item：物品命名空间id<br>
+&emsp;&emsp;|&emsp;|_ []：一个或多个物品<br>
+&emsp;&emsp;|&emsp;&emsp;|_ item：物品命名空间id<br>
 &emsp;&emsp;|_ [] "OnlyTags"：可选，表示本词条仅在所包含物品标签上生效<br>
-&emsp;&emsp;&emsp;|_ []：一个或多个物品标签<br>
-&emsp;&emsp;&emsp;&emsp;|_ tag：物品标签命名空间id<br>
+&emsp;&emsp;|&emsp;|_ []：一个或多个物品标签<br>
+&emsp;&emsp;|&emsp;&emsp;|_ tag：物品标签命名空间id<br>
 &emsp;&emsp;|_ [] "OnlyWashItems"：可选，表示本词条仅在所包含物品上生效<br>
-&emsp;&emsp;&emsp;|_ []：一个或多个物品<br>
-&emsp;&emsp;&emsp;&emsp;|_ item：物品命名空间id<br>
+&emsp;&emsp;|&emsp;|_ []：一个或多个物品<br>
+&emsp;&emsp;|&emsp;&emsp;|_ item：物品命名空间id<br>
 &emsp;&emsp;|_ "isRandom"：可选，是否随机属性，为false时则"RandomNum"无效，默认为true<br>
 &emsp;&emsp;|_ "RandomNum"：可选，随机属性数，默认为全部<br>
 &emsp;&emsp;|_ {} "attrGethers"：必选，属性id组<br>
