@@ -27,6 +27,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -107,14 +108,15 @@ public class MainEvent {
         }
 
         public static List<Component> ItemToolTipsChange(ItemStack stack, List<Component> tooltip, Player player) {
-            if (MainEvent.CommonEvent.hasAttr(stack)) {
-                if (stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") > 0) {
+            if (stack.getTag()!=null){
+                if (stack.getTag().getInt("exmodifier_armor_modifier_applied") > 0) {
 
                     if (stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied0").equals("UNKNOWN")) {
                         tooltip.add(Component.translatable("null"));
                         tooltip.add(Component.translatable("modifiler.entry.UNKNOWN"));
                     } else {
                         for (ModifierEntry modifierEntry : getEntrysFromItemStack(stack)) {
+                           // Exmodifier.LOGGER.debug("modifier id:" + modifierEntry.id);
                             if (!config.compact_tooltip) tooltip.add(Component.translatable("null"));
                             tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack));
 
@@ -122,10 +124,14 @@ public class MainEvent {
                     }
 
                 }
-            }
+                }
+
             return tooltip;
         }
+        @SubscribeEvent
+        public static void tooltip(ItemTooltipEvent event){
 
+        }
         @SubscribeEvent
         public static void AtJoinGame(PlayerEvent.PlayerLoggedInEvent event) {
             event.getEntity().getPersistentData().putBoolean("LoginGamea", true);

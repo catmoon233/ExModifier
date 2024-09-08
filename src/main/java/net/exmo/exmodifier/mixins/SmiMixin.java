@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.mixins;
 
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.WashingMaterials;
 import net.exmo.exmodifier.events.ExRefreshEvent;
@@ -98,7 +99,7 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
 
         for (WashingMaterials washingMaterials : ModifierHandle.materialsList){
             if (washingMaterials.item.equals(this.inputSlots.getItem(2).getItem())){
-                if (this.inputSlots.getItem(1).getOrCreateTag().getInt("exmodifier_armor_modifier_applied")>0) {
+                if (this.inputSlots.getItem(1).getOrCreateTag().getInt("exmodifier_armor_modifier_applied")>0|| config.refresh_time==0) {
                     ci.cancel();
                     ItemStack input = this.inputSlots.getItem(1).copy();
                     ModifierHandle.CommonEvent.clearEntry(input);

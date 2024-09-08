@@ -46,7 +46,7 @@ public class ModifierHandle {
     public static List<ModifierEntry> getEntrysFromItemStack(ItemStack stack) {
         List<ModifierEntry> modifierEntries = new ArrayList<>();
 
-        for (ModifierEntry modifierAttriGether : modifierEntryMap.values()) {
+        for (ModifierEntry modifierAttriGether : modifierEntryMap.values().stream().filter(Objects::nonNull).toList()) {
             String id;
             for (int i = 0; true; i++) {
                 id = stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied"+i);
@@ -150,7 +150,7 @@ public class ModifierHandle {
             }
             ExEntryTooltipEvent event = new ExEntryTooltipEvent(modifierEntry, player, itemStack, tooltips);
             MinecraftForge.EVENT_BUS.post(event);
-            return event.tooltip;
+            return event.getTooltip();
         }
         @SubscribeEvent
         public static void ItemTooltip(ItemTooltipEvent event) {
