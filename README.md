@@ -22,21 +22,10 @@
 -->
 # ExModifier
 
-### json编写
-<!--#### 示例:
-#### Exemple.json
-```
-{
-  "type": "ARMOR",
-    "Exemple": {
-      "weight": 2,
-      "isRandom":false,
-      "Randomnum":3,
-      "attrGethers": {
-        "id1": {
-          "weight":0,//此处同上文weight，随机属性时权重
-          "value": 0.2,
-          "uuid": "123e4567-e89b-12d3-a456-426614174001",
+### Wiki
+https://github.com/catmoon233/ExModifier/wiki
+<!--
+": "123e4567-e89b-12d3-a456-426614174001",
           "modifierName": "ExempleModifier",
           "slot": "auto",
           "autoName": false,
@@ -48,7 +37,7 @@
     }
   }
 ```
-#### 详解:-->
+#### 详解:
 {}：根标签<br>
 &emsp;|_ "type"：必选，类型，可选项有:
 ~~~
@@ -86,3 +75,4 @@
 "add","multiply","multiply_base","multiply_total", 
 "mainhand","offhand","head","chest","legs","feet"
 ~~~
+-->
