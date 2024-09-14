@@ -90,6 +90,10 @@ public class ExConfigHandle {
             throw new RuntimeException("SHA-256 algorithm not found", e);
         }
     }
+//    public InputStream genResourcePath(String resourcePath)
+//    {
+//       return getClass().getResourceAsStream(resourcePath);
+//    }
     public  void copyResourceToFile(String resourcePath, String targetPath) {
         // 获取Minecraft实例目录
         File mcDir = FMLPaths.GAMEDIR.get().toFile();

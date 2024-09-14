@@ -1,6 +1,7 @@
 package net.exmo.exmodifier;
 
 import net.exmo.exmodifier.content.modifier.MoConfig;
+import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.util.ExConfigHandle;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -19,8 +20,8 @@ public class config {
 @SubscribeEvent
     public static void ConfigConfig(AddReloadListenerEvent event) throws FileNotFoundException {
     ExConfigHandle exConfigHandle = new ExConfigHandle();
-
-    if (!new File(ConfigPath.toString()).exists()) exConfigHandle.copyResourceToFile("/exmo/Exmodifier.json", "config/exmo/Exmodifier.json");
+    Exmodifier.LOGGER.debug(ModifierHandle.ConfigPath.toString());
+    if (!new File(ConfigPath.toString()).exists()) exConfigHandle.copyResourceToFile("/data/exmodifier/Exmodifier.json", "config/exmo/Exmodifier.json");
     MoConfig MainConfig = new MoConfig(ConfigPath);
     refresh_time =  MainConfig.readSetting("refresh_time").getAsInt();
     compact_tooltip = MainConfig.readSetting("compact_tooltip").getAsBoolean();

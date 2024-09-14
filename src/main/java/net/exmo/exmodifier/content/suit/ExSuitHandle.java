@@ -7,6 +7,8 @@ import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.events.ExAddSuitAttrigetherEvent;
+import net.exmo.exmodifier.events.ExAddSuitAttrigethersEvent;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.ExConfigHandle;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +17,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -211,29 +214,31 @@ public class ExSuitHandle {
                     Exmodifier.LOGGER.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
                 }
             }
-            return attrGethersToReturn;
+        ExAddSuitAttrigethersEvent event = new ExAddSuitAttrigethersEvent(moconfig,exSuit,attrGethers,attrGethersToReturn);
+        MinecraftForge.EVENT_BUS.post(event);
+            return event.getModifierAttriGathers();
     }
     private static ModifierAttriGether processAttrGether(MoConfig moconfig, ExSuit exSuit, Map.Entry<String, JsonElement> attrGetherEntry,int index) {
         JsonObject attrGetherObj = attrGetherEntry.getValue().getAsJsonObject();
         Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attrGetherEntry.getKey()));
         double attrValue = attrGetherObj.get("value").getAsDouble();
-        UUID uuid = getUUID(attrGetherObj,exSuit);
+       // UUID uuid = getUUID(attrGetherObj,exSuit);
 
         AttributeModifier.Operation operation = ExConfigHandle.getOperation(attrGetherObj.get("operation").getAsString());
-        String modifierName = attrGetherObj.get("modifierName").getAsString();
+        String modifierName = (attrGetherObj.has("modifierName")) ? attrGetherObj.get("modifierName").getAsString() :exSuit.id + index;;
+
         if (attrGetherObj.has("autoName")){
-            if (attrGetherObj.get("autoName").getAsBoolean())
-            {
-                modifierName = exSuit.id + index;
+            if (attrGetherObj.has("autoName")) {
+                if (attrGetherObj.get("autoName").getAsBoolean()) {
+                    modifierName = exSuit.id + index;
 
+                }
             }
         }
-        if (attrGetherObj.has("autoUUID")){
-            if (attrGetherObj.get("autoUUID").getAsBoolean()) {
-                uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
-
-            }
-        }
+        UUID uuid = (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) ? UUID.fromString(attrGetherObj.get("uuid").getAsString()) : UUID.nameUUIDFromBytes(modifierName.getBytes());
+        if(attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean()) uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
+        //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
+        Exmodifier.LOGGER.debug("uuid "+uuid);
         AttributeModifier modifier = new AttributeModifier(uuid, modifierName, attrValue, operation);
 
         ModifierAttriGether attrGether = new ModifierAttriGether(attribute, modifier);
@@ -251,7 +256,9 @@ public class ExSuitHandle {
         }
         Exmodifier.LOGGER.debug("Attribute: " + attribute + " key: " + attrGetherEntry.getKey());
         ExConfigHandle.autoUUID++;
-        return attrGether;
+        ExAddSuitAttrigetherEvent event = new ExAddSuitAttrigetherEvent(moconfig,exSuit,attrGetherEntry,index,attrGether);
+        MinecraftForge.EVENT_BUS.post(event);
+        return event.getAttrGether();
     }
         public static void processMoConfigEntries(MoConfig moconfig) throws FileNotFoundException {
         if(moconfig.readEntrys().isEmpty()){

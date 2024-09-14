@@ -17,4 +17,28 @@ public class ExSuitApplyOnChangeEvent extends PlayerEvent {
         this.level = level;
         this.wearOrTake = wearOrTake;
     }
+
+    public ExSuit getExSuit() {
+        return exSuit;
+    }
+
+    public void setExSuit(ExSuit exSuit) {
+        this.exSuit = exSuit;
+    }
+
+    public int getlevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public EntityAttrUtil.WearOrTake getWearOrTake() {
+        return wearOrTake;
+    }
+
+    public void setWearOrTake(EntityAttrUtil.WearOrTake wearOrTake) {
+        this.wearOrTake = wearOrTake;
+    }
 }

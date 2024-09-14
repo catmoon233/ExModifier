@@ -35,7 +35,7 @@ public  class ItemAttrUtil {
                 EquipmentSlot slot = attrgroup.getSlot();
                 if (slot != null) {
                     // 对EquipmentSlot使用equals进行比较，这里假设EquipmentSlot类正确实现了equals方法
-                    //   System.out.println("1: " +slot +" 2:"+itemStack.getEquipmentSlot());
+                    //   System.out.println("1: " +slot +" 2:"+itemStack.getSlot());
                     if (slot == event.getSlotType()) {
                         event.addModifier(attrgroup.attr, attrgroup.attributeModifier);
                         //  removelist.add(id);

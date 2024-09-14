@@ -1,19 +1,33 @@
 package net.exmo.exmodifier.content.modifier;
 
+import net.exmo.exmodifier.util.ItemAttrUtil;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
+import net.minecraftforge.registries.ForgeRegistries;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
+import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
+
 public class ModifierEntry {
     public float weight;
+    public boolean cantSelect = false;
+   // public double level;
     public static enum Type {
         CURIOS,
         ALL,
@@ -48,6 +62,59 @@ public class ModifierEntry {
         public record values() {
             public static final List<Type> values = List.of(Type.values());
         }
+    }
+    public static List<Component> GenerateTooltip(List<ModifierAttriGether> attriGethers, ItemStack itemStack) {
+        List<Component> tooltips = new java.util.ArrayList<>();
+        for (ModifierAttriGether modifierAttriGether : attriGethers) {
+            AttributeModifier attributemodifier = modifierAttriGether.getModifier();
+            Attribute attribute = modifierAttriGether.getAttribute();
+            if (attribute == null)continue;
+            if (attributemodifier ==null)continue;
+            //    if (modifierAttriGether.slot==null)continue;
+            EquipmentSlot slot = modifierAttriGether.slot;
+            if (modifierAttriGether.IsAutoEquipmentSlot){
+                slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
+            }
+            if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot))continue;
+            //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
+            //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
+            double d0 = attributemodifier.getAmount();
+            boolean flag = false;
+            String percent = "";
+            double d1;
+            if (attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL  &&!percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+                if ((attribute).equals(Attributes.KNOCKBACK_RESISTANCE)) {
+                    d1 = d0 * 10.0;
+                } else {
+                    d1 = d0;
+                }
+            } else {
+                d1 = d0 * 100.0;
+            }
+            String amouta2 = "";
+            if (percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())){
+                percent = "%";
+                DecimalFormat df = new DecimalFormat("#.####");
+                amouta2 = df.format(attributemodifier.getAmount() * 100);
+                if (modifierAttriGether.attribute.getDescriptionId().length() >=4){
+                    if (ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("twtp") ||ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("isfix") ) {
+                        amouta2 = df.format(attributemodifier.getAmount()) ;
+                    }
+                }
+            }
+
+            if (flag) {
+                tooltips.add((new TextComponent(" ")).append(new TranslatableComponent("attribute.modifier.equals." + attributemodifier.getOperation().toValue(), new Object[]{ATTRIBUTE_MODIFIER_FORMAT.format(d1), new TranslatableComponent(attribute.getDescriptionId())})).withStyle(ChatFormatting.DARK_GREEN));
+            } else if (d0 > 0.0) {
+                if (percent.equals("%")) tooltips.add(new TranslatableComponent("add").append(amouta2).append(percent).append(" ").append(new TranslatableComponent(attribute.getDescriptionId())).withStyle(ChatFormatting.BLUE));
+                else tooltips.add((new TranslatableComponent("attribute.modifier.plus." + attributemodifier.getOperation().toValue(), new Object[]{ATTRIBUTE_MODIFIER_FORMAT.format(d1), new TranslatableComponent(attribute.getDescriptionId())})).withStyle(ChatFormatting.BLUE));
+            } else if (d0 < 0.0) {
+                d1 *= -1.0;
+                if (percent.equals("%")) tooltips.add(new TranslatableComponent("subtract").append(amouta2).append(percent).append(" ").append(new TranslatableComponent(attribute.getDescriptionId())).withStyle(ChatFormatting.RED));
+                else  tooltips.add((new TranslatableComponent("attribute.modifier.take." + attributemodifier.getOperation().toValue(), new Object[]{ATTRIBUTE_MODIFIER_FORMAT.format(d1), new TranslatableComponent(attribute.getDescriptionId())})).withStyle(ChatFormatting.RED));
+            }
+        }
+        return tooltips;
     }
     public static EquipmentSlot TypeToEquipmentSlot(Type type) {
         switch (type) {

@@ -15,6 +15,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.registries.ForgeRegistries;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.ArrayList;
@@ -39,14 +40,14 @@ public class AppointConditionDamage {
     @SubscribeEvent
     public static void Apply(ExSuitApplyOnChangeEvent event){
         ExSuit exSuit = event.exSuit;
-        Player player = event.getPlayer();
+        Player player = (Player) event.getEntity();
         List<ItemStack> WearsId = new ArrayList<>();
         for (EquipmentSlot slot : EquipmentSlot.values()){
             if (!player.getItemBySlot(slot).isEmpty()){
                 WearsId.add(player.getItemBySlot(slot));
             }
         }
-        LazyOptional<IItemHandlerModifiable> equippedCurios = CuriosApi.getCuriosHelper().getEquippedCurios(player);
+        LazyOptional<IItemHandlerModifiable> equippedCurios = CuriosApi.getCuriosHelper() .getEquippedCurios(player);
         for (int i = 0; i < equippedCurios.orElse(null).getSlots(); i++){
             if (!equippedCurios.orElse(null).getStackInSlot(i).isEmpty()){
                 WearsId.add(equippedCurios.orElse(null).getStackInSlot(i));
@@ -54,7 +55,7 @@ public class AppointConditionDamage {
         }
         List<String> WearsIds = new ArrayList<>();
         for (ItemStack itemStack : WearsId){
-            WearsIds.add(itemStack.getItem().getRegistryName().toString());
+            WearsIds.add(ForgeRegistries.ITEMS.getKey(itemStack.getItem()).toString());
         }
      (exSuit.getAttriGetherC()).forEach((key, value) -> {
             for (ModifierAttriGether attriGetherPlus : value) {

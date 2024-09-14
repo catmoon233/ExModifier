@@ -53,20 +53,20 @@ public class ExModifiervaV {
     public static class EventBusVariableHandlers {
         @SubscribeEvent
         public static void onPlayerLoggedInSyncPlayerVariables(PlayerEvent.PlayerLoggedInEvent event) {
-            if (!event.getPlayer().level.isClientSide())
-                ((PlayerVariables) event.getPlayer().getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables())).syncPlayerVariables(event.getPlayer());
+            if (!event.getEntity().level.isClientSide())
+                ((PlayerVariables) event.getEntity().getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables())).syncPlayerVariables(event.getEntity());
         }
 
         @SubscribeEvent
         public static void onPlayerRespawnedSyncPlayerVariables(PlayerEvent.PlayerRespawnEvent event) {
-            if (!event.getPlayer().level.isClientSide())
-                ((PlayerVariables) event.getPlayer().getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables())).syncPlayerVariables(event.getPlayer());
+            if (!event.getEntity().level.isClientSide())
+                ((PlayerVariables) event.getEntity().getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables())).syncPlayerVariables(event.getEntity());
         }
 
         @SubscribeEvent
         public static void onPlayerChangedDimensionSyncPlayerVariables(PlayerEvent.PlayerChangedDimensionEvent event) {
-            if (!event.getPlayer().level.isClientSide())
-                ((PlayerVariables) event.getPlayer().getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables())).syncPlayerVariables(event.getPlayer());
+            if (!event.getEntity().level.isClientSide())
+                ((PlayerVariables) event.getEntity().getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables())).syncPlayerVariables(event.getEntity());
         }
 
         @SubscribeEvent
@@ -78,6 +78,7 @@ public class ExModifiervaV {
             clone.Suits = original.Suits;
             if (!event.isWasDeath())
             {
+                clone.syncContent = original.syncContent;
                 clone.itemsDamage = original.itemsDamage;
                 clone.SuitsNum = original.SuitsNum;
             }
@@ -86,22 +87,22 @@ public class ExModifiervaV {
 
         @SubscribeEvent
         public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-            if (!event.getPlayer().level.isClientSide()) {
-                SavedData mapdata = MapVariables.get(event.getPlayer().level);
-                SavedData worlddata = WorldVariables.get(event.getPlayer().level);
+            if (!event.getEntity().level.isClientSide()) {
+                SavedData mapdata = MapVariables.get(event.getEntity().level);
+                SavedData worlddata = WorldVariables.get(event.getEntity().level);
                 if (mapdata != null)
-                    Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getPlayer()), new SavedDataSyncMessage(0, mapdata));
+                    Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getEntity()), new SavedDataSyncMessage(0, mapdata));
                 if (worlddata != null)
-                    Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getPlayer()), new SavedDataSyncMessage(1, worlddata));
+                    Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getEntity()), new SavedDataSyncMessage(1, worlddata));
             }
         }
 
         @SubscribeEvent
         public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-            if (!event.getPlayer().level.isClientSide()) {
-                SavedData worlddata = WorldVariables.get(event.getPlayer().level);
+            if (!event.getEntity().level.isClientSide()) {
+                SavedData worlddata = WorldVariables.get(event.getEntity().level);
                 if (worlddata != null)
-                    Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getPlayer()), new SavedDataSyncMessage(1, worlddata));
+                    Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getEntity()), new SavedDataSyncMessage(1, worlddata));
             }
         }
     }
@@ -248,6 +249,7 @@ public class ExModifiervaV {
         public  List<String> Suits = new ArrayList<>();
         public Map<String, Integer> SuitsNum = new HashMap<>();
         public Map<String, Float> itemsDamage = new HashMap<>();
+        public Map<String,String> syncContent = new HashMap<>();
         public ItemStack Sitemstack = ItemStack.EMPTY;
 
         public void syncPlayerVariables(Entity entity) {
@@ -276,6 +278,12 @@ public class ExModifiervaV {
                 AddDamageTags.putString(entry.getKey(), entry.getValue().toString());
             }
             nbt.put("itemsDamage", AddDamageTags);
+
+            CompoundTag SyncContentTags = new CompoundTag();
+            for (Map.Entry<String, String> entry : syncContent.entrySet()) {
+                SyncContentTags.putString(entry.getKey(), entry.getValue());
+            }
+            nbt.put("syncContent", SyncContentTags);
             return nbt;
         }
 
@@ -293,6 +301,12 @@ public class ExModifiervaV {
             for (String key : SuitsNuma.getAllKeys()) {
                 String value = SuitsNuma.getString(key);
                 SuitsNum.put(key, Integer.parseInt(value));
+            }
+
+            CompoundTag syncContenta = nbt.getCompound("syncContent");
+            for (String key : syncContenta.getAllKeys()) {
+                String value = syncContenta.getString(key);
+                syncContent.put(key,value);
             }
 
             CompoundTag itemsDamaget = nbt.getCompound("itemsDamage");
@@ -328,6 +342,7 @@ public class ExModifiervaV {
                     variables.Suits = message.data.Suits;
                     variables.SuitsNum = message.data.SuitsNum;
                     variables.itemsDamage = message.data.itemsDamage;
+                    variables.syncContent = message.data.syncContent;
 
                 }
             });

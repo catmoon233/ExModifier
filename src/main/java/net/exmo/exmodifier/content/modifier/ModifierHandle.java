@@ -1,6 +1,5 @@
 package net.exmo.exmodifier.content.modifier;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -8,9 +7,13 @@ import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.events.*;
+import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -20,6 +23,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -43,7 +47,7 @@ public class ModifierHandle {
     public static List<ModifierEntry> getEntrysFromItemStack(ItemStack stack) {
         List<ModifierEntry> modifierEntries = new ArrayList<>();
 
-        for (ModifierEntry modifierAttriGether : modifierEntryMap.values()) {
+        for (ModifierEntry modifierAttriGether : modifierEntryMap.values().stream().filter(Objects::nonNull).toList()) {
             String id;
             for (int i = 0; true; i++) {
                 id = stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied"+i);
@@ -63,7 +67,7 @@ public class ModifierHandle {
     public static List<String> percentAtr = new ArrayList<>();
 
     static {
-        percentAtr = List.of(
+        ExModifierPercentAttr event = new ExModifierPercentAttr(List.of(
                 "twtp:mianshan",
                 "isfix:magic_restore",
 
@@ -76,13 +80,15 @@ public class ModifierHandle {
 //                "irons_spellbooks:evocation_spell_power",
 //                "irons_spellbooks:poison_spell_power",
                 "twtp:alldamage",
-               "twtp:axedamage"
+                "twtp:axedamage"
 //                "irons_spellbooks:spell_power",
 //                "irons_spellbooks:blood_spell_power",
 //                "irons_spellbooks:ender_spell_power"
 
 
-                );
+        ));
+        MinecraftForge.EVENT_BUS.post(event);
+        percentAtr = event.attrs;
     }
     private static DecimalFormat df = new DecimalFormat("#.#####");
 
@@ -94,7 +100,16 @@ public class ModifierHandle {
             if (id.length() >= 2) {
                 if (config.compact_tooltip) tooltips.add(new TranslatableComponent("modifiler.entry." + id.substring(2)));
                 else      tooltips.add(new TranslatableComponent("modifiler.entry." + id.substring(2)).append(" : "));
+                if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.contains(modifierEntry))){
+                    ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
+                    tooltips.add(new TranslatableComponent("modifiler.entry.suit"));
+                    for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
+                            .toList()){
+                        tooltips.add(new TranslatableComponent("modifiler.entry.suit."+suit.id).append(new TextComponent("("+pv.SuitsNum.get(suit.id)+"/"+suit.CountMaxLevelAndGet()+")")));
+                    //.append(new TranslatableComponent("modifiler.entry.suit.color"))
+                    };
 
+                }
                 for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
                     AttributeModifier attributemodifier = modifierAttriGether.getModifier();
                     Attribute attribute = modifierAttriGether.getAttribute();
@@ -145,7 +160,9 @@ public class ModifierHandle {
                     }
                 }
             }
-            return tooltips;
+            ExEntryTooltipEvent event = new ExEntryTooltipEvent(modifierEntry, player, itemStack, tooltips);
+            MinecraftForge.EVENT_BUS.post(event);
+            return event.getTooltip();
         }
         @SubscribeEvent
         public static void ItemTooltip(ItemTooltipEvent event) {
@@ -182,7 +199,7 @@ public class ModifierHandle {
                     numAddedModifiers++;
                     Exmodifier.LOGGER.debug("add entry ing: " + modifierEntry.id);
 
-                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry);
+                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
                     Exmodifier.LOGGER.debug("add entry end: " + modifierEntry.id +" "+attriGethers);
                     finalAttriGethers.addAll(attriGethers);
                 }
@@ -216,15 +233,17 @@ public class ModifierHandle {
                     numAddedModifiers++;
                     Exmodifier.LOGGER.debug("add entry ing: " + modifierEntry.id);
 
-                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry);
-                    finalAttriGethers.addAll(attriGethers);
+                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
+                    ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, slot, refreshments, attriGethers,modifierEntry,modifierEntries);
+                    MinecraftForge.EVENT_BUS.post(event);
+                    finalAttriGethers.addAll(event.attriGether);
                 }
             }
 
             applyModifiers(stack, finalAttriGethers, slot);
         }
 
-        private static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry) {
+        private static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry,ItemStack stack) {
             List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
             if (modifierEntry.RandomNum > 0) {
@@ -254,7 +273,9 @@ public class ModifierHandle {
                     if (!attriGethers.contains(selectedAttriGether)) {
                         if (selectedAttriGether != null)    {
                             if (selectedAttriGether.getAttribute()!=null){
-                                attriGethers.add(selectedAttriGether);
+                                ExAddEntryAttrigetherEvent event = new ExAddEntryAttrigetherEvent(modifierEntry, selectedAttriGether, stack);
+                                MinecraftForge.EVENT_BUS.post(event);
+                                attriGethers.add(event.selectedAttriGether);
                                 Exmodifier.LOGGER.debug("add Random entry: " + selectedAttriGether.getAttribute().getDescriptionId());
                             }
                         }
@@ -289,7 +310,9 @@ public class ModifierHandle {
             }
             attriMap.forEach((key, value)->{
                 value.forEach((attribute, modifier) -> {
-                    CuriosUtil.addAttributeModifierApi(stack,new AttriGether(attribute,modifier),key);
+                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attribute,modifier), true, key);
+                    MinecraftForge.EVENT_BUS.post(event);
+                    CuriosUtil.addAttributeModifierApi(event.stack,event.attriGether,event.curiosSlot);
                 });
             });
         }
@@ -299,7 +322,9 @@ public class ModifierHandle {
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
                     attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName()+stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
-                    ItemAttrUtil.addItemAttributeModifier(stack, attriGether.attribute, attriGether.modifier, applicableSlot);
+                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, attriGether, applicableSlot);
+                    MinecraftForge.EVENT_BUS.post(event);
+                    ItemAttrUtil.addItemAttributeModifier(event.stack,event.attriGether.attribute, event.attriGether.modifier, event.slot);
                 } else {
                     Exmodifier.LOGGER.debug("attribute is not exists");
                 }
@@ -319,6 +344,7 @@ public class ModifierHandle {
                     modifierEntryMap.entrySet().stream()
                             .filter(e -> e.getValue().type == ModifierEntry.Type.CURIOS).filter(e -> curiosType.contains(e.getValue().curiosType)|| e.getValue().curiosType.equals("ALL"))
                             .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
+                            .filter(e -> !e.getValue().cantSelect)
                             .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
                             .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
                             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight)));
@@ -360,8 +386,18 @@ public class ModifierHandle {
                             modifierEntryMap.entrySet().stream()
                                     .filter(e -> e.getValue().type == type )
                                     .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
+                                    .filter(e -> !e.getValue().cantSelect)
                                     .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
                                     .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
+                                    .filter(e -> {
+                                        boolean hasWashItem = materialsList.stream()
+                                                .filter(m -> m.ItemId.equals(washItem))
+                                                .findAny()
+                                                .map(m -> !m.OnlyHasWashEntry)
+                                                .orElse(true);
+
+                                        return hasWashItem || e.getValue().OnlyWashItems.contains(washItem);
+                                    })
                                     .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))
                     );
 
@@ -450,8 +486,9 @@ public class ModifierHandle {
     public static boolean hasLeggingsConfig = false;
     public static boolean hasBootsConfig = false;
     public static boolean hasSwordConfig = false;
-    public static final Path WashingMaterialsConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/WashingMaterials.json");
-    public static final Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/modifier");
+    public static final Path WashingMaterialsConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/WashingMaterials.json");
+   // public static final Path ConfigPath = FMLPaths.MODSDIR.get().resolve("data/exmodifier/modifier");
+  public static Path ConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/modifier");
     public static List<MoConfig> Foundmoconfigs = new ArrayList<>();
     public static List<WashingMaterials> materialsList = new ArrayList<>();
     public static Map<String,ModifierEntry> modifierEntryMap = new HashMap<>();
@@ -514,6 +551,33 @@ public class ModifierHandle {
                     ForgeRegistries.ITEMS.getValue(new ResourceLocation(entry.getKey())),
                     jsonObject.get("rarity").getAsInt()
             );
+            if (    jsonObject.has("OnlyHasWashEntry")&&
+                    jsonObject.get("OnlyHasWashEntry").getAsBoolean()){
+                materials.OnlyHasWashEntry = true;
+
+            }
+            if (    jsonObject.has("MinRandomTime")
+                    ){
+                materials.MinRandomTime = jsonObject.get("MinRandomTime").getAsInt();
+
+            }
+            if (    jsonObject.has("MaxRandomTime")
+            ){
+                materials.MinRandomTime = jsonObject.get("MaxRandomTime").getAsInt();
+
+            }
+            if (jsonObject.has("OnlyItems")){
+                JsonArray OnlyItems = jsonObject.get("OnlyItems").getAsJsonArray();
+                OnlyItems.forEach(item -> {
+                    materials.OnlyItems.add(item.getAsString());
+                });
+            }
+            if (jsonObject.has("OnlyTags")){
+                JsonArray OnlyItems = jsonObject.get("OnlyTags").getAsJsonArray();
+                OnlyItems.forEach(item -> {
+                    materials.OnlyTags.add(item.getAsString());
+                });
+            }
             materialsList.add(materials);
             Exmodifier.LOGGER.debug("WashingMaterials: " + materials.ItemId + " additionEntry: " + materials.additionEntry + " rarity: " + materials.rarity);
         } catch (Exception e) {
@@ -540,6 +604,8 @@ public class ModifierHandle {
             RegisterModifierEntry(entry);
             Exmodifier.LOGGER.debug(entry.id + " 出现概率 " + weightedUtil.getProbability(entry.id) * 100 + "%");
         });
+        ExEntryRegistryEvent event = new ExEntryRegistryEvent(entries);
+        MinecraftForge.EVENT_BUS.post(event);
 
         Exmodifier.LOGGER.debug("ReadConfig Over: Type: " + moconfig.type + " Path: " + moconfig.configFile + " entries: " + entries.size());
     }
@@ -568,6 +634,8 @@ public class ModifierHandle {
         modifierEntry.isRandom = itemObject.has("isRandom") && itemObject.get("isRandom").getAsBoolean();
         modifierEntry.RandomNum = itemObject.has("RandomNum") ? itemObject.get("RandomNum").getAsInt() : 0;
         modifierEntry.weight = itemObject.has("weight") ? itemObject.get("weight").getAsFloat() : 1.0f;
+        modifierEntry.cantSelect = itemObject.has("cantSelect") && itemObject.get("cantSelect").getAsBoolean();
+
         if (!modifierEntry.isRandom) modifierEntry.RandomNum = 0;
         Exmodifier.LOGGER.debug(modifierEntry.id + " weight " + modifierEntry.weight);
         if (itemObject.has("OnlyItems")){

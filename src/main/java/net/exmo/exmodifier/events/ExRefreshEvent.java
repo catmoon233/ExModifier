@@ -13,4 +13,28 @@ public class ExRefreshEvent extends PlayerEvent {
         this.rarity = rarity;
         this.washItem = washItem;
         }
+
+    public int getTime() {
+        return time;
+    }
+
+    public void setTime(int time) {
+        this.time = time;
+    }
+
+    public int getRarity() {
+        return rarity;
+    }
+
+    public void setRarity(int rarity) {
+        this.rarity = rarity;
+    }
+
+    public String getWashItem() {
+        return washItem;
+    }
+
+    public void setWashItem(String washItem) {
+        this.washItem = washItem;
+    }
 }
