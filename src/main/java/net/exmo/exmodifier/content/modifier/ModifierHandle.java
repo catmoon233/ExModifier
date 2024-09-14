@@ -103,7 +103,7 @@ public class ModifierHandle {
                     tooltips.add(Component.translatable("modifiler.entry.suit"));
                     for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
                             .toList()){
-                        tooltips.add(Component.translatable("modifiler.entry.suit."+suit.id).append(Component.literal("("+pv.SuitsNum.get(suit.id)+"/"+suit.CountMaxLevelAndGet()+")")));
+                        tooltips.add(Component.translatable("modifiler.entry.suit."+suit.id).append(Component.literal("§6("+pv.SuitsNum.get(suit.id)+"/"+suit.CountMaxLevelAndGet()+")")));
                     //.append(Component.translatable("modifiler.entry.suit.color"))
                     };
 
