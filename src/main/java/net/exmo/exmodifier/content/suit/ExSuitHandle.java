@@ -222,23 +222,23 @@ public class ExSuitHandle {
         JsonObject attrGetherObj = attrGetherEntry.getValue().getAsJsonObject();
         Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attrGetherEntry.getKey()));
         double attrValue = attrGetherObj.get("value").getAsDouble();
-        UUID uuid = getUUID(attrGetherObj,exSuit);
+       // UUID uuid = getUUID(attrGetherObj,exSuit);
 
         AttributeModifier.Operation operation = ExConfigHandle.getOperation(attrGetherObj.get("operation").getAsString());
-        String modifierName = attrGetherObj.get("modifierName").getAsString();
+        String modifierName = (attrGetherObj.has("modifierName")) ? attrGetherObj.get("modifierName").getAsString() :exSuit.id + index;;
+
         if (attrGetherObj.has("autoName")){
-            if (attrGetherObj.get("autoName").getAsBoolean())
-            {
-                modifierName = exSuit.id + index;
+            if (attrGetherObj.has("autoName")) {
+                if (attrGetherObj.get("autoName").getAsBoolean()) {
+                    modifierName = exSuit.id + index;
 
+                }
             }
         }
-        if (attrGetherObj.has("autoUUID")){
-            if (attrGetherObj.get("autoUUID").getAsBoolean()) {
-                uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
-
-            }
-        }
+        UUID uuid = (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) ? UUID.fromString(attrGetherObj.get("uuid").getAsString()) : UUID.nameUUIDFromBytes(modifierName.getBytes());
+        if(attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean()) uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
+        //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
+        Exmodifier.LOGGER.debug("uuid "+uuid);
         AttributeModifier modifier = new AttributeModifier(uuid, modifierName, attrValue, operation);
 
         ModifierAttriGether attrGether = new ModifierAttriGether(attribute, modifier);

@@ -6,17 +6,14 @@ import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.util.AttriGetherPlus;
 import net.minecraft.world.effect.MobEffectInstance;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ExSuit {
     public Map<String,String> setting = new java.util.HashMap<>();
     public boolean hasMobEffect = false;
     public ModifierEntry.Type type;
     public String id;
-
+    public int MaxLevel ;
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
         return attriGether;
     }    public Map<Integer, List<ModifierAttriGether>> getAttriGetherC() {
@@ -50,10 +47,20 @@ public class ExSuit {
     public ExSuit(){
 
     }
+
+    public int CountMaxLevelAndGet() {
+        this.MaxLevel =Math.max(Collections.max(attriGether.keySet()), Collections.max(effect.keySet()));
+        return this.MaxLevel;
+    }
+    public void CountMaxLevel(int maxLevel) {
+        this.MaxLevel =Math.max(Collections.max(attriGether.keySet()), Collections.max(effect.keySet()));
+
+    }
     public ExSuit(String id, List<ModifierEntry> entry, Map<Integer,List< ModifierAttriGether>> attriGether) {
         this.id = id;
         this.entry = entry;
         this.attriGether = attriGether;
+//        this.MaxLevel = Collections.max(attriGether.keySet());
     }
 
     public List<ModifierEntry> getEntry() {

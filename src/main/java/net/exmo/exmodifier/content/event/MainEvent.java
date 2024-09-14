@@ -229,13 +229,13 @@ public class MainEvent {
                             if (stack.getTag() == null || (!stack.getTag().contains("exmodifier_armor_modifier_applied"))) {
                                 RandomEntry(stack, 0, refresh_time,"none");
                                 if (stack.getTag() != null) {
-                                    if (stack.getTag().contains("exmodifier_armor_modifier_applied")) {
-
-                                        player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-                                            capability.Sitemstack = stack;
-                                            capability.syncPlayerVariables(player);
-                                        });
-                                    }
+//                                    if (stack.getTag().contains("exmodifier_armor_modifier_applied")) {
+//
+//                                        player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+//                                            capability.Sitemstack = stack;
+//                                            capability.syncPlayerVariables(player);
+//                                        });
+//                                    }
                                 }
                             }
                             if (stack.getTag() != null) {
@@ -251,15 +251,15 @@ public class MainEvent {
                         }
                     }
                 }
-                if (event.getEntity().level().isClientSide) {
-                    player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-                        if (!capability.Sitemstack.isEmpty()) {
-                            player.setItemSlot(event.getSlot(), capability.Sitemstack);
-                            capability.Sitemstack = ItemStack.EMPTY;
-                            capability.syncPlayerVariables(player);
-                        }
-                    });
-                }
+//                if (event.getEntity().level().isClientSide) {
+//                    player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+//                        if (!capability.Sitemstack.isEmpty()) {
+//                            player.setItemSlot(event.getSlot(), capability.Sitemstack);
+//                            capability.Sitemstack = ItemStack.EMPTY;
+//                            capability.syncPlayerVariables(player);
+//                        }
+//                    });
+//                }
                 SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
             }
 
