@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.config.refresh_time;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
@@ -134,12 +135,22 @@ public class MainEvent {
         }
         @SubscribeEvent
         public static void AtJoinGame(PlayerEvent.PlayerLoggedInEvent event) {
-            event.getEntity().getPersistentData().putBoolean("LoginGamea", true);
+            Player player = event.getEntity();
+            player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+
+                Map<String,Integer> map = capability.SuitsNum ;
+                capability.SuitsNum = map.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                entry -> 0
+                        ));
+                capability.syncPlayerVariables(player);
+            });
         }
 
         @SubscribeEvent
         public static void OutGame(PlayerEvent.PlayerLoggedOutEvent event) {
-            event.getEntity().getPersistentData().putBoolean("LoginGamea", false);
+
         }
 
         @SubscribeEvent
@@ -195,14 +206,16 @@ public class MainEvent {
         public static void armorChange(LivingEquipmentChangeEvent event) {
             if (event.getEntity() instanceof Player player) {
                 //   Exmodifier.LOGGER.info(event.getTo().getDescriptionId());
-                if (player.getPersistentData().getBoolean("LoginGamea")) {
-                    player.getPersistentData().putBoolean("LoginGamea", false);
-                    return;
-                }
+//                if (player.getPersistentData().getBoolean("LoginGamea")) {
+//                    player.getPersistentData().putBoolean("LoginGamea", false);
+//                    return;
+//                }
 
                 if (!event.getEntity().level().isClientSide) {
 
+
                     ItemStack stack = event.getTo();
+                    Exmodifier.LOGGER.debug(event.getFrom().toString());
                     List<String> curiosSlots = CuriosUtil.getSlotsFromItemstack(stack);
                     if (!curiosSlots.isEmpty()){
                         if (player.getPersistentData().getBoolean("LoginGamea")) {
