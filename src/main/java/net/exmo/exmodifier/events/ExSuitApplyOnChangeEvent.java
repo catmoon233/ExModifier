@@ -6,7 +6,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.Cancelable;
 
+@Cancelable
 public class ExSuitApplyOnChangeEvent extends PlayerEvent {
     public ExSuit exSuit;
     public int level;

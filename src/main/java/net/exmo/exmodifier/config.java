@@ -17,6 +17,7 @@ public class config {
     public static int refresh_time = 1;
     public static boolean compact_tooltip = false;
     public static final Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/Exmodifier.json");
+
 @SubscribeEvent
     public static void ConfigConfig(AddReloadListenerEvent event) throws FileNotFoundException {
     ExConfigHandle exConfigHandle = new ExConfigHandle();

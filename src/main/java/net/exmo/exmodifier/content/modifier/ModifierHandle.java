@@ -102,12 +102,17 @@ public class ModifierHandle {
                 else      tooltips.add(new TranslatableComponent("modifiler.entry." + id.substring(2)).append(" : "));
                 if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.contains(modifierEntry))){
                     ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
-                    tooltips.add(new TranslatableComponent("modifiler.entry.suit"));
-                    for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
+                   if (!config.compact_tooltip) tooltips.add(new TranslatableComponent("modifiler.entry.suit"));
+
+                   for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
                             .toList()){
-                        tooltips.add(new TranslatableComponent("modifiler.entry.suit."+suit.id).append(new TextComponent("("+pv.SuitsNum.get(suit.id)+"/"+suit.CountMaxLevelAndGet()+")")));
-                    //.append(new TranslatableComponent("modifiler.entry.suit.color"))
-                    };
+                        if (suit.visible) {
+                            Integer integer = pv.SuitsNum.get(suit.id);
+                            if (integer == null) integer = 0;
+                            tooltips.add(new TranslatableComponent("modifiler.entry.suit." + suit.id).append(new TextComponent("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
+                            //.append(new TranslatableComponent("modifiler.entry.suit.color"))
+                        }
+                        };
 
                 }
                 for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
@@ -299,7 +304,7 @@ public class ModifierHandle {
                 attriMap.put(CuriosSlot, CuriosUtil.getAttributeModifiers(stack, CuriosSlot));
             }
             for (ModifierAttriGether attriGether : attriGethers) {
-                attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName()+stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
+                attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName()+stack).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
                     for (String CuriosSlot : CuriosSlots) CuriosUtil.addAttributeModifierApi(stack,attriGether,CuriosSlot);

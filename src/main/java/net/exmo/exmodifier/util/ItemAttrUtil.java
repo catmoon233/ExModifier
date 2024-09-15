@@ -299,6 +299,7 @@ public  class ItemAttrUtil {
     public static CompoundTag getAttributeModifierCompoundTag(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
         if (modifier==null)return null;
         if (attribute==null)return null;
+        if (modifier.getOperation()==null)return null;
         CompoundTag compoundtag = modifier.save();
         compoundtag.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
         if (slot != null) {

@@ -8,6 +8,7 @@ import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.events.ExAfterArmorChange;
 import net.exmo.exmodifier.events.ExApplySuitAttrigetherEvent;
 import net.exmo.exmodifier.events.ExApplySuitEffectEvent;
 import net.exmo.exmodifier.events.ExSuitApplyOnChangeEvent;
@@ -66,10 +67,7 @@ public class MainEvent {
         @SubscribeEvent
         public static void CuriosChange(CurioChangeEvent event) {
             if (!(event.getEntity() instanceof Player player))return;
-            if (player.getPersistentData().getBoolean("LoginGamea")) {
-                player.getPersistentData().putBoolean("LoginGamea", false);
-                return;
-            }
+
             ItemStack stack = event.getTo();
             if (stack.getTag() == null || (!stack.getTag().contains("exmodifier_armor_modifier_applied"))) {
                 RandomEntryCurios(stack, 0, refresh_time,"none");
@@ -211,7 +209,7 @@ public class MainEvent {
 //                    player.getPersistentData().putBoolean("LoginGamea", false);
 //                    return;
 //                }
-
+                boolean isExSuitOperate = false;
                 if (!event.getEntity().level.isClientSide) {
 
 
@@ -219,10 +217,10 @@ public class MainEvent {
                     Exmodifier.LOGGER.debug(event.getFrom().toString());
                     List<String> curiosSlots = CuriosUtil.getSlotsFromItemstack(stack);
                     if (!curiosSlots.isEmpty()){
-                        if (player.getPersistentData().getBoolean("LoginGamea")) {
-                            player.getPersistentData().putBoolean("LoginGamea", false);
-                            return;
-                        }
+//                        if (player.getPersistentData().getBoolean("LoginGamea")) {
+//                            player.getPersistentData().putBoolean("LoginGamea", false);
+//                            return;
+//                        }
                         if (stack.getTag() == null || (!stack.getTag().contains("exmodifier_armor_modifier_applied"))) {
                             RandomEntryCurios(stack, 0, refresh_time, "none");
                         }
@@ -274,24 +272,27 @@ public class MainEvent {
 //                        }
 //                    });
 //                }
-                SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
+            isExSuitOperate=    SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
+                MinecraftForge.EVENT_BUS.post(new ExAfterArmorChange(event, isExSuitOperate));
             }
 
         }
 
-        public static void SuitOperate(@NotNull Player player, ItemStack stack1, ItemStack stack2) {
+        public static boolean SuitOperate(@NotNull Player player, ItemStack stack1, ItemStack stack2) {
 
-            if (player.level.isClientSide) return;
-
-            handleStack(player, stack1, EntityAttrUtil.WearOrTake.WEAR);
-            handleStack(player, stack2, EntityAttrUtil.WearOrTake.TAKE);
+            if (player.level.isClientSide) return false;
+            boolean flag = false;
+          flag =  handleStack(player, stack1, EntityAttrUtil.WearOrTake.WEAR);
+            if (handleStack(player, stack2, EntityAttrUtil.WearOrTake.TAKE))flag = true;
+            return flag;
         }
 
-        private static void handleStack(Player player, ItemStack stack, EntityAttrUtil.WearOrTake effectType) {
-            if (!hasAttr(stack)) return;
+        private static boolean handleStack(Player player, ItemStack stack, EntityAttrUtil.WearOrTake effectType) {
+            boolean flag = false;
+            if (!hasAttr(stack)) return false;
 
             CompoundTag tag = stack.getTag();
-            if (tag == null || tag.getInt("exmodifier_armor_modifier_applied") <= 0) return;
+            if (tag == null || tag.getInt("exmodifier_armor_modifier_applied") <= 0) return false;
 
             int effectMultiplier = effectType == WEAR ? 1 : -1;
 
@@ -314,23 +315,28 @@ public class MainEvent {
                     } else {
                         ExSuitHandle.RemoveSuitLevel(player, suit.id, 1);
                     }
+                    flag =true;
 
-                    ExSuitApplyOnChangeEvent event = new ExSuitApplyOnChangeEvent(player, suit, i, effectType);
-                    MinecraftForge.EVENT_BUS.post(event);
 
                     int suitLevel = ExSuitHandle.GetSuitLevel(player, suit.id);
                     List<ModifierAttriGether> attriGethers = suit.attriGether.get(effectType == WEAR ? suitLevel : suitLevel + 1);
 
                     if (attriGethers != null) {
-                        for (ModifierAttriGether attrGether : attriGethers) {
-                            if (attrGether.OnlyItems.isEmpty()) {
+                        for (ModifierAttriGether attrGether : attriGethers.stream().filter(attrGether -> attrGether.getOnlyItems().isEmpty()).toList()) {
+                            Exmodifier.LOGGER.debug("items : "+attrGether.getOnlyItems().toString());
+                        //    if (attrGether.getOnlySlots() ==null|| attrGether.getOnlySlots().isEmpty()) {
+
                                 ExApplySuitAttrigetherEvent event1 = new ExApplySuitAttrigetherEvent(player, stack, effectType, attrGether);
+                                try {
+                                    Exmodifier.LOGGER.debug("Apply Suit AttriGether: " + attrGether.attribute.getDescriptionId() + " " + attrGether.modifier.getOperation().toString() + " " + attrGether.modifier.getAmount());
+                                }catch (Exception e){System.out.println(e);}
                                 MinecraftForge.EVENT_BUS.post(event1);
                                 if (!event1.isCanceled()) EntityAttrUtil.entityAddAttrTF(event1.attriGether.attribute, event1.attriGether.getModifier(),event1.player,event1.effectType);
-                            }
+                          //  }
                         }
                     }
-
+                    ExSuitApplyOnChangeEvent event = new ExSuitApplyOnChangeEvent(player, suit, i, effectType);
+                    MinecraftForge.EVENT_BUS.post(event);
                     player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
                         List<String> suitsList = capability.Suits;
                         if (suitLevel > 0 && !suitsList.contains(suit.id)) {
@@ -343,6 +349,7 @@ public class MainEvent {
                     });
                 }
             }
+            return flag;
         }
 
         @SubscribeEvent

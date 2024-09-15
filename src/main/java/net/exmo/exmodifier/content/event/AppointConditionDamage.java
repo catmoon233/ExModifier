@@ -3,8 +3,11 @@ package net.exmo.exmodifier.content.event;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.events.ExAfterArmorChange;
 import net.exmo.exmodifier.events.ExSuitApplyOnChangeEvent;
 
+import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.EntityAttrUtil;
 import net.exmo.exmodifier.util.event.ModifierLivingHurtBaseDamage;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -18,76 +21,103 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.registries.ForgeRegistries;
 import top.theillusivec4.curios.api.CuriosApi;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Mod.EventBusSubscriber
 public class AppointConditionDamage {
-    public static boolean pdSlots(List<String> slots,Player player,List<ItemStack> lis){
+    public static boolean containsCommonElements(List<String> list, List<String> str) {
+        // 使用 HashSet 进行高效的查找操作
+        Set<String> set = new HashSet<>(list);
+
+        // 遍历 str 列表，检查是否存在 set 中的元素
+        for (String s : str) {
+            if (set.contains(s)) {
+                return true; // 找到重复元素，直接返回 true
+            }
+        }
+
+        return false; // 没有找到重复元素，返回 false
+    }
+
+    public static boolean pdSlots(Map<String,String> items,List<String> slots,List<String> onlyitem){
+        boolean flag = false;
         for (String slot : (slots)){
-
-
-                if (lis.contains(player.getItemBySlot(EquipmentSlot.byName(slot.toLowerCase())))) {
-                    Exmodifier.LOGGER.debug("Slot "+slot+" has item");
-                    return true;
-                }
+            //
+            if (onlyitem.contains(items.get(slot))){
+                flag=true;
+                break;
+            }
 
 
         }
-        return false    ;
+        return flag    ;
+    }
+    public static void Operate(ExSuit exSuit,Player player){
+        Map<String,String> items = new HashMap<>();
+        for (EquipmentSlot equipmentSlot : EquipmentSlot.values())
+        {
+            ItemStack is= player.getItemBySlot(equipmentSlot);
+            if (!is.isEmpty()) {
+                items.put(equipmentSlot.getName(), ForgeRegistries.ITEMS.getKey(is.getItem()).toString());
+            }
+        }
+        exSuit.attriGether.values().forEach(ea ->{
+            for (ModifierAttriGether e : ea.stream().filter(e -> !e.getOnlyItems().isEmpty()).toList()){
+                EntityAttrUtil.entityAddAttrTF(e.attribute, e.getModifier(), player, EntityAttrUtil.WearOrTake.TAKE);
+            }
+        });
+        ExModifiervaV.PlayerVariables vars = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
+        if (vars.SuitsNum.get(exSuit.id)!=null){
+            for (int i = 1; i <=vars.SuitsNum.get(exSuit.id) ; i++) {
+                List<ModifierAttriGether> attriGethers = exSuit.attriGether.get(i);
+                if (attriGethers != null) {
+                    for (ModifierAttriGether e : attriGethers.stream().filter(e -> !e.getOnlyItems().isEmpty()).toList()) {
+                        List<String> onlyitems = new ArrayList<>(e.getOnlyItems());
+                        List<String> onlyslots = new ArrayList<>(e.getOnlySlots());
+                        Exmodifier.LOGGER.debug(" 1 " + onlyitems);
+                        boolean flag = false;
+                        if (!onlyitems.isEmpty()) {
+                            if (containsCommonElements(onlyitems, new ArrayList<>(items.values()))) {
+                                flag = true;
+                                Exmodifier.LOGGER.debug("OnlyItems:" + onlyitems + " items " + items + " is true");
+                            }
+                        }
+                        if (!onlyslots.isEmpty()) {
+                            if (!pdSlots(items, onlyslots, onlyitems)) {
+                                flag = false;
+                                Exmodifier.LOGGER.debug("OnlySlots:" + onlyslots + " is false");
+                            }
+
+                        }
+                        Exmodifier.LOGGER.debug("flag:" + flag);
+                        if (flag) {
+                            EntityAttrUtil.entityAddAttrTF(e.attribute, e.getModifier(), player, EntityAttrUtil.WearOrTake.WEAR);
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+    @SubscribeEvent
+    public static void AfterArmorChange(ExAfterArmorChange exAfterArmorChange){
+        if (!exAfterArmorChange.isSuitOperate){
+        Player player = (Player) exAfterArmorChange.event.getEntity();
+        ExModifiervaV.PlayerVariables vars = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
+        for (String exSuit : vars.Suits){
+           ExSuitHandle.FindExSuit(exSuit).forEach(suit -> {
+               Operate(suit,player);
+
+           });
+        }
+        }
+
     }
     @SubscribeEvent
     public static void Apply(ExSuitApplyOnChangeEvent event){
         ExSuit exSuit = event.exSuit;
-        Player player = (Player) event.getEntity();
-        List<ItemStack> WearsId = new ArrayList<>();
-        for (EquipmentSlot slot : EquipmentSlot.values()){
-            if (!player.getItemBySlot(slot).isEmpty()){
-                WearsId.add(player.getItemBySlot(slot));
-            }
-        }
-        LazyOptional<IItemHandlerModifiable> equippedCurios = CuriosApi.getCuriosHelper() .getEquippedCurios(player);
-        for (int i = 0; i < equippedCurios.orElse(null).getSlots(); i++){
-            if (!equippedCurios.orElse(null).getStackInSlot(i).isEmpty()){
-                WearsId.add(equippedCurios.orElse(null).getStackInSlot(i));
-            }
-        }
-        List<String> WearsIds = new ArrayList<>();
-        for (ItemStack itemStack : WearsId){
-            WearsIds.add(ForgeRegistries.ITEMS.getKey(itemStack.getItem()).toString());
-        }
-     (exSuit.getAttriGetherC()).forEach((key, value) -> {
-            for (ModifierAttriGether attriGetherPlus : value) {
-                if (attriGetherPlus.OnlyItems.isEmpty())continue;
-                EntityAttrUtil.entityAddAttrTF(attriGetherPlus.attribute, attriGetherPlus.modifier, player, EntityAttrUtil.WearOrTake.TAKE);
-            } });
-       for (int i =0;i<=10;i++){
-           if (exSuit.getAttriGetherC().containsKey(i)){
-               for (ModifierAttriGether attriGetherPlus : exSuit.getAttriGetherC().get(i)){
-                   if (attriGetherPlus.OnlyItems.isEmpty())continue;
-                   Exmodifier.LOGGER.debug("Item "+attriGetherPlus.OnlyItems);
-
-                   if (new ArrayList<String>( attriGetherPlus.OnlyItems).retainAll(WearsIds)){
-                       if (!attriGetherPlus.OnlySlots.isEmpty()){
-                       //  Exmodifier.LOGGER.debug("Slot "+attriGetherPlus.OnlySlots);
-                           List<String> _v = new ArrayList<>(attriGetherPlus.OnlySlots);
-                          // Exmodifier.LOGGER.debug("Slot1 "+attriGetherPlus.OnlySlots+" has item"+attriGetherPlus.OnlyItems);
-
-                           if ((pdSlots(_v, player, WearsId))){
-                               EntityAttrUtil.entityAddAttrTF(attriGetherPlus.attribute, attriGetherPlus.modifier, player, EntityAttrUtil.WearOrTake.WEAR);
-                           }
-                           //                           Exmodifier.LOGGER.debug("Slot2 "+attriGetherPlus.OnlySlots+" has item"+attriGetherPlus.OnlyItems);
-
-                           //attriGetherPlus.OnlySlots.addAll(_v);
-                       }else {
-                           Exmodifier.LOGGER.debug("No Slot");
-                           EntityAttrUtil.entityAddAttrTF(attriGetherPlus.attribute, attriGetherPlus.modifier, player, EntityAttrUtil.WearOrTake.WEAR);
-                       }
-                   }
-               }
-           }
-       }
+        Player player = event.getPlayer();
+        Operate(exSuit,player);
 
     }
 }

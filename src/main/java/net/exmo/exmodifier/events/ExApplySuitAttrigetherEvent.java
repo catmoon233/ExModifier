@@ -4,6 +4,7 @@ import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.util.EntityAttrUtil;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
 
 public class ExApplySuitAttrigetherEvent extends Event {

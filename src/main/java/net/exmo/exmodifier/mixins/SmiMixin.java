@@ -69,8 +69,8 @@ public abstract class SmiMixin extends ItemCombinerMenu {
         for (WashingMaterials washingMaterials : ModifierHandle.materialsList){
             if (washingMaterials.item.equals(this.inputSlots.getItem(1).getItem())) {
                 if (this.inputSlots.getItem(0).getOrCreateTag().getInt("exmodifier_armor_modifier_applied") > 0 || config.refresh_time == 0) {
-                    if (washingMaterials.OnlyItems.isEmpty() || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(this.inputSlots.getItem(0).getItem()).toString())) {
-                        if (washingMaterials.OnlyTags.isEmpty() || washingMaterials.containTag(this.inputSlots.getItem(0))) {
+                    if (washingMaterials.OnlyItems ==null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(this.inputSlots.getItem(0).getItem()).toString())) {
+                        if (washingMaterials.OnlyTags ==null || washingMaterials.containTag(this.inputSlots.getItem(0))) {
                             ci.cancel();
                             ItemStack input = this.inputSlots.getItem(0).copy();
                             ModifierHandle.CommonEvent.clearEntry(input);
