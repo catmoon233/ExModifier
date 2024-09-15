@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSON 配置编辑器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        input, select, textarea {
+            width: calc(100% - 20px);
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>JSON 配置编辑器</h2>
+        
+        <label for="type">类型：</label>
+        <select id="type" name="type">
+            <option value="ALL">ALL</option>
+            <option value="UNKNOWN">UNKNOWN</option>
+            <!-- 添加其他选项 -->
+        </select>
+        
+        <h3>EntryID</h3>
+        <label for="weight">权重：</label>
+        <input type="number" id="weight" name="weight">
+
+        <label for="onlyItems">OnlyItems：</label>
+        <textarea id="onlyItems" rows="4" placeholder='["minecraft:item1", "minecraft:item2"]'></textarea>
+
+        <label for="isRandom">是否随机属性：</label>
+        <select id="isRandom" name="isRandom">
+            <option value="true">True</option>
+            <option value="false">False</option>
+        </select>
+
+        <label for="randomNum">随机属性数：</label>
+        <input type="number" id="randomNum" name="randomNum">
+
+        <!-- 你可以继续添加其他属性 -->
+        
+        <button onclick="saveConfig()">保存配置</button>
+
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        function saveConfig() {
+            const type = document.getElementById('type').value;
+            const weight = document.getElementById('weight').value;
+            const onlyItems = document.getElementById('onlyItems').value;
+            const isRandom = document.getElementById('isRandom').value;
+            const randomNum = document.getElementById('randomNum').value;
+
+            let jsonObj = {
+                "type": type,
+                "Example": {
+                    "weight": parseInt(weight),
+                    "OnlyItems": JSON.parse(onlyItems),
+                    "isRandom": (isRandom === 'true'),
+                    "RandomNum": parseInt(randomNum)
+                    // 添加其他属性
+                }
+            };
+
+            document.getElementById('output').innerHTML = "<pre>" + JSON.stringify(jsonObj, null, 2) + "</pre>";
+        }
+    </script>
+</body>
+</html>
