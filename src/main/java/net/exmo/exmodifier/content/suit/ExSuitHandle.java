@@ -40,7 +40,7 @@ public class ExSuitHandle {
                 return exSuit;
             }
         }
-      return null;
+        return null;
 
     }
     public static List<ExSuit> FindExSuit(String id){
@@ -71,6 +71,12 @@ public class ExSuitHandle {
             }
             capability.syncPlayerVariables(player);
         });
+    }
+    public int getPlayerLevel(Player player){
+        return player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).map(capability -> capability.SuitsNum.values().stream().mapToInt(Integer::intValue).sum()).orElse(0);
+    }
+    public static int getPlayerLevelFromExSuitId(Player player,String id){
+        return player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).map(capability -> capability.SuitsNum.getOrDefault(id, 0)).orElse(0);
     }
     public static void RemoveSuitLevel(Player player,String s,int amount){
         player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
@@ -127,7 +133,7 @@ public class ExSuitHandle {
             List<ModifierEntry.Type> types = List.of(ModifierEntry.Type.values());
             for (ModifierEntry.Type type : types){
                 String key = type.toString().substring(0, 2) + entry.getKey();
-               // Exmodifier.LOGGER.debug("匹配中: "+key);
+                // Exmodifier.LOGGER.debug("匹配中: "+key);
                 ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(key);
                 if (entry1 != null) {
                     exSuit.addEntry(entry1);
@@ -150,21 +156,22 @@ public class ExSuitHandle {
             return;
         }
         exSuit.type = moconfig.type;
-            exSuit.id = moconfig.type.toString().substring(0,2) + entry.getKey();
+        exSuit.id = moconfig.type.toString().substring(0,2) + entry.getKey();
+        if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
         if (itemObject.has("excludeArmorInHand"))exSuit.setting.put("excludeArmorInHand", String.valueOf(itemObject.get("excludeArmorInHand").getAsBoolean()));
         for (int i = 1; i <= 10; i++) {
             if (itemObject.has(i + "")) {
                 JsonObject suitObj = itemObject.getAsJsonObject(i + "");
                 if (suitObj.has("effect")) {
                     if (suitObj.getAsJsonObject("effect") != null) {
-                      exSuit.setLevelEffects(i, processEffects(moconfig, exSuit, suitObj.getAsJsonObject("effect")));
+                        exSuit.setLevelEffects(i, processEffects(moconfig, exSuit, suitObj.getAsJsonObject("effect")));
                     }
                 }else {
                     Exmodifier.LOGGER.debug("No effect Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
                 }
                 if (suitObj.has("attrGethers")) {
                     if (suitObj.getAsJsonObject("attrGethers") != null) {
-                       exSuit.setLevelAttriGether(i,processAttrGethers(moconfig, exSuit, suitObj.getAsJsonObject("attrGethers")));
+                        exSuit.setLevelAttriGether(i,processAttrGethers(moconfig, exSuit, suitObj.getAsJsonObject("attrGethers"),i));
                     }
                 }
 
@@ -177,7 +184,7 @@ public class ExSuitHandle {
         List<MobEffectInstance> effects = new ArrayList<>();
         for (Map.Entry<String, JsonElement> EffectEntry : attrGethers.entrySet()) {
             try {
-               effects.add(processEffect(moconfig, exSuit, EffectEntry));
+                effects.add(processEffect(moconfig, exSuit, EffectEntry));
             } catch (Exception e) {
                 Exmodifier.LOGGER.error("Error processing attrGether: " + EffectEntry.getKey(), e);
             }
@@ -203,29 +210,29 @@ public class ExSuitHandle {
         return null;
     }
 
-    private static List<ModifierAttriGether> processAttrGethers(MoConfig moconfig, ExSuit exSuit, JsonObject attrGethers) {
+    private static List<ModifierAttriGether> processAttrGethers(MoConfig moconfig, ExSuit exSuit, JsonObject attrGethers,int level) {
         List<ModifierAttriGether> attrGethersToReturn = new ArrayList<>();
         int index = 0;
-            for (Map.Entry<String, JsonElement> attrGetherEntry : attrGethers.entrySet()) {
-                try {
-                    attrGethersToReturn.add(processAttrGether(moconfig, exSuit, attrGetherEntry,index));
-                    index++;
-                } catch (Exception e) {
-                    Exmodifier.LOGGER.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
-                }
+        for (Map.Entry<String, JsonElement> attrGetherEntry : attrGethers.entrySet()) {
+            try {
+                attrGethersToReturn.add(processAttrGether(moconfig, exSuit, attrGetherEntry,index,level));
+                index++;
+            } catch (Exception e) {
+                Exmodifier.LOGGER.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
             }
+        }
         ExAddSuitAttrigethersEvent event = new ExAddSuitAttrigethersEvent(moconfig,exSuit,attrGethers,attrGethersToReturn);
         MinecraftForge.EVENT_BUS.post(event);
-            return event.getModifierAttriGathers();
+        return event.getModifierAttriGathers();
     }
-    private static ModifierAttriGether processAttrGether(MoConfig moconfig, ExSuit exSuit, Map.Entry<String, JsonElement> attrGetherEntry,int index) {
+    private static ModifierAttriGether processAttrGether(MoConfig moconfig, ExSuit exSuit, Map.Entry<String, JsonElement> attrGetherEntry,int index,int level) {
         JsonObject attrGetherObj = attrGetherEntry.getValue().getAsJsonObject();
         Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attrGetherEntry.getKey()));
         double attrValue = attrGetherObj.get("value").getAsDouble();
-       // UUID uuid = getUUID(attrGetherObj,exSuit);
+        // UUID uuid = getUUID(attrGetherObj,exSuit);
 
         AttributeModifier.Operation operation = ExConfigHandle.getOperation(attrGetherObj.get("operation").getAsString());
-        String modifierName = (attrGetherObj.has("modifierName")) ? attrGetherObj.get("modifierName").getAsString() :exSuit.id + index;;
+        String modifierName = (attrGetherObj.has("modifierName")) ? attrGetherObj.get("modifierName").getAsString() :exSuit.id + + level +"l" + index;;
 
         if (attrGetherObj.has("autoName")){
             if (attrGetherObj.has("autoName")) {
@@ -245,7 +252,10 @@ public class ExSuitHandle {
         attrGether.hasUUID = attrGetherObj.has("uuid");
         if (attrGetherObj.has("OnlyItems")){
             for (JsonElement item : attrGetherObj.getAsJsonArray("OnlyItems")){
-                attrGether.OnlyItems.add(item.getAsString());
+                String asString = item.getAsString();
+                Exmodifier.LOGGER.debug("Adding Item: " + asString);
+                attrGether.OnlyItems.add(asString);
+
             }
         }
         if (attrGetherObj.has("OnlySlots")){
@@ -260,7 +270,7 @@ public class ExSuitHandle {
         MinecraftForge.EVENT_BUS.post(event);
         return event.getAttrGether();
     }
-        public static void processMoConfigEntries(MoConfig moconfig) throws FileNotFoundException {
+    public static void processMoConfigEntries(MoConfig moconfig) throws FileNotFoundException {
         if(moconfig.readEntrys().isEmpty()){
             Exmodifier.LOGGER.info("No Suit Config Found");
             return;

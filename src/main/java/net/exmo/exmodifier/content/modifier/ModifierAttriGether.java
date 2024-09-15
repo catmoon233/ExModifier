@@ -24,6 +24,30 @@ public class ModifierAttriGether extends AttriGether {
     public float weight = 0;
     public boolean isRandom = false;
     public boolean hasUUID =false;
+
+    @Override
+    public String toString() {
+        return "ModifierAttriGether{" +
+                "weight=" + weight +
+                ", isRandom=" + isRandom +
+                ", hasUUID=" + hasUUID +
+                ", OnlyItems=" + OnlyItems +
+                ", OnlySlots=" + OnlySlots +
+                ", slot=" + slot +
+                ", IsAutoEquipmentSlot=" + IsAutoEquipmentSlot +
+                ", attribute=" + attribute +
+                ", modifier=" + modifier +
+                '}';
+    }
+
+    public List<String> getOnlyItems() {
+        return OnlyItems;
+    }
+
+    public List<String> getOnlySlots() {
+        return OnlySlots;
+    }
+
     public List<String> OnlyItems = new java.util.ArrayList<>();
     public  List<String> OnlySlots = new java.util.ArrayList<>();
 

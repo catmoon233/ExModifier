@@ -153,8 +153,11 @@ dependencies {
     implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.2.0")) {
         jarJar.ranged(it, "[0.2.0,)")
     }
-    implementation fg.deobf('curse.maven:l2library-620203:5071762')
-
+    //implementation fg.deobf("curse.maven:curios-309927:5680164")
+    //runtimeOnly fg.deobf("curse.maven:architectury-api-419699:5137938")
+    runtimeOnly fg.deobf('curse.maven:l2library-620203:5071762')
+    //runtimeOnly fg.deobf("curse.maven:artifacts-312353:5693342")
+   // runtimeOnly fg.deobf("curse.maven:cloth-config-348521:4973441")
     implementation fg.deobf("curse.maven:apotheosis-313970:5642736")
     implementation fg.deobf("curse.maven:placebo-283644:5414631")
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
@@ -203,8 +206,8 @@ repositories {
 }
 
 dependencies {
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.6.1+1.20.1")
-    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.6.1+1.20.1:api")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.10.0+1.20.1")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.10.0+1.20.1:api")
 }
 minecraft {
     runs {

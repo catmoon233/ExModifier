@@ -14,6 +14,7 @@ public class ExSuit {
     public ModifierEntry.Type type;
     public String id;
     public int MaxLevel ;
+    public boolean visible = true;
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
         return attriGether;
     }    public Map<Integer, List<ModifierAttriGether>> getAttriGetherC() {
@@ -49,9 +50,26 @@ public class ExSuit {
     }
 
     public int CountMaxLevelAndGet() {
-        this.MaxLevel =Math.max(Collections.max(attriGether.keySet()), Collections.max(effect.keySet()));
-        return this.MaxLevel;
+        int maxLevel = 0;
+
+        // Check if attriGether is not null
+        if (attriGether != null) {
+            // Check if effect is not null
+            if (effect != null && !effect.isEmpty()) {
+                // Get the maximum key from effect
+                maxLevel = Collections.max(effect.keySet());
+            }
+
+            // Get the maximum key from attriGether
+            if (!attriGether.isEmpty()) {
+                maxLevel = Math.max(maxLevel, Collections.max(attriGether.keySet()));
+            }
+        }
+
+        this.MaxLevel = maxLevel;
+        return maxLevel;
     }
+
     public void CountMaxLevel(int maxLevel) {
         this.MaxLevel =Math.max(Collections.max(attriGether.keySet()), Collections.max(effect.keySet()));
 
