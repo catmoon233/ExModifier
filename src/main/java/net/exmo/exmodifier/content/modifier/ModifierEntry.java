@@ -276,6 +276,7 @@ public class ModifierEntry {
         return false;
     }
     public boolean isRandom = true;
+    public boolean OnlyHasThisEntry = false;
     public Type type;
     public boolean isCuriosEntry =false;
     public String curiosType;
@@ -299,6 +300,7 @@ public class ModifierEntry {
         return "ModifierEntry{" +
                 "weight=" + weight +
                 ", isRandom=" + isRandom +
+                ", OnlyHasThisEntry=" + OnlyHasThisEntry +
                 ", type=" + type +
                 ", isCuriosEntry=" + isCuriosEntry +
                 ", curiosType='" + curiosType + '\'' +
