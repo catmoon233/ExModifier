@@ -13,6 +13,8 @@ public class ExSuit {
     public boolean hasMobEffect = false;
     public ModifierEntry.Type type;
     public String id;
+    public String LocalDescription ="";
+
     public int MaxLevel ;
     public boolean visible = true;
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {

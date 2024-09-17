@@ -158,6 +158,8 @@ public class ExSuitHandle {
         exSuit.type = moconfig.type;
         exSuit.id = moconfig.type.toString().substring(0,2) + entry.getKey();
         if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
+        if (itemObject.has("LocalDescription"))exSuit.LocalDescription= itemObject.get("LocalDescription").getAsString();
+
         if (itemObject.has("excludeArmorInHand"))exSuit.setting.put("excludeArmorInHand", String.valueOf(itemObject.get("excludeArmorInHand").getAsBoolean()));
         for (int i = 1; i <= 10; i++) {
             if (itemObject.has(i + "")) {

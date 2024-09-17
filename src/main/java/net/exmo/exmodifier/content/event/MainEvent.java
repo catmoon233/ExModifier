@@ -233,7 +233,6 @@ public class MainEvent {
                                 }
                             }
                         }
-                        SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
                     }else {
 
                         if (hasAttr(stack)||stack.getItem() instanceof ShieldItem) {
@@ -298,9 +297,11 @@ public class MainEvent {
             for (int i = 0; ; i++) {
                 String modifier = tag.getString("exmodifier_armor_modifier_applied" + i);
                 if (modifier.isEmpty()) break;
-
+                List<String> founds = new ArrayList<>();
                 List<ExSuit> suits = ExSuitHandle.FindExSuit(modifier);
                 for (ExSuit suit : suits) {
+                    if (founds.contains(suit.id))continue;
+                    founds.add(suit.id);
                     if (effectType == WEAR && suit.setting.getOrDefault("excludeArmorInHand", "false").equals("true") && stack.getItem() instanceof ArmorItem) {
                         continue;
                     }

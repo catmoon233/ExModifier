@@ -2,6 +2,7 @@ package net.exmo.exmodifier.content.modifier;
 
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -17,12 +18,15 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 
 public class ModifierEntry {
+    public Map<String,String> setting = new HashMap<>();
     public float weight;
     public boolean cantSelect = false;
    // public double level;

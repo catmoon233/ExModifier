@@ -109,6 +109,8 @@ public class ModifierHandle {
                             Integer integer = pv.SuitsNum.get(suit.id);
                             if (integer == null) integer = 0;
                             tooltips.add(Component.translatable("modifiler.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
+                            if (!suit.LocalDescription.isEmpty())tooltips.add(Component.translatable(suit.LocalDescription));
+
                             //.append(Component.translatable("modifiler.entry.suit.color"))
                         }
                     };
@@ -574,6 +576,12 @@ public class ModifierHandle {
                 JsonArray OnlyItems = jsonObject.get("OnlyItems").getAsJsonArray();
                 OnlyItems.forEach(item -> {
                     materials.OnlyItems.add(item.getAsString());
+                });
+            }
+            if (jsonObject.has("OnlyTypes")){
+                JsonArray OnlyItems = jsonObject.get("OnlyTypes").getAsJsonArray();
+                OnlyItems.forEach(item -> {
+                    materials.OnlyTypes.add(ModifierEntry.StringToType(item.getAsString()));
                 });
             }
             if (jsonObject.has("OnlyTags")){
