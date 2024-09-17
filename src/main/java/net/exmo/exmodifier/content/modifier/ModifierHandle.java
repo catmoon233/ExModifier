@@ -243,6 +243,7 @@ public class ModifierHandle {
                     ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, slot, refreshments, attriGethers,modifierEntry,modifierEntries);
                     MinecraftForge.EVENT_BUS.post(event);
                     finalAttriGethers.addAll(event.attriGether);
+                    if (modifierEntry.OnlyHasThisEntry)break;
                 }
             }
 

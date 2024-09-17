@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.suit;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
@@ -167,6 +168,19 @@ public class ExSuitHandle {
                 if (suitObj.has("effect")) {
                     if (suitObj.getAsJsonObject("effect") != null) {
                         exSuit.setLevelEffects(i, processEffects(moconfig, exSuit, suitObj.getAsJsonObject("effect")));
+                    }
+                }else {
+                    Exmodifier.LOGGER.debug("No effect Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
+                }
+                if (suitObj.has("commands")) {
+                    JsonArray commands = suitObj.getAsJsonArray("commands");
+                    if (commands != null) {
+                        List<String> commands1 = new ArrayList<>();
+                        for (JsonElement command : commands){
+                            commands1.add(command.getAsString());
+                        }
+                        exSuit.commands.put(i, commands1);
+
                     }
                 }else {
                     Exmodifier.LOGGER.debug("No effect Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());

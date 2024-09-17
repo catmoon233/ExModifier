@@ -14,7 +14,7 @@ public class ExSuit {
     public ModifierEntry.Type type;
     public String id;
     public String LocalDescription ="";
-
+public Map<Integer,List<String>> commands = new HashMap<>();
     public int MaxLevel ;
     public boolean visible = true;
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
@@ -125,5 +125,13 @@ public class ExSuit {
         }
         effect.get(level).add(mobEffectInstance);
         hasMobEffect = true;
+    }
+
+    public Map<Integer, List<String>> getCommands() {
+        return commands;
+    }
+
+    public void setCommands(Map<Integer, List<String>> commands) {
+        this.commands = commands;
     }
 }

@@ -15,9 +15,13 @@ import net.exmo.exmodifier.events.ExSuitApplyOnChangeEvent;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.EntityAttrUtil;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
@@ -162,6 +166,21 @@ public class MainEvent {
                     ExSuit suit = ExSuitHandle.LoadExSuit.get(id);
                     for (int i = 1; i <= ExSuitHandle.GetSuitLevel(player, id); i++) {
                         // 获取效果列表，检查是否为null
+                        Map<Integer,List<String>> commandsMap = suit.getCommands();
+                        if (commandsMap != null) {
+                            List<String> commands = commandsMap.get(i);
+                            if (commands != null) {
+                                for (String command : commands) {
+                                    {
+
+                                        if (!player.level().isClientSide() && player.getServer() != null) {
+                                            player.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, player.position(), player.getRotationVector(), player.level() instanceof ServerLevel ? (ServerLevel) player.level() : null, 4,
+                                                    player.getName().getString(), player.getDisplayName(), player.level().getServer(), player), command);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         Map<Integer, List<MobEffectInstance>> effectMap = suit.getEffect();
                         if (effectMap != null) {
                             List<MobEffectInstance> effects = effectMap.get(i);
