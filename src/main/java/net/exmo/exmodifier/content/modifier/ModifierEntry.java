@@ -281,8 +281,9 @@ public class ModifierEntry {
     public boolean isCuriosEntry =false;
     public String curiosType;
     public List<String> OnlyTags = new ArrayList<>();
-    public List<String> OnlyItems= new ArrayList<>();
-    public List<String> OnlyWashItems= new ArrayList<>();
+    public List<String> OnlyItems = new ArrayList<>();
+    public List<String> OnlyWashItems = new ArrayList<>();
+    public List<String> Commands = new ArrayList<>();
     public String id;
     public int RandomNum;
     public List<ModifierAttriGether> attriGether = new java.util.ArrayList<>();

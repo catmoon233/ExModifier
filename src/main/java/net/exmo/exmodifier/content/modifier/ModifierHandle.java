@@ -669,6 +669,12 @@ public class ModifierHandle {
                 modifierEntry.OnlyWashItems.add(item.getAsString());
             });
         }
+        if (itemObject.has("Commands")){
+            JsonArray Commands = itemObject.get("Commands").getAsJsonArray();
+            Commands.forEach(command -> {
+                modifierEntry.Commands.add(command.getAsString());
+            });
+        }
         if (itemObject.has("attrGethers")) {
             processAttrGethers(moconfig, modifierEntry, itemObject.getAsJsonObject("attrGethers"));
         }
