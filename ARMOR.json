@@ -1,0 +1,42 @@
+{
+  "type": "ARMOR",
+  "fire1": {
+    "weight": 2,
+    "OnlyItems": [
+      "minecraft:iron_boots"
+    ],
+
+    "isRandom": true,
+    "RandomNum": 3,
+    "attrGethers": {
+      "irons_spellbooks:fire_spell_power": {
+        "weight": 0,
+        "value": 0.2,
+        "slot": "auto",
+        "operation": "add"
+      },
+      "irons_spellbooks:cast_time_reduction": {
+        "weight": 0,
+        "value": 0.1,
+        "uuid": "123e4567-e89b-12d3-a456-426614174004",
+        "modifierName": "CustomAttributesModifier",
+        "slot": "auto",
+        "isAutoEquipmentSlot": true,
+        "autoUUID": true,
+        "autoName": true,
+        "operation": "add"
+      },
+      "minecraft:generic.armor_toughness": {
+        "weight": 0,
+        "value": 2,
+        "uuid": "123e4567-e89b-12d3-a456-426614174002",
+        "modifierName": "CustomAttributesModifier",
+        "slot": "auto",
+        "isAutoEquipmentSlot": true,
+        "autoUUID": true,
+        "autoName": true,
+        "operation": "add"
+      }
+    }
+  }
+}
