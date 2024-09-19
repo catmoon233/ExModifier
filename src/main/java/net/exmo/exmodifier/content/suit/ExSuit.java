@@ -17,13 +17,14 @@ public class ExSuit {
 	public Map<Integer,List<String>> commands = new HashMap<>();
     public int MaxLevel ;
     public boolean visible = true;
+    public Trigger trigger;
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
         return attriGether;
     }    public Map<Integer, List<ModifierAttriGether>> getAttriGetherC() {
         return new HashMap<>(attriGether);
 
     }
-    public static enum trigger {
+    public static enum Trigger {
         TICK, ON_HURT, ATTACK;
     }
 
@@ -39,6 +40,23 @@ public class ExSuit {
                 ", effect=" + effect +
                 ", itemDamage=" + itemDamage +
                 '}';
+    }
+
+    public static Trigger StringToTrigger(String trigger){
+        switch (trigger){
+            case "tick":
+            	return Trigger.TICK;
+                break;
+            case "on_hurt":
+            	return Trigger.ON_HURT;
+                break;
+            case "attack":
+            	return Trigger.ATTACK;
+                break;
+            default:
+            	return Trigger.TICK;
+        }
+        return Trigger.TICK;
     }
 
     public String getSetting(String key){

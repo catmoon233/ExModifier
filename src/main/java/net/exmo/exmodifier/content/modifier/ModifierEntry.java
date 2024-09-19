@@ -134,9 +134,7 @@ public class ModifierEntry {
     }
     public static Type StringToType(String type) {
         if (type.toLowerCase().startsWith("curios")) return Type.CURIOS;
-
         switch (type) {
-
             case "ALL" -> {
                 return Type.ALL;
             }
