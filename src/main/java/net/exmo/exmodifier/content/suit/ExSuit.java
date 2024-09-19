@@ -14,7 +14,7 @@ public class ExSuit {
     public ModifierEntry.Type type;
     public String id;
     public String LocalDescription ="";
-public Map<Integer,List<String>> commands = new HashMap<>();
+	public Map<Integer,List<String>> commands = new HashMap<>();
     public int MaxLevel ;
     public boolean visible = true;
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
@@ -22,6 +22,9 @@ public Map<Integer,List<String>> commands = new HashMap<>();
     }    public Map<Integer, List<ModifierAttriGether>> getAttriGetherC() {
         return new HashMap<>(attriGether);
 
+    }
+    public static enum trigger {
+        TICK, ON_HURT, ATTACK;
     }
 
     @Override
