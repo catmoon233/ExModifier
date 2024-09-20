@@ -13,6 +13,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -23,7 +24,11 @@ public class ModifierAttriGether extends AttriGether {
 
     public float weight = 0;
     public boolean isRandom = false;
+    public int reserveDouble = 1;
     public boolean hasUUID =false;
+    public double minValue = 0;
+    public double maxValue = 0;
+    public Map<Double, Float> simpleWeight = new HashMap<>();
 
     @Override
     public String toString() {

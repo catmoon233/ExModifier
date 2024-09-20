@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.exmo.exmodifier.content.event.MainEvent;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.util.CuriosUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -51,8 +52,11 @@ public abstract class ToolTipMixin {
     }
     @ModifyReturnValue(at =@At("RETURN"), method = "getTooltipLines")
     public List<Component> getTooltipLines(List<Component> tooltip, Player player, TooltipFlag flag) {
+        if (!CuriosUtil.isCuriosItem((ItemStack) (Object) this)) {
 
-        return MainEvent.CommonEvent.ItemToolTipsChange((ItemStack)(Object)this,tooltip,player);
+            return MainEvent.CommonEvent.ItemToolTipsChange((ItemStack) (Object) this, tooltip, player);
+        }
+        return tooltip;
     }
 
 }

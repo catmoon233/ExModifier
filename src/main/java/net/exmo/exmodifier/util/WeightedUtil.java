@@ -19,26 +19,24 @@ public class WeightedUtil<T> {
     private float calculateTotalWeight() {
         float total = 0f;
         for (Float weight : weights.values()) {
-            if (weight > 0) {
                 total += weight;
             }
-        }
+
         return total;
     }
 
     private float[] calculateCumulativeWeights() {
         int size = 0;
         for (Float weight : weights.values()) {
-            if (weight > 0) size++;
+             size++;
         }
         float[] cumulativeWeights = new float[size];
         float sum = 0f;
         int index = 0;
         for (Float weight : weights.values()) {
-            if (weight > 0) {
                 sum += weight;
                 cumulativeWeights[index++] = sum;
-            }
+
         }
         return cumulativeWeights;
     }
