@@ -72,24 +72,24 @@ public class AppointConditionDamage {
                 List<ModifierAttriGether> attriGethers = exSuit.attriGether.get(i);
                 if (attriGethers != null) {
                     for (ModifierAttriGether e : attriGethers.stream().filter(e -> !e.getOnlyItems().isEmpty()).toList()) {
-                        List<String> onlyitems = new ArrayList<>(e.getOnlyItems());
-                        List<String> onlyslots = new ArrayList<>(e.getOnlySlots());
-                        Exmodifier.LOGGER.debug(" 1 " + onlyitems);
+                        List<String> onlyitems = e.getOnlyItems();
+                        List<String> onlyslots = e.getOnlySlots();
+                    //    Exmodifier.LOGGER.debug(" 1 " + onlyitems);
                         boolean flag = false;
                         if (!onlyitems.isEmpty()) {
                             if (containsCommonElements(onlyitems, new ArrayList<>(items.values()))) {
                                 flag = true;
-                                Exmodifier.LOGGER.debug("OnlyItems:" + onlyitems + " items " + items + " is true");
+                              //  Exmodifier.LOGGER.debug("OnlyItems:" + onlyitems + " items " + items + " is true");
                             }
                         }
                         if (!onlyslots.isEmpty()) {
                             if (!pdSlots(items, onlyslots, onlyitems)) {
                                 flag = false;
-                                Exmodifier.LOGGER.debug("OnlySlots:" + onlyslots + " is false");
+                            //    Exmodifier.LOGGER.debug("OnlySlots:" + onlyslots + " is false");
                             }
 
                         }
-                        Exmodifier.LOGGER.debug("flag:" + flag);
+                     //   Exmodifier.LOGGER.debug("flag:" + flag);
                         if (flag) {
                             EntityAttrUtil.entityAddAttrTF(e.attribute, e.getModifier(), player, EntityAttrUtil.WearOrTake.WEAR);
                         }

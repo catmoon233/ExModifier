@@ -206,8 +206,15 @@ public class ModifierHandle {
                     Exmodifier.LOGGER.debug("add entry ing: " + modifierEntry.id);
 
                     List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
+                    ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, true, refreshments, attriGethers,modifierEntry,modifierEntries);
+                    MinecraftForge.EVENT_BUS.post(event);
+
                     Exmodifier.LOGGER.debug("add entry end: " + modifierEntry.id +" "+attriGethers);
-                    finalAttriGethers.addAll(attriGethers);
+                    finalAttriGethers.addAll(event.getAttriGether());
+                    if (modifierEntry.OnlyHasThisEntry){
+                        finalAttriGethers = new ArrayList<>(event.getAttriGether());
+                        break;
+                    }
                 }
             }
 
@@ -243,7 +250,10 @@ public class ModifierHandle {
                     ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, slot, refreshments, attriGethers,modifierEntry,modifierEntries);
                     MinecraftForge.EVENT_BUS.post(event);
                     finalAttriGethers.addAll(event.attriGether);
-                    if (modifierEntry.OnlyHasThisEntry)break;
+                    if (modifierEntry.OnlyHasThisEntry){
+                        finalAttriGethers = new ArrayList<>(event.attriGether);
+                        break;
+                    }
                 }
             }
 
