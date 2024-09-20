@@ -215,9 +215,11 @@ public class MainEvent {
         @SubscribeEvent
         public static void PlayerHurt(LivingHurtEvent event){
             if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ON_HURT);
-            if ((event.getSource().getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
-
-
+            //if ((event.getSource().getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
+        }
+        @SubscribeEvent
+        public static void PlayerDamage(LivingDamageEvent event){
+            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
         }
         @SubscribeEvent
         public static void PlayerLiving(TickEvent.PlayerTickEvent event) {
@@ -225,7 +227,7 @@ public class MainEvent {
             if (player.level().isClientSide) {
                 return;
             }
-        ApplySuitEffect(player, ExSuit.Trigger.TICK);
+            ApplySuitEffect(player, ExSuit.Trigger.TICK);
 
         }
 
