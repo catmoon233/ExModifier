@@ -46,13 +46,12 @@ public class ExSuit {
         switch (trigger){
             case "tick":
             	return Trigger.TICK;
-                break;
+                
             case "on_hurt":
             	return Trigger.ON_HURT;
-                break;
+                
             case "attack":
             	return Trigger.ATTACK;
-                break;
             default:
             	return Trigger.TICK;
         }
