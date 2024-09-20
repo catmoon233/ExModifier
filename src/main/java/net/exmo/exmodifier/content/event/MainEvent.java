@@ -172,7 +172,6 @@ public class MainEvent {
                             if (commands != null) {
                                 for (String command : commands) {
                                     {
-
                                         if (!player.level().isClientSide() && player.getServer() != null) {
                                             player.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, player.position(), player.getRotationVector(), player.level() instanceof ServerLevel ? (ServerLevel) player.level() : null, 4,
                                                     player.getName().getString(), player.getDisplayName(), player.level().getServer(), player), command);
@@ -193,7 +192,6 @@ public class MainEvent {
                                             }
                                         } else {
                                             addMobEffects.add(new MobEffectInstance(mobEffectInstance));
-
                                         }
                                     }
                                 }
