@@ -213,14 +213,18 @@ public class ExSuitHandle {
         JsonObject effectObj = effectEntry.getValue().getAsJsonObject();
         MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(new ResourceLocation(effectEntry.getKey()));
         int level = 0;
+        int time = 20
         if (effectObj !=null) {
             if (effectObj.has("level")) {
                 level = effectObj.get("level").getAsInt();
             }
+            if (effectObj.has("time")) {
+                time = effectObj.get("time").getAsInt();
+            }
         }
         if (effect != null) {
             Exmodifier.LOGGER.debug("Registered ExSuit: " + exSuit.id + " with effect: " + effectEntry.getKey() + " level: " + level);
-            return new MobEffectInstance(effect, 20, level,false,true,true);
+            return new MobEffectInstance(effect, time, level,false,true,true);
         }
         Exmodifier.LOGGER.error("No MobEffect Found: " + effectEntry.getKey());
         return null;
