@@ -46,16 +46,13 @@ public class ExSuit {
         switch (trigger){
             case "tick":
             	return Trigger.TICK;
-                
             case "on_hurt":
             	return Trigger.ON_HURT;
-                
             case "attack":
             	return Trigger.ATTACK;
             default:
             	return Trigger.TICK;
         }
-        return Trigger.TICK;
     }
 
     public String getSetting(String key){
