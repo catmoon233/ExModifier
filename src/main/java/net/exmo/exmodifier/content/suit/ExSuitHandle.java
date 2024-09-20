@@ -48,19 +48,19 @@ public class ExSuitHandle {
     public static List<ExSuit> FindExSuit(String id){
         List<ExSuit> exSuits = new ArrayList<>();
         for (ExSuit exSuit : LoadExSuit.values()){
-            if (exSuit.type == ModifierEntry.Type.ALL){
-                if (exSuit.entry.stream().anyMatch(entry -> entry.id.substring(2).equals(id.substring(2))))
-                {
-                    Exmodifier.LOGGER.debug("Found About ExSuit: "+exSuit.id);
+            if (exSuit.type == ModifierEntry.Type.ALL) {
+                if (exSuit.entry.stream().anyMatch(entry -> entry.id.substring(2).equals(id.substring(2)))) {
+                    Exmodifier.LOGGER.debug("Found About ExSuit: " + exSuit.id);
                     exSuits.add(exSuit);
-                }else
+                }
+            }else
                 {
                     if (exSuit.id.equals(id)) {
                         Exmodifier.LOGGER.debug("Found About ExSuit: " + exSuit.id);
                         exSuits.add(exSuit);
                     }
                 }
-            }
+
         }
         return exSuits;
     }
@@ -161,12 +161,13 @@ public class ExSuitHandle {
         exSuit.id = moconfig.type.toString().substring(0,2) + entry.getKey();
         if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
         if (itemObject.has("LocalDescription"))exSuit.LocalDescription= itemObject.get("LocalDescription").getAsString();
-        //if (itemObject.has("trigger")) exSuit.trigger = StringToTrigger(itemObject.get("trigger").getAsString());
+        if (itemObject.has("trigger")) exSuit.MainTrigger = StringToTrigger(itemObject.get("trigger").getAsString());
         if (itemObject.has("excludeArmorInHand"))exSuit.setting.put("excludeArmorInHand", String.valueOf(itemObject.get("excludeArmorInHand").getAsBoolean()));
         for (int i = 1; i <= 10; i++) {
             if (itemObject.has(i + "")) {
                 JsonObject suitObj = itemObject.getAsJsonObject(i + "");
-                if (itemObject.has("trigger")) exSuit.trigger = StringToTrigger(itemObject.get("trigger").getAsString());
+                ExSuit.Trigger trigger =suitObj.has("trigger") ?  StringToTrigger(suitObj.get("trigger").getAsString()) : exSuit.MainTrigger;
+                exSuit.setLevelTriggers(i, trigger);
                 if (suitObj.has("effect")) {
                     if (suitObj.getAsJsonObject("effect") != null) {
                         exSuit.setLevelEffects(i, processEffects(moconfig, exSuit, suitObj.getAsJsonObject("effect")));

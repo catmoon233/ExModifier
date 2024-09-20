@@ -17,7 +17,20 @@ public class ExSuit {
 	public Map<Integer,List<String>> commands = new HashMap<>();
     public int MaxLevel ;
     public boolean visible = true;
-    public Trigger trigger = Trigger.TICK;
+
+    public Map<Integer, Trigger> getTriggers() {
+        return triggers;
+    }
+
+    public void setTriggers(Map<Integer, Trigger> triggers) {
+        this.triggers = triggers;
+    }
+    public void setLevelTriggers(int level, Trigger trigger) {
+        triggers.put(level,trigger);
+    }
+
+    public Trigger MainTrigger = Trigger.TICK;
+    public Map<Integer,Trigger> triggers = new HashMap<>();
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
         return attriGether;
     }    public Map<Integer, List<ModifierAttriGether>> getAttriGetherC() {
@@ -25,7 +38,7 @@ public class ExSuit {
 
     }
     public static enum Trigger {
-        TICK, ON_HURT, ATTACK;
+        TICK, ON_HURT, ATTACK, JUMP, SHOOT, EAT, DODGE, CRIT, KILL, DIE,MOVECHANGE,SWING;
     }
 
     @Override
@@ -35,6 +48,12 @@ public class ExSuit {
                 ", hasMobEffect=" + hasMobEffect +
                 ", type=" + type +
                 ", id='" + id + '\'' +
+                ", LocalDescription='" + LocalDescription + '\'' +
+                ", commands=" + commands +
+                ", MaxLevel=" + MaxLevel +
+                ", visible=" + visible +
+                ", MainTrigger=" + MainTrigger +
+                ", triggers=" + triggers +
                 ", entry=" + entry +
                 ", attriGether=" + attriGether +
                 ", effect=" + effect +
@@ -43,16 +62,20 @@ public class ExSuit {
     }
 
     public static Trigger StringToTrigger(String trigger){
-        switch (trigger){
-            case "tick":
-            	return Trigger.TICK;
-            case "on_hurt":
-            	return Trigger.ON_HURT;
-            case "attack":
-            	return Trigger.ATTACK;
-            default:
-            	return Trigger.TICK;
-        }
+        return switch (trigger.toLowerCase()) {
+            case "on_hurt" -> Trigger.ON_HURT;
+            case "attack" -> Trigger.ATTACK;
+            case "jump" -> Trigger.JUMP;
+            case "shoot" -> Trigger.SHOOT;
+            case "eat" -> Trigger.EAT;
+            case "dodge" -> Trigger.DODGE;
+            case "crit" -> Trigger.CRIT;
+            case "movechange" -> Trigger.MOVECHANGE;
+            case "kill" -> Trigger.KILL;
+            case "swing" -> Trigger.SWING;
+            case "die" -> Trigger.DIE;
+            default -> Trigger.TICK;
+        };
     }
 
     public String getSetting(String key){

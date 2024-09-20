@@ -26,7 +26,7 @@ import java.util.Map;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.RandomEntry;
 
 @Mod.EventBusSubscriber
-public class SetHandItemEntry {
+public class AddHandItemEntry {
     @SubscribeEvent
     public static void registerCommand(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("addhanditementry").requires(s -> s.hasPermission(4)).then(Commands.argument("name1", EntityArgument.player()).then(Commands.argument("name", StringArgumentType.word()).executes(arguments -> {

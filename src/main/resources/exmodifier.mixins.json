@@ -6,6 +6,7 @@
   "refmap": "exmodifier.refmap.json",
   "mixins": [
     "ItemStackMixin",
+    "LivingSwingAction",
     "SmiMixin",
     "ToolTipMixin"
   ],

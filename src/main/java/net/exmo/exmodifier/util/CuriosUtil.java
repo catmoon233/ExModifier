@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class CuriosUtil {
-    public class slotInfo{
+    public static class slotInfo{
       public ItemStack stack;
         public  String identifie;
         public   String name ;

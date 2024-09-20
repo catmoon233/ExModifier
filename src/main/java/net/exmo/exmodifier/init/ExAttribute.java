@@ -2,6 +2,7 @@ package net.exmo.exmodifier.init;
 
 
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.events.ExDodgeEvent;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -16,6 +17,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -89,10 +92,15 @@ public class ExAttribute {
                 if (Math.random() <= v) {
                     particle(entity);
                     move(entity);
-                    event.setCanceled(true);
+                    ExDodgeEvent e  = new ExDodgeEvent(entity,event,entity.getAttributeValue(ExAttribute.DODGE.get()),remove_value, ExDodgeEvent.resultType.MISS);
+                    MinecraftForge.EVENT_BUS.post(e);
+                    if (e.result== ExDodgeEvent.resultType.MISS) event.setCanceled(true);
                 }else {
                     if (v < 0) {
-                        entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, (int)(v*2.5*-1), false, false));
+                        ExDodgeEvent e  = new ExDodgeEvent(entity,event,entity.getAttributeValue(ExAttribute.DODGE.get()),remove_value, ExDodgeEvent.resultType.HIT);
+                        MinecraftForge.EVENT_BUS.post(e);
+                        if (e.result== ExDodgeEvent.resultType.MISS) event.setCanceled(true);
+                        else entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, (int)(v*2.5*-1), false, false));
                     }
                 }
             }

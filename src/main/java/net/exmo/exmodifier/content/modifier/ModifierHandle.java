@@ -525,6 +525,7 @@ public class ModifierHandle {
     public static List<MoConfig> Foundmoconfigs = new ArrayList<>();
     public static List<WashingMaterials> materialsList = new ArrayList<>();
     public static Map<String,ModifierEntry> modifierEntryMap = new HashMap<>();
+    public static Map<ModifierEntry,List<String>> EEMatchQueue = new HashMap<>();
     public static void RegisterModifierEntry(ModifierEntry modifierEntry){
         if (!hasBootsConfig)if (modifierEntry.type == ModifierEntry.Type.BOOTS)hasBootsConfig=true;
         if (!hasLeggingsConfig)if (modifierEntry.type == ModifierEntry.Type.LEGGINGS)hasLeggingsConfig=true;
@@ -534,7 +535,19 @@ public class ModifierHandle {
         modifierEntryMap.put(modifierEntry.id,modifierEntry);
         LOGGER.debug("RegisterModifierEntry: Type:" + modifierEntry.type + " Target:" + modifierEntry.id  );
     }
+    public static void EEMatchQueueHandle(){
+        EEMatchQueue.forEach((k,v)->{
+            for (String s : v){
+                List<ExSuit> exSuit = ExSuitHandle.FindExSuit(s);
+                for (ExSuit exSuit1 : exSuit){
+                    exSuit1.addEntry(k);
+                    LOGGER.debug("Add Entry:" + k.id + " To ExSuit:" + exSuit1.id);
+                }
+            }
 
+        });
+        EEMatchQueue = new HashMap<>();
+    }
     public static void readConfig() {
         long startTime = System.nanoTime(); // 记录开始时间
 
@@ -676,7 +689,13 @@ public class ModifierHandle {
         modifierEntry.weight = itemObject.has("weight") ? itemObject.get("weight").getAsFloat() : 1.0f;
         modifierEntry.needFreshValue = itemObject.has("needFreshValue") ? itemObject.get("needFreshValue").getAsFloat() : 0.0F;
         modifierEntry.cantSelect = itemObject.has("cantSelect") && itemObject.get("cantSelect").getAsBoolean();
-
+        if (itemObject.has("exsuit")){
+            List<String> exss = new ArrayList<>();
+            for (JsonElement exsuit : itemObject.get("exsuit").getAsJsonArray()) {
+                exss.add(exsuit.getAsString());
+            }
+           EEMatchQueue.put(modifierEntry,exss);
+        }
         if (!modifierEntry.isRandom) modifierEntry.RandomNum = 0;
         LOGGER.debug(modifierEntry.id + " weight " + modifierEntry.weight);
         if (itemObject.has("OnlyItems")){
