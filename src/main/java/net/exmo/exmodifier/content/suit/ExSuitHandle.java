@@ -183,7 +183,7 @@ public class ExSuitHandle {
 
                     }
                 }else {
-                    Exmodifier.LOGGER.debug("No effect Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
+                    Exmodifier.LOGGER.debug("No command Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
                 }
                 if (suitObj.has("attrGethers")) {
                     if (suitObj.getAsJsonObject("attrGethers") != null) {

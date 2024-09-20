@@ -47,6 +47,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.config.refresh_time;
@@ -157,56 +158,61 @@ public class MainEvent {
 
         @SubscribeEvent
         public static void PlayerLiving(TickEvent.PlayerTickEvent event) {
-
             Player player = event.player;
-            if (player.level().isClientSide) return;
-            List<MobEffectInstance> addMobEffects = new ArrayList<>();
+            if (player.level().isClientSide) {
+                return;
+            }
+
+            // Retrieve player capability once and exit early if not present
             player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-                for (String id : capability.Suits) {
-                    ExSuit suit = ExSuitHandle.LoadExSuit.get(id);
-                    for (int i = 1; i <= ExSuitHandle.GetSuitLevel(player, id); i++) {
-                        // 获取效果列表，检查是否为null
-                        Map<Integer,List<String>> commandsMap = suit.getCommands();
-                        if (commandsMap != null) {
-                            List<String> commands = commandsMap.get(i);
-                            if (commands != null) {
-                                for (String command : commands) {
-                                    {
+                List<MobEffectInstance> mobEffectsToAdd = new ArrayList<>();
+                ServerLevel serverLevel = (ServerLevel) player.level();
+                CommandSourceStack commandSourceStack = new CommandSourceStack(
+                        CommandSource.NULL,
+                        player.position(),
+                        player.getRotationVector(),
+                        serverLevel,
+                        4,
+                        player.getName().getString(),
+                        player.getDisplayName(),
+                        serverLevel.getServer(),
+                        player
+                );
 
-                                        if (!player.level().isClientSide() && player.getServer() != null) {
-                                            player.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, player.position(), player.getRotationVector(), player.level() instanceof ServerLevel ? (ServerLevel) player.level() : null, 4,
-                                                    player.getName().getString(), player.getDisplayName(), player.level().getServer(), player), command);
-                                        }
-                                    }
-                                }
-                            }
+                capability.Suits.forEach(suitId -> {
+                    ExSuit suit = ExSuitHandle.LoadExSuit.get(suitId);
+                    int suitLevel = ExSuitHandle.GetSuitLevel(player, suitId);
+                    for (int level = 1; level <= suitLevel; level++) {
+                        // Run commands if present for the current suit level
+                        List<String> commands = suit.getCommands().get(level);
+                        if (commands != null && !player.level().isClientSide() && player.getServer() != null) {
+                            commands.forEach(command -> player.getServer().getCommands().performPrefixedCommand(commandSourceStack, command));
                         }
-                        Map<Integer, List<MobEffectInstance>> effectMap = suit.getEffect();
-                        if (effectMap != null) {
-                            List<MobEffectInstance> effects = effectMap.get(i);
-                            if (effects != null) {
-                                for (MobEffectInstance mobEffectInstance : effects) {
-                                    if (mobEffectInstance != null) {
-                                        if (player.hasEffect(mobEffectInstance.getEffect())) {
-                                            if (player.getEffect(mobEffectInstance.getEffect()).getAmplifier() < mobEffectInstance.getAmplifier()) {
-                                                addMobEffects.add(new MobEffectInstance(mobEffectInstance));
-                                            }
-                                        } else {
-                                            addMobEffects.add(new MobEffectInstance(mobEffectInstance));
 
+                        // Add MobEffects if present for the current suit level
+                        List<MobEffectInstance> effects = suit.getEffect().get(level);
+                        if (effects != null) {
+                            effects.stream()
+                                    .filter(Objects::nonNull)
+                                    .forEach(mobEffectInstance -> {
+                                        MobEffectInstance existingEffect = player.getEffect(mobEffectInstance.getEffect());
+                                        if (existingEffect == null || existingEffect.getAmplifier() < mobEffectInstance.getAmplifier()) {
+                                            mobEffectsToAdd.add(new MobEffectInstance(mobEffectInstance));
                                         }
-                                    }
-                                }
-                            }
+                                    });
                         }
                     }
-                }
+                });
+
+                // Apply collected effects, firing an event for each one
+                mobEffectsToAdd.forEach(mobEffectInstance -> {
+                    ExApplySuitEffectEvent applySuitEffectEvent = new ExApplySuitEffectEvent(player, mobEffectInstance);
+                    MinecraftForge.EVENT_BUS.post(applySuitEffectEvent);
+                    if (!applySuitEffectEvent.isCanceled()) {
+                        player.addEffect(applySuitEffectEvent.mobEffectInstance);
+                    }
+                });
             });
-            for (MobEffectInstance mobEffectInstance : addMobEffects) {
-                ExApplySuitEffectEvent event1 = new ExApplySuitEffectEvent(player, mobEffectInstance);
-                MinecraftForge.EVENT_BUS.post(event1);
-                if (!event1.isCanceled()) player.addEffect(event1.mobEffectInstance);
-            }
         }
 
         public static boolean hasAttr(ItemStack stack) {

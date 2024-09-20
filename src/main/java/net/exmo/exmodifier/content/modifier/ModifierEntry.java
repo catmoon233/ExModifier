@@ -277,6 +277,7 @@ public class ModifierEntry {
     public boolean OnlyHasThisEntry = false;
     public Type type;
     public boolean isCuriosEntry =false;
+    public float needFreshValue = 0;
     public String curiosType;
     public List<String> OnlyTags = new ArrayList<>();
     public List<String> OnlyItems = new ArrayList<>();

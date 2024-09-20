@@ -4,6 +4,7 @@ package net.exmo.exmodifier.init;
 import net.exmo.exmodifier.Exmodifier;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -11,12 +12,15 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
@@ -31,9 +35,9 @@ import java.util.Random;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ExAttribute {
     public static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(ForgeRegistries.ATTRIBUTES, Exmodifier.MODID);
-    public static final RegistryObject<Attribute> DODGE = ATTRIBUTES.register("dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dodge", 0, 0, 10000000)).setSyncable(true));
-    public static final RegistryObject<Attribute> HIT_RATE = ATTRIBUTES.register("hit_rate", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".hit_rate", 0, 0, 10000000)).setSyncable(true));
-
+    public static final RegistryObject<Attribute> DODGE = ATTRIBUTES.register("dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dodge", 1, 0, 10000000)).setSyncable(true));
+    public static final RegistryObject<Attribute> HIT_RATE = ATTRIBUTES.register("hit_rate", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".hit_rate", 1, 0, 10000000)).setSyncable(true));
+    public static final RegistryObject<Attribute> PERCENT_HEAL = ATTRIBUTES.register("percent_heal", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".percent_heal", 1, 0, 10000000)).setSyncable(true));
     @SubscribeEvent
     public static void register(FMLConstructModEvent event) {
         event.enqueueWork(() -> {
@@ -47,10 +51,10 @@ public class ExAttribute {
 
         entityTypes.forEach((e) -> {
             Class<? extends Entity> baseClass = e.getBaseClass();
-            if (baseClass.isAssignableFrom(LivingEntity.class)) {
                 event.add(e, DODGE.get());
                 event.add(e, HIT_RATE.get());
-            }
+                event.add(e, PERCENT_HEAL.get());
+
         });
 
 
@@ -71,24 +75,34 @@ public class ExAttribute {
 
         }
         @SubscribeEvent
-        public static void AtAttack(LivingHurtEvent event) {
+        public static void AtAttack(LivingAttackEvent event) {
+
             LivingEntity entity = event.getEntity();
             if (!(event.getSource().getEntity() instanceof LivingEntity souree)) return;
+            if (event.getSource().is(DamageTypes.MAGIC) || event.getSource().is(DamageTypes.INDIRECT_MAGIC) || event.getSource().is(DamageTypes.LAVA) )return;
             if (entity.getAttributes().hasAttribute(ExAttribute.DODGE.get())) {
-                int remove_value = 0;
+                double remove_value = 0;
                 if (souree.getAttributes().hasAttribute(ExAttribute.HIT_RATE.get())) {
-                    remove_value = (int) souree.getAttributeValue(ExAttribute.HIT_RATE.get());
+                    remove_value =  souree.getAttributeValue(ExAttribute.HIT_RATE.get());
                 }
                 double v = entity.getAttributeValue(ExAttribute.DODGE.get()) - remove_value;
                 if (Math.random() <= v) {
                     particle(entity);
                     move(entity);
                     event.setCanceled(true);
-                    return;
                 }else {
                     if (v < 0) {
-                        entity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 20, (int)(v*5), false, false));
+                        entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, (int)(v*2.5*-1), false, false));
                     }
+                }
+            }
+        }
+        @SubscribeEvent
+        public static void AtHurt(LivingHurtEvent event) {
+            if ((event.getSource().getEntity() instanceof LivingEntity entity)) {
+                if (entity.getAttributes().hasAttribute(ExAttribute.PERCENT_HEAL.get()) && entity.getAttributes().hasAttribute(Attributes.MAX_HEALTH)) {
+                    double v = entity.getAttributeValue(ExAttribute.PERCENT_HEAL.get());
+                    entity.heal((float) (entity.getAttributeValue(Attributes.MAX_HEALTH) * (v - 1)));
                 }
             }
         }
@@ -97,6 +111,8 @@ public class ExAttribute {
             Player oldP = event.getOriginal();
             Player newP = (Player) event.getEntity();
             newP.getAttribute(DODGE.get()).setBaseValue(oldP.getAttribute(DODGE.get()).getBaseValue());
+            newP.getAttribute(PERCENT_HEAL.get()).setBaseValue(oldP.getAttribute(PERCENT_HEAL.get()).getBaseValue());
+            newP.getAttribute(HIT_RATE.get()).setBaseValue(oldP.getAttribute(HIT_RATE.get()).getBaseValue());
         }
     }
 }

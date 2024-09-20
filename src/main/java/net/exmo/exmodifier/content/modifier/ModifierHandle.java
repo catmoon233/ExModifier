@@ -352,6 +352,7 @@ public class ModifierHandle {
                             .filter(e -> e.getValue().type == ModifierEntry.Type.CURIOS).filter(e -> curiosType.contains(e.getValue().curiosType)|| e.getValue().curiosType.equals("ALL"))
                             .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
                             .filter(e -> !e.getValue().cantSelect)
+                            .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
                             .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
                             .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
                             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight)));
@@ -394,6 +395,7 @@ public class ModifierHandle {
                                     .filter(e -> e.getValue().type == type )
                                     .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
                                     .filter(e -> !e.getValue().cantSelect)
+                                    .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
                                     .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
                                     .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
                                     .filter(e -> {
@@ -645,9 +647,10 @@ public class ModifierHandle {
         }
         modifierEntry.id = modifierEntry.type.toString().substring(0, 2) + entry.getKey();
         modifierEntry.isRandom = itemObject.has("isRandom") && itemObject.get("isRandom").getAsBoolean();
-        modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry") && itemObject.get("OnlyHasThisEntry").getAsBoolean();
+        modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry".toLowerCase()) && itemObject.get("OnlyHasThisEntry").getAsBoolean();
         modifierEntry.RandomNum = itemObject.has("RandomNum") ? itemObject.get("RandomNum").getAsInt() : 0;
         modifierEntry.weight = itemObject.has("weight") ? itemObject.get("weight").getAsFloat() : 1.0f;
+        modifierEntry.needFreshValue = itemObject.has("needFreshValue") ? itemObject.get("needFreshValue").getAsFloat() : 0.0F;
         modifierEntry.cantSelect = itemObject.has("cantSelect") && itemObject.get("cantSelect").getAsBoolean();
 
         if (!modifierEntry.isRandom) modifierEntry.RandomNum = 0;
