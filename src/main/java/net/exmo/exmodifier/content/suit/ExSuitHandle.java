@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.getUUID;
+import static net.exmo.exmodifier.content.suit.ExSuit.StringToTrigger;
 
 public class ExSuitHandle {
     public static Map<String, ExSuit> LoadExSuit = new java.util.HashMap<>();
@@ -160,7 +161,7 @@ public class ExSuitHandle {
         exSuit.id = moconfig.type.toString().substring(0,2) + entry.getKey();
         if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
         if (itemObject.has("LocalDescription"))exSuit.LocalDescription= itemObject.get("LocalDescription").getAsString();
-
+        if (itemObject.has("trigger")) exSuit.trigger = StringToTrigger(itemObject.get("trigger").getAsString());
         if (itemObject.has("excludeArmorInHand"))exSuit.setting.put("excludeArmorInHand", String.valueOf(itemObject.get("excludeArmorInHand").getAsBoolean()));
         for (int i = 1; i <= 10; i++) {
             if (itemObject.has(i + "")) {
@@ -213,7 +214,7 @@ public class ExSuitHandle {
         JsonObject effectObj = effectEntry.getValue().getAsJsonObject();
         MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(new ResourceLocation(effectEntry.getKey()));
         int level = 0;
-        int time = 20
+        int time = 20;
         if (effectObj !=null) {
             if (effectObj.has("level")) {
                 level = effectObj.get("level").getAsInt();

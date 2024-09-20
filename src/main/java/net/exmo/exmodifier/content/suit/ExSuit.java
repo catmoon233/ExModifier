@@ -17,7 +17,7 @@ public class ExSuit {
 	public Map<Integer,List<String>> commands = new HashMap<>();
     public int MaxLevel ;
     public boolean visible = true;
-    public Trigger trigger;
+    public Trigger trigger = Trigger.TICK;
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
         return attriGether;
     }    public Map<Integer, List<ModifierAttriGether>> getAttriGetherC() {

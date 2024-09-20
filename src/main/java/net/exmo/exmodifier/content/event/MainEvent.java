@@ -31,7 +31,9 @@ import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -58,6 +60,7 @@ import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.WEAR;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MainEvent {
+
     @SubscribeEvent
     public static void init(FMLCommonSetupEvent event) throws IOException {
         ModifierHandle.readConfig();
@@ -68,6 +71,7 @@ public class MainEvent {
 
     @Mod.EventBusSubscriber
     public static class CommonEvent {
+
         @SubscribeEvent
         public static void CuriosChange(CurioChangeEvent event) {
             if (!(event.getEntity() instanceof Player player))return;
@@ -155,14 +159,7 @@ public class MainEvent {
         public static void OutGame(PlayerEvent.PlayerLoggedOutEvent event) {
 
         }
-
-        @SubscribeEvent
-        public static void PlayerLiving(TickEvent.PlayerTickEvent event) {
-            Player player = event.player;
-            if (player.level().isClientSide) {
-                return;
-            }
-
+        public static void ApplySuitEffect(Player player, ExSuit.Trigger trigger){
             // Retrieve player capability once and exit early if not present
             player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
                 List<MobEffectInstance> mobEffectsToAdd = new ArrayList<>();
@@ -179,8 +176,9 @@ public class MainEvent {
                         player
                 );
 
-                capability.Suits.forEach(suitId -> {
+                    for (String suitId : capability.Suits){
                     ExSuit suit = ExSuitHandle.LoadExSuit.get(suitId);
+                    if (suit.trigger!=trigger)continue;
                     int suitLevel = ExSuitHandle.GetSuitLevel(player, suitId);
                     for (int level = 1; level <= suitLevel; level++) {
                         // Run commands if present for the current suit level
@@ -202,7 +200,7 @@ public class MainEvent {
                                     });
                         }
                     }
-                });
+                }
 
                 // Apply collected effects, firing an event for each one
                 mobEffectsToAdd.forEach(mobEffectInstance -> {
@@ -213,6 +211,22 @@ public class MainEvent {
                     }
                 });
             });
+        }
+        @SubscribeEvent
+        public static void PlayerHurt(LivingHurtEvent event){
+            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ON_HURT);
+            if ((event.getSource().getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
+
+
+        }
+        @SubscribeEvent
+        public static void PlayerLiving(TickEvent.PlayerTickEvent event) {
+            Player player = event.player;
+            if (player.level().isClientSide) {
+                return;
+            }
+        ApplySuitEffect(player, ExSuit.Trigger.TICK);
+
         }
 
         public static boolean hasAttr(ItemStack stack) {

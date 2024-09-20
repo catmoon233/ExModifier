@@ -213,6 +213,10 @@ public class ModifierHandle {
                     finalAttriGethers.addAll(event.getAttriGether());
                     if (modifierEntry.OnlyHasThisEntry){
                         finalAttriGethers = new ArrayList<>(event.getAttriGether());
+                        for (int i = numAddedModifiers ; i < refreshments; i++){
+                            stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + i, "");
+                        }
+                        stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", modifierEntry.id);
                         break;
                     }
                 }
@@ -252,6 +256,10 @@ public class ModifierHandle {
                     finalAttriGethers.addAll(event.attriGether);
                     if (modifierEntry.OnlyHasThisEntry){
                         finalAttriGethers = new ArrayList<>(event.attriGether);
+                        for (int i = numAddedModifiers ; i < refreshments; i++){
+                            stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + i, "");
+                        }
+                        stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", modifierEntry.id);
                         break;
                     }
                 }
