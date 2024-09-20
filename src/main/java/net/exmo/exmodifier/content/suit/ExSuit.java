@@ -38,7 +38,7 @@ public class ExSuit {
 
     }
     public static enum Trigger {
-        TICK, ON_HURT, ATTACK, JUMP, SHOOT, EAT, DODGE, CRIT, KILL, DIE,MOVECHANGE,SWING;
+        TICK, ON_HURT, ATTACK, JUMP, SHOOT, EAT, DODGE, CRIT, KILL, DIE,MOVECHANGE,SWING,PROJECTILE_HIT;
     }
 
     @Override
@@ -62,20 +62,27 @@ public class ExSuit {
     }
 
     public static Trigger StringToTrigger(String trigger){
-        return switch (trigger.toLowerCase()) {
-            case "on_hurt" -> Trigger.ON_HURT;
-            case "attack" -> Trigger.ATTACK;
-            case "jump" -> Trigger.JUMP;
-            case "shoot" -> Trigger.SHOOT;
-            case "eat" -> Trigger.EAT;
-            case "dodge" -> Trigger.DODGE;
-            case "crit" -> Trigger.CRIT;
-            case "movechange" -> Trigger.MOVECHANGE;
-            case "kill" -> Trigger.KILL;
-            case "swing" -> Trigger.SWING;
-            case "die" -> Trigger.DIE;
-            default -> Trigger.TICK;
-        };
+        for (Trigger trigger1 : Trigger.values()){
+            if (trigger1.toString().equalsIgnoreCase(trigger)){
+                return trigger1;
+            }
+        }
+        return Trigger.TICK;
+//        return switch (trigger.toLowerCase()) {
+//            case "on_hurt" -> Trigger.ON_HURT;
+//            case "attack" -> Trigger.ATTACK;
+//            case "jump" -> Trigger.JUMP;
+//            case "shoot" -> Trigger.SHOOT;
+//            case "eat" -> Trigger.EAT;
+//            case "dodge" -> Trigger.DODGE;
+//            case "crit" -> Trigger.CRIT;
+//            case "projectile_hit"-> Trigger.PROJECTILE_HIT;
+//            case "movechange" -> Trigger.MOVECHANGE;
+//            case "kill" -> Trigger.KILL;
+//            case "swing" -> Trigger.SWING;
+//            case "die" -> Trigger.DIE;
+//            default -> Trigger.TICK;
+//        };
     }
 
     public String getSetting(String key){

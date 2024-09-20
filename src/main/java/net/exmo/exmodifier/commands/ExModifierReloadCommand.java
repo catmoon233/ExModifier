@@ -18,14 +18,17 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.RandomEntry;
 
+@Mod.EventBusSubscriber
 public class ExModifierReloadCommand {
     @SubscribeEvent
     public static void registerCommand(RegisterCommandsEvent event) {
@@ -35,6 +38,8 @@ public class ExModifierReloadCommand {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+
             return 0;
 
         }));

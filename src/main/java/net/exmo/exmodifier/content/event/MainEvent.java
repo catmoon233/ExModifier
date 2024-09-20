@@ -31,6 +31,7 @@ import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
@@ -235,6 +236,10 @@ public class MainEvent {
             if ((event.getSource().getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.KILL);
         }
         @SubscribeEvent
+        public static void PlayerProjectile(ProjectileImpactEvent event){
+            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.PROJECTILE_HIT);
+        }
+        @SubscribeEvent
         public static void PlayerShoot(ArrowLooseEvent event){
            ApplySuitEffect(event.getEntity(), ExSuit.Trigger.SHOOT);
         }
@@ -301,7 +306,7 @@ public class MainEvent {
 
 
                     ItemStack stack = event.getTo();
-                    Exmodifier.LOGGER.debug(event.getFrom().toString());
+                   // Exmodifier.LOGGER.debug(event.getFrom().toString());
                     List<String> curiosSlots = CuriosUtil.getSlotsFromItemstack(stack);
                     if (!curiosSlots.isEmpty()){
 //                        if (player.getPersistentData().getBoolean("LoginGamea")) {
