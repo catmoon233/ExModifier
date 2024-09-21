@@ -29,7 +29,7 @@ public class ExSuit {
         triggers.put(level,trigger);
     }
 
-    public Trigger MainTrigger = Trigger.TICK;
+    public static final Trigger MainTrigger = Trigger.TICK;
     public Map<Integer,Trigger> triggers = new HashMap<>();
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
         return attriGether;
