@@ -229,11 +229,8 @@ public class MainEvent {
             if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.JUMP);
         }
         @SubscribeEvent
-        public static void PlayerDeath(LivingDeathEvent event){
+        public static void PlayerDeathAndKill(LivingDeathEvent event){
             if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.DIE);
-        }
-        @SubscribeEvent
-        public static void PlayerKill(LivingDeathEvent event){
             if ((event.getSource().getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.KILL);
         }
         @SubscribeEvent
