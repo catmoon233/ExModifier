@@ -89,8 +89,13 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
         if (this.resultSlots.getItem(0).getOrCreateTag().getBoolean("modifier_refresh")){
             cir.setReturnValue(true);
         }
+        if (this.resultSlots.getItem(0).getOrCreateTag().getBoolean("entry_item_add")){
+            this.resultSlots.getItem(0).getOrCreateTag().remove("entry_item_add");
+            cir.setReturnValue(true);
+
+        }
     }
-    @Inject(at = @At("HEAD"), method = "onTake", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "onTake")
     public void onTake(Player p_39790_, ItemStack p_39791_, CallbackInfo ci) {
         if (p_39791_.getOrCreateTag().getBoolean("modifier_refresh")){
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied0","");
@@ -157,6 +162,7 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
                 if (entryitemAdd < config.canAddEntry) {
                     ci.cancel();
                     input.getOrCreateTag().putInt("entryitem_add", entryitemAdd + 1);
+                    input.getOrCreateTag().putBoolean("entry_item_add", true);
                     ModifierHandle.CommonEvent.AddEntryToItem(input, WashItem.getOrCreateTag().getString("modifier_id"));
                     this.resultSlots.setItem(0, input);
                 }

@@ -515,6 +515,10 @@ public class ModifierHandle {
                 }
 
             }
+            for (EquipmentSlot equipmentSlot : EquipmentSlot.values()){
+                Multimap<Attribute, AttributeModifier> attributeModifiers = stack.getAttributeModifiers(equipmentSlot);
+                if (attributeModifiers.isEmpty())attributeModifiers.clear();
+            }
 //            for (ModifierEntry modifierAttriGether : modifierEntryMap.values()) {
 //                String id =stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied"+0);
 //                for (int i = 1; !id.isEmpty(); i++) {

@@ -20,7 +20,7 @@ public class EntryItemRender implements IItemDecorator {
             int value ;
             if (color==null) value = 0xFFFFFF;
             else value= color.getValue();
-            guiGraphics.drawString(font, c, (int) (xOffset +9 - font.width(c)*0.5), yOffset+2 , value);
+            guiGraphics.drawString(font, c, (int) (xOffset +8 - font.width(c)*0.5), yOffset+2 , value);
             return  true;
         }
        return false;
