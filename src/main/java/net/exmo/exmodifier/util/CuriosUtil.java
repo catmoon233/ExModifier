@@ -12,12 +12,32 @@ import top.theillusivec4.curios.api.CuriosApi;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class CuriosUtil {
+    public static class slotInfo{
+      public ItemStack stack;
+        public  String identifie;
+        public   String name ;
+        public UUID uuid;
+        public   double amount;
+        public   net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation operation;
+        public     String slot;
+
+        public slotInfo(ItemStack stack, String identifie, String name, UUID uuid, double amount, AttributeModifier.Operation operation, String slot) {
+            this.stack = stack;
+            this.identifie = identifie;
+            this.name = name;
+            this.uuid = uuid;
+            this.amount = amount;
+            this.operation = operation;
+            this.slot = slot;
+        }
+    }
     public static List<String> getSlotsFromItemstack(ItemStack itemStack) {
 //        if (CuriosUtil.isCuriosItem(itemStack)) {
-            Set<String> curioTags = CuriosApi.getCuriosHelper().getCurioTags(itemStack.getItem());
-            return new ArrayList<>(curioTags);
+        Set<String> curioTags = CuriosApi.getCuriosHelper().getCurioTags(itemStack.getItem());
+        return new ArrayList<String>(curioTags);
 //        }
 
      //   return new ArrayList<>();
@@ -37,7 +57,26 @@ public class CuriosUtil {
             }
         }
     }
+    public static List<slotInfo> getCurioAttributeModifiers(ItemStack itemStack) {
+        List<slotInfo> slotInfos = new ArrayList<>();
+        if (itemStack != null && !itemStack.isEmpty()) {
+            CompoundTag nbt = itemStack.getTag();
+            if (nbt != null && nbt.contains("CurioAttributeModifiers", 9)) { // 9代表列表类型
+                ListTag modifiersList = nbt.getList("CurioAttributeModifiers", 10); // 10代表复合标签类型
+                for (int i = 0; i < modifiersList.size(); i++) {
+                    CompoundTag modifier = modifiersList.getCompound(i);
+                    String slot = modifier.getString("Slot");
+                    String attributeName = modifier.getString("AttributeName");
+                    String name = modifier.getString("Name");
+                    double amount = modifier.getDouble("Amount");
+                    int operation = modifier.getInt("Operation");
+                    slotInfos.add(new slotInfo(itemStack, attributeName, name, UUID.fromString(modifier.getString("UUID")), amount, AttributeModifier.Operation.fromValue(operation), slot));
 
+                }
+            }
+        }
+        return slotInfos;
+    }
     public static Multimap<Attribute, AttributeModifier> getAttributeModifiers(ItemStack itemStack, String slot) {
       return   CuriosApi.getCuriosHelper().getAttributeModifiers(slot, itemStack);
     }

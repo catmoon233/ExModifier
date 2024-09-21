@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.suit;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.getUUID;
+import static net.exmo.exmodifier.content.suit.ExSuit.StringToTrigger;
 
 public class ExSuitHandle {
     public static Map<String, ExSuit> LoadExSuit = new java.util.HashMap<>();
@@ -46,19 +48,19 @@ public class ExSuitHandle {
     public static List<ExSuit> FindExSuit(String id){
         List<ExSuit> exSuits = new ArrayList<>();
         for (ExSuit exSuit : LoadExSuit.values()){
-            if (exSuit.type == ModifierEntry.Type.ALL){
-                if (exSuit.entry.stream().anyMatch(entry -> entry.id.substring(2).equals(id.substring(2))))
-                {
-                    Exmodifier.LOGGER.debug("Found About ExSuit: "+exSuit.id);
+            if (exSuit.type == ModifierEntry.Type.ALL) {
+                if (exSuit.entry.stream().anyMatch(entry -> entry.id.substring(2).equals(id.substring(2)))) {
+                    Exmodifier.LOGGER.debug("Found About ExSuit: " + exSuit.id);
                     exSuits.add(exSuit);
-                }else
+                }
+            }else
                 {
                     if (exSuit.id.equals(id)) {
                         Exmodifier.LOGGER.debug("Found About ExSuit: " + exSuit.id);
                         exSuits.add(exSuit);
                     }
                 }
-            }
+
         }
         return exSuits;
     }
@@ -158,16 +160,33 @@ public class ExSuitHandle {
         exSuit.type = moconfig.type;
         exSuit.id = moconfig.type.toString().substring(0,2) + entry.getKey();
         if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
+        if (itemObject.has("LocalDescription"))exSuit.LocalDescription= itemObject.get("LocalDescription").getAsString();
+        if (itemObject.has("trigger")) exSuit.MainTrigger = StringToTrigger(itemObject.get("trigger").getAsString());
         if (itemObject.has("excludeArmorInHand"))exSuit.setting.put("excludeArmorInHand", String.valueOf(itemObject.get("excludeArmorInHand").getAsBoolean()));
         for (int i = 1; i <= 10; i++) {
             if (itemObject.has(i + "")) {
                 JsonObject suitObj = itemObject.getAsJsonObject(i + "");
+                ExSuit.Trigger trigger =suitObj.has("trigger") ?  StringToTrigger(suitObj.get("trigger").getAsString()) : exSuit.MainTrigger;
+                exSuit.setLevelTriggers(i, trigger);
                 if (suitObj.has("effect")) {
                     if (suitObj.getAsJsonObject("effect") != null) {
                         exSuit.setLevelEffects(i, processEffects(moconfig, exSuit, suitObj.getAsJsonObject("effect")));
                     }
                 }else {
                     Exmodifier.LOGGER.debug("No effect Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
+                }
+                if (suitObj.has("commands")) {
+                    JsonArray commands = suitObj.getAsJsonArray("commands");
+                    if (commands != null) {
+                        List<String> commands1 = new ArrayList<>();
+                        for (JsonElement command : commands){
+                            commands1.add(command.getAsString());
+                        }
+                        exSuit.commands.put(i, commands1);
+
+                    }
+                }else {
+                    Exmodifier.LOGGER.debug("No command Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
                 }
                 if (suitObj.has("attrGethers")) {
                     if (suitObj.getAsJsonObject("attrGethers") != null) {
@@ -197,14 +216,18 @@ public class ExSuitHandle {
         JsonObject effectObj = effectEntry.getValue().getAsJsonObject();
         MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(new ResourceLocation(effectEntry.getKey()));
         int level = 0;
+        int time = 20;
         if (effectObj !=null) {
             if (effectObj.has("level")) {
                 level = effectObj.get("level").getAsInt();
             }
+            if (effectObj.has("time")) {
+                time = effectObj.get("time").getAsInt();
+            }
         }
         if (effect != null) {
             Exmodifier.LOGGER.debug("Registered ExSuit: " + exSuit.id + " with effect: " + effectEntry.getKey() + " level: " + level);
-            return new MobEffectInstance(effect, 20, level,false,true,true);
+            return new MobEffectInstance(effect, time, level,false,true,true);
         }
         Exmodifier.LOGGER.error("No MobEffect Found: " + effectEntry.getKey());
         return null;

@@ -13,13 +13,32 @@ public class ExSuit {
     public boolean hasMobEffect = false;
     public ModifierEntry.Type type;
     public String id;
+    public String LocalDescription ="";
+	public Map<Integer,List<String>> commands = new HashMap<>();
     public int MaxLevel ;
     public boolean visible = true;
+
+    public Map<Integer, Trigger> getTriggers() {
+        return triggers;
+    }
+
+    public void setTriggers(Map<Integer, Trigger> triggers) {
+        this.triggers = triggers;
+    }
+    public void setLevelTriggers(int level, Trigger trigger) {
+        triggers.put(level,trigger);
+    }
+
+    public Trigger MainTrigger = Trigger.TICK;
+    public Map<Integer,Trigger> triggers = new HashMap<>();
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
         return attriGether;
     }    public Map<Integer, List<ModifierAttriGether>> getAttriGetherC() {
         return new HashMap<>(attriGether);
 
+    }
+    public static enum Trigger {
+        TICK, ON_HURT, ATTACK, JUMP, SHOOT, EAT, DODGE, CRIT, KILL, DIE,MOVECHANGE,SWING,PROJECTILE_HIT;
     }
 
     @Override
@@ -29,11 +48,41 @@ public class ExSuit {
                 ", hasMobEffect=" + hasMobEffect +
                 ", type=" + type +
                 ", id='" + id + '\'' +
+                ", LocalDescription='" + LocalDescription + '\'' +
+                ", commands=" + commands +
+                ", MaxLevel=" + MaxLevel +
+                ", visible=" + visible +
+                ", MainTrigger=" + MainTrigger +
+                ", triggers=" + triggers +
                 ", entry=" + entry +
                 ", attriGether=" + attriGether +
                 ", effect=" + effect +
                 ", itemDamage=" + itemDamage +
                 '}';
+    }
+
+    public static Trigger StringToTrigger(String trigger){
+        for (Trigger trigger1 : Trigger.values()){
+            if (trigger1.toString().equalsIgnoreCase(trigger)){
+                return trigger1;
+            }
+        }
+        return Trigger.TICK;
+//        return switch (trigger.toLowerCase()) {
+//            case "on_hurt" -> Trigger.ON_HURT;
+//            case "attack" -> Trigger.ATTACK;
+//            case "jump" -> Trigger.JUMP;
+//            case "shoot" -> Trigger.SHOOT;
+//            case "eat" -> Trigger.EAT;
+//            case "dodge" -> Trigger.DODGE;
+//            case "crit" -> Trigger.CRIT;
+//            case "projectile_hit"-> Trigger.PROJECTILE_HIT;
+//            case "movechange" -> Trigger.MOVECHANGE;
+//            case "kill" -> Trigger.KILL;
+//            case "swing" -> Trigger.SWING;
+//            case "die" -> Trigger.DIE;
+//            default -> Trigger.TICK;
+//        };
     }
 
     public String getSetting(String key){
@@ -123,5 +172,13 @@ public class ExSuit {
         }
         effect.get(level).add(mobEffectInstance);
         hasMobEffect = true;
+    }
+
+    public Map<Integer, List<String>> getCommands() {
+        return commands;
+    }
+
+    public void setCommands(Map<Integer, List<String>> commands) {
+        this.commands = commands;
     }
 }

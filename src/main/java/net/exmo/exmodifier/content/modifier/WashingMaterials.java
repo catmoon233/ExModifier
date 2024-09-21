@@ -5,12 +5,15 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WashingMaterials {
     public String ItemId;
     public Item item;
     public int rarity;
+    public List<ModifierEntry.Type> OnlyTypes = new ArrayList<>();
+
     public  boolean containTag(ItemStack stack){
         for (String tag : OnlyTags ){
             if (stack.is(ItemTags.create(new ResourceLocation(tag))))return true;

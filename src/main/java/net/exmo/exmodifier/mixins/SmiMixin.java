@@ -3,6 +3,8 @@ package net.exmo.exmodifier.mixins;
 import com.google.gson.internal.bind.JsonTreeReader;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.content.modifier.EntryItem;
+import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.WashingMaterials;
 import net.exmo.exmodifier.events.ExRefreshEvent;
@@ -34,12 +36,12 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.Ra
 public abstract class SmiMixin extends ItemCombinerMenu {
 
 
+    @Shadow protected abstract void shrinkStackInSlot(int p_40271_);
+
+
     public SmiMixin(@Nullable MenuType<?> p_39773_, int p_39774_, Inventory p_39775_, ContainerLevelAccess p_39776_) {
         super(p_39773_, p_39774_, p_39775_, p_39776_);
     }
-
-    @Shadow protected abstract void shrinkStackInSlot(int p_40271_);
-
     @Inject(at = @At("HEAD"), method = "mayPickup", cancellable = true)
     public void mayPickup(Player p_39792_, boolean p_39793_, CallbackInfoReturnable<Boolean> cir) {
         if (this.resultSlots.getItem(0).getOrCreateTag().getBoolean("modifier_refresh")){
@@ -65,33 +67,45 @@ public abstract class SmiMixin extends ItemCombinerMenu {
 
     @Inject(at = @At("HEAD"), method = "createResult", cancellable = true)
     public void createResult(CallbackInfo ci) {
-
+        ItemStack WashItem = this.inputSlots.getItem(1);
+        ItemStack item = this.inputSlots.getItem(0);
         for (WashingMaterials washingMaterials : ModifierHandle.materialsList){
-            if (washingMaterials.item.equals(this.inputSlots.getItem(1).getItem())) {
-                if (this.inputSlots.getItem(0).getOrCreateTag().getInt("exmodifier_armor_modifier_applied") > 0 || config.refresh_time == 0) {
-                    if (washingMaterials.OnlyItems ==null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(this.inputSlots.getItem(0).getItem()).toString())) {
-                        if (washingMaterials.OnlyTags ==null || washingMaterials.containTag(this.inputSlots.getItem(0))) {
-                            ci.cancel();
-                            ItemStack input = this.inputSlots.getItem(0).copy();
-                            ModifierHandle.CommonEvent.clearEntry(input);
+
+            if (washingMaterials.item.equals(WashItem.getItem())) {
+
+                if (item.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") > 0 || config.refresh_time == 0) {
+                    if (washingMaterials.OnlyTypes.isEmpty() || washingMaterials.OnlyTypes.contains(ModifierEntry.Type.ALL) || washingMaterials.OnlyTypes.contains(ModifierEntry.getType(this.inputSlots.getItem(0)))) {
+
+                        if (washingMaterials.OnlyItems == null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(item.getItem()).toString())) {
+                            if (washingMaterials.OnlyTags == null || washingMaterials.containTag(item)) {
+                                ci.cancel();
+                                ItemStack input = item.copy();
+                                ModifierHandle.CommonEvent.clearEntry(input);
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
-                            input.getOrCreateTag().putString("exmodifier_armor_modifier_applied0", "UNKNOWN");
-                            input.getOrCreateTag().putBoolean("modifier_refresh", true);
-                            if (washingMaterials.MinRandomTime * washingMaterials.MaxRandomTime == 0) {
-                                input.getOrCreateTag().putInt("modifier_refresh_rarity", washingMaterials.rarity);
-                            } else {
-                                Random random = new Random();
-                                input.getOrCreateTag().putInt("modifier_refresh_rarity", washingMaterials.rarity + random.nextInt(washingMaterials.MaxRandomTime - washingMaterials.MinRandomTime) + washingMaterials.MinRandomTime);
+                                input.getOrCreateTag().putString("exmodifier_armor_modifier_applied0", "UNKNOWN");
+                                input.getOrCreateTag().putBoolean("modifier_refresh", true);
+                                if (washingMaterials.MinRandomTime * washingMaterials.MaxRandomTime == 0) {
+                                    input.getOrCreateTag().putInt("modifier_refresh_rarity", washingMaterials.rarity);
+                                } else {
+                                    Random random = new Random();
+                                    input.getOrCreateTag().putInt("modifier_refresh_rarity", washingMaterials.rarity + random.nextInt(washingMaterials.MaxRandomTime - washingMaterials.MinRandomTime) + washingMaterials.MinRandomTime);
+                                }
+                                input.getOrCreateTag().putString("wash_item", washingMaterials.ItemId);
+                                input.getOrCreateTag().putInt("modifier_refresh_add", washingMaterials.additionEntry);
+                                this.resultSlots.setItem(0, input);
+
                             }
-                            input.getOrCreateTag().putString("wash_item", washingMaterials.ItemId);
-                            input.getOrCreateTag().putInt("modifier_refresh_add", washingMaterials.additionEntry);
-                            this.resultSlots.setItem(0, input);
 
+                            break;
                         }
-
-                        break;
                     }
+                }
+            }else {
+                if (WashItem.getItem() instanceof EntryItem){
+                    ItemStack input = item.copy();
+                    ModifierHandle.CommonEvent.AddEntryToItem(input,WashItem.getOrCreateTag().getString("modifier_id"));
+                    this.resultSlots.setItem(0, input);
                 }
             }
         }

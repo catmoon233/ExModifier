@@ -28,7 +28,16 @@ public class ExAddEntryAttrigethersEvent extends Event {
         this.modifierEntries = modifierEntries;
 
     }
+    public ExAddEntryAttrigethersEvent(ItemStack stack, WeightedUtil<String> weightedUtil, boolean isCurios, int refreshments, List<ModifierAttriGether> attriGether, ModifierEntry modifierEntry, List<ModifierEntry> modifierEntries){
+        this.stack = stack;
+        this.weightedUtil = weightedUtil;
+        this.isCurios = isCurios;
+        this.refreshments = refreshments;
+        this.attriGether = attriGether;
+        this.TargetModifierEntry = modifierEntry;
+        this.modifierEntries = modifierEntries;
 
+    }
     public ItemStack getStack() {
         return stack;
     }

@@ -3,32 +3,36 @@ package net.exmo.exmodifier.content.event;
 import com.mojang.datafixers.util.Either;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.content.modifier.EntryItem;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
-import net.exmo.exmodifier.events.ExAfterArmorChange;
-import net.exmo.exmodifier.events.ExApplySuitAttrigetherEvent;
-import net.exmo.exmodifier.events.ExApplySuitEffectEvent;
-import net.exmo.exmodifier.events.ExSuitApplyOnChangeEvent;
+import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.EntityAttrUtil;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.*;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
+import net.minecraftforge.event.entity.ProjectileImpactEvent;
+import net.minecraftforge.event.entity.living.*;
+import net.minecraftforge.event.entity.player.ArrowLooseEvent;
+import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -44,9 +48,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static net.exmo.exmodifier.Exmodifier.*;
 import static net.exmo.exmodifier.config.refresh_time;
+import static net.exmo.exmodifier.content.event.MainEvent.CommonEvent.init;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEntrysFromItemStack;
 import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.TAKE;
@@ -54,16 +61,17 @@ import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.WEAR;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MainEvent {
+
     @SubscribeEvent
-    public static void init(FMLCommonSetupEvent event) throws IOException {
-        ModifierHandle.readConfig();
-        ExSuitHandle.readConfig();
+    public static void FmlLoad(FMLCommonSetupEvent event) throws IOException {
+        init();
 
 
     }
 
     @Mod.EventBusSubscriber
     public static class CommonEvent {
+
         @SubscribeEvent
         public static void CuriosChange(CurioChangeEvent event) {
             if (!(event.getEntity() instanceof Player player))return;
@@ -151,44 +159,129 @@ public class MainEvent {
         public static void OutGame(PlayerEvent.PlayerLoggedOutEvent event) {
 
         }
-
-        @SubscribeEvent
-        public static void PlayerLiving(TickEvent.PlayerTickEvent event) {
-
-            Player player = event.player;
-            if (player.level.isClientSide) return;
-            List<MobEffectInstance> addMobEffects = new ArrayList<>();
+        public static void ApplySuitEffect(Player player, ExSuit.Trigger trigger){
+            // Retrieve player capability once and exit early if not present
             player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-                for (String id : capability.Suits) {
-                    ExSuit suit = ExSuitHandle.LoadExSuit.get(id);
-                    for (int i = 1; i <= ExSuitHandle.GetSuitLevel(player, id); i++) {
-                        // 获取效果列表，检查是否为null
-                        Map<Integer, List<MobEffectInstance>> effectMap = suit.getEffect();
-                        if (effectMap != null) {
-                            List<MobEffectInstance> effects = effectMap.get(i);
-                            if (effects != null) {
-                                for (MobEffectInstance mobEffectInstance : effects) {
-                                    if (mobEffectInstance != null) {
-                                        if (player.hasEffect(mobEffectInstance.getEffect())) {
-                                            if (player.getEffect(mobEffectInstance.getEffect()).getAmplifier() < mobEffectInstance.getAmplifier()) {
-                                                addMobEffects.add(new MobEffectInstance(mobEffectInstance));
-                                            }
-                                        } else {
-                                            addMobEffects.add(new MobEffectInstance(mobEffectInstance));
+                List<MobEffectInstance> mobEffectsToAdd = new ArrayList<>();
+                CommandSourceStack commandSourceStack;
+                if (player.level instanceof  ServerLevel serverLevel){
+                 commandSourceStack =  new CommandSourceStack(
+                        CommandSource.NULL,
+                        player.position(),
+                        player.getRotationVector(),
+                        serverLevel,
+                        4,
+                        player.getName().getString(),
+                        player.getDisplayName(),
+                        serverLevel.getServer(),
+                        player
+                );
+                } else {
+                    commandSourceStack = null;
+                }
 
+                for (String suitId : capability.Suits){
+                    ExSuit suit = ExSuitHandle.LoadExSuit.get(suitId);
+                    int suitLevel = ExSuitHandle.GetSuitLevel(player, suitId);
+                    for (int level = 1; level <= suitLevel; level++) {
+                        //事件触发器在此 !!!!!!!!!!!!!!!!!!!
+                        if (suit.getTriggers().get(level) != trigger)continue;
+                        // Run commands if present for the current suit level
+                        List<String> commands = suit.getCommands().get(level);
+                        if (commands != null && !player.level.isClientSide() && player.getServer() != null &&commandSourceStack!=null) {
+                            commands.forEach(command -> player.getServer().getCommands().performCommand(commandSourceStack, command));
+                        }
+
+                        // Add MobEffects if present for the current suit level
+                        List<MobEffectInstance> effects = suit.getEffect().get(level);
+                        if (effects != null) {
+                            effects.stream()
+                                    .filter(Objects::nonNull)
+                                    .forEach(mobEffectInstance -> {
+                                        MobEffectInstance existingEffect = player.getEffect(mobEffectInstance.getEffect());
+                                        if (existingEffect == null || existingEffect.getAmplifier() < mobEffectInstance.getAmplifier()) {
+                                            mobEffectsToAdd.add(new MobEffectInstance(mobEffectInstance));
                                         }
-                                    }
-                                }
-                            }
+                                    });
                         }
                     }
                 }
+
+                // Apply collected effects, firing an event for each one
+                mobEffectsToAdd.forEach(mobEffectInstance -> {
+                    ExApplySuitEffectEvent applySuitEffectEvent = new ExApplySuitEffectEvent(player, mobEffectInstance);
+                    MinecraftForge.EVENT_BUS.post(applySuitEffectEvent);
+                    if (!applySuitEffectEvent.isCanceled()) {
+                        player.addEffect(applySuitEffectEvent.mobEffectInstance);
+                    }
+                });
             });
-            for (MobEffectInstance mobEffectInstance : addMobEffects) {
-                ExApplySuitEffectEvent event1 = new ExApplySuitEffectEvent(player, mobEffectInstance);
-                MinecraftForge.EVENT_BUS.post(event1);
-                if (!event1.isCanceled()) player.addEffect(event1.mobEffectInstance);
+        }
+        @SubscribeEvent
+        public static void PlayerHurtAndAttack(LivingHurtEvent event){
+            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ON_HURT);
+            if ((event.getSource().getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
+        }
+        @SubscribeEvent
+        public static void PlayerJump(LivingEvent.LivingJumpEvent event){
+            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.JUMP);
+        }
+        @SubscribeEvent
+        public static void PlayerDeath(LivingDeathEvent event){
+            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.DIE);
+        }
+        @SubscribeEvent
+        public static void PlayerKill(LivingDeathEvent event){
+            if ((event.getSource().getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.KILL);
+        }
+        @SubscribeEvent
+        public static void PlayerProjectile(ProjectileImpactEvent event){
+            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.PROJECTILE_HIT);
+        }
+        @SubscribeEvent
+        public static void PlayerShoot(ArrowLooseEvent event){
+           ApplySuitEffect((Player) event.getEntity(), ExSuit.Trigger.SHOOT);
+        }
+        @SubscribeEvent
+        public static void PlayerMove(MovementInputUpdateEvent event){
+             ApplySuitEffect((Player) event.getEntity(), ExSuit.Trigger.MOVECHANGE);
+
+        }
+        @SubscribeEvent
+        public static void PlayerSwing(LivingSwingEvent event){
+            if ((event.getEntity() instanceof Player player))   ApplySuitEffect(player, ExSuit.Trigger.SWING);
+        }
+        @SubscribeEvent
+        public static void PlayerCrit(CriticalHitEvent event){
+       ApplySuitEffect((Player) event.getEntity(), ExSuit.Trigger.CRIT);
+        }
+        @SubscribeEvent
+        public static void PlayerDodge(ExDodgeEvent event){
+            if ((event.getEntity() instanceof Player player))
+                if (event.result == ExDodgeEvent.resultType.MISS)
+                    ApplySuitEffect(player, ExSuit.Trigger.DODGE);
+
+        }
+        @SubscribeEvent
+        public static void PlayerEat(LivingEntityUseItemEvent event){
+            if (event.getEntity()==null)return;
+            if (event.getEntity() instanceof Player player) {
+                if (event.getItem().getFoodProperties(player) != null)
+                    ApplySuitEffect(player, ExSuit.Trigger.EAT);
             }
+        }
+//        @SubscribeEvent
+//        public static void PlayerDamage(LivingDamageEvent event){
+//            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
+//        } 该用法不稳定 已移植hurt
+        @SubscribeEvent
+        public static void PlayerLiving(TickEvent.PlayerTickEvent event) {
+            Player player = event.player;
+            if (player.level.isClientSide) {
+                return;
+            }
+            ApplySuitEffect(player, ExSuit.Trigger.TICK);
+
         }
 
         public static boolean hasAttr(ItemStack stack) {
@@ -214,7 +307,7 @@ public class MainEvent {
 
 
                     ItemStack stack = event.getTo();
-                    Exmodifier.LOGGER.debug(event.getFrom().toString());
+                   // Exmodifier.LOGGER.debug(event.getFrom().toString());
                     List<String> curiosSlots = CuriosUtil.getSlotsFromItemstack(stack);
                     if (!curiosSlots.isEmpty()){
 //                        if (player.getPersistentData().getBoolean("LoginGamea")) {
@@ -234,7 +327,6 @@ public class MainEvent {
                                 }
                             }
                         }
-                        SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
                     }else {
 
                         if (hasAttr(stack)||stack.getItem() instanceof ShieldItem) {
@@ -272,7 +364,7 @@ public class MainEvent {
 //                        }
 //                    });
 //                }
-            isExSuitOperate=    SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
+                isExSuitOperate=    SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
                 MinecraftForge.EVENT_BUS.post(new ExAfterArmorChange(event, isExSuitOperate));
             }
 
@@ -282,7 +374,7 @@ public class MainEvent {
 
             if (player.level.isClientSide) return false;
             boolean flag = false;
-          flag =  handleStack(player, stack1, EntityAttrUtil.WearOrTake.WEAR);
+            flag =  handleStack(player, stack1, EntityAttrUtil.WearOrTake.WEAR);
             if (handleStack(player, stack2, EntityAttrUtil.WearOrTake.TAKE))flag = true;
             return flag;
         }
@@ -299,9 +391,11 @@ public class MainEvent {
             for (int i = 0; ; i++) {
                 String modifier = tag.getString("exmodifier_armor_modifier_applied" + i);
                 if (modifier.isEmpty()) break;
-
+                List<String> founds = new ArrayList<>();
                 List<ExSuit> suits = ExSuitHandle.FindExSuit(modifier);
                 for (ExSuit suit : suits) {
+                    if (founds.contains(suit.id))continue;
+                    founds.add(suit.id);
                     if (effectType == WEAR && suit.setting.getOrDefault("excludeArmorInHand", "false").equals("true") && stack.getItem() instanceof ArmorItem) {
                         continue;
                     }
@@ -324,15 +418,15 @@ public class MainEvent {
                     if (attriGethers != null) {
                         for (ModifierAttriGether attrGether : attriGethers.stream().filter(attrGether -> attrGether.getOnlyItems().isEmpty()).toList()) {
                             Exmodifier.LOGGER.debug("items : "+attrGether.getOnlyItems().toString());
-                        //    if (attrGether.getOnlySlots() ==null|| attrGether.getOnlySlots().isEmpty()) {
+                            //    if (attrGether.getOnlySlots() ==null|| attrGether.getOnlySlots().isEmpty()) {
 
-                                ExApplySuitAttrigetherEvent event1 = new ExApplySuitAttrigetherEvent(player, stack, effectType, attrGether);
-                                try {
-                                    Exmodifier.LOGGER.debug("Apply Suit AttriGether: " + attrGether.attribute.getDescriptionId() + " " + attrGether.modifier.getOperation().toString() + " " + attrGether.modifier.getAmount());
-                                }catch (Exception e){System.out.println(e);}
-                                MinecraftForge.EVENT_BUS.post(event1);
-                                if (!event1.isCanceled()) EntityAttrUtil.entityAddAttrTF(event1.attriGether.attribute, event1.attriGether.getModifier(),event1.player,event1.effectType);
-                          //  }
+                            ExApplySuitAttrigetherEvent event1 = new ExApplySuitAttrigetherEvent(player, stack, effectType, attrGether);
+                            try {
+                                Exmodifier.LOGGER.debug("Apply Suit AttriGether: " + attrGether.attribute.getDescriptionId() + " " + attrGether.modifier.getOperation().toString() + " " + attrGether.modifier.getAmount());
+                            }catch (Exception e){System.out.println(e);}
+                            MinecraftForge.EVENT_BUS.post(event1);
+                            if (!event1.isCanceled()) EntityAttrUtil.entityAddAttrTF(event1.attriGether.attribute, event1.attriGether.getModifier(),event1.player,event1.effectType);
+                            //  }
                         }
                     }
                     ExSuitApplyOnChangeEvent event = new ExSuitApplyOnChangeEvent(player, suit, i, effectType);
@@ -351,12 +445,17 @@ public class MainEvent {
             }
             return flag;
         }
+        public static void init() throws IOException {
+            ModifierHandle.readConfig();
+            ExSuitHandle.readConfig();
+            ModifierHandle.EEMatchQueueHandle();
+
+        }
 
         @SubscribeEvent
         public static void atReload(AddReloadListenerEvent event) throws IOException {
 
-            ModifierHandle.readConfig();
-            ExSuitHandle.readConfig();
+            init();
 
         }
     }

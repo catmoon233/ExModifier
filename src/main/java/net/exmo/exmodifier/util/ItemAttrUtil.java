@@ -32,10 +32,10 @@ public  class ItemAttrUtil {
             String itemKey = ForgeRegistries.ITEMS.getKey(itemStack.getItem()).toString();
             //   System.out.println("1: " +itemKey +" 2:"+id);
             if (Objects.equals(id, itemKey)) {
-                EquipmentSlot slot = attrgroup.getSlot();
+                EquipmentSlot slot = attrgroup.getEquipmentSlot();
                 if (slot != null) {
                     // 对EquipmentSlot使用equals进行比较，这里假设EquipmentSlot类正确实现了equals方法
-                    //   System.out.println("1: " +slot +" 2:"+itemStack.getSlot());
+                    //   System.out.println("1: " +slot +" 2:"+itemStack.getEquipmentSlot());
                     if (slot == event.getSlotType()) {
                         event.addModifier(attrgroup.attr, attrgroup.attributeModifier);
                         //  removelist.add(id);
@@ -65,7 +65,7 @@ public  class ItemAttrUtil {
         }
 
         // 提供getter方法以获取成员变量的值（如果需要访问）
-        public EquipmentSlot getSlot() {
+        public EquipmentSlot getEquipmentSlot() {
             return slot;
         }
 
@@ -299,7 +299,6 @@ public  class ItemAttrUtil {
     public static CompoundTag getAttributeModifierCompoundTag(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
         if (modifier==null)return null;
         if (attribute==null)return null;
-        if (modifier.getOperation()==null)return null;
         CompoundTag compoundtag = modifier.save();
         compoundtag.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
         if (slot != null) {

@@ -1,20 +1,15 @@
 package net.exmo.exmodifier;
 
-import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
-
-import net.exmo.exmodifier.content.modifier.ModifierEntry;
-import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.modifier.EntryItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.*;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
@@ -25,14 +20,17 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.io.IOException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static net.exmo.exmodifier.content.event.MainEvent.CommonEvent.init;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("exmodifier")
@@ -44,18 +42,36 @@ public class Exmodifier {
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
     private static int messageID = 0;
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+    public static final RegistryObject<Item> ENTRY_ITEM = ITEMS.register("entry_item", () -> new EntryItem(new Item.Properties()));
+    public static  ItemStack TabIcon;
+
+
+    ;
+
+
     public Exmodifier() {
 
         long time_start = System.currentTimeMillis();
         // Register the setup method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        // Register the enqueueIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-        // Register the processIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
-//        if (ModList.get().isLoaded("attributeslib")){
-//            MinecraftForge.EVENT_BUS.addListener( new ApothCompat()::SkinAttr);
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+
+        ITEMS.register(modEventBus);
+//        try {
+//            init();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
 //        }
+
+
+        modEventBus.addListener(this::setup);
+        // Register the enqueueIMC method for modloading
+        modEventBus.addListener(this::enqueueIMC);
+        // Register the processIMC method for modloading
+        modEventBus.addListener(this::processIMC);
+
+
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -69,6 +85,8 @@ public class Exmodifier {
 //        LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
     }
 
+
+
     private void enqueueIMC(final InterModEnqueueEvent event) {
         // Some example code to dispatch IMC to another mod
 //        InterModComms.sendTo("exmodifier", "helloworld", () -> {
@@ -80,6 +98,10 @@ public class Exmodifier {
     private void processIMC(final InterModProcessEvent event) {
         // Some example code to receive and process InterModComms from other mods
 //        LOGGER.info("Got IMC {}", event.getIMCStream().map(m -> m.messageSupplier().get()).collect(Collectors.toList()));
+    }
+    @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ClientEvents {
+
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call

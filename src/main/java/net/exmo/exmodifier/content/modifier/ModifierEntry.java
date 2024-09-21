@@ -2,6 +2,7 @@ package net.exmo.exmodifier.content.modifier;
 
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -19,12 +20,15 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 
 public class ModifierEntry {
+    public Map<String,String> setting = new HashMap<>();
     public float weight;
     public boolean cantSelect = false;
    // public double level;
@@ -132,9 +136,7 @@ public class ModifierEntry {
     }
     public static Type StringToType(String type) {
         if (type.toLowerCase().startsWith("curios")) return Type.CURIOS;
-
         switch (type) {
-
             case "ALL" -> {
                 return Type.ALL;
             }
@@ -274,12 +276,15 @@ public class ModifierEntry {
         return false;
     }
     public boolean isRandom = true;
+    public boolean OnlyHasThisEntry = false;
     public Type type;
     public boolean isCuriosEntry =false;
+    public float needFreshValue = 0;
     public String curiosType;
     public List<String> OnlyTags = new ArrayList<>();
-    public List<String> OnlyItems= new ArrayList<>();
-    public List<String> OnlyWashItems= new ArrayList<>();
+    public List<String> OnlyItems = new ArrayList<>();
+    public List<String> OnlyWashItems = new ArrayList<>();
+    public List<String> Commands = new ArrayList<>();
     public String id;
     public int RandomNum;
     public List<ModifierAttriGether> attriGether = new java.util.ArrayList<>();
@@ -297,6 +302,7 @@ public class ModifierEntry {
         return "ModifierEntry{" +
                 "weight=" + weight +
                 ", isRandom=" + isRandom +
+                ", OnlyHasThisEntry=" + OnlyHasThisEntry +
                 ", type=" + type +
                 ", isCuriosEntry=" + isCuriosEntry +
                 ", curiosType='" + curiosType + '\'' +
