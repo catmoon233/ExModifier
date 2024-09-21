@@ -162,12 +162,12 @@ public class ExSuitHandle {
         exSuit.id = moconfig.type.toString().substring(0,2) + entry.getKey();
         if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
         if (itemObject.has("LocalDescription"))exSuit.LocalDescription= itemObject.get("LocalDescription").getAsString();
-        if (itemObject.has("trigger")) exSuit.MainTrigger = StringToTrigger(itemObject.get("trigger").getAsString());
+        // if (itemObject.has("trigger")) exSuit.MainTrigger = StringToTrigger(itemObject.get("trigger").getAsString());
         if (itemObject.has("excludeArmorInHand"))exSuit.setting.put("excludeArmorInHand", String.valueOf(itemObject.get("excludeArmorInHand").getAsBoolean()));
         for (int i = 1; i <= 10; i++) {
             if (itemObject.has(i + "")) {
                 JsonObject suitObj = itemObject.getAsJsonObject(i + "");
-                ExSuit.Trigger trigger =suitObj.has("trigger") ?  StringToTrigger(suitObj.get("trigger").getAsString()) : exSuit.MainTrigger;
+                ExSuit.Trigger trigger = suitObj.has("trigger") ?  StringToTrigger(suitObj.get("trigger").getAsString()) : ExSuit.MainTrigger;
                 exSuit.setLevelTriggers(i, trigger);
                 if (suitObj.has("effect")) {
                     if (suitObj.getAsJsonObject("effect") != null) {
