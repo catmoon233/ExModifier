@@ -160,7 +160,10 @@ public class ModifierEntry {
     }
     public static Type StringToType(String type) {
         if (type.toLowerCase().startsWith("curios")) return Type.CURIOS;
-        switch (type) {
+        for(var v : Type.values()){
+            if(v.toString().equals(type))return v;
+        }
+        /*switch (type) {
             case "ALL" -> {
                 return Type.ALL;
             }
@@ -240,6 +243,8 @@ public class ModifierEntry {
                 return Type.UNKNOWN;
             }
         }
+        */
+        return Type.UNKNOWN;
     }
     public static Type getType(ItemStack stack) {
         if (ModifierHandle.hasChestConfig) {
