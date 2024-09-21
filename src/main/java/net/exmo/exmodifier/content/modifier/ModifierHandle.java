@@ -107,6 +107,7 @@ public class ModifierHandle {
         public static List<Component> generateEntryTooltip(ModifierEntry modifierEntry,Player player,ItemStack itemStack) {
             List<Component> tooltips = new ArrayList<>();
             String id = modifierEntry.getId();
+            if (player ==null)return tooltips;
             if (id.length() >= 2) {
                 if (config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)));
                 else      tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)).append(" : "));
@@ -337,16 +338,41 @@ public class ModifierHandle {
 
             ModifierEntry modifier = ModifierHandle.modifierEntryMap.get(e);
             if (!modifierEntries.contains(modifier)) modifierEntries.add(modifier);
-
+            boolean over = false;
             Map<String, Float> weightedUtilmap = new HashMap<>();
             for (ModifierEntry modifierEntry : modifierEntries) {
                 Exmodifier.LOGGER.info(modifierEntry.getId());
                 weightedUtilmap.put(modifierEntry.getId(), 1.0f);
             }
-            ModifierEntry.Type type = ModifierEntry.findTypeFormEntry(modifier);
-            EquipmentSlot slot = ModifierEntry.TypeToEquipmentSlot(type);
-            RandomEntry(itemStack, new WeightedUtil<String>(weightedUtilmap), slot, modifierEntries.size());
 
+            Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap =new  HashMap<>( Map.of(
+                    ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
+                    ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
+                    ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
+                    ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
+                    ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
+                    ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
+                    ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
+                    ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
+                    ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
+            ));
+
+            for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeSlotMap.entrySet()) {
+                ModifierEntry.Type type = entry.getKey();
+                EquipmentSlot slot = entry.getValue();
+                if (!over && isValidForType(itemStack, type)) {
+
+
+                    if (entry.getKey() == ModifierEntry.Type.ARMOR) {  // ARMOR type, set the slot based on the item
+                        slot = ((ArmorItem) itemStack.getItem()).getEquipmentSlot();
+                    }
+                    LOGGER.debug("RandomEntry: " + type + " " + slot);
+                    RandomEntry(itemStack, new WeightedUtil<String>(weightedUtilmap), slot, weightedUtilmap.size());
+                    itemStack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
+                            itemStack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
+                    over = true;
+                }
+            }
         }
         private static void applyModifiersCurios(ItemStack stack, List<ModifierAttriGether> attriGethers, List<String> CuriosSlots) {
             Map<String, Multimap<Attribute, AttributeModifier>> attriMap = new HashMap<>();
@@ -558,6 +584,8 @@ public class ModifierHandle {
     public static List<WashingMaterials> materialsList = new ArrayList<>();
     public static Map<String,ModifierEntry> modifierEntryMap = new HashMap<>();
     public static Map<ModifierEntry,List<String>> EEMatchQueue = new HashMap<>();
+    public static List<String> cantWashItemIds = new ArrayList<>();
+    public static List<String> onlyCanRefreshPointEntryItemIds = new ArrayList<>();
     public static void RegisterModifierEntry(ModifierEntry modifierEntry){
         if (!hasBootsConfig)if (modifierEntry.type == ModifierEntry.Type.BOOTS)hasBootsConfig=true;
         if (!hasLeggingsConfig)if (modifierEntry.type == ModifierEntry.Type.LEGGINGS)hasLeggingsConfig=true;

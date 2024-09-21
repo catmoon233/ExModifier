@@ -90,7 +90,7 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
             cir.setReturnValue(true);
         }
         if (this.resultSlots.getItem(0).getOrCreateTag().getBoolean("entry_item_add")){
-            this.resultSlots.getItem(0).getOrCreateTag().remove("entry_item_add");
+            //this.resultSlots.getItem(0).getOrCreateTag().remove("entry_item_add");
             cir.setReturnValue(true);
 
         }
@@ -131,8 +131,11 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
                                 ModifierHandle.CommonEvent.clearEntry(input);
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
+                                input.getOrCreateTag().putInt("entryitem_add", 0);
+
                                 input.getOrCreateTag().putString("exmodifier_armor_modifier_applied0", "UNKNOWN");
                                 input.getOrCreateTag().putBoolean("modifier_refresh", true);
+                                input.getOrCreateTag().putBoolean("entry_item_add", false);
                                 if (washingMaterials.MinRandomTime * washingMaterials.MaxRandomTime == 0) {
                                     input.getOrCreateTag().putInt("modifier_refresh_rarity", washingMaterials.rarity);
                                 } else {
@@ -157,14 +160,20 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
         if (!isFound) {
             if (WashItem.getItem() instanceof EntryItem) {
                 ItemStack input = item.copy();
-                //  Exmodifier.LOGGER.debug("WashItem is EntryItem");
-                int entryitemAdd = input.getOrCreateTag().getInt("entryitem_add");
-                if (entryitemAdd < config.canAddEntry) {
-                    ci.cancel();
-                    input.getOrCreateTag().putInt("entryitem_add", entryitemAdd + 1);
-                    input.getOrCreateTag().putBoolean("entry_item_add", true);
-                    ModifierHandle.CommonEvent.AddEntryToItem(input, WashItem.getOrCreateTag().getString("modifier_id"));
-                    this.resultSlots.setItem(0, input);
+                if ( ModifierEntry.containItemType(item, ModifierEntry.StringToType(WashItem.getOrCreateTag().getString("modifier_type")))) {
+
+                    //  Exmodifier.LOGGER.debug("WashItem is EntryItem");
+                    int entryitemAdd = input.getOrCreateTag().getInt("entryitem_add");
+                    if (entryitemAdd < config.canAddEntry) {
+                        ci.cancel();
+                        if (entryitemAdd + 1 == config.canAddEntry)
+                            input.getOrCreateTag().putBoolean("can_add_max", true);
+                        input.getOrCreateTag().putInt("entryitem_add", entryitemAdd + 1);
+
+                        input.getOrCreateTag().putBoolean("entry_item_add", true);
+                        ModifierHandle.CommonEvent.AddEntryToItem(input, WashItem.getOrCreateTag().getString("modifier_id"));
+                        this.resultSlots.setItem(0, input);
+                    }
                 }
             }
         }

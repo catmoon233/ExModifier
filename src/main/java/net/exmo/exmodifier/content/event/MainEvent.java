@@ -24,7 +24,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraftforge.client.event.MovementInputUpdateEvent;
+//import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
@@ -72,6 +72,14 @@ public class MainEvent {
 
     @Mod.EventBusSubscriber
     public static class CommonEvent {
+        @SubscribeEvent
+        public static void TooltipChange(ItemTooltipEvent event) {
+            if (!CuriosUtil.isCuriosItem(event.getItemStack())) {
+
+                List<Component> toolTip = CommonEvent.ItemToolTipsChange(event.getItemStack(), event.getToolTip(), event.getEntity());
+            }
+
+        }
 
         @SubscribeEvent
         public static void CuriosChange(CurioChangeEvent event) {
@@ -124,6 +132,7 @@ public class MainEvent {
                         tooltip.add(Component.translatable("null"));
                         tooltip.add(Component.translatable("modifiler.entry.UNKNOWN"));
                     } else {
+
                         for (ModifierEntry modifierEntry : getEntrysFromItemStack(stack)) {
                             // Exmodifier.LOGGER.debug("modifier id:" + modifierEntry.id);
                             if (!config.compact_tooltip) tooltip.add(Component.translatable("null"));
@@ -131,6 +140,7 @@ public class MainEvent {
 
                         }
                     }
+                    if (stack.getOrCreateTag().getBoolean("can_add_max"))tooltip.add(Component.translatable("modifiler.entry.can_add_max"));
 
                 }
             }
@@ -241,11 +251,11 @@ public class MainEvent {
         public static void PlayerShoot(ArrowLooseEvent event){
            ApplySuitEffect(event.getEntity(), ExSuit.Trigger.SHOOT);
         }
-        @SubscribeEvent
-        public static void PlayerMove(MovementInputUpdateEvent event){
-             ApplySuitEffect(event.getEntity(), ExSuit.Trigger.MOVECHANGE);
-
-        }
+//        @SubscribeEvent
+//        public static void PlayerMove(MovementInputUpdateEvent event){
+//             ApplySuitEffect(event.getEntity(), ExSuit.Trigger.MOVECHANGE);
+//
+//        }
         @SubscribeEvent
         public static void PlayerSwing(LivingSwingEvent event){
             if ((event.getEntity() instanceof Player player))   ApplySuitEffect(player, ExSuit.Trigger.SWING);
@@ -261,12 +271,13 @@ public class MainEvent {
                     ApplySuitEffect(player, ExSuit.Trigger.DODGE);
 
         }
-        @SubscribeEvent
-        public static void PlayerEat(ItemUseEvent event){
-            if (event.getEntity()==null)return;
-            if ( event.getItemStack().getFoodProperties(event.getEntity())!=null) ApplySuitEffect(event.getEntity(), ExSuit.Trigger.EAT);
 
-        }
+//        @SubscribeEvent
+//        public static void PlayerEat(Item event){
+//            if (event.getEntity()==null)return;
+//            if ( event.getItemStack().getFoodProperties(event.getEntity())!=null) ApplySuitEffect(event.getEntity(), ExSuit.Trigger.EAT);
+//
+//        }
 //        @SubscribeEvent
 //        public static void PlayerDamage(LivingDamageEvent event){
 //            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ATTACK);

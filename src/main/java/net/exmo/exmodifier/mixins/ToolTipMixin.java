@@ -50,13 +50,9 @@ public abstract class ToolTipMixin {
 
         return multimap;
     }
-    @ModifyReturnValue(at =@At("RETURN"), method = "getTooltipLines")
-    public List<Component> getTooltipLines(List<Component> tooltip, Player player, TooltipFlag flag) {
-        if (!CuriosUtil.isCuriosItem((ItemStack) (Object) this)) {
-
-            return MainEvent.CommonEvent.ItemToolTipsChange((ItemStack) (Object) this, tooltip, player);
-        }
-        return tooltip;
-    }
+//    @ModifyReturnValue(at =@At("RETURN"), method = "getTooltipLines")
+//    public List<Component> getTooltipLines(List<Component> tooltip, Player player, TooltipFlag flag) {
+//
+//    }
 
 }
