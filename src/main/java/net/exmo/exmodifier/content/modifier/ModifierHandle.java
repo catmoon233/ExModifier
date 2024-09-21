@@ -95,6 +95,15 @@ public class ModifierHandle {
 
     @Mod.EventBusSubscriber
     public static   class CommonEvent{
+        public static int getItemStackEntryCount(ItemStack stack){
+
+            for (int i = 0; true; i++) {
+                if (stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied" + i).isEmpty()) {
+                    return i;
+                }
+
+            }
+        }
         public static List<Component> generateEntryTooltip(ModifierEntry modifierEntry,Player player,ItemStack itemStack) {
             List<Component> tooltips = new ArrayList<>();
             String id = modifierEntry.getId();
@@ -568,6 +577,9 @@ public class ModifierHandle {
         EEMatchQueue = new HashMap<>();
     }
     public static void readConfig() {
+        modifierEntryMap = new HashMap<>();
+        Foundmoconfigs = new ArrayList<>();
+
         long startTime = System.nanoTime(); // 记录开始时间
 
         try {

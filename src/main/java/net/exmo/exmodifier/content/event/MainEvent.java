@@ -183,6 +183,7 @@ public class MainEvent {
 
                 for (String suitId : capability.Suits){
                     ExSuit suit = ExSuitHandle.LoadExSuit.get(suitId);
+                    if (suit == null)continue;
                     int suitLevel = ExSuitHandle.GetSuitLevel(player, suitId);
                     for (int level = 1; level <= suitLevel; level++) {
                         //事件触发器在此 !!!!!!!!!!!!!!!!!!!

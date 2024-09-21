@@ -112,6 +112,7 @@ public class ExSuitHandle {
     public static Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/suit");
     public static List<MoConfig> FoundSuitConfigs = new ArrayList<>();
     public static void readConfig() throws IOException {
+        LoadExSuit = new java.util.HashMap<>();
         long startTime = System.nanoTime(); // 记录开始时间
 
         FoundSuitConfigs = ExConfigHandle.listFiles(ConfigPath);

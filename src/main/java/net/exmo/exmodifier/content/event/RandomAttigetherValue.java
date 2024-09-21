@@ -18,9 +18,13 @@ public class RandomAttigetherValue {
             double formattedRandomValue = Double.parseDouble(df.format(randomValue));
             event.selectedAttriGether.modifier = new AttributeModifier(event.selectedAttriGether.modifier.getId(),event.selectedAttriGether.modifier.getName(),formattedRandomValue,event.selectedAttriGether.modifier.getOperation());
         }else {
+            if (event.selectedAttriGether.simpleWeight.isEmpty())return;
             WeightedUtil<Double> weightedUtil = new WeightedUtil<Double>(event.selectedAttriGether.simpleWeight);
-            double randomValue = weightedUtil.selectRandomKeyBasedOnWeights();
-            event.selectedAttriGether.modifier = new AttributeModifier(event.selectedAttriGether.modifier.getId(),event.selectedAttriGether.modifier.getName(),randomValue,event.selectedAttriGether.modifier.getOperation());
+            Double v = weightedUtil.selectRandomKeyBasedOnWeights();
+            if (v != null) {
+                double randomValue = v;
+                event.selectedAttriGether.modifier = new AttributeModifier(event.selectedAttriGether.modifier.getId(), event.selectedAttriGether.modifier.getName(), randomValue, event.selectedAttriGether.modifier.getOperation());
+            }
         }
     }
 }

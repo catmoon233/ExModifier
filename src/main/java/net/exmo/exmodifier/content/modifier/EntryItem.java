@@ -7,6 +7,9 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EntryItem extends Item {
     public EntryItem(Properties p_41383_) {
         super(p_41383_);
@@ -18,14 +21,17 @@ public class EntryItem extends Item {
             ItemStack stack = event.getItemStack();
             if (stack.getItem() instanceof net.exmo.exmodifier.content.modifier.EntryItem) {
                 if (!event.getToolTip().isEmpty()) {
-
+                    List<Component> lc = new ArrayList<>();
                     String modifierId = stack.getOrCreateTag().getString("modifier_id");
                     if (modifierId.length()<=2)return ;
 
-                    event.getToolTip().set(0, Component.translatable("modifiler.entry." + modifierId.substring(2)));
+                    lc.add(0, Component.translatable("modifiler.entry." + modifierId.substring(2)));
                     String modifierType = stack.getOrCreateTag().getString("modifier_type");
                     if (!modifierType.isEmpty())
-                        event.getToolTip().add(Component.translatable("modifiler.entry.type").append(Component.translatable(modifierType)));
+                        lc.add(Component.translatable("modifiler.entry.type").append(Component.translatable(modifierType)));
+                List<Component> ToRemove =event.getToolTip();
+                event.getToolTip().removeAll(ToRemove);
+                event.getToolTip().addAll(lc);
                 }
             }
         }

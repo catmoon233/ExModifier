@@ -111,12 +111,13 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
     public void createResult(CallbackInfo ci) {
         ItemStack WashItem = this.inputSlots.getItem(2);
         ItemStack item = this.inputSlots.getItem(1);
+        boolean isFound = false;
         for (WashingMaterials washingMaterials : ModifierHandle.materialsList){
 
             if (washingMaterials.item.equals(WashItem.getItem())) {
 
                 if (item.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") > 0 || config.refresh_time == 0) {
-                    if (washingMaterials.OnlyTypes.isEmpty() || washingMaterials.OnlyTypes.contains(ModifierEntry.Type.ALL) || washingMaterials.OnlyTypes.contains(ModifierEntry.getType(this.inputSlots.getItem(0)))) {
+                    if (washingMaterials.OnlyTypes.isEmpty() || ModifierEntry.containItemTypes(item, washingMaterials.OnlyTypes)) {
 
                         if (washingMaterials.OnlyItems == null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(item.getItem()).toString())) {
                             if (washingMaterials.OnlyTags == null || washingMaterials.containTag(item)) {
@@ -136,6 +137,7 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
                                 input.getOrCreateTag().putString("wash_item", washingMaterials.ItemId);
                                 input.getOrCreateTag().putInt("modifier_refresh_add", washingMaterials.additionEntry);
                                 this.resultSlots.setItem(0, input);
+                                isFound =true;
 
                             }
 
@@ -143,10 +145,19 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
                         }
                     }
                 }
-            }else {
-                if (WashItem.getItem() instanceof EntryItem){
-                    ItemStack input = item.copy();
-                    ModifierHandle.CommonEvent.AddEntryToItem(input,WashItem.getOrCreateTag().getString("modifier_id"));
+            }
+
+
+        }
+        if (!isFound) {
+            if (WashItem.getItem() instanceof EntryItem) {
+                ItemStack input = item.copy();
+                //  Exmodifier.LOGGER.debug("WashItem is EntryItem");
+                int entryitemAdd = input.getOrCreateTag().getInt("entryitem_add");
+                if (entryitemAdd < config.canAddEntry) {
+                    ci.cancel();
+                    input.getOrCreateTag().putInt("entryitem_add", entryitemAdd + 1);
+                    ModifierHandle.CommonEvent.AddEntryToItem(input, WashItem.getOrCreateTag().getString("modifier_id"));
                     this.resultSlots.setItem(0, input);
                 }
             }

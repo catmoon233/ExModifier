@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.modifier;
 
+import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.Tag;
@@ -29,7 +30,15 @@ public class ModifierEntry {
     public Map<String,String> setting = new HashMap<>();
     public float weight;
     public boolean cantSelect = false;
-   // public double level;
+
+    public static boolean containItemTypes(ItemStack item, List<Type> onlyTypes) {
+        for (Type type : onlyTypes){
+            return containItemType(item, type);
+        }
+        return false;
+    }
+
+    // public double level;
     public static enum Type {
         CURIOS,
         ALL,
@@ -64,6 +73,23 @@ public class ModifierEntry {
         public record values() {
             public static final List<Type> values = List.of(Type.values());
         }
+    }
+    public static boolean containItemType(ItemStack stack, Type type){
+        if (type == Type.ALL)return true;
+        if (type == Type.ARMOR){
+            return stack.getItem() instanceof ArmorItem;
+        }
+        if (type == Type.WEAPON){
+            return stack.getItem() instanceof SwordItem || stack.getItem() instanceof AxeItem;
+        }
+        if (type== Type.ATTACKABLE){
+           if ( stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream()
+                    .mapToDouble(AttributeModifier::getAmount).sum() >0)
+               return true;
+        }
+        if (type ==Type.CURIOS)
+            return CuriosUtil.isCuriosItem(stack);
+        return false;
     }
     public static List<Component> GenerateTooltip(List<ModifierAttriGether> attriGethers, ItemStack itemStack) {
         List<Component> tooltips = new java.util.ArrayList<>();
