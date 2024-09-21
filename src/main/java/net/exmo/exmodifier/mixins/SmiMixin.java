@@ -3,6 +3,7 @@ package net.exmo.exmodifier.mixins;
 import com.google.gson.internal.bind.JsonTreeReader;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.content.modifier.EntryItem;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.WashingMaterials;
@@ -59,6 +60,13 @@ public abstract class SmiMixin extends ItemCombinerMenu {
             itemStack.shrink(itemStack.getCount());
             cir.setReturnValue(true);
         }
+        if (inputSlots.getItem(2).isEmpty()){
+            if (itemStack.getItem() instanceof EntryItem item){
+                this.inputSlots.setItem(2, itemStack.copy());
+                itemStack.shrink(itemStack.getCount());
+                cir.setReturnValue(true);
+            }
+        }
     }
 @Inject(at = @At("HEAD"), method = "findSlotMatchingIngredient", cancellable = true)
 private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemStack p_266818_, CallbackInfoReturnable<Optional<Integer>> cir) {
@@ -101,16 +109,19 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
 
     @Inject(at = @At("HEAD"), method = "createResult", cancellable = true)
     public void createResult(CallbackInfo ci) {
-
+        ItemStack WashItem = this.inputSlots.getItem(2);
+        ItemStack item = this.inputSlots.getItem(1);
         for (WashingMaterials washingMaterials : ModifierHandle.materialsList){
-            if (washingMaterials.item.equals(this.inputSlots.getItem(2).getItem())) {
-                if (this.inputSlots.getItem(1).getOrCreateTag().getInt("exmodifier_armor_modifier_applied") > 0 || config.refresh_time == 0) {
+
+            if (washingMaterials.item.equals(WashItem.getItem())) {
+
+                if (item.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") > 0 || config.refresh_time == 0) {
                     if (washingMaterials.OnlyTypes.isEmpty() || washingMaterials.OnlyTypes.contains(ModifierEntry.Type.ALL) || washingMaterials.OnlyTypes.contains(ModifierEntry.getType(this.inputSlots.getItem(0)))) {
 
-                        if (washingMaterials.OnlyItems == null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(this.inputSlots.getItem(1).getItem()).toString())) {
-                            if (washingMaterials.OnlyTags == null || washingMaterials.containTag(this.inputSlots.getItem(1))) {
+                        if (washingMaterials.OnlyItems == null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(item.getItem()).toString())) {
+                            if (washingMaterials.OnlyTags == null || washingMaterials.containTag(item)) {
                                 ci.cancel();
-                                ItemStack input = this.inputSlots.getItem(1).copy();
+                                ItemStack input = item.copy();
                                 ModifierHandle.CommonEvent.clearEntry(input);
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
@@ -131,6 +142,12 @@ private static void findSlotMatchingIngredient(SmithingRecipe p_266790_, ItemSta
                             break;
                         }
                     }
+                }
+            }else {
+                if (WashItem.getItem() instanceof EntryItem){
+                    ItemStack input = item.copy();
+                    ModifierHandle.CommonEvent.AddEntryToItem(input,WashItem.getOrCreateTag().getString("modifier_id"));
+                    this.resultSlots.setItem(0, input);
                 }
             }
         }

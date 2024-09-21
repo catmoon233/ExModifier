@@ -23,10 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.AddEntryToItem;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.RandomEntry;
 
 @Mod.EventBusSubscriber
 public class AddHandItemEntry {
+
     @SubscribeEvent
     public static void registerCommand(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("addhanditementry").requires(s -> s.hasPermission(4)).then(Commands.argument("name1", EntityArgument.player()).then(Commands.argument("name", StringArgumentType.word()).executes(arguments -> {
@@ -43,25 +45,8 @@ public class AddHandItemEntry {
             String _setval = StringArgumentType.getString(arguments, "name");
             Player player = EntityArgument.getPlayer(arguments, "name1");
             try {
+            AddEntryToItem(player.getMainHandItem(), _setval);
 
-
-                ItemStack itemStack = player.getMainHandItem();
-
-                List<ModifierEntry> modifierEntries = ModifierHandle.getEntrysFromItemStack(itemStack);
-
-                ModifierHandle.CommonEvent.clearEntry(itemStack);
-
-                ModifierEntry modifier = ModifierHandle.modifierEntryMap.get(_setval);
-                if (!modifierEntries.contains(modifier)) modifierEntries.add(modifier);
-
-                Map<String, Float> weightedUtilmap = new HashMap<>();
-                for (ModifierEntry modifierEntry : modifierEntries) {
-                    Exmodifier.LOGGER.info(modifierEntry.getId());
-                    weightedUtilmap.put(modifierEntry.getId(), 1.0f);
-                }
-                ModifierEntry.Type type = ModifierEntry.findTypeFormEntry(modifier);
-                EquipmentSlot slot = ModifierEntry.TypeToEquipmentSlot(type);
-                RandomEntry(itemStack, new WeightedUtil<String>(weightedUtilmap), slot, modifierEntries.size());
 
             }catch (Exception e){
                 e.printStackTrace();

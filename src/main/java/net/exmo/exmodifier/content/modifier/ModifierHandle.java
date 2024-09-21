@@ -320,6 +320,25 @@ public class ModifierHandle {
 
             return attriGethers;
         }
+        public static void AddEntryToItem (ItemStack itemStack,String e){
+
+            List<ModifierEntry> modifierEntries = ModifierHandle.getEntrysFromItemStack(itemStack);
+
+            ModifierHandle.CommonEvent.clearEntry(itemStack);
+
+            ModifierEntry modifier = ModifierHandle.modifierEntryMap.get(e);
+            if (!modifierEntries.contains(modifier)) modifierEntries.add(modifier);
+
+            Map<String, Float> weightedUtilmap = new HashMap<>();
+            for (ModifierEntry modifierEntry : modifierEntries) {
+                Exmodifier.LOGGER.info(modifierEntry.getId());
+                weightedUtilmap.put(modifierEntry.getId(), 1.0f);
+            }
+            ModifierEntry.Type type = ModifierEntry.findTypeFormEntry(modifier);
+            EquipmentSlot slot = ModifierEntry.TypeToEquipmentSlot(type);
+            RandomEntry(itemStack, new WeightedUtil<String>(weightedUtilmap), slot, modifierEntries.size());
+
+        }
         private static void applyModifiersCurios(ItemStack stack, List<ModifierAttriGether> attriGethers, List<String> CuriosSlots) {
             Map<String, Multimap<Attribute, AttributeModifier>> attriMap = new HashMap<>();
             for (String CuriosSlot : CuriosSlots) {

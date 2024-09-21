@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import dev.shadowsoffire.placebo.events.ItemUseEvent;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.content.modifier.EntryItem;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
@@ -22,14 +23,12 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.*;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.*;
@@ -53,6 +52,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static net.exmo.exmodifier.Exmodifier.*;
 import static net.exmo.exmodifier.config.refresh_time;
 import static net.exmo.exmodifier.content.event.MainEvent.CommonEvent.init;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
@@ -63,12 +63,12 @@ import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.WEAR;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MainEvent {
 
-    @SubscribeEvent
-    public static void FmlLoad(FMLCommonSetupEvent event) throws IOException {
-        init();
-
-
-    }
+//    @SubscribeEvent
+//    public static void FmlLoad(FMLCommonSetupEvent event) throws IOException {
+//        init();
+//
+//
+//    } 已内置到 Exmodifier.java
 
     @Mod.EventBusSubscriber
     public static class CommonEvent {
@@ -444,12 +444,13 @@ public class MainEvent {
             }
             return flag;
         }
-
         public static void init() throws IOException {
             ModifierHandle.readConfig();
             ExSuitHandle.readConfig();
             ModifierHandle.EEMatchQueueHandle();
+
         }
+
         @SubscribeEvent
         public static void atReload(AddReloadListenerEvent event) throws IOException {
 
