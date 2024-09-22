@@ -10,15 +10,15 @@ import java.util.Map;
 
 public class ItemQuality {
     public int rarity; //稀有度
+    public String id ;
     public String LocalDescription; //描述
     public List<String> items = new ArrayList<>();
     public Map<Attribute,Double> attributeLowerLimit = new HashMap<>();
     //你要怎么搞,新建文件还是修改原文件我去吃饭了
     //xing
-    public ItemQuality(int rarity, String LocalDescription, List<String> items) {
+    public ItemQuality(int rarity, String id) {
         this.rarity = rarity;
-        this.LocalDescription = LocalDescription;
-        this.items = items;
+        this.id = id;
     }
     //你去写个handle吧
 

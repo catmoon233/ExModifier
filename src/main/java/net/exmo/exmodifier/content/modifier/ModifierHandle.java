@@ -23,8 +23,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -110,24 +108,27 @@ public class ModifierHandle {
             if (player ==null)return tooltips;
             if (id.length() >= 2) {
                 if (config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)));
-                else      tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)).append(" : "));
-                if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.contains(modifierEntry))){
-                    ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
-                    if (!config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry.suit"));
+                else tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)).append(" : "));
+                    if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.contains(modifierEntry))) {
+                        ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
+                        if (!config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry.suit"));
 
-                    for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
-                            .toList()){
-                        if (suit.visible) {
-                            Integer integer = pv.SuitsNum.get(suit.id);
-                            if (integer == null) integer = 0;
-                            tooltips.add(Component.translatable("modifiler.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
-                            if (!suit.LocalDescription.isEmpty())tooltips.add(Component.translatable(suit.LocalDescription));
+                        for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
+                                .toList()) {
+                            if (suit.visible) {
+                                Integer integer = pv.SuitsNum.get(suit.id);
+                                if (integer == null) integer = 0;
+                                tooltips.add(Component.translatable("modifiler.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
+                                if (!suit.LocalDescription.isEmpty())
+                                    tooltips.add(Component.translatable(suit.LocalDescription));
 
-                            //.append(Component.translatable("modifiler.entry.suit.color"))
+                                //.append(Component.translatable("modifiler.entry.suit.color"))
+                            }
                         }
-                    };
+                        ;
 
-                }
+                    }
+
                 for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
                     AttributeModifier attributemodifier = modifierAttriGether.getModifier();
                     Attribute attribute = modifierAttriGether.getAttribute();
@@ -340,7 +341,7 @@ public class ModifierHandle {
             if (!modifierEntries.contains(modifier)) modifierEntries.add(modifier);
             boolean over = false;
             Map<String, Float> weightedUtilmap = new HashMap<>();
-            for (ModifierEntry modifierEntry : modifierEntries) {
+            for (ModifierEntry modifierEntry : modifierEntries.stream().filter(Objects::nonNull).toList()) {
                 Exmodifier.LOGGER.info(modifierEntry.getId());
                 weightedUtilmap.put(modifierEntry.getId(), 1.0f);
             }
@@ -578,6 +579,7 @@ public class ModifierHandle {
     public static boolean hasBootsConfig = false;
     public static boolean hasSwordConfig = false;
     public static final Path WashingMaterialsConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/WashingMaterials.json");
+    public static final Path ItemsDefaultEntryConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/ItemsDefaultEntry.json");
     // public static final Path ConfigPath = FMLPaths.MODSDIR.get().resolve("data/exmodifier/modifier");
     public static Path ConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/modifier");
     public static List<MoConfig> Foundmoconfigs = new ArrayList<>();
@@ -585,6 +587,7 @@ public class ModifierHandle {
     public static Map<String,ModifierEntry> modifierEntryMap = new HashMap<>();
     public static Map<ModifierEntry,List<String>> EEMatchQueue = new HashMap<>();
     public static List<String> cantWashItemIds = new ArrayList<>();
+    public static Map<String,List<ModifierEntry>> itemsDefaultEntry = new HashMap<>();
     public static List<String> onlyCanRefreshPointEntryItemIds = new ArrayList<>();
     public static void RegisterModifierEntry(ModifierEntry modifierEntry){
         if (!hasBootsConfig)if (modifierEntry.type == ModifierEntry.Type.BOOTS)hasBootsConfig=true;
@@ -629,7 +632,17 @@ public class ModifierHandle {
                     processWashingMaterialEntry(entry);
                 }
             }
+            // 读取物品默认条目配置
+            if (Files.exists(ItemsDefaultEntryConfigPath)) {
+                itemsDefaultEntry = new HashMap<>();
+                MoConfig washingMaterialsConfig = new MoConfig(ItemsDefaultEntryConfigPath);
 
+                for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
+                    processItemsDefaultEntryEntry(entry);
+                }
+
+            }
+            MinecraftForge.EVENT_BUS.post(new ExItemDefaultEntry());
             // 读取其余配置文件
             Foundmoconfigs =  listFiles(ConfigPath);
             for (MoConfig moconfig : Foundmoconfigs) {
@@ -647,6 +660,30 @@ public class ModifierHandle {
         }
     }
 
+    private static void processItemsDefaultEntryEntry(Map.Entry<String, JsonElement> entry) {
+        if (!entry.getValue().isJsonObject()) {
+            return;
+        }
+        try {
+            JsonObject jsonObject = entry.getValue().getAsJsonObject();
+            List<String> entrysids = new ArrayList<>();
+            for (JsonElement item : jsonObject.get("entrys").getAsJsonArray()) {
+                entrysids.add(item.getAsString());
+            }
+
+            List<ModifierEntry> modifierEntries = new ArrayList<>();
+            for (String entryid : entrysids){
+                modifierEntries.add(modifierEntryMap.get(entryid));
+            }
+            itemsDefaultEntry.put(entry.getKey(),modifierEntries);
+            LOGGER.debug("Add ItemsDefaultEntry:" + entry.getKey() + " To ModifierEntry:" + modifierEntries);
+
+        }catch (Exception e){
+            LOGGER.error("Error reading ItemsDefaultEntry config file", e);
+        }
+    }
+    //我再弄个code with me 吧
+    //你去弄一下121nf移植 111111111111111 不会，直接改build。gradle？
     // 处理洗涤材料条目
     private static void processWashingMaterialEntry(Map.Entry<String, JsonElement> entry) {
         if (!entry.getValue().isJsonObject()) {
@@ -670,9 +707,14 @@ public class ModifierHandle {
                 materials.MinRandomTime = jsonObject.get("MinRandomTime").getAsInt();
 
             }
-            if (    jsonObject.has("MaxRandomTime")
+            if (    jsonObject.has("CostExp")
             ){
-                materials.MinRandomTime = jsonObject.get("MaxRandomTime").getAsInt();
+                materials.CostExp = jsonObject.get("CostExp").getAsDouble();
+
+            }
+            if (    jsonObject.has("NeedCount")
+            ){
+                materials.NeedCount = jsonObject.get("NeedCount").getAsInt();
 
             }
             if (jsonObject.has("OnlyItems")){

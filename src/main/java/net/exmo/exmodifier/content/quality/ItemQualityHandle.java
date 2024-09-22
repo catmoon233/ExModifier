@@ -1,7 +1,61 @@
 package net.exmo.exmodifier.content.quality;
 
-public class ItemQualityHandle {
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import net.exmo.exmodifier.content.modifier.MoConfig;
+import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.minecraftforge.fml.loading.FMLPaths;
 
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static net.exmo.exmodifier.Exmodifier.LOGGER;
+
+public class ItemQualityHandle {
+    public static Map<String,ItemQuality> itemQualityMap = new HashMap<>();
+    public static final Path ItemsQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/ItemsQualityConfigPath.json");
+    public static void init() throws FileNotFoundException {
+        if (Files.exists(ItemsQualityConfigPath)) {
+            itemQualityMap = new HashMap<>();
+            MoConfig washingMaterialsConfig = new MoConfig(ItemsQualityConfigPath);
+
+            for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
+                processItemsQualityConfigEntry(entry);
+            }
+        }
+    }
+
+    private static void processItemsQualityConfigEntry(Map.Entry<String, JsonElement> entry) {
+        if (!entry.getValue().isJsonObject()) {
+            return;
+        }
+        try {
+            JsonObject jsonObject = entry.getValue().getAsJsonObject();
+            int rarity = jsonObject.has("rarity") ? jsonObject.get("rarity").getAsInt() : 0;
+            String id = entry.getKey();
+            String LocalDescription = jsonObject.has("LocalDescription") ? jsonObject.get("LocalDescription").getAsString() : "";
+            List<String> items = new ArrayList<>();
+            if (jsonObject.has("items")) {
+                for (JsonElement item : jsonObject.get("items").getAsJsonArray()) {
+                    items.add(item.getAsString());
+                }
+            }
+            ItemQuality itemQuality = new ItemQuality(rarity,id);
+            itemQuality.items = items;
+            itemQuality.LocalDescription = LocalDescription;
+
+            itemQualityMap.put(id,itemQuality);
+            LOGGER.debug("Add ItemsQuality: "+id );
+
+        }catch (Exception e){
+            LOGGER.error("Error reading ItemsDefaultEntry config file", e);
+        }
+    }
     /*
     即将更新 装备强化模块
 武器装备饰品将拥有稀有度，可内置每把武器的，也可通过洗练（或者开启自动刷新，拿到手上即可刷新）可以根据材料刷新固定或随机的 稀有度可自定义（比如
@@ -11,3 +65,4 @@ public class ItemQualityHandle {
 武器进阶可以设置消耗同等等级的武器来进阶
      */
 }
+//我写个默认词条 等等哈

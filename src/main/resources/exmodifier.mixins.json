@@ -5,8 +5,10 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "exmodifier.refmap.json",
   "mixins": [
+    "ItemCombinerMenuMixin",
     "ItemStackMixin",
     "LivingSwingAction",
+    "PlayerMixin",
     "SmiMixin",
     "ToolTipMixin"
   ],

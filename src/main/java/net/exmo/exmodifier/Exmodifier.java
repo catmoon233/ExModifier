@@ -9,6 +9,7 @@ import net.exmo.exmodifier.content.modifier.EntryItem;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -45,9 +46,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.content.event.MainEvent.CommonEvent.init;
 
@@ -125,11 +128,12 @@ public class Exmodifier {
 
     public void AddToTab(BuildCreativeModeTabContentsEvent event){
         if (event.getTab() == ExModifierTab.get()) {
-
+            WeightedUtil<String> weight = new WeightedUtil<>(ModifierHandle.modifierEntryMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight)));
             ModifierHandle.modifierEntryMap.forEach((entry, modifierEntry) -> {
                 ItemStack stack = ENTRY_ITEM.get().getDefaultInstance();
                 stack.getOrCreateTag().putString("modifier_id", entry);
                 stack.getOrCreateTag().putString("modifier_type",modifierEntry.type.toString());
+                stack.getOrCreateTag().putDouble("modifier_possibility",weight.getProbability(entry));
                 // stack.setHoverName(Component.translatable("modifiler.entry." + entry));
                 event.accept(stack);
             });
@@ -157,7 +161,6 @@ public class Exmodifier {
             event.register(ENTRY_ITEM.get(), new EntryItemRender());
         }
     }
-
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {

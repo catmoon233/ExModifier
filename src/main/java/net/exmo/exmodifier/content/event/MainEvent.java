@@ -25,6 +25,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 //import net.minecraftforge.client.event.MovementInputUpdateEvent;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
@@ -40,6 +41,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
@@ -57,6 +59,7 @@ import static net.exmo.exmodifier.config.refresh_time;
 import static net.exmo.exmodifier.content.event.MainEvent.CommonEvent.init;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEntrysFromItemStack;
+import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEntry;
 import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.TAKE;
 import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.WEAR;
 
@@ -171,6 +174,7 @@ public class MainEvent {
 
         }
         public static void ApplySuitEffect(Player player, ExSuit.Trigger trigger){
+            if(player==null)return;
             // Retrieve player capability once and exit early if not present
             player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
                 List<MobEffectInstance> mobEffectsToAdd = new ArrayList<>();
@@ -271,7 +275,15 @@ public class MainEvent {
                     ApplySuitEffect(player, ExSuit.Trigger.DODGE);
 
         }
-
+        @SubscribeEvent
+        public static void PlayerUseItem(LivingEntityUseItemEvent event){
+            if(event.getEntity() instanceof Player player)ApplySuitEffect(player,ExSuit.Trigger.ON_USE);
+        }
+        @SubscribeEvent
+        public static void PlayerSwim(LivingPlayerSwimEvent event){
+            ApplySuitEffect(event.player, ExSuit.Trigger.SWIM);
+        }
+        //有没有可能我说的是events里的那种event
 //        @SubscribeEvent
 //        public static void PlayerEat(Item event){
 //            if (event.getEntity()==null)return;
@@ -315,6 +327,12 @@ public class MainEvent {
 
 
                     ItemStack stack = event.getTo();
+                    String string = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+                    if (itemsDefaultEntry.containsKey(string)){
+                        for (ModifierEntry modifierEntry:itemsDefaultEntry.get(string)){
+                            ModifierHandle.CommonEvent.AddEntryToItem(stack,modifierEntry.id);
+                        }
+                    }
                    // Exmodifier.LOGGER.debug(event.getFrom().toString());
                     List<String> curiosSlots = CuriosUtil.getSlotsFromItemstack(stack);
                     if (!curiosSlots.isEmpty()){

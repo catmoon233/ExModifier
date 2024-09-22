@@ -7,7 +7,10 @@
   "modifiler.entry.ample": "§7Entry",
   "modifiler.entry.can_add_max": "§7The maximum number of entries added has been reached",
   "modifiler.entry.type": "§7Type: ",
+  "item.modifier.entry_item": "§7Entry item",
+  "modifiler.entry.possibility": "§7possibility:",
   "null": "",
+  "exmodifier.refresh_not_enough": "§7The quantity of items does not meet the requirements",
   "modifiler.entry.suit": "Suits:",
   "modifiler.entry": "§7Entry:",
   "modifiler.entry.UNKNOWN": "§7Unknown"
