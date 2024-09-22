@@ -511,7 +511,7 @@ public class ModifierHandle {
             if (type == ModifierEntry.Type.BOOTS) return hasBootsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.FEET;
             if (type == ModifierEntry.Type.LEGGINGS) return hasLeggingsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.LEGS;
             if (type == ModifierEntry.Type.ARMOR) return stack.getItem() instanceof ArmorItem;
-            if (type == ModifierEntry.Type.SHIELD) return stack.getItem() instanceof ShieldItem;
+            if (type == ModifierEntry.Type.SHIELD) return stack.getUseAnimation() == UseAnim.BLOCK;
             if (type == ModifierEntry.Type.SWORD) return hasSwordConfig && stack.getItem() instanceof SwordItem;
             if (type == ModifierEntry.Type.ATTACKABLE) return stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream().mapToDouble(AttributeModifier::getAmount).sum() > 0;
             if (type == ModifierEntry.Type.AXE) return stack.getItem() instanceof AxeItem;

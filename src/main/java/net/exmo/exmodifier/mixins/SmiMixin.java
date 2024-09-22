@@ -106,6 +106,7 @@ public abstract class SmiMixin extends ItemCombinerMenu {
     @Inject(at = @At("HEAD"), method = "onTake")
     public void onTake(Player p_39790_, ItemStack p_39791_, CallbackInfo ci) {
         if (p_39791_.getOrCreateTag().getBoolean("modifier_refresh")){
+            this.inputSlots.setItem(0, ItemStack.EMPTY);
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied0","");
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");

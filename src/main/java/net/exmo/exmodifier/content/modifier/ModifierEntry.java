@@ -11,10 +11,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.*;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
@@ -76,6 +73,9 @@ public class ModifierEntry {
     }
     public static boolean containItemType(ItemStack stack, Type type){
         if (type == Type.ALL)return true;
+        if (type == Type.SHIELD) {
+            return stack.getUseAnimation() == UseAnim.BLOCK;
+        }
         if (type == Type.ARMOR){
             return stack.getItem() instanceof ArmorItem;
         }

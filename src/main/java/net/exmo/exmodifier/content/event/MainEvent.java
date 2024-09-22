@@ -77,11 +77,12 @@ public class MainEvent {
     public static class CommonEvent {
         @SubscribeEvent
         public static void TooltipChange(ItemTooltipEvent event) {
+            if (event.getItemStack().getTag()!= null){
             if (!CuriosUtil.isCuriosItem(event.getItemStack())) {
 
                 List<Component> toolTip = CommonEvent.ItemToolTipsChange(event.getItemStack(), event.getToolTip(), event.getEntity());
             }
-
+                }
         }
 
         @SubscribeEvent

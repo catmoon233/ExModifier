@@ -25,7 +25,9 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEntrysFromI
 public abstract class ToolTipMixin {
     @ModifyVariable(at =@At("STORE"), method = "getTooltipLines", ordinal = 0)
     private Multimap<Attribute, AttributeModifier> changev(Multimap<Attribute, AttributeModifier> multimap) {
-        List<ModifierEntry> entrys = getEntrysFromItemStack((ItemStack)(Object)this);
+        ItemStack stack = (ItemStack) (Object) this;
+        if (stack.getTag()!=null)return multimap;
+        List<ModifierEntry> entrys = getEntrysFromItemStack(stack);
         List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
         for (ModifierEntry entry : entrys) {

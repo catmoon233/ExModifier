@@ -24,7 +24,7 @@ public abstract class ItemCombinerMenuMixin {
     }
     @Inject(at = @At("HEAD"), method = "slotsChanged")
     public void slotsChanged(Container p_39778_, CallbackInfo ci) {
-        if (this.inputSlots.getItem(0).isEmpty() || this.inputSlots.getItem(1).isEmpty() )this.player.getPersistentData().putBoolean("modifier_refresh_not_enough", false);
+      //  if (this.inputSlots.getItem(0).isEmpty() || this.inputSlots.getItem(1).isEmpty() )this.player.getPersistentData().putBoolean("modifier_refresh_not_enough", false);
 
     }
 }
