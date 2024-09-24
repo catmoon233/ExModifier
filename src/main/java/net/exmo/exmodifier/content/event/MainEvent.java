@@ -408,12 +408,9 @@ public class MainEvent {
         private static boolean handleStack(Player player, ItemStack stack, EntityAttrUtil.WearOrTake effectType) {
             boolean flag = false;
             if (!hasAttr(stack)) return false;
-
             CompoundTag tag = stack.getTag();
             if (tag == null || tag.getInt("exmodifier_armor_modifier_applied") <= 0) return false;
-
             int effectMultiplier = effectType == WEAR ? 1 : -1;
-
             for (int i = 0; ; i++) {
                 String modifier = tag.getString("exmodifier_armor_modifier_applied" + i);
                 if (modifier.isEmpty()) break;
@@ -425,27 +422,21 @@ public class MainEvent {
                     if (effectType == WEAR && suit.setting.getOrDefault("excludeArmorInHand", "false").equals("true") && stack.getItem() instanceof ArmorItem) {
                         continue;
                     }
-
                     if (effectType == TAKE && suit.setting.getOrDefault("excludeArmorInHand", "false").equals("true") && stack.getItem() instanceof ArmorItem) {
                         continue;
                     }
-
                     if (effectType == WEAR) {
                         ExSuitHandle.addSuitLevel(player, suit.id, 1);
                     } else {
                         ExSuitHandle.RemoveSuitLevel(player, suit.id, 1);
                     }
                     flag =true;
-
-
                     int suitLevel = ExSuitHandle.GetSuitLevel(player, suit.id);
                     List<ModifierAttriGether> attriGethers = suit.attriGether.get(effectType == WEAR ? suitLevel : suitLevel + 1);
-
                     if (attriGethers != null) {
                         for (ModifierAttriGether attrGether : attriGethers.stream().filter(attrGether -> attrGether.getOnlyItems().isEmpty()).toList()) {
                             Exmodifier.LOGGER.debug("items : "+attrGether.getOnlyItems().toString());
                             //    if (attrGether.getOnlySlots() ==null|| attrGether.getOnlySlots().isEmpty()) {
-
                             ExApplySuitAttrigetherEvent event1 = new ExApplySuitAttrigetherEvent(player, stack, effectType, attrGether);
                             try {
                                 Exmodifier.LOGGER.debug("Apply Suit AttriGether: " + attrGether.attribute.getDescriptionId() + " " + attrGether.modifier.getOperation().toString() + " " + attrGether.modifier.getAmount());
