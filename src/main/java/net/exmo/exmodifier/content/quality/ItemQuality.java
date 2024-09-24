@@ -14,6 +14,10 @@ public class ItemQuality {
     public String LocalDescription; //描述
     public List<String> items = new ArrayList<>();
     public Map<Attribute,Double> attributeLowerLimit = new HashMap<>();
+    public boolean autoRefresh = false;
+    public int refineNum = 0;
+    public boolean isRandom = true;
+    public List<String> materials = new ArrayList<>();
     //你要怎么搞,新建文件还是修改原文件我去吃饭了
     //xing
     public ItemQuality(int rarity, String id) {
