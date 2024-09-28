@@ -18,6 +18,8 @@ public class config {
     public static boolean compact_tooltip = false;
     public static final Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/Exmodifier.json");
     public static int canAddEntry = 1;
+    public static boolean Debug = false;
+    public static boolean DebugInInfo = false;
 @SubscribeEvent
     public static void ConfigConfig(AddReloadListenerEvent event) throws FileNotFoundException {
     ExConfigHandle exConfigHandle = new ExConfigHandle();
@@ -28,6 +30,12 @@ public class config {
     compact_tooltip = MainConfig.readSetting("compact_tooltip").getAsBoolean();
     if (MainConfig.AlljsonObject.has("canAddEntry")){
         canAddEntry = MainConfig.readSetting("canAddEntry").getAsInt();
+    }
+    if (MainConfig.AlljsonObject.has("Debug")){
+        Debug = MainConfig.readSetting("Debug").getAsBoolean();
+    }
+    if (MainConfig.AlljsonObject.has("DebugInInfo")){
+        DebugInInfo = MainConfig.readSetting("DebugInInfo").getAsBoolean();
     }
 }
 }

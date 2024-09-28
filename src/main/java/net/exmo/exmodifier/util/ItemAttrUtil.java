@@ -107,7 +107,7 @@ public  class ItemAttrUtil {
 
     public static void addItemAttributeModifier(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
         if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute)){
-            Exmodifier.LOGGER.error("Attribute " + pAttribute + " does not exist");
+            Exmodifier.LOGGER.Logger.error("Attribute " + pAttribute + " does not exist");
             return;
         }
         Exmodifier.LOGGER.debug("add attribute: "+pAttribute+" "+pAttribute.getDescriptionId());

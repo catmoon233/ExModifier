@@ -149,13 +149,13 @@ public class ExSuitHandle {
             if (entry1 != null) {
                 exSuit.addEntry(entry1);
                 Exmodifier.LOGGER.debug("Found About ModifierEntry: "+entry1.id);
-            }else Exmodifier.LOGGER.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
+            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
 
         }
         if (exSuit.entry.isEmpty()) {
             if (moconfig.type!= ModifierEntry.Type.ALL) {
-                Exmodifier.LOGGER.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0, 2) + entry.getKey());
-            }else Exmodifier.LOGGER.error("No ModifierEntry Found any one about: " + entry.getKey());
+                Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0, 2) + entry.getKey());
+            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found any one about: " + entry.getKey());
             return;
         }
         exSuit.type = moconfig.type;
@@ -206,7 +206,7 @@ public class ExSuitHandle {
             try {
                 effects.add(processEffect(moconfig, exSuit, EffectEntry));
             } catch (Exception e) {
-                Exmodifier.LOGGER.error("Error processing attrGether: " + EffectEntry.getKey(), e);
+                Exmodifier.LOGGER.Logger.error("Error processing attrGether: " + EffectEntry.getKey(), e);
             }
         }
         return effects;
@@ -230,7 +230,7 @@ public class ExSuitHandle {
             Exmodifier.LOGGER.debug("Registered ExSuit: " + exSuit.id + " with effect: " + effectEntry.getKey() + " level: " + level);
             return new MobEffectInstance(effect, time, level,false,true,true);
         }
-        Exmodifier.LOGGER.error("No MobEffect Found: " + effectEntry.getKey());
+        Exmodifier.LOGGER.Logger.error("No MobEffect Found: " + effectEntry.getKey());
         return null;
     }
 
@@ -242,7 +242,7 @@ public class ExSuitHandle {
                 attrGethersToReturn.add(processAttrGether(moconfig, exSuit, attrGetherEntry,index,level));
                 index++;
             } catch (Exception e) {
-                Exmodifier.LOGGER.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
+                Exmodifier.LOGGER.Logger.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
             }
         }
         ExAddSuitAttrigethersEvent event = new ExAddSuitAttrigethersEvent(moconfig,exSuit,attrGethers,attrGethersToReturn);
@@ -306,7 +306,7 @@ public class ExSuitHandle {
                 processModifierEntry(moconfig, entry, entries);
                 Exmodifier.LOGGER.debug("Reading Suit Config Over: " + entry.getKey());
             } catch (Exception e) {
-                Exmodifier.LOGGER.error("Error processing modifier entry: " + entry.getKey(), e);
+                Exmodifier.LOGGER.Logger.error("Error processing modifier entry: " + entry.getKey(), e);
             }
         }
         for (ExSuit exSuit : entries){

@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import dev.shadowsoffire.placebo.events.ItemUseEvent;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.EntryItem;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
@@ -46,6 +47,7 @@ import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
 
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -57,6 +59,7 @@ import java.util.stream.Collectors;
 import static net.exmo.exmodifier.Exmodifier.*;
 import static net.exmo.exmodifier.config.refresh_time;
 import static net.exmo.exmodifier.content.event.MainEvent.CommonEvent.init;
+import static net.exmo.exmodifier.content.level.ItemLevelHandle.ItemLevelRefresh;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEntrysFromItemStack;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEntry;
@@ -81,7 +84,16 @@ public class MainEvent {
             if (!CuriosUtil.isCuriosItem(event.getItemStack())) {
 
                 List<Component> toolTip = CommonEvent.ItemToolTipsChange(event.getItemStack(), event.getToolTip(), event.getEntity());
+                List<Component> tooo = new ArrayList<>();
+                tooo.add(toolTip.get(0));
+                tooo.addAll(ItemLevelHandle.genItemLevelInfo(event.getItemStack()));
+                for (int i = 1; i < toolTip.size(); i++){
+                    tooo.add(toolTip.get(i));
+                }
+                event.getToolTip().clear();
+                event.getToolTip().addAll(tooo);
             }
+
                 }
         }
 
@@ -326,7 +338,7 @@ public class MainEvent {
         }
 
         @SubscribeEvent
-        public static void armorChange(LivingEquipmentChangeEvent event) {
+        public static void armorChange(LivingEquipmentChangeEvent event) throws ScriptException {
             if (event.getEntity() instanceof Player player) {
                 //   Exmodifier.LOGGER.info(event.getTo().getDescriptionId());
 //                if (player.getPersistentData().getBoolean("LoginGamea")) {
@@ -391,6 +403,7 @@ public class MainEvent {
                             }
                         }
                     }
+                    ItemLevelRefresh(stack,0,1,"none");
                 }
 //                if (event.getEntity().level()().isClientSide) {
 //                    player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {

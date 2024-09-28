@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.content.level.ItemLevel;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.*;
@@ -38,6 +39,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Exmodifier.*;
+import static net.exmo.exmodifier.content.level.ItemLevelHandle.*;
 import static net.exmo.exmodifier.util.ExConfigHandle.listFiles;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 
@@ -286,7 +288,70 @@ public class ModifierHandle {
 
             applyModifiers(stack, finalAttriGethers, slot);
         }
+        public static void RandomEntry(ItemStack stack, int rarity, int refreshnumber,String washItem) {
+            if (stack.getTag() ==null||stack.getTag().getInt("exmodifier_armor_modifier_applied") >0)return;
+            if (stack.getTag()!=null) {
+                stack.getTag().remove("wash_item");
+                stack.getTag().remove("modifier_refresh_rarity");
+                stack.getTag().remove("modifier_refresh_add");
+                stack.getTag().remove("modifier_refresh");
 
+            }
+
+
+            boolean over = false;
+            Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap =new  HashMap<>( Map.of(
+                    ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
+                    ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
+                    ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
+                    ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
+                    ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
+                    ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
+                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
+                    ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
+                    ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
+                    ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
+            ));
+
+            for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeSlotMap.entrySet()) {
+                ModifierEntry.Type type = entry.getKey();
+                EquipmentSlot slot = entry.getValue();
+
+                if (!over && isValidForType(stack, type)) {
+                    WeightedUtil<String> weightedUtil = new WeightedUtil<>(
+                            modifierEntryMap.entrySet().stream()
+                                    .filter(e -> e.getValue().type == type )
+                                    .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
+                                    .filter(e -> !e.getValue().cantSelect)
+                                    .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
+                                    .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
+                                    .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
+                                    .filter(e -> {
+                                        boolean hasWashItem = materialsList.stream()
+                                                .filter(m -> m.ItemId.equals(washItem))
+                                                .findAny()
+                                                .map(m -> !m.OnlyHasWashEntry)
+                                                .orElse(true);
+
+                                        return hasWashItem || e.getValue().OnlyWashItems.contains(washItem);
+                                    })
+                                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))
+                    );
+
+                    if (!weightedUtil.weights.isEmpty()) {
+                        weightedUtil.increaseWeightsByRarity(rarity);
+                        if (entry.getKey() == ModifierEntry.Type.ARMOR) {  // ARMOR type, set the slot based on the item
+                            slot = ((ArmorItem) stack.getItem()).getEquipmentSlot();
+                        }
+                        LOGGER.debug("RandomEntry: " + type + " " + slot);
+                        RandomEntry(stack, weightedUtil, slot, refreshnumber);
+                        stack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
+                                stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
+                        over = true;
+                    }
+                }
+            }
+        }
         private static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry,ItemStack stack) {
             List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
@@ -447,70 +512,8 @@ public class ModifierHandle {
                     stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
 
         }
-        public static void RandomEntry(ItemStack stack, int rarity, int refreshnumber,String washItem) {
-            if (stack.getTag() ==null||stack.getTag().getInt("exmodifier_armor_modifier_applied") >0)return;
-            if (stack.getTag()!=null) {
-                stack.getTag().remove("wash_item");
-                stack.getTag().remove("modifier_refresh_rarity");
-                stack.getTag().remove("modifier_refresh_add");
-                stack.getTag().remove("modifier_refresh");
-
-            }
 
 
-            boolean over = false;
-            Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap =new  HashMap<>( Map.of(
-                    ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
-                    ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
-                    ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
-                    ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
-                    ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
-                    ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
-                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
-            ));
-
-            for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeSlotMap.entrySet()) {
-                ModifierEntry.Type type = entry.getKey();
-                EquipmentSlot slot = entry.getValue();
-
-                if (!over && isValidForType(stack, type)) {
-                    WeightedUtil<String> weightedUtil = new WeightedUtil<>(
-                            modifierEntryMap.entrySet().stream()
-                                    .filter(e -> e.getValue().type == type )
-                                    .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
-                                    .filter(e -> !e.getValue().cantSelect)
-                                    .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
-                                    .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
-                                    .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
-                                    .filter(e -> {
-                                        boolean hasWashItem = materialsList.stream()
-                                                .filter(m -> m.ItemId.equals(washItem))
-                                                .findAny()
-                                                .map(m -> !m.OnlyHasWashEntry)
-                                                .orElse(true);
-
-                                        return hasWashItem || e.getValue().OnlyWashItems.contains(washItem);
-                                    })
-                                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))
-                    );
-
-                    if (!weightedUtil.weights.isEmpty()) {
-                        weightedUtil.increaseWeightsByRarity(rarity);
-                        if (entry.getKey() == ModifierEntry.Type.ARMOR) {  // ARMOR type, set the slot based on the item
-                            slot = ((ArmorItem) stack.getItem()).getEquipmentSlot();
-                        }
-                        LOGGER.debug("RandomEntry: " + type + " " + slot);
-                        RandomEntry(stack, weightedUtil, slot, refreshnumber);
-                        stack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
-                                stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
-                        over = true;
-                    }
-                }
-            }
-        }
 
         private static boolean isValidForType(ItemStack stack, ModifierEntry.Type type) {
 
@@ -628,9 +631,9 @@ public class ModifierHandle {
 
         try {
             // 打印所有属性的日志
-            ForgeRegistries.ATTRIBUTES.forEach(attribute ->
-                    LOGGER.debug("Attribute: " + ForgeRegistries.ATTRIBUTES.getKey(attribute))
-            );
+//            ForgeRegistries.ATTRIBUTES.forEach(attribute ->
+//                    LOGGER.debug("Attribute: " + ForgeRegistries.ATTRIBUTES.getKey(attribute))
+//            );
 
             // 读取洗涤材料配置
             if (Files.exists(WashingMaterialsConfigPath)) {
@@ -655,7 +658,13 @@ public class ModifierHandle {
             // 读取其余配置文件
             Foundmoconfigs =  listFiles(ConfigPath);
             for (MoConfig moconfig : Foundmoconfigs) {
-                processMoConfigEntries(moconfig);
+                processEntryMoConfigEntries(moconfig);
+            }
+
+            // 读取升级配置
+            Foundlvconfigs =  listFiles(LEVEL_CONFIG_PATH);
+            for (MoConfig moconfig : Foundlvconfigs) {
+                processLevelMoConfigEntries(moconfig);
             }
             long endTime = System.nanoTime(); // 记录结束时间
             long duration = endTime - startTime; // 计算持续时间
@@ -691,9 +700,7 @@ public class ModifierHandle {
             LOGGER.error("Error reading ItemsDefaultEntry config file", e);
         }
     }
-    //我再弄个code with me 吧
-    //你去弄一下121nf移植 111111111111111 不会，直接改build。gradle？
-    // 处理洗涤材料条目
+        // 处理洗涤材料条目
     private static void processWashingMaterialEntry(Map.Entry<String, JsonElement> entry) {
         if (!entry.getValue().isJsonObject()) {
             return;
@@ -752,7 +759,7 @@ public class ModifierHandle {
     }
 
     // 处理 moconfig 条目
-    private static void processMoConfigEntries(MoConfig moconfig) throws FileNotFoundException {
+    private static void processEntryMoConfigEntries(MoConfig moconfig) throws FileNotFoundException {
         List<ModifierEntry> entries = new ArrayList<>();
         for (Map.Entry<String, JsonElement> entry : moconfig.readEntrys()) {
             try {
@@ -775,6 +782,8 @@ public class ModifierHandle {
 
         LOGGER.debug("ReadConfig Over: Type: " + moconfig.type + " Path: " + moconfig.configFile + " entries: " + entries.size());
     }
+    //LevelRead
+
 
     // 处理单个 Modifier 条目
     private static void processModifierEntry(MoConfig moconfig, Map.Entry<String, JsonElement> entry, List<ModifierEntry> entries) {
@@ -874,7 +883,9 @@ public class ModifierHandle {
         AttributeModifier.Operation operation = attrGetherObj.has("operation") ? ExConfigHandle.getOperation(attrGetherObj.get("operation").getAsString()) : AttributeModifier.Operation.ADDITION;
         EquipmentSlot slot = getEquipmentSlot(attrGetherObj);
         String modifierName = (attrGetherObj.has("modifierName")) ? attrGetherObj.get("modifierName").getAsString() :modifierEntry.id + index;;
-
+        if (attrGetherObj.has("id")){
+            attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attrGetherObj.get("id").getAsString()));
+        }
         if (attrGetherObj.has("autoName")){
             if (attrGetherObj.has("autoName")) {
                 if (attrGetherObj.get("autoName").getAsBoolean()) {

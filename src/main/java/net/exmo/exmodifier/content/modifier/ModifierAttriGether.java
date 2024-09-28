@@ -78,7 +78,7 @@ public class ModifierAttriGether extends AttriGether {
                 index++;
 
             } catch (Exception e) {
-                Exmodifier.LOGGER.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
+                Exmodifier.LOGGER.Logger.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
             }
         }
         return attriGethers;

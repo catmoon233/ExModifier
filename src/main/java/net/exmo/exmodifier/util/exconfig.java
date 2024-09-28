@@ -38,7 +38,7 @@ public class exconfig {
                 }
             }
         }catch (Exception e){
-            Exmodifier.LOGGER.error("Error while reading config file : not exists");
+            Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
             return null;
         }
         return null;
@@ -47,7 +47,7 @@ public class exconfig {
         try {
                 return AlljsonObject.entrySet();
         }catch (Exception e){
-            Exmodifier.LOGGER.error("Error while reading config file : not exists");
+            Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
         }
         return null;
     }
@@ -57,7 +57,7 @@ public class exconfig {
 
             return AlljsonObject.get(key);
         }catch (Exception e){
-            Exmodifier.LOGGER.error("Error while reading config file : not exists");
+            Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
         }
         return null;
     }
@@ -72,7 +72,7 @@ public class exconfig {
         try {
             return obj.get(key).getAsJsonObject();
         }catch (Exception e){
-            Exmodifier.LOGGER.error("Error while getting JsonObject from config file");
+            Exmodifier.LOGGER.Logger.error("Error while getting JsonObject from config file");
             return null;
         }
     }

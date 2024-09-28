@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.util;
 
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.events.LivingSwingEvent;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -26,11 +27,15 @@ public class DynamicExpressionEvaluator {
      * @param name 变量名
      * @param value 变量值
      */
-    public void setVariable(String name, Object value) {
+    public DynamicExpressionEvaluator setVariable(String name, Object value) {
         variables.put(name, value);
         engine.put(name, value);
-    }
+        return this;
 
+    }
+    public <T> T getVariable(String name) {
+        return (T) variables.get(name);
+    }
     /**
      * 计算给定表达式的值。
      *

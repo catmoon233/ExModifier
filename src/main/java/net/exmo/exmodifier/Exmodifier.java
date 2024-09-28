@@ -41,6 +41,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
+import org.slf4j.Marker;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,7 +61,23 @@ public class Exmodifier {
 
     // Directly reference a slf4j logger
     public static final String MODID = "exmodifier";
-    public static final Logger LOGGER = LogUtils.getLogger();
+   // public static final Logger LOGGER = LogUtils.getLogger();
+    public static class LOGGER {
+       public static Logger Logger = LogUtils.getLogger();
+
+        public static void info(String msg) {
+            Logger.info(msg);
+
+        }
+        public static void debug(String msg) {
+            if (config.DebugInInfo) Logger.info(msg);
+            if (config.Debug)  Logger.debug(msg);
+        }
+
+       public static void error(String s, Exception e) {
+            Logger.error(s, e);
+       }
+   }
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
     private static int messageID = 0;
@@ -112,7 +129,7 @@ public class Exmodifier {
 
         modEventBus.addListener(this::AddToTab);
         if (ModList.get().isLoaded("attributeslib")){
-            MinecraftForge.EVENT_BUS.addListener( new ApothCompat()::SkinAttr);
+            MinecraftForge.EVENT_BUS.addListener(new ApothCompat()::SkinAttr);
         }
 
         // Register ourselves for server and other game events we are interested in
