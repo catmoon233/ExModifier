@@ -30,7 +30,7 @@ public class ModifierEntry {
 
     public static boolean containItemTypes(ItemStack item, List<Type> onlyTypes) {
         for (Type type : onlyTypes){
-            return containItemType(item, type);
+            if (containItemType(item, type)) return true;
         }
         return false;
     }
@@ -76,6 +76,8 @@ public class ModifierEntry {
         if (type == Type.SHIELD) {
             return stack.getUseAnimation() == UseAnim.BLOCK;
         }
+        if (type == Type.BOW) return stack.getItem() instanceof BowItem || stack.getUseAnimation() == UseAnim.BOW;
+
         if (type == Type.ARMOR){
             return stack.getItem() instanceof ArmorItem;
         }

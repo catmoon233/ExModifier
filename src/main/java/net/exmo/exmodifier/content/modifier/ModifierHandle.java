@@ -102,6 +102,30 @@ public class ModifierHandle {
 
             }
         }
+        public static List<Component> GenSuit(Player player,ModifierEntry modifierEntry    ){
+
+            List<Component> tooltips = new ArrayList<>();
+            if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.contains(modifierEntry))) {
+                ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
+                if (!config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry.suit"));
+
+                for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
+                        .toList()) {
+                    if (suit.visible) {
+                        Integer integer = pv.SuitsNum.get(suit.id);
+                        if (integer == null) integer = 0;
+                        tooltips.add(Component.translatable("modifiler.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
+                        if (!suit.LocalDescription.isEmpty())
+                            tooltips.add(Component.translatable(suit.LocalDescription));
+
+                        //.append(Component.translatable("modifiler.entry.suit.color"))
+                    }
+                }
+
+
+            }
+            return tooltips;
+        }
         public static List<Component> generateEntryTooltip(ModifierEntry modifierEntry,Player player,ItemStack itemStack) {
             List<Component> tooltips = new ArrayList<>();
             String id = modifierEntry.getId();
@@ -109,25 +133,7 @@ public class ModifierHandle {
             if (id.length() >= 2) {
                 if (config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)));
                 else tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)).append(" : "));
-                    if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.contains(modifierEntry))) {
-                        ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
-                        if (!config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry.suit"));
 
-                        for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
-                                .toList()) {
-                            if (suit.visible) {
-                                Integer integer = pv.SuitsNum.get(suit.id);
-                                if (integer == null) integer = 0;
-                                tooltips.add(Component.translatable("modifiler.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
-                                if (!suit.LocalDescription.isEmpty())
-                                    tooltips.add(Component.translatable(suit.LocalDescription));
-
-                                //.append(Component.translatable("modifiler.entry.suit.color"))
-                            }
-                        }
-                        ;
-
-                    }
 
                 for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
                     AttributeModifier attributemodifier = modifierAttriGether.getModifier();
@@ -353,6 +359,7 @@ public class ModifierHandle {
                     ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
                     ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
                     ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
+                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
                     ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
                     ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
                     ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
@@ -459,6 +466,7 @@ public class ModifierHandle {
                     ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
                     ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
                     ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
+                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
                     ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
                     ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
                     ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
@@ -511,6 +519,8 @@ public class ModifierHandle {
             if (type == ModifierEntry.Type.BOOTS) return hasBootsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.FEET;
             if (type == ModifierEntry.Type.LEGGINGS) return hasLeggingsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.LEGS;
             if (type == ModifierEntry.Type.ARMOR) return stack.getItem() instanceof ArmorItem;
+            if (type == ModifierEntry.Type.BOW) return stack.getItem() instanceof BowItem || stack.getUseAnimation() == UseAnim.BOW;
+
             if (type == ModifierEntry.Type.SHIELD) return stack.getUseAnimation() == UseAnim.BLOCK;
             if (type == ModifierEntry.Type.SWORD) return hasSwordConfig && stack.getItem() instanceof SwordItem;
             if (type == ModifierEntry.Type.ATTACKABLE) return stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream().mapToDouble(AttributeModifier::getAmount).sum() > 0;
@@ -601,8 +611,7 @@ public class ModifierHandle {
     public static void EEMatchQueueHandle(){
         EEMatchQueue.forEach((k,v)->{
             for (String s : v){
-                List<ExSuit> exSuit = ExSuitHandle.FindExSuit(s);
-                for (ExSuit exSuit1 : exSuit){
+                for (ExSuit exSuit1 : ExSuitHandle.FindExSuit(s)){
                     exSuit1.addEntry(k);
                     LOGGER.debug("Add Entry:" + k.id + " To ExSuit:" + exSuit1.id);
                 }

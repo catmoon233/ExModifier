@@ -105,8 +105,7 @@ public class MainEvent {
             }
             SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
         }
-
-        @SubscribeEvent
+@SubscribeEvent
         public static void CuriosTooltipChange(RenderTooltipEvent.GatherComponents event) {
             ItemStack stack = event.getItemStack();
             if (CuriosApi.getCuriosHelper().getCurio(stack).isPresent()) {
@@ -120,6 +119,17 @@ public class MainEvent {
                             addf = true;
                             event.getTooltipElements().add(Either.left(Component.translatable("null")));
                             event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry")));
+                            for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
+                                    .toList()) {
+                                if (suit.visible) {
+
+                                    event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry.suit." + suit.id)));
+                                    if (!suit.LocalDescription.isEmpty())
+                                        event.getTooltipElements().add(Either.left(Component.translatable(suit.LocalDescription)));
+
+                                    //.append(Component.translatable("modifiler.entry.suit.color"))
+                                }
+                            }
                         }
                         event.getTooltipElements().add(Either.left((Component.translatable("modifiler.entry." + modifierEntry.id.substring(2)))));
 
@@ -408,7 +418,7 @@ public class MainEvent {
 
         private static boolean handleStack(Player player, ItemStack stack, EntityAttrUtil.WearOrTake effectType) {
             boolean flag = false;
-            if (!hasAttr(stack)) return false;
+          //  if (!hasAttr(stack)) return false;
 
             CompoundTag tag = stack.getTag();
             if (tag == null || tag.getInt("exmodifier_armor_modifier_applied") <= 0) return false;

@@ -70,7 +70,11 @@ public class CuriosUtil {
                     String name = modifier.getString("Name");
                     double amount = modifier.getDouble("Amount");
                     int operation = modifier.getInt("Operation");
-                    slotInfos.add(new slotInfo(itemStack, attributeName, name, UUID.fromString(modifier.getString("UUID")), amount, AttributeModifier.Operation.fromValue(operation), slot));
+                    String uuid = modifier.getString("UUID");
+                    UUID uuid1;
+                    if (uuid.length() < 36){uuid1 = UUID.randomUUID();}
+                    else uuid1 = UUID.fromString(uuid);
+                    slotInfos.add(new slotInfo(itemStack, attributeName, name, uuid1, amount, AttributeModifier.Operation.fromValue(operation), slot));
 
                 }
             }

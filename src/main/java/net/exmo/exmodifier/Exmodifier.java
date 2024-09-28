@@ -71,7 +71,7 @@ public class Exmodifier {
 
     public final static  RegistryObject<CreativeModeTab> ExModifierTab =  CREATIVE_MODE_TABS.register("exmodifier_tab", () -> CreativeModeTab.builder()
             .withTabsBefore(CreativeModeTabs.COMBAT)
-                    .icon(() -> getTabIcon())
+                    .icon(Exmodifier::getTabIcon)
             .displayItems((parameters, output) -> {
 
         //    output.accept(ENTRY_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
