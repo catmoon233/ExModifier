@@ -1,23 +1,16 @@
 package net.exmo.exmodifier.util;
 
-import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.events.LivingSwingEvent;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import net.exmo.exmodifier.repack.*;
+
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class DynamicExpressionEvaluator {
-    private final ScriptEngine engine;
-    private final Map<String, Object> variables;
+    private final Map<String, Double> variables; // exp4j 使用 double 类型
 
     public DynamicExpressionEvaluator() {
-        // 获取JavaScript引擎
-        ScriptEngineManager manager = new ScriptEngineManager();
-        this.engine = manager.getEngineByName("JavaScript");
-        // 初始化变量映射
         this.variables = new HashMap<>();
     }
 
@@ -27,30 +20,39 @@ public class DynamicExpressionEvaluator {
      * @param name 变量名
      * @param value 变量值
      */
-    public DynamicExpressionEvaluator setVariable(String name, Object value) {
+    public DynamicExpressionEvaluator setVariable(String name, double value) {
         variables.put(name, value);
-        engine.put(name, value);
         return this;
+    }
 
+    /**
+     * 获取变量的值。
+     *
+     * @param name 变量名
+     * @return 变量值
+     */
+    public double getVariable(String name) {
+        return variables.getOrDefault(name, 0.0);
     }
-    public <T> T getVariable(String name) {
-        return (T) variables.get(name);
-    }
+
     /**
      * 计算给定表达式的值。
      *
      * @param expression 要计算的表达式
      * @return 表达式的计算结果
-     * @throws ScriptException 如果表达式无法被正确解析或执行
      */
-    public  <T> T  evaluate(String expression) throws ScriptException {
-        // 确保所有已设置的变量都被绑定到脚本引擎中
-        for (Map.Entry<String, Object> entry : variables.entrySet()) {
-            engine.put(entry.getKey(), entry.getValue());
+    public double evaluate(String expression)  {
+        // 使用 ExpressionBuilder 创建表达式
+        Expression expr = new ExpressionBuilder(expression)
+                .variables(variables.keySet().toArray(new String[0]))  // 设置所有变量
+                .build();
+
+        // 设置每个变量的值
+        for (Map.Entry<String, Double> entry : variables.entrySet()) {
+            expr.setVariable(entry.getKey(), entry.getValue());
         }
+
         // 评估表达式
-        return (T) engine.eval(expression);
+        return expr.evaluate();
     }
-
-
 }
