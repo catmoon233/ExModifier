@@ -2,6 +2,8 @@ package net.exmo.exmodifier.util;
 
 
 import net.exmo.exmodifier.repack.*;
+import net.exmo.exmodifier.repack.net.objecthunter.exp4j.Expression;
+import net.exmo.exmodifier.repack.net.objecthunter.exp4j.ExpressionBuilder;
 
 
 import java.util.HashMap;

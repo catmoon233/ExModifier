@@ -88,10 +88,12 @@ public class ItemLevelHandle {
         }
     }
     public static double generateLevelNeedXp(ItemLevel itemLevel,int level) throws ScriptException {
-//        DynamicExpressionEvaluator evaluator = new DynamicExpressionEvaluator();
-//        evaluator.setVariable("level", level);
-//        return evaluator.evaluate(itemLevel.getXpAddExpression());
-        return 50;
+        DynamicExpressionEvaluator evaluator = new DynamicExpressionEvaluator();
+        evaluator.setVariable("level", level);
+        evaluator.setVariable("lv", level);
+
+        return evaluator.evaluate(itemLevel.getXpAddExpression());
+       // return 50;
     }
     public static List<ItemLevel> getItemLevels (ItemStack stack){
         List<ItemLevel> itemLevels = new ArrayList<>();
