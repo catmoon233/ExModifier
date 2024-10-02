@@ -47,11 +47,11 @@ import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 public class ModifierHandle {
     public static List<ModifierEntry> getEntrysFromItemStack(ItemStack stack) {
         List<ModifierEntry> modifierEntries = new ArrayList<>();
-
+        if (stack.getTag()==null)return modifierEntries;
         for (ModifierEntry modifierAttriGether : modifierEntryMap.values().stream().filter(Objects::nonNull).toList()) {
             String id;
             for (int i = 0; true; i++) {
-                id = stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied"+i);
+                id = stack.getTag().getString("exmodifier_armor_modifier_applied"+i);
                 if (id.isEmpty())break;
                 if (id.equals(modifierAttriGether.getId())) {
                     modifierEntries.add(modifierAttriGether);
@@ -96,16 +96,16 @@ public class ModifierHandle {
     @Mod.EventBusSubscriber
     public static   class CommonEvent{
         public static int getItemStackEntryCount(ItemStack stack){
-
+            if (stack.getTag()==null)return 0;
             for (int i = 0; true; i++) {
-                if (stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied" + i).isEmpty()) {
+                if (stack.getTag().getString("exmodifier_armor_modifier_applied" + i).isEmpty()) {
                     return i;
                 }
 
             }
         }
-        public static List<Component> GenSuit(Player player,ModifierEntry modifierEntry    ){
-
+        public static List<Component> GenSuitInfo(Player player,ModifierEntry modifierEntry    ){
+            if (player ==null)return null;
             List<Component> tooltips = new ArrayList<>();
             if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.contains(modifierEntry))) {
                 ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
@@ -135,8 +135,7 @@ public class ModifierHandle {
             if (id.length() >= 2) {
                 if (config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)));
                 else tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)).append(" : "));
-
-
+                tooltips.addAll(GenSuitInfo(player,modifierEntry));
                 for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
                     AttributeModifier attributemodifier = modifierAttriGether.getModifier();
                     Attribute attribute = modifierAttriGether.getAttribute();
@@ -192,10 +191,10 @@ public class ModifierHandle {
             return event.getTooltip();
         }
 //        @SubscribeEvent
-//        public static void ItemTooltip(ItemTooltipEvent event) {
+//        public static void ItemTooltip(ItemTooltipEvent eventC) {
 //
 //
-////            for (Component tooltip : event.getToolTip()){
+////            for (Component tooltip : eventC.getToolTip()){
 ////                Exmodifier.LOGGER.debug("tooltip: " + tooltip);
 ////            }
 ////            Exmodifier.LOGGER.debug("------------------------------------");
@@ -532,7 +531,8 @@ public class ModifierHandle {
             return false;
         }
         public static void clearEntry(ItemStack stack){
-            if (stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied")==0)return;
+            if (stack.getTag()==null)return;
+            if (stack.getTag().getInt("exmodifier_armor_modifier_applied")==0)return;
             ModifierEntry.Type type = ModifierEntry.getType(stack);
             List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
             List<ModifierEntry> hasAttriGether = getEntrysFromItemStack(stack);
@@ -580,7 +580,7 @@ public class ModifierHandle {
         }
 
 //        @SubscribeEvent
-//        public static void atReload(AddReloadListenerEvent event) throws IOException {
+//        public static void atReload(AddReloadListenerEvent eventC) throws IOException {
 //            modifierEntryMap = new HashMap<>();
 //            readConfig();
 //        }

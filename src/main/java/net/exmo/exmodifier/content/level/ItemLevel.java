@@ -14,6 +14,24 @@ public class ItemLevel
     public ModifierEntry.Type type;
     public boolean isCuriosEntry;
 
+    public int getEntitySequence() {
+        return EntitySequence;
+    }
+
+    public void setEntitySequence(int entitySequence) {
+        EntitySequence = entitySequence;
+    }
+
+    public boolean isCuriosEntry() {
+        return isCuriosEntry;
+    }
+
+    public void setCuriosEntry(boolean curiosEntry) {
+        isCuriosEntry = curiosEntry;
+    }
+
+    public int EntitySequence;
+
     public String getLevelExpression() {
         return LevelExpression;
     }

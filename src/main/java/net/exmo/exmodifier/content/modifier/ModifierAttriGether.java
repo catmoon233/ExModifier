@@ -6,6 +6,7 @@ import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.util.AttriGether;
 import net.exmo.exmodifier.util.ExConfigHandle;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -135,5 +136,13 @@ public class ModifierAttriGether extends AttriGether {
         return attrGether;
 
 
+    }
+    public MutableComponent GenerateTooltip (boolean canSeeWeight) {
+        if (canSeeWeight) return (generateTooltipBase().append(Component.translatable("exmodifier.tooltip.weight")).append(Component.literal("§9"+weight)));
+        return generateTooltipBase();
+    }
+
+    public Float getWeight() {
+        return weight;
     }
 }

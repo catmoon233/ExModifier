@@ -105,12 +105,14 @@ public abstract class SmiMixin extends ItemCombinerMenu {
 
     @Inject(at = @At("HEAD"), method = "onTake")
     public void onTake(Player p_39790_, ItemStack p_39791_, CallbackInfo ci) {
+        if (p_39791_.getTag() ==null)return;
+        this.repairItemCountCost = p_39791_.getOrCreateTag().getInt("NeedCount");
         if (p_39791_.getOrCreateTag().getBoolean("modifier_refresh")){
             this.inputSlots.setItem(0, ItemStack.EMPTY);
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied0","");
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
-            this.repairItemCountCost = p_39791_.getOrCreateTag().getInt("NeedCount");
+
 
             p_39791_.getOrCreateTag().putBoolean("modifier_refresh", false);
             p_39791_.getOrCreateTag().putInt("exmodifier_armor_modifier_applied", 0);
@@ -188,7 +190,7 @@ public abstract class SmiMixin extends ItemCombinerMenu {
                         if (entryitemAdd + 1 == config.canAddEntry)
                             input.getOrCreateTag().putBoolean("can_add_max", true);
                         input.getOrCreateTag().putInt("entryitem_add", entryitemAdd + 1);
-
+                        input.getOrCreateTag().putInt("NeedCount", 1);
                         input.getOrCreateTag().putBoolean("entry_item_add", true);
                         ModifierHandle.CommonEvent.AddEntryToItem(input, WashItem.getOrCreateTag().getString("modifier_id"));
                         this.resultSlots.setItem(0, input);

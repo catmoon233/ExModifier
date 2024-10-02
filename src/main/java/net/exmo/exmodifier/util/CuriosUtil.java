@@ -94,7 +94,8 @@ public class CuriosUtil {
      * @param slot 属性修饰符适用的槽位
      */
     public static void removeAttributeModifier(ItemStack itemStack, String attributeName, double amount, int operation, String slot) {
-        CompoundTag itemTag = itemStack.getOrCreateTag();
+        if (itemStack.getTag()==null)return;
+        CompoundTag itemTag = itemStack.getTag();
 
         // 检查是否已经有CurioAttributeModifiers标签
         if (itemTag.contains("CurioAttributeModifiers", 9)) {

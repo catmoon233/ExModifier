@@ -28,6 +28,7 @@ public abstract class ItemStackMixin {
     @Inject(at = @At("RETURN"),method = "getAttributeModifiers",cancellable = true)
     private void nu$getAttributeModifiers$add(EquipmentSlot pSlot, CallbackInfoReturnable<Multimap<Attribute, AttributeModifier>> cir)
     {
+        if (((ItemStack)(Object) this).getTag()==null)return;
         Multimap<Attribute, AttributeModifier> multimap = HashMultimap.create();
         CompoundTag data = tag;
         if (data != null && data.contains("ExAttributeModifiers", 9)) {

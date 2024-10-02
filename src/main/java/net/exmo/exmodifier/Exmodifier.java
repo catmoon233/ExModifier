@@ -1,31 +1,29 @@
 package net.exmo.exmodifier;
 
-import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
-import dev.shadowsoffire.attributeslib.api.client.GatherSkippedAttributeTooltipsEvent;
 import net.exmo.exmodifier.compat.compat.apoth.ApothCompat;
 import net.exmo.exmodifier.content.client.EntryItemRender;
+import net.exmo.exmodifier.content.event.parameter.EventC;
+import net.exmo.exmodifier.content.event.parameter.EventCI;
 import net.exmo.exmodifier.content.modifier.EntryItem;
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.init.RegisterOther;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
 import net.minecraftforge.common.MinecraftForge;
 
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -41,19 +39,20 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
-import org.slf4j.Marker;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.content.event.MainEvent.CommonEvent.init;
+import static net.exmo.exmodifier.content.modifier.ModifierHandle.modifierEntryMap;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("exmodifier")
@@ -89,9 +88,10 @@ public class Exmodifier {
     public final static  RegistryObject<CreativeModeTab> ExModifierTab =  CREATIVE_MODE_TABS.register("exmodifier_tab", () -> CreativeModeTab.builder()
             .withTabsBefore(CreativeModeTabs.COMBAT)
                     .icon(Exmodifier::getTabIcon)
+            .title(Component.translatable("itemGroup.exmodifier_tab"))
             .displayItems((parameters, output) -> {
 
-        //    output.accept(ENTRY_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
+        //    output.accept(ENTRY_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the eventC
     }).build());
 
     private static ItemStack getTabIcon() {
@@ -136,7 +136,18 @@ public class Exmodifier {
         MinecraftForge.EVENT_BUS.register(this);
         long time_end = System.currentTimeMillis();
         LOGGER.info("Mod loaded in " + (time_end - time_start) + "ms");
+        RegisterOther.EventAbout.init();
+    for (EventC<? extends LivingEvent> v : RegisterOther.EventAbout.EVENT_C_LIST.values()){
+
+            EventCI<? extends LivingEvent> eventCI = new EventCI<>(v);
+
+            MinecraftForge.EVENT_BUS.addListener(v.priority,true,v.clazz,eventCI::AddXp);
+        }
+//        for (EventC<? extends Event  > ec : ) {
+//
+//        }
     }
+
 
     private void setup(final FMLCommonSetupEvent event) {
         // Some preinit code
@@ -146,12 +157,23 @@ public class Exmodifier {
 
     public void AddToTab(BuildCreativeModeTabContentsEvent event){
         if (event.getTab() == ExModifierTab.get()) {
-            WeightedUtil<String> weight = new WeightedUtil<>(ModifierHandle.modifierEntryMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight)));
-            ModifierHandle.modifierEntryMap.forEach((entry, modifierEntry) -> {
+            Map<String,WeightedUtil<String>> weights = new HashMap<>();
+
+            for (ModifierEntry.Type type : ModifierEntry.Type.values()){
+                weights.put(type.toString(),new WeightedUtil<String>(modifierEntryMap.entrySet().stream().filter(e -> {
+                    if (e.getValue().type == type){
+                     //   modifierEntryMap1.remove(e.getKey());
+                        return true;
+                    }
+                    return  false;
+                }).collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))));
+
+            }
+            modifierEntryMap.forEach((entry, modifierEntry) -> {
                 ItemStack stack = ENTRY_ITEM.get().getDefaultInstance();
                 stack.getOrCreateTag().putString("modifier_id", entry);
                 stack.getOrCreateTag().putString("modifier_type",modifierEntry.type.toString());
-                stack.getOrCreateTag().putDouble("modifier_possibility",weight.getProbability(entry));
+                stack.getOrCreateTag().putDouble("modifier_possibility",weights.get(modifierEntry.type.toString()).getProbability(entry));
                 // stack.setHoverName(Component.translatable("modifiler.entry." + entry));
                 event.accept(stack);
             });
@@ -170,7 +192,7 @@ public class Exmodifier {
 
     private void processIMC(final InterModProcessEvent event) {
         // Some example code to receive and process InterModComms from other mods
-//        LOGGER.info("Got IMC {}", event.getIMCStream().map(m -> m.messageSupplier().get()).collect(Collectors.toList()));
+//        LOGGER.info("Got IMC {}", eventC.getIMCStream().map(m -> m.messageSupplier().get()).collect(Collectors.toList()));
     }
     @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ClientEvents {

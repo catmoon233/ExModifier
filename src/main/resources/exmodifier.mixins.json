@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "exmodifier.refmap.json",
   "mixins": [
+    "AbstractArrowMixin",
+    "AttackBaseChange",
     "ItemCombinerMenuMixin",
     "ItemStackMixin",
     "LivingSwingAction",

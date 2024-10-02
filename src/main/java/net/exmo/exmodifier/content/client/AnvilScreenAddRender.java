@@ -39,8 +39,8 @@ public class AnvilScreenAddRender {
             if (entity != null && entity.getPersistentData().getBoolean("modifier_refresh_not_enough")) {
                 Component component = Component.translatable("exmodifier.refresh_not_enough");
                 if (component != null) {
-                //    int k = (int) (event.getMouseX() +  font.width(component) - 2);
-              //     gg.fill(event.getMouseY()- font.lineHeight,event.getMouseX()- font.width(component),event.getMouseX(), event.getMouseY(), -1073741824);
+                //    int k = (int) (eventC.getMouseX() +  font.width(component) - 2);
+              //     gg.fill(eventC.getMouseY()- font.lineHeight,eventC.getMouseX()- font.width(component),eventC.getMouseX(), eventC.getMouseY(), -1073741824);
                     gg.drawString(font, component, (int) (event.getScreen().width*0.5 -font.width(component)*0.5), event.getScreen().height/2-20, 16733525);
                 }
             }
