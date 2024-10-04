@@ -383,7 +383,7 @@ public class ModifierEntry {
                         ))
         );
         for (ModifierAttriGether attriGether1 : attriGether){
-            list.add(Component.literal(" §7¦ §r").append(attriGether1.GenerateTooltip(isRandom)).append(isRandom ? " §9( "+df.format(weightUtil.getProbability(attriGether1.getModifier().getName())*100)+"%)" : ""));
+            list.add(Component.literal(" §7¦ §r").append(attriGether1.GenerateTooltip(isRandom)).append(isRandom ? " §9("+df.format(weightUtil.getProbability(attriGether1.getModifier().getName())*100)+"%)" : ""));
         }
         //list.add(Component.literal("§7]"));
         boolean hasSuit = false;

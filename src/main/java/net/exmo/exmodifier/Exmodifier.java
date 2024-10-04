@@ -86,8 +86,8 @@ public class Exmodifier {
     public static  ItemStack TabIcon;
 
     public final static  RegistryObject<CreativeModeTab> ExModifierTab =  CREATIVE_MODE_TABS.register("exmodifier_tab", () -> CreativeModeTab.builder()
-            .withTabsBefore(CreativeModeTabs.COMBAT)
-                    .icon(Exmodifier::getTabIcon)
+            .icon(Exmodifier::getTabIcon)
+            .withSearchBar()
             .title(Component.translatable("itemGroup.exmodifier_tab"))
             .displayItems((parameters, output) -> {
 

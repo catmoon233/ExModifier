@@ -31,7 +31,9 @@ public class RegisterOther {
        }
        static {
            register(new EventC<>(LivingHurtEvent.class).addParameterField("amount").setPriority(EventPriority.LOWEST).addParameterField("source").setLivingEntityClass(Player.class));
-          // register(new EventC<>(LivingHurtEvent.class).addParameterField("amount").setPriority(EventPriority.LOWEST).setLivingEntityClass(Player.class));
+           register(new EventC<>(LivingHurtEvent.class).addParameterField("amount").setPriority(EventPriority.LOWEST).setLivingEntityClass(Player.class));
+
+           // register(new EventC<>(LivingHurtEvent.class).addParameterField("amount").setPriority(EventPriority.LOWEST).setLivingEntityClass(Player.class));
 
        }
        public static void init(){

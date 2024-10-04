@@ -55,7 +55,6 @@ public class ExAttribute {
         List<EntityType<? extends LivingEntity>> entityTypes = event.getTypes();
 
         entityTypes.forEach((e) -> {
-            Class<? extends Entity> baseClass = e.getBaseClass();
                 event.add(e, DODGE.get());
                 event.add(e, ARROWBASEDAMAGE.get());
                 event.add(e, HIT_RATE.get());

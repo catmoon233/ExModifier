@@ -23,6 +23,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraftforge.common.ForgeMod;
@@ -57,9 +58,14 @@ public class ItemLevelHandle {
                 LevelAttriGether attriGether = attriGethers.get(i);
                 UUID uuid = UUID.nameUUIDFromBytes((attriGether.getModifier().getName()+i+ stack).getBytes());
                 EquipmentSlot slot = attriGether.slot;
-                if (attriGether.IsAutoEquipmentSlot) slot =ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(stack));
-                ItemAttrUtil.removeAttributeModifierNoAmout(stack, attriGether.getAttribute(), attriGether.getModifier(), slot);
+                if (attriGether.IsAutoEquipmentSlot) {
+                    if (stack.getItem() instanceof ArmorItem armorItem){
+                        slot = armorItem.getEquipmentSlot();
+                    }
+                    else slot =ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(stack));
+                }                ItemAttrUtil.removeAttributeModifierNoAmout(stack, attriGether.getAttribute(), attriGether.getModifier(), slot);
                 dynamicExpressionEvaluator.setVariable("level", event.nowLevel);
+
                 double amout =  dynamicExpressionEvaluator.evaluate(attriGether.Expression);
                 ItemAttrUtil.addItemAttributeModifier2(stack,attriGether.attribute,new AttributeModifier(uuid,attriGether.getModifier().getName(), amout, attriGether.modifier.getOperation()), slot);
 

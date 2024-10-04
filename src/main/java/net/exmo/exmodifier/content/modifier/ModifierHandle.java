@@ -488,7 +488,7 @@ public class ModifierHandle {
             }
         }
         public static void RandomEntryCurios(ItemStack stack, int rarity, int refreshnumber,String washItem) {
-            if (stack.getTag() ==null||stack.getTag().getInt("exmodifier_armor_modifier_applied") >0)return;
+            if (stack.getTag() !=null&&stack.getTag().getInt("exmodifier_armor_modifier_applied") >0)return;
             if (stack.getTag()!=null) {
                 stack.getTag().remove("wash_item");
                 stack.getTag().remove("modifier_refresh_rarity");
@@ -505,7 +505,7 @@ public class ModifierHandle {
                             .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
                             .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
                             .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
-                            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight)));
+                            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight +1)));
             RandomEntryCurios(stack, weightedUtil, curiosType, refreshnumber);
             stack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
                     stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
