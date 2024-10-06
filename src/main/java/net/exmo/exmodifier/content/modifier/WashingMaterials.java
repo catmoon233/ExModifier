@@ -13,7 +13,8 @@ public class WashingMaterials {
     public Item item;
     public int rarity;
     public List<ModifierEntry.Type> OnlyTypes = new ArrayList<>();
-
+    public double CostExp =0;
+    public int NeedCount =1;
     public  boolean containTag(ItemStack stack){
         for (String tag : OnlyTags ){
             if (stack.is(ItemTags.create(new ResourceLocation(tag))))return true;

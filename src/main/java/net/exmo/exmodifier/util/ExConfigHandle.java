@@ -140,7 +140,7 @@ public class ExConfigHandle {
             }
             return moconfigs;
         }catch (Exception e){
-            Exmodifier.LOGGER.error("Error while reading config file : not exists");
+            Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
         }
         return new ArrayList<>();
     }

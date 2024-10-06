@@ -29,7 +29,7 @@ public class ExSuit {
         triggers.put(level,trigger);
     }
 
-    public Trigger MainTrigger = Trigger.TICK;
+    public static final Trigger MainTrigger = Trigger.TICK;
     public Map<Integer,Trigger> triggers = new HashMap<>();
     public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
         return attriGether;
@@ -38,7 +38,7 @@ public class ExSuit {
 
     }
     public static enum Trigger {
-        TICK, ON_HURT, ATTACK, JUMP, SHOOT, EAT, DODGE, CRIT, KILL, DIE,MOVECHANGE,SWING,PROJECTILE_HIT;
+        TICK, ON_HURT, ATTACK, JUMP, SHOOT, EAT, DODGE, CRIT, KILL, DIE,MOVECHANGE,SWING,PROJECTILE_HIT,ON_USE, SWIM, IN_LAVA;
     }
 
     @Override

@@ -6,6 +6,9 @@ import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.util.AttriGether;
 import net.exmo.exmodifier.util.ExConfigHandle;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -78,7 +81,7 @@ public class ModifierAttriGether extends AttriGether {
                 index++;
 
             } catch (Exception e) {
-                Exmodifier.LOGGER.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
+                Exmodifier.LOGGER.Logger.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
             }
         }
         return attriGethers;
@@ -135,5 +138,13 @@ public class ModifierAttriGether extends AttriGether {
         return attrGether;
 
 
+    }
+    public MutableComponent GenerateTooltip (boolean canSeeWeight) {
+        if (canSeeWeight) return (generateTooltipBase().append(new TranslatableComponent("exmodifier.tooltip.weight")).append(new TextComponent("§9"+weight)));
+        return generateTooltipBase();
+    }
+
+    public Float getWeight() {
+        return weight;
     }
 }

@@ -34,13 +34,13 @@ public class weponlevelingCompat {
                     if (MainEvent.CommonEvent.hasAttr(stack)){
                         if (stack.getTag() ==null)return;
                     if (stack.getTag().contains("level")) {
-                        if (stack.getOrCreateTag().getInt("level") != stack.getOrCreateTag().getInt("Oldlevel")) {
-                            AttriGether attriGether1 = AttackDamage(((stack.getOrCreateTag().getInt("level"))-1)*0.5);
+                        if (stack.getTag().getInt("level") != stack.getTag().getInt("Oldlevel")) {
+                            AttriGether attriGether1 = AttackDamage(((stack.getTag().getInt("level"))-1)*0.5);
 
                             //       Exmodifier.LOGGER.info("WeaponLeveling Compat");
                             ItemAttrUtil.removeAttributeModifier(stack, attriGether1.attribute, attriGether1.modifier, attriGether1.slot);
-                            AttriGether attriGether = AttackDamage((stack.getOrCreateTag().getInt("level"))*0.5);
-                            stack.getOrCreateTag().putInt("Oldlevel", stack.getOrCreateTag().getInt("level"));
+                            AttriGether attriGether = AttackDamage((stack.getTag().getInt("level"))*0.5);
+                            stack.getTag().putInt("Oldlevel", stack.getTag().getInt("level"));
 
                             ItemAttrUtil.addItemAttributeModifier2(stack, attriGether.attribute, attriGether.modifier, attriGether.slot);
                         }

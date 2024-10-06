@@ -40,8 +40,8 @@ public class CuriosUtil {
         return new ArrayList<String>(curioTags);
 //        }
 
-     //   return new ArrayList<>();
-        }
+        //   return new ArrayList<>();
+    }
 
     public static boolean isCuriosItem(ItemStack itemStack){
         return CuriosApi.getCuriosHelper().getCurio(itemStack).isPresent();
@@ -70,7 +70,11 @@ public class CuriosUtil {
                     String name = modifier.getString("Name");
                     double amount = modifier.getDouble("Amount");
                     int operation = modifier.getInt("Operation");
-                    slotInfos.add(new slotInfo(itemStack, attributeName, name, UUID.fromString(modifier.getString("UUID")), amount, AttributeModifier.Operation.fromValue(operation), slot));
+                    String uuid = modifier.getString("UUID");
+                    UUID uuid1;
+                    if (uuid.length() < 36){uuid1 = UUID.randomUUID();}
+                    else uuid1 = UUID.fromString(uuid);
+                    slotInfos.add(new slotInfo(itemStack, attributeName, name, uuid1, amount, AttributeModifier.Operation.fromValue(operation), slot));
 
                 }
             }
@@ -90,7 +94,8 @@ public class CuriosUtil {
      * @param slot 属性修饰符适用的槽位
      */
     public static void removeAttributeModifier(ItemStack itemStack, String attributeName, double amount, int operation, String slot) {
-        CompoundTag itemTag = itemStack.getOrCreateTag();
+        if (itemStack.getTag()==null)return;
+        CompoundTag itemTag = itemStack.getTag();
 
         // 检查是否已经有CurioAttributeModifiers标签
         if (itemTag.contains("CurioAttributeModifiers", 9)) {

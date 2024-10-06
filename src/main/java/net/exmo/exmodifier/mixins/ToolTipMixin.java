@@ -25,7 +25,9 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEntrysFromI
 public abstract class ToolTipMixin {
     @ModifyVariable(at =@At("STORE"), method = "getTooltipLines", ordinal = 0)
     private Multimap<Attribute, AttributeModifier> changev(Multimap<Attribute, AttributeModifier> multimap) {
-        List<ModifierEntry> entrys = getEntrysFromItemStack((ItemStack)(Object)this);
+        ItemStack stack = (ItemStack) (Object) this;
+        if (stack.getTag()==null)return multimap;
+        List<ModifierEntry> entrys = getEntrysFromItemStack(stack);
         List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
         for (ModifierEntry entry : entrys) {
@@ -50,13 +52,9 @@ public abstract class ToolTipMixin {
 
         return multimap;
     }
-    @ModifyReturnValue(at =@At("RETURN"), method = "getTooltipLines")
-    public List<Component> getTooltipLines(List<Component> tooltip, Player player, TooltipFlag flag) {
-        if (!CuriosUtil.isCuriosItem((ItemStack) (Object) this)) {
-
-            return MainEvent.CommonEvent.ItemToolTipsChange((ItemStack) (Object) this, tooltip, player);
-        }
-        return tooltip;
-    }
+//    @ModifyReturnValue(at =@At("RETURN"), method = "getTooltipLines")
+//    public List<Component> getTooltipLines(List<Component> tooltip, Player player, TooltipFlag flag) {
+//
+//    }
 
 }

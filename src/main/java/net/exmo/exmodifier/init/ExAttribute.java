@@ -38,6 +38,7 @@ import java.util.Random;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ExAttribute {
     public static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(ForgeRegistries.ATTRIBUTES, Exmodifier.MODID);
+    public static final RegistryObject<Attribute> ARROWBASEDAMAGE = ATTRIBUTES.register("arrow_base_damage", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".arrow_base_damage", 0, 0, 100000000)).setSyncable(true));
     public static final RegistryObject<Attribute> DODGE = ATTRIBUTES.register("dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dodge", 1, 0, 10000000)).setSyncable(true));
     public static final RegistryObject<Attribute> HIT_RATE = ATTRIBUTES.register("hit_rate", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".hit_rate", 1, 0, 10000000)).setSyncable(true));
     public static final RegistryObject<Attribute> PERCENT_HEAL = ATTRIBUTES.register("percent_heal", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".percent_heal", 1, 0, 10000000)).setSyncable(true));
@@ -53,10 +54,10 @@ public class ExAttribute {
         List<EntityType<? extends LivingEntity>> entityTypes = event.getTypes();
 
         entityTypes.forEach((e) -> {
-            Class<? extends Entity> baseClass = e.getBaseClass();
-                event.add(e, DODGE.get());
-                event.add(e, HIT_RATE.get());
-                event.add(e, PERCENT_HEAL.get());
+            event.add(e, DODGE.get());
+            event.add(e, HIT_RATE.get());
+            event.add(e, PERCENT_HEAL.get());
+            event.add(e, ARROWBASEDAMAGE.get());
 
         });
 

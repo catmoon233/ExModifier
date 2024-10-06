@@ -1,6 +1,10 @@
 package net.exmo.exmodifier.content.modifier;
 
+import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.ItemAttrUtil;
+import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -12,10 +16,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.*;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
@@ -23,15 +24,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static net.exmo.exmodifier.content.modifier.EntryItem.CommonEvent.df;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 
 public class ModifierEntry {
     public Map<String,String> setting = new HashMap<>();
-    public float weight;
+    public float weight =0;
     public boolean cantSelect = false;
-   // public double level;
+
+    public static boolean containItemTypes(ItemStack item, List<Type> onlyTypes) {
+        for (Type type : onlyTypes){
+            if (containItemType(item, type)) return true;
+        }
+        return false;
+    }
+
+    // public double level;
     public static enum Type {
         CURIOS,
         ALL,
@@ -66,6 +77,28 @@ public class ModifierEntry {
         public record values() {
             public static final List<Type> values = List.of(Type.values());
         }
+    }
+    public static boolean containItemType(ItemStack stack, Type type){
+        if (type == Type.ALL)return true;
+        if (type == Type.SHIELD) {
+            return stack.getUseAnimation() == UseAnim.BLOCK;
+        }
+        if (type == Type.BOW) return stack.getItem() instanceof BowItem || stack.getUseAnimation() == UseAnim.BOW;
+
+        if (type == Type.ARMOR){
+            return stack.getItem() instanceof ArmorItem;
+        }
+        if (type == Type.WEAPON){
+            return stack.getItem() instanceof SwordItem || stack.getItem() instanceof AxeItem;
+        }
+        if (type== Type.ATTACKABLE){
+           if ( stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream()
+                    .mapToDouble(AttributeModifier::getAmount).sum() >0)
+               return true;
+        }
+        if (type ==Type.CURIOS)
+            return CuriosUtil.isCuriosItem(stack);
+        return false;
     }
     public static List<Component> GenerateTooltip(List<ModifierAttriGether> attriGethers, ItemStack itemStack) {
         List<Component> tooltips = new java.util.ArrayList<>();
@@ -122,21 +155,34 @@ public class ModifierEntry {
     }
     public static EquipmentSlot TypeToEquipmentSlot(Type type) {
         switch (type) {
-            case HAND, MAINHAND -> {
+            case HAND, MAINHAND ,BOW,ATTACKABLE,AXE-> {
                 return EquipmentSlot.MAINHAND;
             }
-            case OFFHAND, OFFHAND_HAND -> {
+            case OFFHAND, OFFHAND_HAND,SHIELD -> {
                 return EquipmentSlot.OFFHAND;
             }
             case CHESTPLATE -> {
                 return EquipmentSlot.CHEST;
             }
+            case LEGGINGS -> {
+                return EquipmentSlot.LEGS;
+            }
+            case HELMET -> {
+                return EquipmentSlot.HEAD;
+            }
+            case BOOTS -> {
+                return EquipmentSlot.FEET;
+            }
+
         }
         return null;
     }
     public static Type StringToType(String type) {
         if (type.toLowerCase().startsWith("curios")) return Type.CURIOS;
-        switch (type) {
+        for(var v : Type.values()){
+            if(v.toString().equals(type))return v;
+        }
+        /*switch (type) {
             case "ALL" -> {
                 return Type.ALL;
             }
@@ -216,6 +262,8 @@ public class ModifierEntry {
                 return Type.UNKNOWN;
             }
         }
+        */
+        return Type.UNKNOWN;
     }
     public static Type getType(ItemStack stack) {
         if (ModifierHandle.hasChestConfig) {
@@ -313,5 +361,49 @@ public class ModifierEntry {
                 ", RandomNum=" + RandomNum +
                 ", attriGether=" + attriGether +
                 '}';
+    }
+    public List<Component> GenerateItemTooltip()
+    {
+        List<Component> list = new ArrayList<>();
+        list.add(new TranslatableComponent("modifiler.entry.id").append(id));
+        list.add(new TranslatableComponent("modifiler.entry.weight").append(String.valueOf(weight)));
+        if (cantSelect) list.add(new TranslatableComponent("modifiler.entry.cant_select"));
+        if (OnlyHasThisEntry) list.add(new TranslatableComponent("modifiler.entry.only_has_this_entry"));
+        if (needFreshValue!=0) list.add(new TranslatableComponent("modifiler.entry.need_fresh_value").append(String.valueOf(needFreshValue)));
+        if (!OnlyTags.isEmpty()) list.add(new TranslatableComponent("modifiler.entry.only_tags").append(String.join(",",OnlyTags)));
+        if (!OnlyItems.isEmpty()) list.add(new TranslatableComponent("modifiler.entry.only_items").append(String.join(",",OnlyItems)));
+        if (isRandom) list.add(new TranslatableComponent("modifiler.entry.is_random").append(String.valueOf(RandomNum)));
+        list.add(new TranslatableComponent("modifiler.entry.type").append(type.toString()));
+        list.add(new TranslatableComponent("modifiler.entry.attribute_gather"));
+        //list.add(new TextComponent("§7["));
+        WeightedUtil<String> weightUtil = new WeightedUtil<>(
+                attriGether.stream()
+                        .collect(Collectors.toMap(
+                                k -> k.getModifier().getName(),
+                                ModifierAttriGether::getWeight,
+                                (oldValue, newValue) -> newValue // 这里定义如何处理键冲突，例如这里选择保留旧值
+                        ))
+        );
+        for (ModifierAttriGether attriGether1 : attriGether){
+            list.add(new TextComponent(" §7¦ §r").append(attriGether1.GenerateTooltip(isRandom)).append(isRandom ? " §9("+df.format(weightUtil.getProbability(attriGether1.getModifier().getName())*100)+"%)" : ""));
+        }
+        //list.add(new TextComponent("§7]"));
+        boolean hasSuit = false;
+
+        for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(this))
+                .toList()) {
+            if (suit.visible) {
+                if (!hasSuit){
+                    list.add(new TranslatableComponent("modifiler.entry.suit"));
+                 //   list.add(new TextComponent("§7["));
+                    hasSuit=true;
+                }
+                list.add(new TextComponent(" §7¦ §r").append(new TranslatableComponent("modifiler.entry.suit." + suit.id)));
+            }
+        }
+       // if (hasSuit)list.add(new TextComponent("§7]"));
+
+
+        return list;
     }
 }

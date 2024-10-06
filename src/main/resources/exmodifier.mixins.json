@@ -8,6 +8,7 @@
     "ApothToolTipFixMixin",
     "AttackBaseChange",
     "ItemStackMixin",
+    "PlaceBoFixer",
     "SmiMixin",
     "ToolTipMixin"
   ],

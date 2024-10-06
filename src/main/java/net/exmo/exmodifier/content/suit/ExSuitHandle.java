@@ -112,6 +112,7 @@ public class ExSuitHandle {
     public static Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/suit");
     public static List<MoConfig> FoundSuitConfigs = new ArrayList<>();
     public static void readConfig() throws IOException {
+        LoadExSuit = new java.util.HashMap<>();
         long startTime = System.nanoTime(); // 记录开始时间
 
         FoundSuitConfigs = ExConfigHandle.listFiles(ConfigPath);
@@ -148,25 +149,25 @@ public class ExSuitHandle {
             if (entry1 != null) {
                 exSuit.addEntry(entry1);
                 Exmodifier.LOGGER.debug("Found About ModifierEntry: "+entry1.id);
-            }else Exmodifier.LOGGER.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
+            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
 
         }
         if (exSuit.entry.isEmpty()) {
             if (moconfig.type!= ModifierEntry.Type.ALL) {
-                Exmodifier.LOGGER.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0, 2) + entry.getKey());
-            }else Exmodifier.LOGGER.error("No ModifierEntry Found any one about: " + entry.getKey());
+                Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0, 2) + entry.getKey());
+            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found any one about: " + entry.getKey());
             return;
         }
         exSuit.type = moconfig.type;
         exSuit.id = moconfig.type.toString().substring(0,2) + entry.getKey();
         if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
         if (itemObject.has("LocalDescription"))exSuit.LocalDescription= itemObject.get("LocalDescription").getAsString();
-        if (itemObject.has("trigger")) exSuit.MainTrigger = StringToTrigger(itemObject.get("trigger").getAsString());
+        // if (itemObject.has("trigger")) exSuit.MainTrigger = StringToTrigger(itemObject.get("trigger").getAsString());
         if (itemObject.has("excludeArmorInHand"))exSuit.setting.put("excludeArmorInHand", String.valueOf(itemObject.get("excludeArmorInHand").getAsBoolean()));
         for (int i = 1; i <= 10; i++) {
             if (itemObject.has(i + "")) {
                 JsonObject suitObj = itemObject.getAsJsonObject(i + "");
-                ExSuit.Trigger trigger =suitObj.has("trigger") ?  StringToTrigger(suitObj.get("trigger").getAsString()) : exSuit.MainTrigger;
+                ExSuit.Trigger trigger = suitObj.has("trigger") ?  StringToTrigger(suitObj.get("trigger").getAsString()) : ExSuit.MainTrigger;
                 exSuit.setLevelTriggers(i, trigger);
                 if (suitObj.has("effect")) {
                     if (suitObj.getAsJsonObject("effect") != null) {
@@ -205,7 +206,7 @@ public class ExSuitHandle {
             try {
                 effects.add(processEffect(moconfig, exSuit, EffectEntry));
             } catch (Exception e) {
-                Exmodifier.LOGGER.error("Error processing attrGether: " + EffectEntry.getKey(), e);
+                Exmodifier.LOGGER.Logger.error("Error processing attrGether: " + EffectEntry.getKey(), e);
             }
         }
         return effects;
@@ -229,7 +230,7 @@ public class ExSuitHandle {
             Exmodifier.LOGGER.debug("Registered ExSuit: " + exSuit.id + " with effect: " + effectEntry.getKey() + " level: " + level);
             return new MobEffectInstance(effect, time, level,false,true,true);
         }
-        Exmodifier.LOGGER.error("No MobEffect Found: " + effectEntry.getKey());
+        Exmodifier.LOGGER.Logger.error("No MobEffect Found: " + effectEntry.getKey());
         return null;
     }
 
@@ -241,7 +242,7 @@ public class ExSuitHandle {
                 attrGethersToReturn.add(processAttrGether(moconfig, exSuit, attrGetherEntry,index,level));
                 index++;
             } catch (Exception e) {
-                Exmodifier.LOGGER.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
+                Exmodifier.LOGGER.Logger.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
             }
         }
         ExAddSuitAttrigethersEvent event = new ExAddSuitAttrigethersEvent(moconfig,exSuit,attrGethers,attrGethersToReturn);
@@ -305,7 +306,7 @@ public class ExSuitHandle {
                 processModifierEntry(moconfig, entry, entries);
                 Exmodifier.LOGGER.debug("Reading Suit Config Over: " + entry.getKey());
             } catch (Exception e) {
-                Exmodifier.LOGGER.error("Error processing modifier entry: " + entry.getKey(), e);
+                Exmodifier.LOGGER.Logger.error("Error processing modifier entry: " + entry.getKey(), e);
             }
         }
         for (ExSuit exSuit : entries){

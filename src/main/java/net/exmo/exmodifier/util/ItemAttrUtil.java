@@ -35,7 +35,7 @@ public  class ItemAttrUtil {
                 EquipmentSlot slot = attrgroup.getEquipmentSlot();
                 if (slot != null) {
                     // 对EquipmentSlot使用equals进行比较，这里假设EquipmentSlot类正确实现了equals方法
-                    //   System.out.println("1: " +slot +" 2:"+itemStack.getEquipmentSlot());
+                    //   System.out.println("1: " +slot +" 2:"+itemStack.getSlot());
                     if (slot == event.getSlotType()) {
                         event.addModifier(attrgroup.attr, attrgroup.attributeModifier);
                         //  removelist.add(id);
@@ -107,7 +107,7 @@ public  class ItemAttrUtil {
 
     public static void addItemAttributeModifier(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
         if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute)){
-            Exmodifier.LOGGER.error("Attribute " + pAttribute + " does not exist");
+            Exmodifier.LOGGER.Logger.error("Attribute " + pAttribute + " does not exist");
             return;
         }
         Exmodifier.LOGGER.debug("add attribute: "+pAttribute+" "+pAttribute.getDescriptionId());
@@ -299,6 +299,7 @@ public  class ItemAttrUtil {
     public static CompoundTag getAttributeModifierCompoundTag(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
         if (modifier==null)return null;
         if (attribute==null)return null;
+        if (modifier.getOperation()==null)return null;
         CompoundTag compoundtag = modifier.save();
         compoundtag.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
         if (slot != null) {

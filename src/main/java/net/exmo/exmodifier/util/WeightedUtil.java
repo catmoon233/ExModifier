@@ -66,7 +66,13 @@ public class WeightedUtil<T> {
 
         @SuppressWarnings("unchecked")
         T[] keys = (T[]) weights.keySet().toArray();
-        return keys[index];
+
+        // Ensure index is within bounds
+        if (index >= 0 && index < keys.length) {
+            return keys[index];
+        } else {
+            return null; // Or handle this case as needed
+        }
     }
 
     private int findIndexForValue(float value) {
