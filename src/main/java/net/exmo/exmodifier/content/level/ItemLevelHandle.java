@@ -13,9 +13,7 @@ import net.exmo.exmodifier.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -63,22 +61,22 @@ public class ItemLevelHandle {
                         slot = armorItem.getEquipmentSlot();
                     }
                     else slot =ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(stack));
-                }                ItemAttrUtil.removeAttributeModifierNoAmout(stack, attriGether.getAttribute(), attriGether.getModifier(), slot);
+                }
+                ItemAttrUtil.removeAttributeModifierNoAmout(stack, attriGether.getAttribute(), attriGether.getModifier(), slot);
                 dynamicExpressionEvaluator.setVariable("level", event.nowLevel);
-
                 double amout =  dynamicExpressionEvaluator.evaluate(attriGether.Expression);
                 ItemAttrUtil.addItemAttributeModifier2(stack,attriGether.attribute,new AttributeModifier(uuid,attriGether.getModifier().getName(), amout, attriGether.modifier.getOperation()), slot);
 
             }
             if (event.entity instanceof  Player player){
-              //  if (player.level().isClientSide) {
-                    player.sendSystemMessage(Component.translatable("modifiler.level."+event.LevelId.id).append(" ").append(stack.getDisplayName()).append(" §r").append(Component.translatable("modifiler.level.up",event.beforeLevel,event.nowLevel,event.nowLevel-event.beforeLevel)));
-                    //player.level().playLocalSound(player.getX(), player.getY(), player.getZ(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.player.levelup")), SoundSource.PLAYERS, 1, 1, false);
+                //  if (player.level.isClientSide) {
+                player.sendSystemMessage(Component.translatable("modifiler.level."+event.LevelId.id).append(" ").append(stack.getDisplayName()).append(" §r").append(Component.translatable("modifiler.level.up",event.beforeLevel,event.nowLevel,event.nowLevel-event.beforeLevel)));
+                //player.level.playLocalSound(player.getX(), player.getY(), player.getZ(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.player.levelup")), SoundSource.PLAYERS, 1, 1, false);
 
-             //   }else {
-                    player.level().playSound(null, new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ()), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.player.levelup")), SoundSource.PLAYERS, 1, 1);
+                //   }else {
+                player.level().playSound(null, new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ()), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.player.levelup")), SoundSource.PLAYERS, 1, 1);
 
-             //   }
+                //   }
             }
         }
     }
@@ -166,11 +164,11 @@ public class ItemLevelHandle {
         Exmodifier.LOGGER.debug("ItemLevelUp0: " + stack.serializeNBT());
         if (stack.getTag()==null)return;
         for (ItemLevel il : getItemLevels(stack)){
-           // Exmodifier.LOGGER.debug("ItemLevelUp: " + il.id);
+            // Exmodifier.LOGGER.debug("ItemLevelUp: " + il.id);
             if ( packname.equals (il.getUpEvent())) {
-             //   Exmodifier.LOGGER.debug("ItemLevelUp1: " + il.id + " " + event1.getClass().getName());
+                //   Exmodifier.LOGGER.debug("ItemLevelUp1: " + il.id + " " + event1.getClass().getName());
                 if (pdEntitySequence(entity, event1, il.getEntitySequence())) {
-               //     Exmodifier.LOGGER.debug("ItemLevelUp2: " + il.id + " " + event1.getClass().getName());
+                    //     Exmodifier.LOGGER.debug("ItemLevelUp2: " + il.id + " " + event1.getClass().getName());
                     ItemAddXpM(stack, params, il, entity);
                 }
             }
@@ -192,7 +190,9 @@ public class ItemLevelHandle {
         if (finalXp > 0) {
             while (finalXp > 0) {
                 if (finalXp >= needXp) {
-                    level++;
+                    if (level<itemLevel.getMaxLevel()) {
+                        level++;
+                    }
                     finalXp -= needXp;
                     needXp = generateLevelNeedXp(itemLevel, (int) level);
                 } else break;
@@ -226,7 +226,7 @@ public class ItemLevelHandle {
         evaluator.setVariable("lv", level);
 
         return evaluator.evaluate(itemLevel.getLevelExpression());
-       // return 50;
+        // return 50;
     }
     public static List<ItemLevel> getItemLevels (ItemStack stack){
         List<ItemLevel> itemLevels = new ArrayList<>();
@@ -274,9 +274,9 @@ public class ItemLevelHandle {
             // 显示当前经验与需经验
             String xpInfo = String.format("%s %s %s",
                     " ",
-                    getLevelItemXp(stack, itemLevel.id) +
+                    (int)getLevelItemXp(stack, itemLevel.id) +
                             " / ",
-                    getLevelItemNeedXpUp(stack, itemLevel.id) +
+                    (int)getLevelItemNeedXpUp(stack, itemLevel.id) +
                             " ");
 
             components.add(Component.translatable("modifiler.xp")
@@ -288,7 +288,7 @@ public class ItemLevelHandle {
             components.add(Component.translatable("modifiler.level." + itemLevel.id)
                     .withStyle(ChatFormatting.GOLD).append(" ").append(levelItemLevel+""));
         }
-            return components;
+        return components;
     }
     public static void addLevelSystemToItem(ItemStack stack,ItemLevel level,int index) {
         if (stack.getTag()==null)return;
@@ -302,13 +302,13 @@ public class ItemLevelHandle {
         if (stack.getTag()==null)return;
         stack.getTag().putDouble(levelId +"_NeedXpUp",xp);
     }
-    public static int getLevelItemXp(ItemStack stack,String levelId){
+    public static double getLevelItemXp(ItemStack stack,String levelId){
         if (stack.getTag()==null)return 0;
-        return (int) stack.getTag().getDouble(levelId +"_Xp");
+        return  stack.getTag().getDouble(levelId +"_Xp");
     }
-    public static int getLevelItemNeedXpUp(ItemStack stack,String levelId){
+    public static double getLevelItemNeedXpUp(ItemStack stack,String levelId){
         if (stack.getTag()==null)return 0;
-        return (int) stack.getTag().getDouble(levelId +"_NeedXpUp");
+        return stack.getTag().getDouble(levelId +"_NeedXpUp");
     }
     public static int getLevelItemLevel(ItemStack stack,String levelId){
         if (stack.getTag()==null)return 0;

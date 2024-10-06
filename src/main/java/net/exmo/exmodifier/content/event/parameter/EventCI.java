@@ -3,12 +3,14 @@ package net.exmo.exmodifier.content.event.parameter;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -64,9 +66,11 @@ public class EventCI<T extends LivingEvent> {
     @SubscribeEvent
     public static void AddXp1(LivingHurtEvent event1) {
         if (event1.getEntity() instanceof  Player player){
-            List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
-            eventParameters.add(new EventParameter<>("amount", event1.getAmount()));
-            addx(player,eventParameters,event1,"net.minecraftforge.event.entity.living.LivingHurtEvent");
+            if (!event1.getSource().is(DamageTypes.GENERIC_KILL)) {
+                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                eventParameters.add(new EventParameter<>("amount", event1.getAmount()));
+                addx(player, eventParameters, event1, "net.minecraftforge.event.entity.living.LivingHurtEvent");
+            }
         }
         if (event1.getSource().getEntity() instanceof  Player player){
             List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
