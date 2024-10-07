@@ -5,6 +5,7 @@ import net.exmo.exmodifier.content.event.parameter.EventC;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
@@ -24,6 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 public class RegisterOther {
+    public static class EffectAbout{
+        public static final DeferredRegister<MobEffect> REGISTRY = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, Exmodifier.MODID);
+        public static final RegistryObject<DodgeEffect> DODGE_EFFECT = REGISTRY.register("dodge_effect", DodgeEffect::new);
+        public static final RegistryObject<VulnerabilityEffect> VULNERABILITY_EFFECT = REGISTRY.register("vulnerability_effect",VulnerabilityEffect::new);
+        public static final RegistryObject<HitRateEffect> HIT_RATE_EFFECT = REGISTRY.register("hit_rate_effect", HitRateEffect::new);
+        public static final RegistryObject<ReduceInjuriesEffect> REDUCE_INJURIES_EFFECT = REGISTRY.register("reduce_injuries_effect", ReduceInjuriesEffect::new);
+    }
    public static class EventAbout{
        public static final Map<Class<? extends LivingEvent>,EventC<? extends LivingEvent> > EVENT_C_LIST = new HashMap<>();
        public static void register(EventC<? extends LivingEvent> eventC){

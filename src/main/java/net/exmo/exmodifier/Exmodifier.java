@@ -90,9 +90,7 @@ public class Exmodifier {
             .withSearchBar()
             .title(Component.translatable("itemGroup.exmodifier_tab"))
             .displayItems((parameters, output) -> {
-
-        //    output.accept(ENTRY_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the eventC
-    }).build());
+            }).build());
 
     private static ItemStack getTabIcon() {
         TabIcon = ENTRY_ITEM.get().getDefaultInstance();
@@ -126,7 +124,7 @@ public class Exmodifier {
         modEventBus.addListener(this::enqueueIMC);
         // Register the processIMC method for modloading
         modEventBus.addListener(this::processIMC);
-
+        RegisterOther.EffectAbout.REGISTRY.register(modEventBus);
         modEventBus.addListener(this::AddToTab);
         if (ModList.get().isLoaded("attributeslib")){
             MinecraftForge.EVENT_BUS.addListener(new ApothCompat()::SkinAttr);

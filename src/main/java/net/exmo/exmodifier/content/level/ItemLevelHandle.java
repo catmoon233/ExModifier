@@ -142,6 +142,7 @@ public class ItemLevelHandle {
         if (entity==null)return;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack stack = entity.getItemBySlot(slot);
+            if (stack.isEmpty())continue;
             ItemAddXp(entity,stack, eventParameters,event1,packname);
         }
 
