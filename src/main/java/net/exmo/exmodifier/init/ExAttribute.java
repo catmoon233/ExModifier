@@ -11,19 +11,16 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
@@ -40,8 +37,10 @@ public class ExAttribute {
     public static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(ForgeRegistries.ATTRIBUTES, Exmodifier.MODID);
     public static final RegistryObject<Attribute> ARROWBASEDAMAGE = ATTRIBUTES.register("arrow_base_damage", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".arrow_base_damage", 0, 0, 100000000)).setSyncable(true));
     public static final RegistryObject<Attribute> DODGE = ATTRIBUTES.register("dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dodge", 1, 0, 10000000)).setSyncable(true));
+    public static final RegistryObject<Attribute> MAX_DODGE = ATTRIBUTES.register("max_dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".max_dodge", 1.85, 0, 10000000)).setSyncable(true));
     public static final RegistryObject<Attribute> HIT_RATE = ATTRIBUTES.register("hit_rate", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".hit_rate", 1, 0, 10000000)).setSyncable(true));
     public static final RegistryObject<Attribute> PERCENT_HEAL = ATTRIBUTES.register("percent_heal", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".percent_heal", 1, 0, 10000000)).setSyncable(true));
+    public static final RegistryObject<Attribute> INJURY_FREE = ATTRIBUTES.register("injury_free", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".injury_free", 1, -100000, 10000000)).setSyncable(true));
     @SubscribeEvent
     public static void register(FMLConstructModEvent event) {
         event.enqueueWork(() -> {
@@ -55,9 +54,11 @@ public class ExAttribute {
 
         entityTypes.forEach((e) -> {
             event.add(e, DODGE.get());
+            event.add(e, INJURY_FREE.get());
             event.add(e, HIT_RATE.get());
             event.add(e, PERCENT_HEAL.get());
             event.add(e, ARROWBASEDAMAGE.get());
+            if (e.equals(EntityType.PLAYER)) event.add(e, MAX_DODGE.get());
 
         });
 
@@ -78,6 +79,7 @@ public class ExAttribute {
             entity.setDeltaMovement(new Vec3((Math.cos(Math.toRadians(entity.getYRot())) * 2) *a, 0, (Math.sin(Math.toRadians(entity.getYRot())))*a));
 
         }
+
         @SubscribeEvent
         public static void AtAttack(LivingAttackEvent event) {
 
@@ -86,10 +88,14 @@ public class ExAttribute {
             if (event.getSource().isMagic() )return;
             if (entity.getAttributes().hasAttribute(ExAttribute.DODGE.get())) {
                 double remove_value = 0;
+                double max_Dodge = 99999999;
+                if (entity.getAttributes().hasAttribute(ExAttribute.MAX_DODGE.get())) {
+                    max_Dodge =  entity.getAttributeValue( ExAttribute.MAX_DODGE.get());
+                }
                 if (souree.getAttributes().hasAttribute(ExAttribute.HIT_RATE.get())) {
                     remove_value =  souree.getAttributeValue(ExAttribute.HIT_RATE.get());
                 }
-                double v = entity.getAttributeValue(ExAttribute.DODGE.get()) - remove_value;
+                double v = Math.min(entity.getAttributeValue( ExAttribute.DODGE.get()),max_Dodge) - remove_value;
                 if (Math.random() <= v) {
                     particle(entity);
                     move(entity);
@@ -108,10 +114,15 @@ public class ExAttribute {
         }
         @SubscribeEvent
         public static void AtHurt(LivingHurtEvent event) {
-            if ((event.getSource().getEntity() instanceof LivingEntity entity)) {
-                if (entity.getAttributes().hasAttribute(ExAttribute.PERCENT_HEAL.get()) && entity.getAttributes().hasAttribute(Attributes.MAX_HEALTH)) {
-                    double v = entity.getAttributeValue(ExAttribute.PERCENT_HEAL.get());
-                    entity.heal((float) (entity.getAttributeValue(Attributes.MAX_HEALTH) * (v - 1)));
+            LivingEntity entity = ((LivingEntity) event.getEntity());
+            if (entity.getAttributes().hasAttribute(ExAttribute.INJURY_FREE.get())){
+                double v = entity.getAttributeValue(ExAttribute.INJURY_FREE.get());
+                event.setAmount((float) ((2- v) * (event.getAmount())));
+            }
+            if ((event.getSource().getEntity() instanceof LivingEntity entity1)) {
+                if (entity1.getAttributes().hasAttribute(ExAttribute.PERCENT_HEAL.get()) && entity1.getAttributes().hasAttribute(Attributes.MAX_HEALTH)) {
+                    double v = entity1.getAttributeValue(ExAttribute.PERCENT_HEAL.get());
+                    entity1.heal((float) (entity1.getAttributeValue(Attributes.MAX_HEALTH) * (v - 1)));
                 }
             }
         }

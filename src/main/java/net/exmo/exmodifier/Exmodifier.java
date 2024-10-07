@@ -115,7 +115,7 @@ public class Exmodifier {
 
 
         ITEMS.register(modEventBus);
-
+        RegisterOther.EffectAbout.REGISTRY.register(modEventBus);
 
 
 

@@ -329,7 +329,7 @@ public class ModifierHandle {
                                     .filter(e -> e.getValue().type == type )
                                     .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
                                     .filter(e -> !e.getValue().cantSelect)
-                                    .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
+                                    .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= rarity)
                                     .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
                                     .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
                                     .filter(e -> {
@@ -512,7 +512,7 @@ public class ModifierHandle {
                             .filter(e -> curiosType.contains(e.getValue().curiosType)|| e.getValue().curiosType.equals("ALL"))
                             .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
                             .filter(e -> !e.getValue().cantSelect)
-                            .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
+                            .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= rarity)
                             .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
                             .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
                             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight +1)));
