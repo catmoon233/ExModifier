@@ -1,8 +1,10 @@
 package net.exmo.exmodifier.util;
 
 import com.google.common.collect.Multimap;
+import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
@@ -33,6 +35,40 @@ public class CuriosUtil {
             this.operation = operation;
             this.slot = slot;
         }
+    }
+    public static void addAttributeModifierAffix(ItemStack itemStack, AttrGether attriGether){
+        CompoundTag tag = itemStack.getOrCreateTag();
+        if (!tag.contains("ExCurioAttributeModifiers")) tag.put("ExCurioAttributeModifiers", new ListTag());
+        ListTag modifiersList = tag.getList("ExCurioAttributeModifiers", 10);
+        CompoundTag tag1 = new CompoundTag();
+        tag1.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attriGether.attribute).toString());
+        tag1.putString("Name", attriGether.attributeModifier.getName());
+        tag1.putString("UUID", attriGether.attributeModifier.getId().toString());
+        tag1.putDouble("Amount", attriGether.attributeModifier.getAmount());
+        tag1.putInt("Operation", attriGether.attributeModifier.getOperation().toValue());
+        modifiersList.add(tag1);
+    }
+    public static List<AttrGether> getAttributeModifiersAffix(ItemStack itemStack)
+    {
+        CompoundTag tag = itemStack.getTag();
+        List<AttrGether> attrGethers = new ArrayList<>();
+        if (tag==null)return attrGethers;
+        if (tag.contains("ExCurioAttributeModifiers")) {
+            ListTag modifiersList = tag.getList("ExCurioAttributeModifiers", 10);
+            for (int i = 0; i < modifiersList.size(); i++) {
+                CompoundTag modifier = modifiersList.getCompound(i);
+                String attributeName = modifier.getString("AttributeName");
+                String name = modifier.getString("Name");
+                double amount = modifier.getDouble("Amount");
+                String string = modifier.getString("UUID");
+                UUID uuid = UUID.nameUUIDFromBytes((itemStack.toString() + name + attributeName).getBytes());
+                if (string.length()>=36) uuid = UUID.fromString(string);
+                int operation= modifier.getInt("Operation");
+                attrGethers.add(new AttrGether(ForgeRegistries.ATTRIBUTES.getValue(ResourceLocation.tryParse(attributeName)), new AttributeModifier(uuid, name, amount, AttributeModifier.Operation.fromValue(operation))));
+
+            }
+        }
+        return attrGethers;
     }
     public static List<String> getSlotsFromItemstack(ItemStack itemStack) {
 //        if (CuriosUtil.isCuriosItem(itemStack)) {

@@ -92,7 +92,7 @@ public class ItemLevelHandle {
         WeightedUtil<String> weightedUtil = new WeightedUtil<>(
                 ItemLevels.entrySet().stream()
                         .filter(e -> e.getValue().type == type )
-//                                .filter(e -> (e.getValue().getOnlyItemIds().isEmpty() ||e.getValue().getOnlyItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
+                                .filter(e -> (e.getValue().getOnlyItemIds().isEmpty() ||e.getValue().getOnlyItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
 //                                .filter(e -> !e.getValue().cantSelect)
 //                                .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
 //                                .filter(e -> e.getValue().getOnlyItemTags().isEmpty() ||e.getValue().containTag(stack))
@@ -165,6 +165,7 @@ public class ItemLevelHandle {
         Exmodifier.LOGGER.debug("ItemLevelUp0: " + stack.serializeNBT());
         if (stack.getTag()==null)return;
         for (ItemLevel il : getItemLevels(stack)){
+            if (il==null)continue;
             // Exmodifier.LOGGER.debug("ItemLevelUp: " + il.id);
             if ( packname.equals (il.getUpEvent())) {
                 //   Exmodifier.LOGGER.debug("ItemLevelUp1: " + il.id + " " + event1.getClass().getName());
@@ -252,6 +253,7 @@ public class ItemLevelHandle {
 
     public static List<Component> getLevelItemLevelInfo(ItemStack stack, ItemLevel itemLevel) {
         List<Component> components = new ArrayList<>();
+        if (itemLevel==null)return components;
         int levelItemLevel = getLevelItemLevel(stack, itemLevel.id);
         if (Screen.hasShiftDown()) {
             // 添加物品等级信息
@@ -283,7 +285,18 @@ public class ItemLevelHandle {
             components.add(Component.translatable("modifiler.xp")
                     .append(Component.literal(xpInfo))
                     .withStyle(ChatFormatting.GREEN));
-
+            ItemLevel _setval = new ItemLevel();
+            _setval.attriGethers =new ArrayList<>(itemLevel.attriGethers);
+            for (LevelAttriGether ita : _setval.attriGethers){
+                for (EquipmentSlot equipmentSlot : EquipmentSlot.values() ){
+                    for ( AttributeModifier modifier : stack.getAttributeModifiers(equipmentSlot).values()){
+                        if (modifier.getName().equals(ita.getModifier().getName())){
+                            ita.modifier = modifier;
+                        }
+                    }
+                }
+                components.add(Component.translatable("modifiler.attri.¦").append(ita.generateTooltipBase()));
+            }
 
         }else{
             components.add(Component.translatable("modifiler.level." + itemLevel.id)

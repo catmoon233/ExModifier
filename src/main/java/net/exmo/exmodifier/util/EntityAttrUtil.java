@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.util;
 
+import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -30,6 +31,22 @@ public class EntityAttrUtil {
             }
         }
 
+    }
+    public static void entityAddAttrTF(AttrGether attrGether, LivingEntity entity, WearOrTake wearOrTake) {
+        Attribute attribute = attrGether.attribute;
+        AttributeModifier attributeModifier = attrGether.attributeModifier;
+
+        switch (wearOrTake) {
+            case WEAR:
+                if (entity.getAttributes().hasAttribute(attribute)) if (!(entity.getAttribute(attribute).hasModifier(attributeModifier)))   entity.getAttribute(attribute).addPermanentModifier(attributeModifier);
+
+                break;
+            case TAKE:
+                if (entity.getAttributes().hasAttribute(attribute)) if ((entity.getAttribute(attribute).hasModifier(attributeModifier)))
+                    entity.getAttribute(attribute).removeModifier(attributeModifier);
+
+                break;
+        }
     }
     public static void entityAddAttrTF(Attribute attribute, AttributeModifier attributeModifier, LivingEntity entity, WearOrTake wearOrTake) {
     if (attribute==null)return;

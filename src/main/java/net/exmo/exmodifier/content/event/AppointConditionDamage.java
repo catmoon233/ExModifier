@@ -1,6 +1,5 @@
 package net.exmo.exmodifier.content.event;
 
-import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
@@ -9,17 +8,12 @@ import net.exmo.exmodifier.events.ExSuitApplyOnChangeEvent;
 
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.EntityAttrUtil;
-import net.exmo.exmodifier.util.event.ModifierLivingHurtBaseDamage;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.registries.ForgeRegistries;
-import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.*;
 

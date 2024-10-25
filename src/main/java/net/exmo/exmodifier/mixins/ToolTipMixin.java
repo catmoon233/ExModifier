@@ -3,6 +3,8 @@ package net.exmo.exmodifier.mixins;
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.exmo.exmodifier.content.event.MainEvent;
+import net.exmo.exmodifier.content.level.ItemLevel;
+import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.util.CuriosUtil;
@@ -35,7 +37,11 @@ public abstract class ToolTipMixin {
                 attriGethers.addAll(entry.attriGether);
             }
         }
-
+        for (ItemLevel entry : ItemLevelHandle.getItemLevels(stack)) {
+            if (entry != null) {
+                attriGethers.addAll(entry.attriGethers);
+            }
+        }
         // 创建一个临时列表来保存需要删除的 AttributeModifier
         List<AttributeModifier> toRemove = new ArrayList<>();
 

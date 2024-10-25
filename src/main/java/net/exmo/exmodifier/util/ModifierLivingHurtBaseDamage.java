@@ -1,4 +1,4 @@
-package net.exmo.exmodifier.util.event;
+package net.exmo.exmodifier.util;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.entity.living.LivingEvent;

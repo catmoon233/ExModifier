@@ -4,11 +4,9 @@ import com.mojang.datafixers.util.Either;
 import dev.shadowsoffire.placebo.events.ItemUseEvent;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
-import net.exmo.exmodifier.content.modifier.EntryItem;
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
-import net.exmo.exmodifier.content.modifier.ModifierEntry;
-import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.*;
@@ -172,10 +170,10 @@ public class MainEvent {
                         tooltip.add(Component.translatable("modifiler.entry.UNKNOWN"));
                     } else {
 
-                        for (ModifierEntry modifierEntry : getEntrysFromItemStack(stack)) {
+                        for (ModifierInstant modifierEntry : new ItemInfo(stack).getModifierEntryHelper().getModifierEntries()) {
                             // Exmodifier.LOGGER.debug("modifier id:" + modifierEntry.id);
                             if (!config.compact_tooltip) tooltip.add(Component.translatable("null"));
-                            tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack));
+                            tooltip.addAll(generateEntryTooltip(modifierEntry.getModifierEntry(), player, stack));
 
                         }
                     }
@@ -216,17 +214,17 @@ public class MainEvent {
                 List<MobEffectInstance> mobEffectsToAdd = new ArrayList<>();
                 CommandSourceStack commandSourceStack;
                 if (player.level() instanceof  ServerLevel serverLevel){
-                 commandSourceStack =  new CommandSourceStack(
-                        CommandSource.NULL,
-                        player.position(),
-                        player.getRotationVector(),
-                        serverLevel,
-                        4,
-                        player.getName().getString(),
-                        player.getDisplayName(),
-                        serverLevel.getServer(),
-                        player
-                );
+                    commandSourceStack =  new CommandSourceStack(
+                            CommandSource.NULL,
+                            player.position(),
+                            player.getRotationVector(),
+                            serverLevel,
+                            4,
+                            player.getName().getString(),
+                            player.getDisplayName(),
+                            serverLevel.getServer(),
+                            player
+                    );
                 } else {
                     commandSourceStack = null;
                 }
@@ -241,7 +239,18 @@ public class MainEvent {
                         // Run commands if present for the current suit level
                         List<String> commands = suit.getCommands().get(level);
                         if (commands != null && !player.level().isClientSide() && player.getServer() != null &&commandSourceStack!=null) {
-                            commands.forEach(command -> player.getServer().getCommands().performPrefixedCommand(commandSourceStack, command));
+                            int finalLevel = level;
+                            commands.forEach(command ->{
+                                if (trigger == ExSuit.Trigger.ATTACK) {
+                                    String string = player.getPersistentData().getString("hurtentity-uuid");
+                                    if (!string.equals("null")) {
+                                        command = command.replace("$(hurtentity)", string);
+                                    }
+                                }
+                                command = command.replace("$(level)", finalLevel +"");
+                                player.getServer().getCommands().performPrefixedCommand(commandSourceStack, command);
+
+                            });
                         }
 
                         // Add MobEffects if present for the current suit level
@@ -272,7 +281,11 @@ public class MainEvent {
         @SubscribeEvent
         public static void PlayerHurtAndAttack(LivingHurtEvent event){
             if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ON_HURT);
-            if ((event.getSource().getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
+            if ((event.getSource().getEntity() instanceof Player player)){
+                if (event.getEntity()!=null) player.getPersistentData().putString("hurtentity-uuid",event.getEntity().getUUID().toString());
+                ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
+                player.getPersistentData().putString("hurtentity-uuid","null");
+            }
         }
         @SubscribeEvent
         public static void PlayerJump(LivingEvent.LivingJumpEvent event){

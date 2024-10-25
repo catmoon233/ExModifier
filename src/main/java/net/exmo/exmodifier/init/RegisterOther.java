@@ -1,6 +1,10 @@
 package net.exmo.exmodifier.init;
 
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.MobEffect.DodgeEffect;
+import net.exmo.exmodifier.content.MobEffect.HitRateEffect;
+import net.exmo.exmodifier.content.MobEffect.ReduceInjuriesEffect;
+import net.exmo.exmodifier.content.MobEffect.VulnerabilityEffect;
 import net.exmo.exmodifier.content.event.parameter.EventC;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
