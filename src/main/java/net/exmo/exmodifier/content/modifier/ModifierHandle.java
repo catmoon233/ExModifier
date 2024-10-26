@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.helper.ItemInfo;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevel;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
@@ -15,9 +16,11 @@ import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -47,22 +50,7 @@ import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModifierHandle {
-    public static List<ModifierEntry> getEntrysFromItemStack(ItemStack stack) {
-        List<ModifierEntry> modifierEntries = new ArrayList<>();
-        if (stack.getTag()==null)return modifierEntries;
-        for (ModifierEntry modifierAttriGether : modifierEntryMap.values().stream().filter(Objects::nonNull).toList()) {
-            String id;
-            for (int i = 0; true; i++) {
-                id = stack.getTag().getString("exmodifier_armor_modifier_applied"+i);
-                if (id.isEmpty())break;
-                if (id.equals(modifierAttriGether.getId())) {
-                    modifierEntries.add(modifierAttriGether);
-                }
 
-            }
-        }
-        return modifierEntries;
-    }
     //    public static void init() throws IOException {
 //        modifierEntryMap = new HashMap<>();
 //        readConfig();
@@ -97,15 +85,7 @@ public class ModifierHandle {
 
     @Mod.EventBusSubscriber
     public static   class CommonEvent{
-        public static int getItemStackEntryCount(ItemStack stack){
-            if (stack.getTag()==null)return 0;
-            for (int i = 0; true; i++) {
-                if (stack.getTag().getString("exmodifier_armor_modifier_applied" + i).isEmpty()) {
-                    return i;
-                }
 
-            }
-        }
         public static List<Component> GenSuitInfo(Player player,ModifierEntry modifierEntry    ){
             if (player ==null)return null;
             List<Component> tooltips = new ArrayList<>();
@@ -130,25 +110,35 @@ public class ModifierHandle {
             }
             return tooltips;
         }
-        public static List<Component> generateEntryTooltip(ModifierEntry modifierEntry,Player player,ItemStack itemStack) {
+        public static List<Component> generateEntryTooltip(ModifierInstant modifierEntryInstant,Player player,ItemStack itemStack) {
             List<Component> tooltips = new ArrayList<>();
+            ModifierEntry modifierEntry = modifierEntryInstant.getModifierEntry();
+            int level = modifierEntryInstant.getLevel();
             String id = modifierEntry.getId();
             if (player ==null)return tooltips;
             if (id.length() >= 2) {
-                if (config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)));
-                else tooltips.add(Component.translatable("modifiler.entry." + id.substring(2)).append(" : "));
+                MutableComponent translatable = Component.translatable("modifiler.entry." + id.substring(2));
+                if (config.compact_tooltip){
+                    if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
+                    tooltips.add(translatable);
+                }
+                else{
+                    if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
+                    tooltips.add(translatable.append(" : "));
+                }
                 tooltips.addAll(GenSuitInfo(player,modifierEntry));
+
                 for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
                     AttributeModifier attributemodifier = modifierAttriGether.getModifier();
                     Attribute attribute = modifierAttriGether.getAttribute();
                     if (attribute == null)continue;
                     if (attributemodifier ==null)continue;
                     //    if (modifierAttriGether.slot==null)continue;
-                    EquipmentSlot slot = modifierAttriGether.slot;
-                    if (modifierAttriGether.IsAutoEquipmentSlot){
-                        slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
-                    }
-                    if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot))continue;
+//                    EquipmentSlot slot = modifierAttriGether.slot;
+//                    if (modifierAttriGether.IsAutoEquipmentSlot){
+//                        slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
+//                    }
+                    if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot) && CuriosUtil.getAttributeModifiersAffix(itemStack).stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(attributemodifier.getName())))continue;
                     //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
                     //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
                     double d0 = attributemodifier.getAmount();
@@ -223,28 +213,29 @@ public class ModifierHandle {
                     LOGGER.debug("add entry start: " + modifierEntry.id);
                    // appliedModifiers.add(modifierEntry.id);
 
-                    stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.id);
+//                    stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.id);
                     numAddedModifiers++;
                     LOGGER.debug("add entry ing: " + modifierEntry.id);
+                ModifierEntryHelper.of(stack).addModifierEntry(ModifierInstant.of(modifierEntry),true);
 
-                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
-                    ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, true, refreshments, attriGethers,modifierEntry,modifierEntries);
-                    MinecraftForge.EVENT_BUS.post(event);
-
-                    LOGGER.debug("add entry end: " + modifierEntry.id +" "+attriGethers);
-                    finalAttriGethers.addAll(event.getAttriGether());
-                    if (modifierEntry.OnlyHasThisEntry){
-                        finalAttriGethers = new ArrayList<>(event.getAttriGether());
-                        for (int i = numAddedModifiers ; i < refreshments; i++){
-                            stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + i, "");
-                        }
-                        stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", modifierEntry.id);
-                        break;
-                    }
-             //   }
+//                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
+//                    ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, true, refreshments, attriGethers,modifierEntry,modifierEntries);
+//                    MinecraftForge.EVENT_BUS.post(event);
+//
+//                    LOGGER.debug("add entry end: " + modifierEntry.id +" "+attriGethers);
+//                    finalAttriGethers.addAll(event.getAttriGether());
+//                    if (modifierEntry.OnlyHasThisEntry){
+//                        finalAttriGethers = new ArrayList<>(event.getAttriGether());
+//                        for (int i = numAddedModifiers ; i < refreshments; i++){
+//                            stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + i, "");
+//                        }
+//                        stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", modifierEntry.id);
+//                        break;
+//                    }
+//             //   }
             }
 
-            applyModifiersCurios(stack, finalAttriGethers, slots);
+        //    applyModifiersCurios(stack, finalAttriGethers, slots);
         }
         public static void RandomEntry(ItemStack stack, WeightedUtil<String> weightedUtil, EquipmentSlot slot, int refreshments) {
             int numAddedModifiers = 0;
@@ -270,7 +261,7 @@ public class ModifierHandle {
                 weightedUtil.removeKey(modifierEntry.id);
                 ItemInfo itemInfo = new ItemInfo(stack);
                 itemInfo.getModifierEntryHelper().addModifierEntry(new ModifierInstant(modifierEntry,1),true);
-                    stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.id);
+                 //   stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.id);
                     numAddedModifiers++;
                     LOGGER.debug("add entry ing: " + modifierEntry.id);
 
@@ -292,7 +283,7 @@ public class ModifierHandle {
             //applyModifiers(stack, finalAttriGethers, slot);
         }
         public static void RandomEntry(ItemStack stack, int rarity, int refreshnumber,String washItem) {
-            if (stack.getTag() ==null||stack.getTag().getInt("exmodifier_armor_modifier_applied") >0)return;
+            if (stack.getTag() ==null||ModifierEntryHelper.of(stack).getModifierEntriesSize()>0)return;
             if (stack.getTag()!=null) {
                 stack.getTag().remove("wash_item");
                 stack.getTag().remove("modifier_refresh_rarity");
@@ -349,8 +340,8 @@ public class ModifierHandle {
                         }
                         LOGGER.debug("RandomEntry: " + type + " " + slot);
                         RandomEntry(stack, weightedUtil, slot, refreshnumber);
-                        stack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
-                                stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
+//                        stack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
+//                                stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
                         over = true;
                     }
                 }
@@ -406,51 +397,51 @@ public class ModifierHandle {
 
             return attriGethers;
         }
-        public static void AddEntryToItem (ItemStack itemStack,String e){
-
-            List<ModifierEntry> modifierEntries = ModifierHandle.getEntrysFromItemStack(itemStack);
-
-            ModifierHandle.CommonEvent.clearEntry(itemStack);
-
-            ModifierEntry modifier = ModifierHandle.modifierEntryMap.get(e);
-            if (!modifierEntries.contains(modifier)) modifierEntries.add(modifier);
-            boolean over = false;
-            Map<String, Float> weightedUtilmap = new HashMap<>();
-            for (ModifierEntry modifierEntry : modifierEntries.stream().filter(Objects::nonNull).toList()) {
-                Exmodifier.LOGGER.info(modifierEntry.getId());
-                weightedUtilmap.put(modifierEntry.getId(), 1.0f);
-            }
-
-            Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap =new  HashMap<>( Map.of(
-                    ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
-                    ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
-                    ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
-                    ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
-                    ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
-                    ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
-                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
-            ));
-
-            for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeSlotMap.entrySet()) {
-                ModifierEntry.Type type = entry.getKey();
-                EquipmentSlot slot = entry.getValue();
-                if (!over && isValidForType(itemStack, type)) {
-
-
-                    if (entry.getKey() == ModifierEntry.Type.ARMOR) {  // ARMOR type, set the slot based on the item
-                        slot = ((ArmorItem) itemStack.getItem()).getEquipmentSlot();
-                    }
-                    LOGGER.debug("RandomEntry: " + type + " " + slot);
-                    RandomEntry(itemStack, new WeightedUtil<String>(weightedUtilmap), slot, weightedUtilmap.size());
-                    itemStack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
-                            itemStack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
-                    over = true;
-                }
-            }
-        }
+//        public static void AddEntryToItem (ItemStack itemStack,String e){
+//
+//            List<ModifierEntry> modifierEntries = ModifierHandle.getEntrysFromItemStack(itemStack);
+//
+//            ModifierHandle.CommonEvent.clearEntry(itemStack);
+//
+//            ModifierEntry modifier = ModifierHandle.modifierEntryMap.get(e);
+//            if (!modifierEntries.contains(modifier)) modifierEntries.add(modifier);
+//            boolean over = false;
+//            Map<String, Float> weightedUtilmap = new HashMap<>();
+//            for (ModifierEntry modifierEntry : modifierEntries.stream().filter(Objects::nonNull).toList()) {
+//                Exmodifier.LOGGER.info(modifierEntry.getId());
+//                weightedUtilmap.put(modifierEntry.getId(), 1.0f);
+//            }
+//
+//            Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap =new  HashMap<>( Map.of(
+//                    ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
+//                    ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
+//                    ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
+//                    ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
+//                    ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
+//                    ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
+//                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
+//                    ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
+//                    ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
+//                    ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
+//            ));
+//
+//            for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeSlotMap.entrySet()) {
+//                ModifierEntry.Type type = entry.getKey();
+//                EquipmentSlot slot = entry.getValue();
+//                if (!over && isValidForType(itemStack, type)) {
+//
+//
+//                    if (entry.getKey() == ModifierEntry.Type.ARMOR) {  // ARMOR type, set the slot based on the item
+//                        slot = ((ArmorItem) itemStack.getItem()).getEquipmentSlot();
+//                    }
+//                    LOGGER.debug("RandomEntry: " + type + " " + slot);
+//                    RandomEntry(itemStack, new WeightedUtil<String>(weightedUtilmap), slot, weightedUtilmap.size());
+//                    itemStack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
+//                            itemStack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
+//                    over = true;
+//                }
+//            }
+//        }
         public static void applyModifiersCurios(ItemStack stack, List<ModifierAttriGether> attriGethers, List<String> CuriosSlots) {
 //            Map<String, Multimap<Attribute, AttributeModifier>> attriMap = new HashMap<>();
 //            for (String CuriosSlot : CuriosSlots) {
@@ -497,7 +488,7 @@ public class ModifierHandle {
             }
         }
         public static void RandomEntryCurios(ItemStack stack, int rarity, int refreshnumber,String washItem) {
-            if (stack.getTag() !=null&&stack.getTag().getInt("exmodifier_armor_modifier_applied") >0)return;
+            if (stack.getTag() !=null&&ModifierEntryHelper.of(stack).getModifierEntriesSize()>0)return;
             if (stack.getTag()!=null) {
                 stack.getTag().remove("wash_item");
                 stack.getTag().remove("modifier_refresh_rarity");
@@ -525,8 +516,8 @@ public class ModifierHandle {
             );
 
             RandomEntryCurios(stack, weightedUtil, curiosType, refreshnumber);
-            stack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
-                    stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
+//            stack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
+//                    stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
 
         }
 
@@ -548,54 +539,7 @@ public class ModifierHandle {
 
             return false;
         }
-        public static void clearEntry(ItemStack stack){
-            if (stack.getTag()==null)return;
-            if (stack.getTag().getInt("exmodifier_armor_modifier_applied")==0)return;
-            ModifierEntry.Type type = ModifierEntry.getType(stack);
-            List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
-            List<ModifierEntry> hasAttriGether = getEntrysFromItemStack(stack);
-            for (int i = 0; i < hasAttriGether.size(); i++)
-            {
-                ModifierEntry modifierAttriGether = hasAttriGether.get(i);
-                for (ModifierAttriGether modifierAttriGether1 : modifierAttriGether.attriGether) {
-                    EquipmentSlot slot = modifierAttriGether1.slot;
-                    if (modifierAttriGether1.IsAutoEquipmentSlot){
-                        slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(stack));
-                    }
-                    if (curiosType.isEmpty()) ItemAttrUtil.removeAttributeModifierNoAmout(stack, modifierAttriGether1.getAttribute(), modifierAttriGether1.getModifier(), slot);
-                    else {
-                        for (String curioType : curiosType)
-                        {
-                            if (ForgeRegistries.ATTRIBUTES.containsValue(modifierAttriGether1.getAttribute())&&ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute())!=null) CuriosUtil.removeAttributeModifier(stack,ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute()).toString(), modifierAttriGether1.getModifier().getAmount(),modifierAttriGether1.getModifier().getOperation().toValue(), curioType);
-                        }
-                    }
-                    stack.getOrCreateTag().remove("exmodifier_armor_modifier_applied"+i);
-                }
 
-            }
-            for (EquipmentSlot equipmentSlot : EquipmentSlot.values()){
-                Multimap<Attribute, AttributeModifier> attributeModifiers = stack.getAttributeModifiers(equipmentSlot);
-                if (attributeModifiers.isEmpty())attributeModifiers.clear();
-            }
-//            for (ModifierEntry modifierAttriGether : modifierEntryMap.values()) {
-//                String id =stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied"+0);
-//                for (int i = 1; !id.isEmpty(); i++) {
-//                 //   Exmodifier.LOGGER.debug("Remove id" + id);
-//                    if (id.equals(modifierAttriGether.getId())) {
-//                        hasAttriGether.add(modifierAttriGether);
-//                        for (ModifierAttriGether modifierAttriGether1 : modifierAttriGether.attriGether) {
-//                            EquipmentSlot slot = modifierAttriGether1.slot;
-//                            if (modifierAttriGether1.IsAutoEquipmentSlot){
-//                                slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(stack));
-//                            }
-//                            ItemAttrUtil.removeAttributeModifierNoAmout(stack, modifierAttriGether1.getAttribute(), modifierAttriGether1.getModifier(), slot);
-//                        }
-//                        stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied"+(i-1),"");
-//                    }
-//                    id = stack.getOrCreateTag().getString("exmodifier_armor_modifier_applied"+i);
-//                }
-//            }
-        }
 
 //        @SubscribeEvent
 //        public static void atReload(AddReloadListenerEvent eventC) throws IOException {

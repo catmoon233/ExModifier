@@ -5,6 +5,8 @@ import dev.shadowsoffire.placebo.events.ItemUseEvent;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.helper.ItemInfo;
+import net.exmo.exmodifier.content.helper.ItemLevelHelper;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.suit.ExSuit;
@@ -61,7 +63,6 @@ import static net.exmo.exmodifier.config.refresh_time;
 import static net.exmo.exmodifier.content.event.MainEvent.CommonEvent.init;
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.ItemLevelRefresh;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
-import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEntrysFromItemStack;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEntry;
 import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.TAKE;
 import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.WEAR;
@@ -86,7 +87,7 @@ public class MainEvent {
         @SubscribeEvent
         public static void TooltipChange(ItemTooltipEvent event) {
             if (event.getItemStack().getTag()!= null){
-            if (!CuriosUtil.isCuriosItem(event.getItemStack())) {
+           // if (!CuriosUtil.isCuriosItem(event.getItemStack())) {
 
                 List<Component> toolTip = CommonEvent.ItemToolTipsChange(event.getItemStack(), event.getToolTip(), event.getEntity());
                 if (toolTip.isEmpty())return;
@@ -98,7 +99,7 @@ public class MainEvent {
                 }
                 event.getToolTip().clear();
                 event.getToolTip().addAll(tooo);
-            }
+         //   }
 
                 }
         }
@@ -112,14 +113,17 @@ public class MainEvent {
             for (String s : UnMatchingModIDs){
                 if (ForgeRegistries.ITEMS.getKey(stack.getItem()).toString().startsWith(s))return;
             }
-            if (stack.getTag() == null || (!stack.getTag().contains("exmodifier_armor_modifier_applied"))) {
+            ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(stack);
+            if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize()<=0) {
                 RandomEntryCurios(stack, 0, refresh_time,"none");
             }
             if (stack.getTag() != null) {
                 if (stack.getTag().contains("modifier_refresh")) {
                     if (stack.getTag().getBoolean("modifier_refresh")) {
-                        stack.getTag().putBoolean("modifier_refresh", false);
-                        stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
+                        stack.getTag().remove("modifier_refresh");
+                        stack.getTag().remove("UNKNOWN");
+
+                        //  stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
 
                         RandomEntryCurios(stack, stack.getOrCreateTag().getInt("modifier_refresh_rarity"), stack.getOrCreateTag().getInt("modifier_refresh_add"),stack.getTag().getString("wash_item"));
                     }
@@ -127,53 +131,55 @@ public class MainEvent {
             }
             SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
         }
-@SubscribeEvent
-        public static void CuriosTooltipChange(RenderTooltipEvent.GatherComponents event) {
-            ItemStack stack = event.getItemStack();
-            if (stack.getTag()==null)return;
-            if (CuriosUtil.isCuriosItem(stack)) {
-                boolean addf = false;
-                for (ModifierEntry modifierEntry : getEntrysFromItemStack(stack)) {
-                    if (stack.getTag().getString("exmodifier_armor_modifier_applied0").equals("UNKNOWN")) {
-                        event.getTooltipElements().add(Either.left(Component.translatable("null")));
-                        event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry.UNKNOWN")));
-                    } else {
-                        if (!addf) {
-                            addf = true;
-                            event.getTooltipElements().add(Either.left(Component.translatable("null")));
-                            event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry")));
-                            for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
-                                    .toList()) {
-                                if (suit.visible) {
-
-                                    event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry.suit." + suit.id)));
-                                    if (!suit.LocalDescription.isEmpty())
-                                        event.getTooltipElements().add(Either.left(Component.translatable(suit.LocalDescription)));
-
-                                    //.append(Component.translatable("modifiler.entry.suit.color"))
-                                }
-                            }
-                        }
-                        event.getTooltipElements().add(Either.left((Component.translatable("modifiler.entry." + modifierEntry.id.substring(2)))));
-
-                    }
-                }
-            }
-        }
+//@SubscribeEvent
+//        public static void CuriosTooltipChange(RenderTooltipEvent.GatherComponents event) {
+//            ItemStack stack = event.getItemStack();
+//            if (stack.getTag()==null)return;
+//            if (CuriosUtil.isCuriosItem(stack)) {
+//                boolean addf = false;
+//                for (ModifierEntry modifierEntry : new ModifierEntryHelper(stack).getModifierEntriesB()) {
+//                    if (stack.getTag().getBoolean("UNKNOWN")) {
+//                        event.getTooltipElements().add(Either.left(Component.translatable("null")));
+//                        event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry.UNKNOWN")));
+//                    } else {
+//                        if (!addf) {
+//                            addf = true;
+//                            event.getTooltipElements().add(Either.left(Component.translatable("null")));
+//                            event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry")));
+//                            for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
+//                                    .toList()) {
+//                                if (suit.visible) {
+//
+//                                    event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry.suit." + suit.id)));
+//                                    if (!suit.LocalDescription.isEmpty())
+//                                        event.getTooltipElements().add(Either.left(Component.translatable(suit.LocalDescription)));
+//
+//                                    //.append(Component.translatable("modifiler.entry.suit.color"))
+//                                }
+//                            }
+//                        }
+//                        event.getTooltipElements().add(Either.left((Component.translatable("modifiler.entry." + modifierEntry.id.substring(2)))));
+//
+//                    }
+//                }
+//            }
+//        }
 
         public static List<Component> ItemToolTipsChange(ItemStack stack, List<Component> tooltip, Player player) {
             if (stack.getTag()!=null){
-                if (stack.getTag().getInt("exmodifier_armor_modifier_applied") > 0) {
+                ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(stack);
+                if (stack.getTag().getBoolean("UNKNOWN")) {
+                    tooltip.add(Component.translatable("null"));
+                    tooltip.add(Component.translatable("modifiler.entry.UNKNOWN"));
+                } else {
+                    if (modifierEntryHelper.getModifierEntriesSize()>0) {
 
-                    if (stack.getTag().getString("exmodifier_armor_modifier_applied0").equals("UNKNOWN")) {
-                        tooltip.add(Component.translatable("null"));
-                        tooltip.add(Component.translatable("modifiler.entry.UNKNOWN"));
-                    } else {
+
 
                         for (ModifierInstant modifierEntry : new ItemInfo(stack).getModifierEntryHelper().getModifierEntries()) {
                             // Exmodifier.LOGGER.debug("modifier id:" + modifierEntry.id);
                             if (!config.compact_tooltip) tooltip.add(Component.translatable("null"));
-                            tooltip.addAll(generateEntryTooltip(modifierEntry.getModifierEntry(), player, stack));
+                            tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack));
 
                         }
                     }
@@ -376,14 +382,17 @@ public class MainEvent {
 
 
                     ItemStack stack = event.getTo();
-
+                    ItemInfo itemInfo = ItemInfo.of(stack);
+                    ModifierEntryHelper modifierEntryHelper = itemInfo.getModifierEntryHelper();
+                    ModifierEntryHelper.moveOldEntry(stack);
+                    ItemLevelHelper.moveOldLevel(stack);
                     String string = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
                     for (String s : UnMatchingModIDs){
                         if (string.startsWith(s))return;
                     }
                     if (itemsDefaultEntry.containsKey(string)){
                         for (ModifierEntry modifierEntry:itemsDefaultEntry.get(string)){
-                            ModifierHandle.CommonEvent.AddEntryToItem(stack,modifierEntry.id);
+                            new ModifierEntryHelper(stack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)),true);
                         }
                     }
                    // Exmodifier.LOGGER.debug(eventC.getFrom().toString());
@@ -393,14 +402,16 @@ public class MainEvent {
 //                            player.getPersistentData().putBoolean("LoginGamea", false);
 //                            return;
 //                        }
-                        if (stack.getTag() == null || (!stack.getTag().contains("exmodifier_armor_modifier_applied"))) {
+                        if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize()<=0) {
                             RandomEntryCurios(stack, 0, refresh_time, "none");
                         }
                         if (stack.getTag() != null) {
                             if (stack.getTag().contains("modifier_refresh")) {
                                 if (stack.getTag().getBoolean("modifier_refresh")) {
-                                    stack.getTag().putBoolean("modifier_refresh", false);
-                                    stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
+                                    stack.getTag().remove("modifier_refresh");
+                                    stack.getTag().remove("UNKNOWN");
+
+                                    //  stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
 
                                     RandomEntryCurios(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"),stack.getTag().getString("wash_item"));
                                 }
@@ -409,7 +420,7 @@ public class MainEvent {
                     }else {
 
                         if (hasAttr(stack)||stack.getItem() instanceof ShieldItem || stack.getItem() instanceof  BowItem ||(stack.getUseAnimation() == UseAnim.BOW && stack.getItem().getMaxStackSize(stack) == 1)) {
-                            if (stack.getTag() == null || (!stack.getTag().contains("exmodifier_armor_modifier_applied"))) {
+                            if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize()<=0) {
                                 RandomEntry(stack, 0, refresh_time,"none");
                                 if (stack.getTag() != null) {
 //                                    if (stack.getTag().contains("exmodifier_armor_modifier_applied")) {
@@ -424,8 +435,9 @@ public class MainEvent {
                             if (stack.getTag() != null) {
                                 if (stack.getTag().contains("modifier_refresh")) {
                                     if (stack.getTag().getBoolean("modifier_refresh")) {
-                                        stack.getTag().putBoolean("modifier_refresh", false);
-                                        stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
+                                        stack.getTag().remove("modifier_refresh");
+                                        stack.getTag().remove("UNKNOWN");
+                                     //   stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
 
                                         RandomEntry(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"),stack.getTag().getString("wash_item"));
                                     }
@@ -464,13 +476,15 @@ public class MainEvent {
           //  if (!hasAttr(stack)) return false;
 
             CompoundTag tag = stack.getTag();
-            if (tag == null || tag.getInt("exmodifier_armor_modifier_applied") <= 0) return false;
+            ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(stack);
+            if (tag == null || modifierEntryHelper.getModifierEntriesSize()<=0) return false;
 
             int effectMultiplier = effectType == WEAR ? 1 : -1;
-
-            for (int i = 0; ; i++) {
-                String modifier = tag.getString("exmodifier_armor_modifier_applied" + i);
-                if (modifier.isEmpty()) break;
+            List<ModifierEntry> modifierEntries = modifierEntryHelper.getModifierEntriesB();
+            if (modifierEntries.isEmpty()) return false;
+            for (int i = 0; i< modifierEntries.size(); i++) {
+                String modifier = modifierEntries.get(i).id;
+                if (modifier.isEmpty()) continue;
                 List<String> founds = new ArrayList<>();
                 List<ExSuit> suits = ExSuitHandle.FindExSuit(modifier);
                 for (ExSuit suit : suits) {

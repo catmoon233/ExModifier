@@ -28,6 +28,7 @@ public class ExHelper {
         nbt.put(EXMO_NBT,new CompoundTag());
     }
     public boolean ValidMainNbt(){
+        if (nbt==null)return false;
         return nbt.contains(EXMO_NBT);
     }
     public CompoundTag getMainNbt(){

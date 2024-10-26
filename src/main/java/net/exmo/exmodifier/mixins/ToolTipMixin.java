@@ -3,6 +3,8 @@ package net.exmo.exmodifier.mixins;
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.exmo.exmodifier.content.event.MainEvent;
+import net.exmo.exmodifier.content.helper.ItemLevelHelper;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevel;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
@@ -21,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEntrysFromItemStack;
+
 
 @Mixin(ItemStack.class)
 public abstract class ToolTipMixin {
@@ -29,7 +31,7 @@ public abstract class ToolTipMixin {
     private Multimap<Attribute, AttributeModifier> changev(Multimap<Attribute, AttributeModifier> multimap) {
         ItemStack stack = (ItemStack) (Object) this;
         if (stack.getTag()==null)return multimap;
-        List<ModifierEntry> entrys = getEntrysFromItemStack(stack);
+        List<ModifierEntry> entrys = new ModifierEntryHelper(stack).getModifierEntriesB();
         List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
         for (ModifierEntry entry : entrys) {
@@ -37,7 +39,7 @@ public abstract class ToolTipMixin {
                 attriGethers.addAll(entry.attriGether);
             }
         }
-        for (ItemLevel entry : ItemLevelHandle.getItemLevels(stack)) {
+        for (ItemLevel entry : ItemLevelHelper.of(stack).getItemLevels()) {
             if (entry != null) {
                 attriGethers.addAll(entry.attriGethers);
             }

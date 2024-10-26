@@ -95,7 +95,7 @@ public class ModifierEntry {
                return true;
         }
         if (type ==Type.CURIOS)
-            return CuriosUtil.isCuriosItem(stack);
+            return CuriosUtil.isCuriosItem2(stack);
         return false;
     }
     public static List<Component> GenerateTooltip(List<ModifierAttriGether> attriGethers, ItemStack itemStack) {

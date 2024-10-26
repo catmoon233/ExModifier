@@ -10,12 +10,24 @@ public class ItemInfo {
     public ItemInfo(ItemStack itemStack){
         this.itemStack = itemStack;
     }
+    public static ItemInfo of(ItemStack itemStack){
+        return new ItemInfo(itemStack);
+    }
 
     public ModifierEntryHelper getModifierEntryHelper() {
         if (modifierEntryHelper==null) modifierEntryHelper = new ModifierEntryHelper(itemStack);
         return modifierEntryHelper;
     }
-    public void reloadModifierEntryHelper(){
+    public ModifierEntryHelper reloadModifierEntryHelper(){
         modifierEntryHelper = new ModifierEntryHelper(itemStack);
+        return modifierEntryHelper;
+    }
+    public ItemLevelHelper getItemLevelHelper() {
+        if (itemLevelHelper==null) itemLevelHelper = new ItemLevelHelper(itemStack);
+        return itemLevelHelper;
+    }
+    public ItemLevelHelper reloadItemLevelHelper(){
+        itemLevelHelper = new ItemLevelHelper(itemStack);
+        return itemLevelHelper;
     }
 }

@@ -15,6 +15,10 @@
 package net.exmo.exmodifier.util;
 
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
+import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
+import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.events.ExCuriosAttributeTooltipEvent;
 import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -22,6 +26,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -54,12 +59,35 @@ public class AttributeCuriosHandle {
         public static void RenderCustomCuriosAttributes(ItemTooltipEvent event){
             List<AttrGether> attributeModifiers = CuriosUtil.getAttributeModifiersAffix(event.getItemStack());
             if (!attributeModifiers.isEmpty()){
-                event.getToolTip().add(Component.literal(""));
-                event.getToolTip().add(Component.translatable("attribute.curios.tooltip").withStyle(ChatFormatting.GOLD));
-                for (AttrGether attrGether : attributeModifiers) {
-                    event.getToolTip().add(attrGether.generateTooltipBase());
+                List<Component> adds = new ArrayList<>();
+                adds.add(Component.literal(""));
+                adds.add(Component.translatable("attribute.curios.tooltip").withStyle(ChatFormatting.GOLD));
+
+                ExCuriosAttributeTooltipEvent event1 = new ExCuriosAttributeTooltipEvent(event.getEntity(), event.getItemStack(), event.getToolTip(), adds,attributeModifiers);
+                MinecraftForge.EVENT_BUS.post(event1);
+                for (AttrGether attrGether : event1.attributeModifiers) {
+                    adds.add(attrGether.generateTooltipBase());
+                }
+                List<Component> tooltipADD = event1.tooltipADD;
+                if (tooltipADD.size()>2) event.getToolTip().addAll(tooltipADD);
+
+            }
+        }
+        @SubscribeEvent
+        public static void CuriosEntryAttributeTooltip(ExCuriosAttributeTooltipEvent event){
+            List<ModifierEntry> entrys = new ModifierEntryHelper(event.itemStack).getModifierEntriesB();
+            for (ModifierEntry entry : entrys) {
+                if (entry != null) {
+                    List<AttrGether> attributeModifiers = event.attributeModifiers;
+                    List<ModifierAttriGether> attriGether1 = entry.attriGether;
+                    for ( ModifierAttriGether attriGether : attriGether1){
+                     event.attributeModifiers.removeAll(attributeModifiers.stream().filter(attrGether1 -> attrGether1.attributeModifier.getName().equals(attriGether.getModifier().getName())).toList());
+
+                    }
+
                 }
             }
+
         }
 
         @SubscribeEvent

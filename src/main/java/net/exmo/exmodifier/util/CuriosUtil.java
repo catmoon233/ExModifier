@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.util;
 
 import com.google.common.collect.Multimap;
+import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -72,7 +73,8 @@ public class CuriosUtil {
     }
     public static List<String> getSlotsFromItemstack(ItemStack itemStack) {
 //        if (CuriosUtil.isCuriosItem(itemStack)) {
-            Set<String> curioTags = CuriosApi.getItemStackSlots(itemStack).keySet();
+            Set<String> curioTags = CuriosApi.getItemStackSlots(itemStack,false).keySet();
+//            for (String s : curioTags) Exmodifier.LOGGER.debug("curio slot: "+s);
             return new ArrayList<>(curioTags);
 //        }
 
@@ -80,7 +82,10 @@ public class CuriosUtil {
         }
 
     public static boolean isCuriosItem(ItemStack itemStack){
-        return CuriosApi.getCuriosHelper().getCurio(itemStack).isPresent();
+        return CuriosApi.getCurio(itemStack).isPresent();
+    }
+    public static boolean isCuriosItem2(ItemStack itemStack){
+        return !getSlotsFromItemstack(itemStack).isEmpty();
     }
     public static void addAttributeModifier(ItemStack itemStack, AttriGether attriGether, String slot){
         CuriosUtil.addAttributeModifier(itemStack, ForgeRegistries.ATTRIBUTES.getKey(attriGether.attribute).toString(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation().toValue(), slot);
@@ -89,7 +94,7 @@ public class CuriosUtil {
         if (attriGether.attribute!=null)
         {
             {
-                CuriosApi.getCuriosHelper().addModifier(itemStack, attriGether.attribute,attriGether.modifier.getName(), attriGether.modifier.getId(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation(),slot);
+                CuriosApi.addModifier(itemStack, attriGether.attribute,attriGether.modifier.getName(), attriGether.modifier.getId(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation(),slot);
             }
         }
     }

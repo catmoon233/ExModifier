@@ -9,6 +9,7 @@ import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.events.ExRefreshEvent;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -115,18 +116,20 @@ public abstract class SmiMixin extends ItemCombinerMenu {
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
 
 
-            p_39791_.getOrCreateTag().putBoolean("modifier_refresh", false);
-            p_39791_.getOrCreateTag().putInt("exmodifier_armor_modifier_applied", 0);
+            CompoundTag orCreateTag = p_39791_.getOrCreateTag();
+            orCreateTag.putBoolean("modifier_refresh", false);
+            //orCreateTag.putInt("exmodifier_armor_modifier_applied", 0);
+            orCreateTag.putBoolean("UNKNOWN",false);
 
             if (p_39790_.level().isClientSide)return;
             List<String> curios = CuriosUtil.getSlotsFromItemstack(p_39791_);
-            MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, p_39791_.getOrCreateTag().getInt("modifier_refresh_add"), p_39791_.getOrCreateTag().getInt("modifier_refresh_rarity"), p_39791_.getOrCreateTag().getString("wash_item")));
-            if (curios.isEmpty()) ModifierHandle.CommonEvent.RandomEntry(p_39791_, p_39791_.getOrCreateTag().getInt("modifier_refresh_rarity"), p_39791_.getOrCreateTag().getInt("modifier_refresh_add"), p_39791_.getOrCreateTag().getString("wash_item"));
-            else   RandomEntryCurios(p_39791_, p_39791_.getOrCreateTag().getInt("modifier_refresh_rarity"), p_39791_.getOrCreateTag().getInt("modifier_refresh_add"),p_39791_.getOrCreateTag().getString("wash_item"));
-            p_39791_.getOrCreateTag().remove("modifier_refresh_rarity");
-            p_39791_.getOrCreateTag().remove("wash_item");
-            p_39791_.getOrCreateTag().remove("modifier_refresh_add");
-            this.onTake(p_39790_, p_39791_, ci);
+            MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getString("wash_item")));
+            if (curios.isEmpty()) ModifierHandle.CommonEvent.RandomEntry(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
+            else   RandomEntryCurios(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
+            orCreateTag.remove("modifier_refresh_rarity");
+            orCreateTag.remove("wash_item");
+            orCreateTag.remove("modifier_refresh_add");
+
         }
     }
 
@@ -135,37 +138,43 @@ public abstract class SmiMixin extends ItemCombinerMenu {
         ItemStack WashItem = this.inputSlots.getItem(1);
         ItemStack item = this.inputSlots.getItem(0);
         boolean isFound = false;
+        ItemInfo itemInfo = new ItemInfo(item);
+        if (item.isEmpty())return;
+        ModifierEntryHelper modifierEntryHelper = itemInfo.getModifierEntryHelper();
         for (WashingMaterials washingMaterials : ModifierHandle.materialsList){
 
             if (washingMaterials.item.equals(WashItem.getItem())) {
                 if (WashItem.getCount() >= washingMaterials.NeedCount) {
                     player.getPersistentData().putBoolean("modifier_refresh_not_enough", false);
-                    if (item.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") > 0 || config.refresh_time == 0) {
+                    if (modifierEntryHelper.getModifierEntriesSize()>0 || config.refresh_time == 0) {
                         if (washingMaterials.OnlyTypes.isEmpty() || ModifierEntry.containItemTypes(item, washingMaterials.OnlyTypes)) {
 
                             if (washingMaterials.OnlyItems == null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(item.getItem()).toString())) {
                                 if (washingMaterials.OnlyTags == null || washingMaterials.containTag(item)) {
                                     ci.cancel();
                                     ItemStack input = item.copy();
-                                    ModifierHandle.CommonEvent.clearEntry(input);
+                                    itemInfo = new ItemInfo(input);
+                                    modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
+                                    modifierEntryHelper.removeAllEntry(true);
+                                    //ModifierHandle.CommonEvent.clearEntry(input);
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
-                                    input.getOrCreateTag().putInt("entryitem_add", 0);
-
-                                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied0", "UNKNOWN");
-                                    input.getOrCreateTag().putInt("NeedCount", washingMaterials.NeedCount);
+                                    CompoundTag orCreateTag = input.getOrCreateTag();
+                                    orCreateTag.putInt("entryitem_add", 0);
+                                    orCreateTag.putBoolean("UNKNOWN",true);
+                                    orCreateTag.putInt("NeedCount", washingMaterials.NeedCount);
                                     //input.getOrCreateTag().putDouble("CostExp", washingMaterials.CostExp);
-                                    this.cost.set((int) washingMaterials.CostExp);
-                                    input.getOrCreateTag().putBoolean("modifier_refresh", true);
-                                    input.getOrCreateTag().putBoolean("can_add_max", false);
+                                    this.cost.set((int) washingMaterials.CostExp + this.cost.get());
+                                    orCreateTag.putBoolean("modifier_refresh", true);
+                                    orCreateTag.putBoolean("can_add_max", false);
                                     if (washingMaterials.MinRandomTime * washingMaterials.MaxRandomTime == 0) {
-                                        input.getOrCreateTag().putInt("modifier_refresh_rarity", washingMaterials.rarity);
+                                        orCreateTag.putInt("modifier_refresh_rarity", washingMaterials.rarity);
                                     } else {
                                         Random random = new Random();
-                                        input.getOrCreateTag().putInt("modifier_refresh_rarity", washingMaterials.rarity + random.nextInt(washingMaterials.MaxRandomTime - washingMaterials.MinRandomTime) + washingMaterials.MinRandomTime);
+                                        orCreateTag.putInt("modifier_refresh_rarity", washingMaterials.rarity + random.nextInt(washingMaterials.MaxRandomTime - washingMaterials.MinRandomTime) + washingMaterials.MinRandomTime);
                                     }
-                                    input.getOrCreateTag().putString("wash_item", washingMaterials.ItemId);
-                                    input.getOrCreateTag().putInt("modifier_refresh_add", washingMaterials.additionEntry);
+                                    orCreateTag.putString("wash_item", washingMaterials.ItemId);
+                                    orCreateTag.putInt("modifier_refresh_add", washingMaterials.additionEntry);
                                     this.resultSlots.setItem(0, input);
                                     isFound = true;
 
@@ -186,16 +195,17 @@ public abstract class SmiMixin extends ItemCombinerMenu {
                 if ( ModifierEntry.containItemType(item, ModifierEntry.StringToType(WashItem.getOrCreateTag().getString("modifier_type")))) {
 
                     //  Exmodifier.LOGGER.debug("WashItem is EntryItem");
-                    int entryitemAdd = input.getOrCreateTag().getInt("entryitem_add");
+                    CompoundTag orCreateTag = input.getOrCreateTag();
+                    int entryitemAdd = orCreateTag.getInt("entryitem_add");
                     if (entryitemAdd < config.canAddEntry) {
                         ci.cancel();
                         if (entryitemAdd + 1 == config.canAddEntry)
-                            input.getOrCreateTag().putBoolean("can_add_max", true);
-                        input.getOrCreateTag().putInt("entryitem_add", entryitemAdd + 1);
-                        input.getOrCreateTag().putInt("NeedCount", 1);
-                        input.getOrCreateTag().putBoolean("entry_item_add", true);
-                        ItemInfo itemInfo = new ItemInfo(input);
-                        ModifierEntryHelper modifierEntryHelper = itemInfo.getModifierEntryHelper();
+                            orCreateTag.putBoolean("can_add_max", true);
+                        orCreateTag.putInt("entryitem_add", entryitemAdd + 1);
+                        orCreateTag.putInt("NeedCount", 1);
+                        orCreateTag.putBoolean("entry_item_add", true);
+                        itemInfo = new ItemInfo(input);
+                       modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
                         modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(WashItem.getOrCreateTag().getString("modifier_id")),1),true);
                         this.resultSlots.setItem(0, input);
                     }

@@ -6,6 +6,15 @@ public class ModifierInstant {
     private ModifierEntry modifierEntry;
     private int level;
     private CompoundTag data;
+    public static ModifierInstant of (ModifierEntry modifierEntry, int level, CompoundTag data) {
+        return new ModifierInstant(modifierEntry,level).setData(data);
+    }
+    public static ModifierInstant of (ModifierEntry modifierEntry) {
+        return new ModifierInstant(modifierEntry);
+    }
+    public static ModifierInstant of (ModifierEntry modifierEntry, int level) {
+        return new ModifierInstant(modifierEntry,level);
+    }
     public ModifierInstant(ModifierEntry modifierEntry, int level) {
         this.modifierEntry = modifierEntry;
         this.level = level;
