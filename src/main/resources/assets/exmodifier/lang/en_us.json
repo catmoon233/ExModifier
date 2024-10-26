@@ -22,6 +22,8 @@
   "modifiler.entry.only_items": "Only Items:",
   "modifiler.entry.only_tags": "Only Tags:",
   "modifiler.entry.need_fresh_value": "Need fresh value:",
+  "attribute.exmodifier.dig_speed": "dig speed",
+
   "modifiler.entry.only_has_this_entry": "Only has this Entry in item",
   "modifiler.entry.weight": "weight:",
   "modifiler.entry.id": "Entry id:",

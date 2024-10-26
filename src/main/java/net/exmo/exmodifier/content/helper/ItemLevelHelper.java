@@ -118,7 +118,7 @@ public class ItemLevelHelper extends ExHelper {
     {
         List<ItemLevel> list = new java.util.ArrayList<>();
         for (int i = 0; i < getItemLevelNbt().size(); i++){
-            list.add(ItemLevels.get(getItemLevelNbt().getCompound(i).getString(ITEM_LEVEL)));
+            list.add(ItemLevels.get(getItemLevelNbt().getCompound(i).getString(ITEM_LEVEL_ID)));
         }
         return list;
     }

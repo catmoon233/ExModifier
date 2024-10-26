@@ -92,7 +92,8 @@ public class ItemLevelHandle {
                                 .filter(e -> (e.getValue().getOnlyItemIds().isEmpty() ||e.getValue().getOnlyItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
 //                                .filter(e -> !e.getValue().cantSelect)
 //                                .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
-//                                .filter(e -> e.getValue().getOnlyItemTags().isEmpty() ||e.getValue().containTag(stack))
+                                .filter(e -> e.getValue().getOnlyItemTags().isEmpty() ||e.getValue().containTag(stack))
+                                .filter(e -> e.getValue().UnlessItemTags.isEmpty() ||e.getValue().unContainTag(stack))
 //                                .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
 //                                .filter(e -> {
 //                                    boolean hasWashItem = materialsList.stream()
@@ -135,42 +136,41 @@ public class ItemLevelHandle {
             Exmodifier.LOGGER.debug("ItemLevelRefresh: No Type And refresh ALL TYPE");
         }
     }
-    public static void ItemAddXpAuto(LivingEntity entity, List<EventParameter<?>> eventParameters,LivingEvent event1,String packname) {
+    public static void ItemAddXpAuto(LivingEntity entity, List<EventParameter<?>> eventParameters,String eventname) {
         if (entity==null)return;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack stack = entity.getItemBySlot(slot);
             if (stack.isEmpty())continue;
-            ItemAddXp(entity,stack, eventParameters,event1,packname);
+            ItemAddXp(entity,stack, eventParameters, eventname);
         }
 
 
 
     }
-    public static Boolean pdEntitySequence(LivingEntity e,LivingEvent event,int entitySequence){
-        if (event instanceof LivingHurtEvent lh){
-            if (entitySequence==0){
-                return lh.getEntity() == e;
-            }
-            if (entitySequence==1){
-                return lh.getSource().getEntity() == e;
-            }
-        }
-        return true ;
-    }
+//    public static Boolean pdEntitySequence(LivingEntity e,LivingEvent event,int entitySequence){
+//        if (event instanceof LivingHurtEvent lh){
+//            if (entitySequence==0){
+//                return lh.getEntity() == e;
+//            }
+//            if (entitySequence==1){
+//                return lh.getSource().getEntity() == e;
+//            }
+//        }
+//        return true ;
+//    }
 
-    public static void ItemAddXp(LivingEntity entity, ItemStack stack, List<EventParameter<?>> params, LivingEvent event1,String packname){
+    public static void ItemAddXp(LivingEntity entity, ItemStack stack, List<EventParameter<?>> params, String eventName){
         Exmodifier.LOGGER.debug("ItemLevelUp0: " + stack.serializeNBT());
         if (stack.getTag()==null)return;
         for (ItemLevelInstant il : ItemLevelHelper.of(stack).getItemLevelInstants()){
             if (il==null)continue;
             if (il.itemLevel==null)continue;
             // Exmodifier.LOGGER.debug("ItemLevelUp: " + il.id);
-            if ( packname.equals (il.itemLevel.getUpEvent())) {
+            if ( eventName.equalsIgnoreCase(il.itemLevel.getUpEvent())) {
                 //   Exmodifier.LOGGER.debug("ItemLevelUp1: " + il.id + " " + event1.getClass().getName());
-                if (pdEntitySequence(entity, event1, il.itemLevel.getEntitySequence())) {
                     //     Exmodifier.LOGGER.debug("ItemLevelUp2: " + il.id + " " + event1.getClass().getName());
                    new ItemInfo(stack).getItemLevelHelper().ItemAddXpM(stack, params, il, entity);
-                }
+
             }
         }
 
@@ -341,7 +341,6 @@ public class ItemLevelHandle {
         if(itemObject.has("UpEvent")){
             itemLevel.setUpEvent(itemObject.get("UpEvent").getAsString());
         }
-        itemLevel.setEntitySequence(itemObject.has("EntitySequence") ? itemObject.get("EntitySequence").getAsInt() : 0);
         if(itemObject.has("LevelExpression")){
             itemLevel.setLevelExpression(itemObject.get("LevelExpression").getAsString());
         }
@@ -366,6 +365,18 @@ public class ItemLevelHandle {
             itemLevel.setOnlyItemIds(new ArrayList<>());
             for (JsonElement itemId : itemObject.get("OnlyItemIds").getAsJsonArray()){
                 itemLevel.getOnlyItemIds().add(itemId.getAsString());
+            }
+        }
+        if (itemObject.has("UnlessItemIds")){
+            itemLevel.setUnlessItemIds(new ArrayList<>());
+            for (JsonElement itemId : itemObject.get("UnlessItemIds").getAsJsonArray()){
+                itemLevel.getUnlessItemIds().add(itemId.getAsString());
+            }
+        }
+        if (itemObject.has("UnlessItemTags")){
+            itemLevel.setUnlessItemTags(new ArrayList<>());
+            for (JsonElement itemId : itemObject.get("UnlessItemTags").getAsJsonArray()){
+                itemLevel.getUnlessItemTags().add(itemId.getAsString());
             }
         }
         if (itemObject.has("OnlyItemTags")){

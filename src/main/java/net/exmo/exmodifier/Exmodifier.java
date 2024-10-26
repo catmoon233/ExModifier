@@ -135,12 +135,12 @@ public class Exmodifier {
         long time_end = System.currentTimeMillis();
         LOGGER.info("Mod loaded in " + (time_end - time_start) + "ms");
         RegisterOther.EventAbout.init();
-    for (EventC<? extends LivingEvent> v : RegisterOther.EventAbout.EVENT_C_LIST.values()){
-
-            EventCI<? extends LivingEvent> eventCI = new EventCI<>(v);
-
-            MinecraftForge.EVENT_BUS.addListener(v.priority,true,v.clazz,eventCI::AddXp);
-        }
+//    for (EventC<? extends LivingEvent> v : RegisterOther.EventAbout.EVENT_C_LIST.values()){
+//
+//            EventCI<? extends LivingEvent> eventCI = new EventCI<>(v);
+//
+//            MinecraftForge.EVENT_BUS.addListener(v.priority,true,v.clazz,eventCI::AddXp);
+//        }
 //        for (EventC<? extends Event  > ec : ) {
 //
 //        }

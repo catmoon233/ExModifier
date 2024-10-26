@@ -20,10 +20,13 @@
   "modifiler.level.up": "§7由 §4%s§r §7升级至§r §a%s§r ↑§l%s",
   "attribute.exmodifier.dodge": "闪避几率",
   "attribute.exmodifier.hit_rate": "命中几率",
+  "attribute.exmodifier.dig_speed": "挖掘效率",
   "attribute.exmodifier.percent_heal": "攻击百分比回血",
   "attribute.exmodifier.arrow_base_damage": "基础弓箭伤害",
 
   "modifiler.level.ATweapon": "§6武器等级",
+  "modifiler.level.ATtool": "§6工具等级",
+  "modifiler.level.ARarmor": "§6护甲等级",
   "modifiler.entry.cant_select": "§4无法选中",
   "modifiler.level": "§7 ¦ §r§3等级",
   "modifiler.entry.suit.color": "§6",
@@ -164,5 +167,10 @@
   "modifiler.entry.W-attack6": "§7破损的",
   "modifiler.entry.W-attack7": "§7断裂的",
   "modifiler.entry.W-bow1": "§6阿波罗",
-  "modifiler.entry.W-god1": "§a神§b铸"
+  "modifiler.entry.W-god1": "§a神§b铸",
+  "modifiler.attri.¦": " §7¦ ",
+  "exmodifier.tooltip.error": "§4error",
+  "exmodifier.tooltip.error1": "§4error : no attribute found",
+  "exmodifier.tooltip.error2": "§4error : no attribute modifier found",
+  "exmodifier.tooltip.error3": "§7UNKNOWN ERROR"
 }

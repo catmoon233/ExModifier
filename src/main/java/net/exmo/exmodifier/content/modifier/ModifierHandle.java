@@ -321,9 +321,11 @@ public class ModifierHandle {
 
                                         return modifier.type == type &&
                                                 (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
+                                                (modifier.getUnlessItemIds().isEmpty() || !modifier.getUnlessItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
                                                 !modifier.cantSelect &&
                                                 (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
                                                 (modifier.OnlyTags.isEmpty() || modifier.containTag(stack)) &&
+                                                (modifier.getUnlessItemIds().isEmpty() || !modifier.unContainTag(stack))&&
                                                 (modifier.OnlyWashItems.isEmpty() || modifier.OnlyWashItems.contains(washItem) || hasWashItem);
                                     })
                                     .collect(Collectors.toMap(
@@ -701,6 +703,7 @@ public class ModifierHandle {
                     materials.OnlyItems.add(item.getAsString());
                 });
             }
+
             if (jsonObject.has("OnlyTypes")){
                 JsonArray OnlyItems = jsonObject.get("OnlyTypes").getAsJsonArray();
                 OnlyItems.forEach(item -> {
@@ -800,6 +803,18 @@ public class ModifierHandle {
             OnlyItems.forEach(item -> {
                 modifierEntry.OnlyWashItems.add(item.getAsString());
             });
+        }
+        if (itemObject.has("UnlessItemIds")){
+            modifierEntry.setUnlessItemIds(new ArrayList<>());
+            for (JsonElement itemId : itemObject.get("UnlessItemIds").getAsJsonArray()){
+                modifierEntry.getUnlessItemIds().add(itemId.getAsString());
+            }
+        }
+        if (itemObject.has("UnlessItemTags")){
+            modifierEntry.setUnlessItemTags(new ArrayList<>());
+            for (JsonElement itemId : itemObject.get("UnlessItemTags").getAsJsonArray()){
+                modifierEntry.getUnlessItemTags().add(itemId.getAsString());
+            }
         }
         if (itemObject.has("Commands")){
             JsonArray Commands = itemObject.get("Commands").getAsJsonArray();

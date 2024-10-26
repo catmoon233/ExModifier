@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import dev.shadowsoffire.placebo.events.ItemUseEvent;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.content.event.parameter.EventParameter;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ItemLevelHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
@@ -38,6 +39,8 @@ import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -284,10 +287,23 @@ public class MainEvent {
                 });
             });
         }
+
+        public static void addx(Player player, List<EventParameter<?>> eventParameters, String name){
+        ItemLevelHandle.ItemAddXpAuto(player, eventParameters, name);
+
+    }
         @SubscribeEvent
         public static void PlayerHurtAndAttack(LivingHurtEvent event){
-            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.ON_HURT);
+            if ((event.getEntity() instanceof Player player)){
+                    List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                    eventParameters.add(new EventParameter<>("amount", event.getAmount()));
+                    addx(player,eventParameters,"ON_HURT");
+                ApplySuitEffect(player, ExSuit.Trigger.ON_HURT);
+            }
             if ((event.getSource().getEntity() instanceof Player player)){
+                    List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                    eventParameters.add(new EventParameter<>("amount", event.getAmount()));
+                    addx(player,eventParameters,"ATTACK");
                 if (event.getEntity()!=null) player.getPersistentData().putString("hurtentity-uuid",event.getEntity().getUUID().toString());
                 ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
                 player.getPersistentData().putString("hurtentity-uuid","null");
@@ -295,19 +311,45 @@ public class MainEvent {
         }
         @SubscribeEvent
         public static void PlayerJump(LivingEvent.LivingJumpEvent event){
-            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.JUMP);
+            if ((event.getEntity() instanceof Player player)){
+                    List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                    addx(player,eventParameters,"JUMP");
+                ApplySuitEffect(player, ExSuit.Trigger.JUMP);
+            }
+        }
+        @SubscribeEvent
+        public static void Digger(BlockEvent.BreakEvent event){
+                 Player player = event.getPlayer();
+                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                addx(player,eventParameters,"DIG");
+                ApplySuitEffect(player, ExSuit.Trigger.DIG);
+
         }
         @SubscribeEvent
         public static void PlayerDeathAndKill(LivingDeathEvent event){
-            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.DIE);
-            if ((event.getSource().getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.KILL);
+            if ((event.getEntity() instanceof Player player)){
+                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                addx(player,eventParameters,"DIE");
+                ApplySuitEffect(player, ExSuit.Trigger.DIE);
+            }
+            if ((event.getSource().getEntity() instanceof Player player)){
+                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                addx(player,eventParameters,"KILL");
+                ApplySuitEffect(player, ExSuit.Trigger.KILL);
+            }
         }
         @SubscribeEvent
         public static void PlayerProjectile(ProjectileImpactEvent event){
-            if ((event.getEntity() instanceof Player player))ApplySuitEffect(player, ExSuit.Trigger.PROJECTILE_HIT);
+            if ((event.getEntity() instanceof Player player)){
+                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                addx(player,eventParameters,"PROJECTILE_HIT");
+                ApplySuitEffect(player, ExSuit.Trigger.PROJECTILE_HIT);
+            }
         }
         @SubscribeEvent
         public static void PlayerShoot(ArrowLooseEvent event){
+            List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+            addx(event.getEntity(),eventParameters,"SHOOT");
            ApplySuitEffect(event.getEntity(), ExSuit.Trigger.SHOOT);
         }
 //        @SubscribeEvent
@@ -317,28 +359,46 @@ public class MainEvent {
 //        }
         @SubscribeEvent
         public static void PlayerSwing(LivingSwingEvent event){
-            if ((event.getEntity() instanceof Player player))   ApplySuitEffect(player, ExSuit.Trigger.SWING);
+            if ((event.getEntity() instanceof Player player))   {
+                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                addx(player,eventParameters,"SWING");
+                ApplySuitEffect(player, ExSuit.Trigger.SWING);
+            }
         }
         @SubscribeEvent
         public static void PlayerCrit(CriticalHitEvent event){
-       ApplySuitEffect(event.getEntity(), ExSuit.Trigger.CRIT);
+            List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+            eventParameters.add(new EventParameter<>("amount", event.getDamageModifier()));
+            Player player = event.getEntity();
+            addx(player,eventParameters,"CRIT");
+       ApplySuitEffect(player, ExSuit.Trigger.CRIT);
         }
         @SubscribeEvent
         public static void PlayerDodge(ExDodgeEvent event){
             if ((event.getEntity() instanceof Player player))
-                if (event.result == ExDodgeEvent.resultType.MISS)
+                if (event.result == ExDodgeEvent.resultType.MISS) {
+                    List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                    addx(player,eventParameters,"DODGE");
                     ApplySuitEffect(player, ExSuit.Trigger.DODGE);
+                }
 
         }
         @SubscribeEvent
         public static void PlayerUseItem(LivingEntityUseItemEvent event){
-            if(event.getEntity() instanceof Player player)ApplySuitEffect(player,ExSuit.Trigger.ON_USE);
+            if(event.getEntity() instanceof Player player){
+                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                addx(player,eventParameters,"ON_USE");
+                ApplySuitEffect(player,ExSuit.Trigger.ON_USE);
+            }
         }
         @SubscribeEvent
         public static void PlayerSwim(LivingPlayerSwimEvent event){
-            ApplySuitEffect(event.player, ExSuit.Trigger.SWIM);
+            List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+            Player player = event.player;
+            addx(player,eventParameters,"SWIM");
+            ApplySuitEffect(player, ExSuit.Trigger.SWIM);
         }
-        //有没有可能我说的是events里的那种event
+        //
 //        @SubscribeEvent
 //        public static void PlayerEat(Item eventC){
 //            if (eventC.getEntity()==null)return;

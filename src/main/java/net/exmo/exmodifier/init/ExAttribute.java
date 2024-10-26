@@ -36,7 +36,9 @@ import java.util.Random;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ExAttribute {
     public static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(ForgeRegistries.ATTRIBUTES, Exmodifier.MODID);
+
     public static final RegistryObject<Attribute> ARROWBASEDAMAGE = ATTRIBUTES.register("arrow_base_damage", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".arrow_base_damage", 0, 0, 100000000)).setSyncable(true));
+    public static final RegistryObject<Attribute> DIG_SPEED = ATTRIBUTES.register("dig_speed", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dig_speed", 1, 0, 100000000)).setSyncable(true));
     public static final RegistryObject<Attribute> DODGE = ATTRIBUTES.register("dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dodge", 1, 0, 10000000)).setSyncable(true));
     public static final RegistryObject<Attribute> MAX_DODGE = ATTRIBUTES.register("max_dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".max_dodge", 1.85, 0, 10000000)).setSyncable(true));
     public static final RegistryObject<Attribute> HIT_RATE = ATTRIBUTES.register("hit_rate", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".hit_rate", 1, 0, 10000000)).setSyncable(true));
@@ -55,6 +57,7 @@ public class ExAttribute {
 
         entityTypes.forEach((e) -> {
             event.add(e, DODGE.get());
+            event.add(e, DIG_SPEED.get());
             event.add(e, INJURY_FREE.get());
             event.add(e, HIT_RATE.get());
             event.add(e, PERCENT_HEAL.get());

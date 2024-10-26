@@ -32,7 +32,24 @@ public class ModifierEntry {
     public Map<String,String> setting = new HashMap<>();
     public float weight;
     public boolean cantSelect = false;
+    public List<String> getUnlessItemTags() {
+        return UnlessItemTags;
+    }
 
+    public void setUnlessItemTags(List<String> unlessItemTags) {
+        UnlessItemTags = unlessItemTags;
+    }
+
+    public List<String> getUnlessItemIds() {
+        return UnlessItemIds;
+    }
+
+    public void setUnlessItemIds(List<String> unlessItemIds) {
+        UnlessItemIds = unlessItemIds;
+    }
+
+    public List<String> UnlessItemTags = new ArrayList<>();
+    public List<String> UnlessItemIds = new ArrayList<>();
     public static boolean containItemTypes(ItemStack item, List<Type> onlyTypes) {
         for (Type type : onlyTypes){
             if (containItemType(item, type)) return true;
@@ -320,6 +337,12 @@ public class ModifierEntry {
             if (stack.is(ItemTags.create(new ResourceLocation(tag))))return true;
         }
         return false;
+    }
+    public boolean unContainTag(ItemStack stack){
+        for (String tag : getUnlessItemTags() ){
+            if (stack.is(ItemTags.create(new ResourceLocation(tag))))return false;
+        }
+        return true;
     }
     public boolean isRandom = true;
     public boolean OnlyHasThisEntry = false;

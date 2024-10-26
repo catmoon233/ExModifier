@@ -14,13 +14,32 @@ public class ItemLevel
     public ModifierEntry.Type type;
     public boolean isCuriosEntry;
 
-    public int getEntitySequence() {
-        return EntitySequence;
+    public List<String> getUnlessItemTags() {
+        return UnlessItemTags;
     }
 
-    public void setEntitySequence(int entitySequence) {
-        EntitySequence = entitySequence;
+    public void setUnlessItemTags(List<String> unlessItemTags) {
+        UnlessItemTags = unlessItemTags;
     }
+
+    public List<String> getUnlessItemIds() {
+        return UnlessItemIds;
+    }
+
+    public void setUnlessItemIds(List<String> unlessItemIds) {
+        UnlessItemIds = unlessItemIds;
+    }
+    public boolean unContainTag(ItemStack stack){
+        for (String tag : getUnlessItemTags() ){
+            if (stack.is(ItemTags.create(new ResourceLocation(tag))))return false;
+        }
+        return true;
+    }
+    public List<String> UnlessItemTags = new ArrayList<>();
+    public List<String> UnlessItemIds = new ArrayList<>();
+
+
+
 
     public boolean isCuriosEntry() {
         return isCuriosEntry;
@@ -30,7 +49,6 @@ public class ItemLevel
         isCuriosEntry = curiosEntry;
     }
 
-    public int EntitySequence;
 
     public String getLevelExpression() {
         return LevelExpression;

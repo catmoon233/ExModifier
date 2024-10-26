@@ -29,54 +29,54 @@ public class EventCI<T extends LivingEvent> {
     }
 
 
-    public void AddXp(LivingEvent event1) {
-        if (true)return;
-        // Exmodifier.LOGGER.debug("Adding Xp for " + event1);
-        if (!event1.getClass().equals(this.eventC.clazz)) return;
-        if (!this.eventC.clazz.isAssignableFrom(event1.getClass())) return; // 允许子类
-
-        this.eventC.arg0 = eventC.clazz.cast(event1);
-        try {
-            this.eventC.setParameters();
-        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
-        LivingEntity entity = event1.getEntity();
-        if (eventC.eventParameters.size() > 1) {
-            //  if ( eventC.eventParameters.get(1).getValue() instanceof DamageSource) {
-            entity = (LivingEntity) ((DamageSource) eventC.eventParameters.get(1).getValue()).getEntity();
-            if (entity != null) {
-                Exmodifier.LOGGER.debug("Adding Xp for22 " + entity);
-            } else Exmodifier.LOGGER.debug("Adding Xp for22 null");
-            //  }
-        } else {
-            // this.eventC.eventParameters.get(0).name = "hurtamout";
-        }
-        //   Class<?> livingEntityClass = this.eventC.getLivingEntityClass();
-//        if (livingEntityClass.isInstance(entity)) {
-        //  if (entity != null && entity.getClass() == eventC.getLivingEntityClass()) {
-        if (entity instanceof Player player) {
-            String name = eventC.clazz.getName();
-            ItemLevelHandle.ItemAddXpAuto(player, this.eventC.eventParameters, eventC.clazz.cast(event1), name);
-            Exmodifier.LOGGER.debug(name + " " + "Adding Xp for11 " + this.eventC.eventParameters.get(0).getValue());
-            // }
-            //  }
-        }
-    }
-    @SubscribeEvent
-    public static void AddXp1(LivingHurtEvent event1) {
-        if (event1.getEntity() instanceof  Player player){
-            if (!event1.getSource().is(DamageTypes.GENERIC_KILL)) {
-                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
-                eventParameters.add(new EventParameter<>("amount", event1.getAmount()));
-                addx(player, eventParameters, event1, "net.minecraftforge.event.entity.living.LivingHurtEvent");
-            }
-        }
-        if (event1.getSource().getEntity() instanceof  Player player){
-            List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
-            eventParameters.add(new EventParameter<>("amount", event1.getAmount()));
-            addx(player,eventParameters,event1,"net.minecraftforge.event.entity.living.LivingHurtEvent");
-        }
+//    public void AddXp(LivingEvent event1) {
+//        if (true)return;
+//        // Exmodifier.LOGGER.debug("Adding Xp for " + event1);
+//        if (!event1.getClass().equals(this.eventC.clazz)) return;
+//        if (!this.eventC.clazz.isAssignableFrom(event1.getClass())) return; // 允许子类
+//
+//        this.eventC.arg0 = eventC.clazz.cast(event1);
+//        try {
+//            this.eventC.setParameters();
+//        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
+//            throw new RuntimeException(e);
+//        }
+//        LivingEntity entity = event1.getEntity();
+//        if (eventC.eventParameters.size() > 1) {
+//            //  if ( eventC.eventParameters.get(1).getValue() instanceof DamageSource) {
+//            entity = (LivingEntity) ((DamageSource) eventC.eventParameters.get(1).getValue()).getEntity();
+//            if (entity != null) {
+//                Exmodifier.LOGGER.debug("Adding Xp for22 " + entity);
+//            } else Exmodifier.LOGGER.debug("Adding Xp for22 null");
+//            //  }
+//        } else {
+//            // this.eventC.eventParameters.get(0).name = "hurtamout";
+//        }
+//        //   Class<?> livingEntityClass = this.eventC.getLivingEntityClass();
+////        if (livingEntityClass.isInstance(entity)) {
+//        //  if (entity != null && entity.getClass() == eventC.getLivingEntityClass()) {
+//        if (entity instanceof Player player) {
+//            String name = eventC.clazz.getName();
+//            ItemLevelHandle.ItemAddXpAuto(player, this.eventC.eventParameters, eventC.clazz.cast(event1), name);
+//            Exmodifier.LOGGER.debug(name + " " + "Adding Xp for11 " + this.eventC.eventParameters.get(0).getValue());
+//            // }
+//            //  }
+//        }
+//    }
+//    @SubscribeEvent
+//    public static void AddXp1(LivingHurtEvent event1) {
+//        if (event1.getEntity() instanceof  Player player){
+//            if (!event1.getSource().is(DamageTypes.GENERIC_KILL)) {
+//                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+//                eventParameters.add(new EventParameter<>("amount", event1.getAmount()));
+//                addx(player, eventParameters, event1, "net.minecraftforge.event.entity.living.LivingHurtEvent");
+//            }
+//        }
+//        if (event1.getSource().getEntity() instanceof  Player player){
+//            List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+//            eventParameters.add(new EventParameter<>("amount", event1.getAmount()));
+//            addx(player,eventParameters,event1,"net.minecraftforge.event.entity.living.LivingHurtEvent");
+//        }
 //        // Exmodifier.LOGGER.debug("Adding Xp for " + event1);
 //        if (!event1.getClass().equals(this.eventC.clazz)) return;
 //        if (!this.eventC.clazz.isAssignableFrom(event1.getClass())) return; // 允许子类
@@ -101,9 +101,9 @@ public class EventCI<T extends LivingEvent> {
 //            // }
 //            //  }
 //        }
-    }
-    public static void addx(Player player,List<EventParameter<?>> eventParameters,LivingEvent event1,String name){
-        ItemLevelHandle.ItemAddXpAuto(player, eventParameters, event1, name);
-
-    }
+//}
+//    public static void addx(Player player,List<EventParameter<?>> eventParameters,LivingEvent event1,String name){
+//        ItemLevelHandle.ItemAddXpAuto(player, eventParameters, event1, name);
+//
+//    }
 }
