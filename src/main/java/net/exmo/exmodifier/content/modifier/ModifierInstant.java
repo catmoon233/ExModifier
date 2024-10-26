@@ -1,9 +1,11 @@
 package net.exmo.exmodifier.content.modifier;
 
+import net.minecraft.nbt.CompoundTag;
+
 public class ModifierInstant {
     private ModifierEntry modifierEntry;
     private int level;
-
+    private CompoundTag data;
     public ModifierInstant(ModifierEntry modifierEntry, int level) {
         this.modifierEntry = modifierEntry;
         this.level = level;
@@ -28,5 +30,14 @@ public class ModifierInstant {
 
     public void setLevel(int level) {
         this.level = level;
+    }
+
+    public CompoundTag getData() {
+        return data;
+    }
+
+    public ModifierInstant setData(CompoundTag data) {
+        this.data = data;
+        return this;
     }
 }

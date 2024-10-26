@@ -3,10 +3,9 @@ package net.exmo.exmodifier.mixins;
 import com.google.gson.internal.bind.JsonTreeReader;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
-import net.exmo.exmodifier.content.modifier.EntryItem;
-import net.exmo.exmodifier.content.modifier.ModifierEntry;
-import net.exmo.exmodifier.content.modifier.ModifierHandle;
-import net.exmo.exmodifier.content.modifier.WashingMaterials;
+import net.exmo.exmodifier.content.helper.ItemInfo;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
+import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.events.ExRefreshEvent;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
@@ -37,6 +36,8 @@ public abstract class SmiMixin extends ItemCombinerMenu {
     @Shadow public int repairItemCountCost;
 
     @Shadow @Final private DataSlot cost;
+
+    @Shadow protected abstract void onTake(Player p_150474_, ItemStack p_150475_);
 
     //
 //
@@ -125,6 +126,7 @@ public abstract class SmiMixin extends ItemCombinerMenu {
             p_39791_.getOrCreateTag().remove("modifier_refresh_rarity");
             p_39791_.getOrCreateTag().remove("wash_item");
             p_39791_.getOrCreateTag().remove("modifier_refresh_add");
+            this.onTake(p_39790_, p_39791_, ci);
         }
     }
 
@@ -192,7 +194,9 @@ public abstract class SmiMixin extends ItemCombinerMenu {
                         input.getOrCreateTag().putInt("entryitem_add", entryitemAdd + 1);
                         input.getOrCreateTag().putInt("NeedCount", 1);
                         input.getOrCreateTag().putBoolean("entry_item_add", true);
-                        ModifierHandle.CommonEvent.AddEntryToItem(input, WashItem.getOrCreateTag().getString("modifier_id"));
+                        ItemInfo itemInfo = new ItemInfo(input);
+                        ModifierEntryHelper modifierEntryHelper = itemInfo.getModifierEntryHelper();
+                        modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(WashItem.getOrCreateTag().getString("modifier_id")),1),true);
                         this.resultSlots.setItem(0, input);
                     }
                 }

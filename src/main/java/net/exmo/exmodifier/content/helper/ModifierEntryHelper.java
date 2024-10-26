@@ -9,7 +9,9 @@ import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,15 +26,39 @@ public class ModifierEntryHelper extends ExHelper {
     {
         return ValidMainNbt()&&getMainNbt().contains(MES);
     }
-    public void createModifierEntryNbt()
+    public ModifierEntryHelper createModifierEntryNbt()
     {
         createNbt();
-        if (ValidModifierEntry()) return;
+        if (ValidModifierEntry()) return this;
         getMainNbt().put(MES,new ListTag());
-    }
+        return  this;
 
+    }
+    public static int getLivingEntityEntryLevel(String entryID, LivingEntity e){
+        int level = 0;
+        for (EquipmentSlot slot : EquipmentSlot.values()){
+            ItemStack itemBySlot = e.getItemBySlot(slot);
+            if (itemBySlot.isEmpty())continue;
+            if (!CuriosUtil.isCuriosItem(itemBySlot)) {
+                ModifierEntryHelper modifierEntryHelper = new ModifierEntryHelper(itemBySlot);
+               level+= modifierEntryHelper.getModifierEntryLevel(entryID);
+
+            }
+        }
+        return level;
+    }
+    public int getModifierEntryLevel(String entryID){
+        ListTag modifierEntriesNbt = getModifierEntriesNbt();
+        for (int i = 0; i < modifierEntriesNbt.size(); i++){
+            if (modifierEntriesNbt.getCompound(i).getString(MEID).equals(entryID)) return modifierEntriesNbt.getCompound(i).getInt("Level");
+        }
+        return 0;
+    }
     public ModifierEntryHelper(ItemStack itemStack) {
         super(itemStack);
+    }
+    public int getModifierEntriesSize(){
+        return getMainNbt().getList(MES,10).size();
     }
 
     public ListTag getModifierEntriesNbt()
@@ -53,7 +79,9 @@ public class ModifierEntryHelper extends ExHelper {
                 {
                     int level =1;
                     if (tag1.contains("Level"))level = tag1.getInt("Level");
-                    modifierEntries.add(new ModifierInstant(modifierEntry, level));
+                    tag1.remove("Level");
+                    tag1.remove(MEID);
+                    modifierEntries.add(new ModifierInstant(modifierEntry, level).setData(tag1));
                 }
                 }
             }
@@ -62,7 +90,7 @@ public class ModifierEntryHelper extends ExHelper {
 
 
     }
-    public void addModifierEntry(ModifierInstant modifierInstant,boolean addAttribute)
+    public ModifierEntryHelper addModifierEntry(ModifierInstant modifierInstant,boolean addAttribute)
     {
         createNbt();
         if (!ValidMainNbt()) createMainNbt();
@@ -76,12 +104,12 @@ public class ModifierEntryHelper extends ExHelper {
             if (CuriosUtil.isCuriosItem(this.itemStack))applyModifiersCurios(itemStack, addTo, CuriosUtil.getSlotsFromItemstack(itemStack));
             else applyModifiers(itemStack,addTo,getEquipmentSlot(itemStack));
         }
-
+        return this;
     }
-    public void removeModifierEntry(ModifierInstant modifierInstant,boolean removeAttribute)
+    public ModifierEntryHelper removeModifierEntry(ModifierInstant modifierInstant,boolean removeAttribute)
     {
         createNbt();
-        if (!ValidMainNbt()) return;
+        if (!ValidMainNbt()) return this;
         ListTag modifiersList = getModifierEntriesNbt();
         for (int i = 0; i < modifiersList.size(); i++){
             CompoundTag tag1 = modifiersList.getCompound(i);
@@ -98,6 +126,7 @@ public class ModifierEntryHelper extends ExHelper {
                 }
             }
         }
+        return this;
     }
     public static ModifierEntry getEntry(String entryName)
     {
