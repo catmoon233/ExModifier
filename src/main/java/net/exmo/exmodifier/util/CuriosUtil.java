@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class CuriosUtil {
+public class
+CuriosUtil {
     public static class slotInfo{
       public ItemStack stack;
         public  String identifie;
@@ -125,6 +126,20 @@ public class CuriosUtil {
     public static Multimap<Attribute, AttributeModifier> getAttributeModifiers(ItemStack itemStack, String slot) {
       return   CuriosApi.getCuriosHelper().getAttributeModifiers(slot, itemStack);
     }
+    public static void removeAttributeModifierAffix(ItemStack itemStack, String attributeName,String name)
+    {
+        CompoundTag tag = itemStack.getOrCreateTag();
+        if (!tag.contains("ExCurioAttributeModifiers")) return;
+        ListTag modifiersList = tag.getList("ExCurioAttributeModifiers", 10);
+        for (int i = 0; i < modifiersList.size(); i++) {
+            CompoundTag modifier = modifiersList.getCompound(i);
+            if (modifier.getString("AttributeName").equals(attributeName) && modifier.getString("Name").equals(name)){
+                modifiersList.remove(i);
+                tag.put("ExCurioAttributeModifiers", modifiersList);
+                break;
+            }
+        }
+    }
     /**
      * 从物品的NBT标签中删除特定的属性修饰符。
      *
@@ -134,6 +149,7 @@ public class CuriosUtil {
      * @param operation 属性修饰符的操作类型
      * @param slot 属性修饰符适用的槽位
      */
+
     public static void removeAttributeModifier(ItemStack itemStack, String attributeName, double amount, int operation, String slot) {
         if (itemStack.getTag()==null)return;
         CompoundTag itemTag = itemStack.getTag();

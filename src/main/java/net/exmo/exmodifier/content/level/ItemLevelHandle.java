@@ -67,7 +67,7 @@ public class ItemLevelHandle {
             }
             if (event.entity instanceof  Player player){
                 //  if (player.level.isClientSide) {
-                player.sendSystemMessage(Component.translatable("modifiler.level."+event.LevelId.itemLevel.id).append(" ").append(stack.getDisplayName()).append(" §r").append(Component.translatable("modifiler.level.up",event.beforeLevel,event.nowLevel,event.nowLevel-event.beforeLevel)));
+                player.sendSystemMessage(Component.translatable("modifier.level."+event.LevelId.itemLevel.id).append(" ").append(stack.getDisplayName()).append(" §r").append(Component.translatable("modifier.level.up",event.beforeLevel,event.nowLevel,event.nowLevel-event.beforeLevel)));
                 //player.level.playLocalSound(player.getX(), player.getY(), player.getZ(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.player.levelup")), SoundSource.PLAYERS, 1, 1, false);
 
                 //   }else {
@@ -94,6 +94,7 @@ public class ItemLevelHandle {
 //                                .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
                                 .filter(e -> e.getValue().getOnlyItemTags().isEmpty() ||e.getValue().containTag(stack))
                                 .filter(e -> e.getValue().UnlessItemTags.isEmpty() ||e.getValue().unContainTag(stack))
+                                .filter(e -> e.getValue().getOnlyWashItems().isEmpty() ||e.getValue().getOnlyWashItems().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()))
 //                                .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
 //                                .filter(e -> {
 //                                    boolean hasWashItem = materialsList.stream()
@@ -239,7 +240,7 @@ public class ItemLevelHandle {
         int levelItemLevel = itemLevelInstant.level;
         if (Screen.hasShiftDown()) {
             // 添加物品等级信息
-            components.add(Component.translatable("modifiler.level." + itemLevelInstant.itemLevel.id)
+            components.add(Component.translatable("modifier.level." + itemLevelInstant.itemLevel.id)
                     .withStyle(ChatFormatting.GOLD)
                     .withStyle(ChatFormatting.UNDERLINE)
             ); // 使用颜色增强视觉效果
@@ -252,7 +253,7 @@ public class ItemLevelHandle {
                     itemLevelInstant.maxLevel +
                             " ");
 
-            components.add(Component.translatable("modifiler.level")
+            components.add(Component.translatable("modifier.level")
                     .append(Component.literal(levelInfo))
                     .withStyle(ChatFormatting.AQUA)); // 另一个颜色强调
 
@@ -264,7 +265,7 @@ public class ItemLevelHandle {
                     (int)itemLevelInstant.needXp +
                             " ");
 
-            components.add(Component.translatable("modifiler.xp")
+            components.add(Component.translatable("modifier.xp")
                     .append(Component.literal(xpInfo))
                     .withStyle(ChatFormatting.GREEN));
             ItemLevel _setval = new ItemLevel();
@@ -278,12 +279,12 @@ public class ItemLevelHandle {
                             }
                         }
                     }
-                    components.add(Component.translatable("modifiler.attri.¦").append(ita.generateTooltipBase()));
+                    components.add(Component.translatable("modifier.attri.¦").append(ita.generateTooltipBase()));
                 }
             }
 
         }else{
-            components.add(Component.translatable("modifiler.level." + itemLevelInstant.itemLevel.id)
+            components.add(Component.translatable("modifier.level." + itemLevelInstant.itemLevel.id)
                     .withStyle(ChatFormatting.GOLD).append(" ").append(levelItemLevel+""));
         }
         return components;
@@ -379,6 +380,7 @@ public class ItemLevelHandle {
                 itemLevel.getUnlessItemTags().add(itemId.getAsString());
             }
         }
+
         if (itemObject.has("OnlyItemTags")){
             itemLevel.setOnlyItemTags(new ArrayList<>());
             for (JsonElement itemTag : itemObject.get("OnlyItemTags").getAsJsonArray()){

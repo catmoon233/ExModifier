@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " b ",
+    "dad",
+    "ccc"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:enchanting_table"
+    },
+    "b": {
+      "item": "minecraft:anvil"
+    },
+    "c": {
+      "item": "minecraft:obsidian"
+    },
+    "d": {
+      "item": "minecraft:gold_block"
+    }
+  },
+  "result": {
+    "item": "exmodifier:refresh_table",
+    "count": 1
+  }
+}

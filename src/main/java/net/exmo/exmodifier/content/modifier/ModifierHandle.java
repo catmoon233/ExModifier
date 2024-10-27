@@ -91,18 +91,18 @@ public class ModifierHandle {
             List<Component> tooltips = new ArrayList<>();
             if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.contains(modifierEntry))) {
                 ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
-                if (!config.compact_tooltip) tooltips.add(Component.translatable("modifiler.entry.suit"));
+                if (!config.compact_tooltip) tooltips.add(Component.translatable("modifier.entry.suit"));
 
                 for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
                         .toList()) {
                     if (suit.visible) {
                         Integer integer = pv.SuitsNum.get(suit.id);
                         if (integer == null) integer = 0;
-                        tooltips.add(Component.translatable("modifiler.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
+                        tooltips.add(Component.translatable("modifier.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
                         if (!suit.LocalDescription.isEmpty())
                             tooltips.add(Component.translatable(suit.LocalDescription));
 
-                        //.append(Component.translatable("modifiler.entry.suit.color"))
+                        //.append(Component.translatable("modifier.entry.suit.color"))
                     }
                 }
 
@@ -117,7 +117,7 @@ public class ModifierHandle {
             String id = modifierEntry.getId();
             if (player ==null)return tooltips;
             if (id.length() >= 2) {
-                MutableComponent translatable = Component.translatable("modifiler.entry." + id.substring(2));
+                MutableComponent translatable = Component.translatable("modifier.entry." + id.substring(2));
                 if (config.compact_tooltip){
                     if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
                     tooltips.add(translatable);
@@ -685,6 +685,11 @@ public class ModifierHandle {
             if (    jsonObject.has("MinRandomTime")
             ){
                 materials.MinRandomTime = jsonObject.get("MinRandomTime").getAsInt();
+
+            }
+            if (    jsonObject.has("randomLevelSystemCount")
+            ){
+                materials.randomLevelSystemCount = jsonObject.get("randomLevelSystemCount").getAsInt();
 
             }
             if (    jsonObject.has("CostExp")

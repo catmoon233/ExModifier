@@ -2,7 +2,10 @@ package net.exmo.exmodifier.content.modifier.menu;
 
 import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.helper.ItemInfo;
+import net.exmo.exmodifier.content.helper.ItemLevelHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
+import net.exmo.exmodifier.content.level.ItemLevelHandle;
+import net.exmo.exmodifier.content.level.ItemLevelInstant;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.events.ExRefreshEvent;
 import net.exmo.exmodifier.init.RegisterOther;
@@ -10,7 +13,6 @@ import net.exmo.exmodifier.util.CuriosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -101,11 +103,20 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
             orCreateTag.putBoolean("UNKNOWN",false);
 
             if (p_39790_.level().isClientSide)return;
-            List<String> curios = CuriosUtil.getSlotsFromItemstack(p_39791_);
-            MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getString("wash_item")));
-            if (curios.isEmpty()) ModifierHandle.CommonEvent.RandomEntry(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
-            else   RandomEntryCurios(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
+            if (orCreateTag.getInt("modifier_refresh_add")!=0) {
+                List<String> curios = CuriosUtil.getSlotsFromItemstack(p_39791_);
+                MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getString("wash_item")));
+                if (curios.isEmpty())
+                    ModifierHandle.CommonEvent.RandomEntry(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
+                else
+                    RandomEntryCurios(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
+            }
+            int randomLevelSystemCount = orCreateTag.getInt("random_level_system_count");
+            if (randomLevelSystemCount !=0){
+                ItemLevelHandle.ItemLevelRefresh(p_39791_, randomLevelSystemCount, 1, orCreateTag.getString("wash_item"));
+            }
             orCreateTag.remove("modifier_refresh_rarity");
+            orCreateTag.remove("random_level_system_count");
             orCreateTag.remove("wash_item");
             orCreateTag.remove("modifier_refresh_add");
 
@@ -136,7 +147,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
             if (washingMaterials.item.equals(WashItem.getItem())) {
                 if (WashItem.getCount() >= washingMaterials.NeedCount) {
                     player.getPersistentData().putBoolean("modifier_refresh_not_enough", false);
-                    if (modifierEntryHelper.getModifierEntriesSize()>0 || config.refresh_time == 0) {
+                    if (modifierEntryHelper.getModifierEntriesSize()>0 || config.refresh_time == 0 ||config.add_level_system_count==0) {
                         if (washingMaterials.OnlyTypes.isEmpty() || ModifierEntry.containItemTypes(item, washingMaterials.OnlyTypes)) {
 
                             if (washingMaterials.OnlyItems == null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(item.getItem()).toString())) {
@@ -145,7 +156,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                                     ItemStack input = item.copy();
                                     itemInfo = new ItemInfo(input);
                                     modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
-                                    modifierEntryHelper.removeAllEntry(true);
+                                    if (washingMaterials.additionEntry!=0) modifierEntryHelper.removeAllEntry(true);
                                     //ModifierHandle.CommonEvent.clearEntry(input);
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
@@ -165,6 +176,13 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                                     }
                                     orCreateTag.putString("wash_item", washingMaterials.ItemId);
                                     orCreateTag.putInt("modifier_refresh_add", washingMaterials.additionEntry);
+                                    if (washingMaterials.randomLevelSystemCount!=0){
+                                        ItemLevelHelper itemLevelHelper = ItemInfo.of(item).getItemLevelHelper();
+                                        for(ItemLevelInstant itemLevelInstant : itemLevelHelper.getItemLevelInstants()) {
+                                            itemLevelHelper.removeItemLevel(itemLevelInstant,true);
+                                        }
+                                        orCreateTag.putInt("random_level_system_count", washingMaterials.randomLevelSystemCount);
+                                    }
                                     this.resultSlots.setItem(0, input);
                                     isFound = true;
 

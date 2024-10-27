@@ -94,7 +94,7 @@ public class Exmodifier {
 
     private static ItemStack getTabIcon() {
         TabIcon = ENTRY_ITEM.get().getDefaultInstance();
-        TabIcon.setHoverName(Component.translatable("modifiler.entry.example"));
+        TabIcon.setHoverName(Component.translatable("modifier.entry.example"));
         TabIcon.getOrCreateTag().putString("modifier_id", "example");
 
         return TabIcon;
@@ -178,7 +178,7 @@ public class Exmodifier {
                 stack.getOrCreateTag().putString("modifier_id", entry);
                 stack.getOrCreateTag().putString("modifier_type",modifierEntry.type.toString());
                 stack.getOrCreateTag().putDouble("modifier_possibility",weights.get(modifierEntry.type.toString()).getProbability(entry));
-                // stack.setHoverName(Component.translatable("modifiler.entry." + entry));
+                // stack.setHoverName(Component.translatable("modifier.entry." + entry));
                 event.accept(stack);
             });
 

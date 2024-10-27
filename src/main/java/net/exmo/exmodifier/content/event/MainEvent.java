@@ -143,25 +143,25 @@ public class MainEvent {
 //                for (ModifierEntry modifierEntry : new ModifierEntryHelper(stack).getModifierEntriesB()) {
 //                    if (stack.getTag().getBoolean("UNKNOWN")) {
 //                        event.getTooltipElements().add(Either.left(Component.translatable("null")));
-//                        event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry.UNKNOWN")));
+//                        event.getTooltipElements().add(Either.left(Component.translatable("modifier.entry.UNKNOWN")));
 //                    } else {
 //                        if (!addf) {
 //                            addf = true;
 //                            event.getTooltipElements().add(Either.left(Component.translatable("null")));
-//                            event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry")));
+//                            event.getTooltipElements().add(Either.left(Component.translatable("modifier.entry")));
 //                            for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
 //                                    .toList()) {
 //                                if (suit.visible) {
 //
-//                                    event.getTooltipElements().add(Either.left(Component.translatable("modifiler.entry.suit." + suit.id)));
+//                                    event.getTooltipElements().add(Either.left(Component.translatable("modifier.entry.suit." + suit.id)));
 //                                    if (!suit.LocalDescription.isEmpty())
 //                                        event.getTooltipElements().add(Either.left(Component.translatable(suit.LocalDescription)));
 //
-//                                    //.append(Component.translatable("modifiler.entry.suit.color"))
+//                                    //.append(Component.translatable("modifier.entry.suit.color"))
 //                                }
 //                            }
 //                        }
-//                        event.getTooltipElements().add(Either.left((Component.translatable("modifiler.entry." + modifierEntry.id.substring(2)))));
+//                        event.getTooltipElements().add(Either.left((Component.translatable("modifier.entry." + modifierEntry.id.substring(2)))));
 //
 //                    }
 //                }
@@ -173,7 +173,7 @@ public class MainEvent {
                 ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(stack);
                 if (stack.getTag().getBoolean("UNKNOWN")) {
                     tooltip.add(Component.translatable("null"));
-                    tooltip.add(Component.translatable("modifiler.entry.UNKNOWN"));
+                    tooltip.add(Component.translatable("modifier.entry.UNKNOWN"));
                 } else {
                     if (modifierEntryHelper.getModifierEntriesSize()>0) {
 
@@ -186,7 +186,7 @@ public class MainEvent {
 
                         }
                     }
-                    if (stack.getTag().getBoolean("can_add_max"))tooltip.add(Component.translatable("modifiler.entry.can_add_max"));
+                    if (stack.getTag().getBoolean("can_add_max"))tooltip.add(Component.translatable("modifier.entry.can_add_max"));
 
                 }
             }
@@ -447,22 +447,22 @@ public class MainEvent {
                     ModifierEntryHelper.moveOldEntry(stack);
                     ItemLevelHelper.moveOldLevel(stack);
                     String string = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
-                    for (String s : UnMatchingModIDs){
-                        if (string.startsWith(s))return;
+                    for (String s : UnMatchingModIDs) {
+                        if (string.startsWith(s)) return;
                     }
-                    if (itemsDefaultEntry.containsKey(string)){
-                        for (ModifierEntry modifierEntry:itemsDefaultEntry.get(string)){
-                            new ModifierEntryHelper(stack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)),true);
+                    if (itemsDefaultEntry.containsKey(string)) {
+                        for (ModifierEntry modifierEntry : itemsDefaultEntry.get(string)) {
+                            new ModifierEntryHelper(stack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)), true);
                         }
                     }
-                   // Exmodifier.LOGGER.debug(eventC.getFrom().toString());
+                    // Exmodifier.LOGGER.debug(eventC.getFrom().toString());
                     List<String> curiosSlots = CuriosUtil.getSlotsFromItemstack(stack);
-                    if (!curiosSlots.isEmpty()){
+                    if (!curiosSlots.isEmpty()) {
 //                        if (player.getPersistentData().getBoolean("LoginGamea")) {
 //                            player.getPersistentData().putBoolean("LoginGamea", false);
 //                            return;
 //                        }
-                        if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize()<=0) {
+                        if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
                             RandomEntryCurios(stack, 0, refresh_time, "none");
                         }
                         if (stack.getTag() != null) {
@@ -473,15 +473,15 @@ public class MainEvent {
 
                                     //  stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
 
-                                    RandomEntryCurios(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"),stack.getTag().getString("wash_item"));
+                                    RandomEntryCurios(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"));
                                 }
                             }
                         }
-                    }else {
+                    } else {
 
-                        if (hasAttr(stack)||stack.getItem() instanceof ShieldItem || stack.getItem() instanceof  BowItem ||(stack.getUseAnimation() == UseAnim.BOW && stack.getItem().getMaxStackSize(stack) == 1)) {
-                            if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize()<=0) {
-                                RandomEntry(stack, 0, refresh_time,"none");
+                        if (hasAttr(stack) || stack.getItem() instanceof ShieldItem || stack.getItem() instanceof BowItem || (stack.getUseAnimation() == UseAnim.BOW && stack.getItem().getMaxStackSize(stack) == 1)) {
+                            if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
+                                RandomEntry(stack, 0, refresh_time, "none");
                                 if (stack.getTag() != null) {
 //                                    if (stack.getTag().contains("exmodifier_armor_modifier_applied")) {
 //
@@ -497,15 +497,19 @@ public class MainEvent {
                                     if (stack.getTag().getBoolean("modifier_refresh")) {
                                         stack.getTag().remove("modifier_refresh");
                                         stack.getTag().remove("UNKNOWN");
-                                     //   stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
+                                        //   stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
 
-                                        RandomEntry(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"),stack.getTag().getString("wash_item"));
+                                        RandomEntry(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"));
                                     }
                                 }
                             }
                         }
                     }
-                    ItemLevelRefresh(stack,0,1,"none");
+
+                    int addLevelSystemCount = config.add_level_system_count;
+                    if (config.add_level_system_count!=0) {
+                        ItemLevelRefresh(stack, 0, addLevelSystemCount, "none");
+                    }
                 }
 //                if (eventC.getEntity().level()().isClientSide) {
 //                    player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {

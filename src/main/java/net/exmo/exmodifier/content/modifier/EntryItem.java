@@ -29,19 +29,19 @@ public class EntryItem extends Item {
                     List<Component> lc = new ArrayList<>();
                     String modifierId = stack.getTag().getString("modifier_id");
                     if (modifierId.length()<=2)return ;
-                    lc.add(Component.translatable("modifiler.entry." + modifierId.substring(2)));
+                    lc.add(Component.translatable("modifier.entry." + modifierId.substring(2)));
                     if (!Screen.hasShiftDown()) {
                         String modifierType = stack.getTag().getString("modifier_type");
                         double possibility = stack.getTag().getDouble("modifier_possibility") * 100;
-                        lc.add(Component.translatable("modifiler.entry.possibility").append(df.format(possibility)).append("%"));
+                        lc.add(Component.translatable("modifier.entry.possibility").append(df.format(possibility)).append("%"));
 
                         if (!modifierType.isEmpty())
-                            lc.add(Component.translatable("modifiler.entry.type").append(Component.translatable(modifierType)));
+                            lc.add(Component.translatable("modifier.entry.type").append(Component.translatable(modifierType)));
                         lc.add(Component.literal(" "));
-                        lc.add(Component.translatable("modifiler.entry.look_more_shift"));
+                        lc.add(Component.translatable("modifier.entry.look_more_shift"));
                     }else {
                         ModifierEntry modifierEntry = ModifierHandle.modifierEntryMap.get(modifierId);
-                        if (modifierEntry==null)lc.add(Component.translatable("modifiler.entry.unknown_modifier"));
+                        if (modifierEntry==null)lc.add(Component.translatable("modifier.entry.unknown_modifier"));
                         else lc.addAll(modifierEntry.GenerateItemTooltip());
                     }
                 List<Component> ToRemove =event.getToolTip();

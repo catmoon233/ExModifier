@@ -17,7 +17,7 @@ public class EntryItemRender implements IItemDecorator {
             if (stack.getItem() instanceof EntryItem entryItem) {
                 String id = stack.getOrCreateTag().getString("modifier_id");
                 if (id.length() <= 2) return false;
-                Component c = Component.translatable("modifiler.entry." + id.substring(2));
+                Component c = Component.translatable("modifier.entry." + id.substring(2));
                 TextColor color = c.getStyle().getColor();
                 int value;
                 if (color == null) value = 0xFFFFFF;

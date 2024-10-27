@@ -260,7 +260,7 @@ public class ModifierEntryHelper extends ExHelper {
                     else {
                         for (String curioType : curiosType)
                         {
-                            if (ForgeRegistries.ATTRIBUTES.containsValue(modifierAttriGether1.getAttribute())&&ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute())!=null) CuriosUtil.removeAttributeModifier(stack,ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute()).toString(), modifierAttriGether1.getModifier().getAmount(),modifierAttriGether1.getModifier().getOperation().toValue(), curioType);
+                            if (ForgeRegistries.ATTRIBUTES.containsValue(modifierAttriGether1.getAttribute())&&ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute())!=null) CuriosUtil.removeAttributeModifierAffix(stack,ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute()).toString(), modifierAttriGether1.getModifier().getName());
                         }
                     }
                     stack.getOrCreateTag().remove("exmodifier_armor_modifier_applied"+i);

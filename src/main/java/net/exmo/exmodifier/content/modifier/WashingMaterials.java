@@ -11,6 +11,7 @@ import java.util.List;
 public class WashingMaterials {
     public String ItemId;
     public Item item;
+    public int randomLevelSystemCount = 0;
     public int rarity;
     public List<ModifierEntry.Type> OnlyTypes = new ArrayList<>();
     public double CostExp =0;

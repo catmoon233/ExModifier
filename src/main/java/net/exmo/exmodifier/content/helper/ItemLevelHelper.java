@@ -2,8 +2,8 @@ package net.exmo.exmodifier.content.helper;
 
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
 import net.exmo.exmodifier.content.level.ItemLevel;
-import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.level.ItemLevelInstant;
+import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.events.ExItemUpEvent;
 import net.exmo.exmodifier.util.AttriGether;
 import net.exmo.exmodifier.util.DynamicExpressionEvaluator;
@@ -45,12 +45,19 @@ public class ItemLevelHelper extends ExHelper {
         return  this;
 
     }
-    public ItemLevelHelper removeItemLevelHelper(ItemLevelInstant itemLevelInstant, boolean removeAttribute) {
+    public ItemLevelHelper removeItemLevel(ItemLevelInstant itemLevelInstant, boolean removeAttribute) {
         ListTag modifiersList = getItemLevelNbt();
         List<Integer> indicesToRemove = new ArrayList<>();
         for (int i = 0; i < modifiersList.size(); i++) {
             if (modifiersList.getCompound(i).getString(ITEM_LEVEL_ID).equals(itemLevelInstant.getItemLevel().id)) {
                 indicesToRemove.add(i);
+                if (removeAttribute) {
+                    for (ModifierAttriGether modifierAttriGether : itemLevelInstant.getItemLevel().attriGethers) {
+                        for (EquipmentSlot slot : EquipmentSlot.values()) {
+                            ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, modifierAttriGether.attribute, modifierAttriGether.modifier, slot);
+                        }
+                    }
+                }
             }
         }
         // 从后向前删除，避免索引越界

@@ -16,6 +16,7 @@ import java.nio.file.Path;
 public class config {
     public static int refresh_time = 1;
     public static boolean compact_tooltip = false;
+    public static int add_level_system_count = 1;
     public static final Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/Exmodifier.json");
     public static int canAddEntry = 1;
     public static boolean Debug = false;
@@ -30,6 +31,9 @@ public class config {
     compact_tooltip = MainConfig.readSetting("compact_tooltip").getAsBoolean();
     if (MainConfig.AlljsonObject.has("canAddEntry")){
         canAddEntry = MainConfig.readSetting("canAddEntry").getAsInt();
+    }
+    if (MainConfig.AlljsonObject.has("add_level_system_count")){
+        add_level_system_count = MainConfig.readSetting("add_level_system_count").getAsInt();
     }
     if (MainConfig.AlljsonObject.has("Debug")){
         Debug = MainConfig.readSetting("Debug").getAsBoolean();

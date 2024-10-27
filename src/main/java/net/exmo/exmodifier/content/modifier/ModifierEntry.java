@@ -386,16 +386,16 @@ public class ModifierEntry {
     public List<Component> GenerateItemTooltip()
     {
         List<Component> list = new ArrayList<>();
-        list.add(Component.translatable("modifiler.entry.id").append(id));
-        list.add(Component.translatable("modifiler.entry.weight").append(String.valueOf(weight)));
-        if (cantSelect) list.add(Component.translatable("modifiler.entry.cant_select"));
-        if (OnlyHasThisEntry) list.add(Component.translatable("modifiler.entry.only_has_this_entry"));
-        if (needFreshValue!=0) list.add(Component.translatable("modifiler.entry.need_fresh_value").append(String.valueOf(needFreshValue)));
-        if (!OnlyTags.isEmpty()) list.add(Component.translatable("modifiler.entry.only_tags").append(String.join(",",OnlyTags)));
-        if (!OnlyItems.isEmpty()) list.add(Component.translatable("modifiler.entry.only_items").append(String.join(",",OnlyItems)));
-        if (isRandom) list.add(Component.translatable("modifiler.entry.is_random").append(String.valueOf(RandomNum)));
-        list.add(Component.translatable("modifiler.entry.type").append(type.toString()));
-        list.add(Component.translatable("modifiler.entry.attribute_gather"));
+        list.add(Component.translatable("modifier.entry.id").append(id));
+        list.add(Component.translatable("modifier.entry.weight").append(String.valueOf(weight)));
+        if (cantSelect) list.add(Component.translatable("modifier.entry.cant_select"));
+        if (OnlyHasThisEntry) list.add(Component.translatable("modifier.entry.only_has_this_entry"));
+        if (needFreshValue!=0) list.add(Component.translatable("modifier.entry.need_fresh_value").append(String.valueOf(needFreshValue)));
+        if (!OnlyTags.isEmpty()) list.add(Component.translatable("modifier.entry.only_tags").append(String.join(",",OnlyTags)));
+        if (!OnlyItems.isEmpty()) list.add(Component.translatable("modifier.entry.only_items").append(String.join(",",OnlyItems)));
+        if (isRandom) list.add(Component.translatable("modifier.entry.is_random").append(String.valueOf(RandomNum)));
+        list.add(Component.translatable("modifier.entry.type").append(type.toString()));
+        list.add(Component.translatable("modifier.entry.attribute_gather"));
         //list.add(Component.literal("§7["));
         WeightedUtil<String> weightUtil = new WeightedUtil<>(
                 attriGether.stream()
@@ -415,11 +415,11 @@ public class ModifierEntry {
                 .toList()) {
             if (suit.visible) {
                 if (!hasSuit){
-                    list.add(Component.translatable("modifiler.entry.suit"));
+                    list.add(Component.translatable("modifier.entry.suit"));
                  //   list.add(Component.literal("§7["));
                     hasSuit=true;
                 }
-                list.add(Component.literal(" §7¦ §r").append(Component.translatable("modifiler.entry.suit." + suit.id)));
+                list.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.entry.suit." + suit.id)));
             }
         }
        // if (hasSuit)list.add(Component.literal("§7]"));

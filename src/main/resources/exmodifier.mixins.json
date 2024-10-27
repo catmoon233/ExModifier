@@ -12,7 +12,6 @@
     "ItemStackMixin",
     "LivingSwingAction",
     "PlayerMixin",
-    "SmiMixin",
     "ToolTipMixin"
   ],
   "client": [
