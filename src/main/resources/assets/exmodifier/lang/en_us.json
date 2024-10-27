@@ -17,6 +17,8 @@
   "modifiler.entry.UNKNOWN": "§7Unknown",
   "itemGroup.exmodifier_tab": "§6Modifier Book",
   "exmodifier.tooltip.error": "§4error",
+  "exmodifier.block.refresh_table": "refresh table",
+  "block.exmodifier.refresh_table": "refresh table",
   "exmodifier.tooltip.weight": "weight: ",
   "modifiler.entry.is_random": "Random Count:",
   "modifiler.entry.only_items": "Only Items:",

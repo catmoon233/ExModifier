@@ -13,6 +13,8 @@
   "modifiler.entry.need_fresh_value": "§7要求洗练值: ",
   "modifiler.entry.only_has_this_entry": "§7物品只能拥有该词条",
   "modifiler.entry.weight": "§7权重: ",
+  "exmodifier.block.refresh_table": "重铸台",
+  "block.exmodifier.refresh_table": "重铸台",
   "modifiler.entry.id": "§7词条ID: ",
   "modifiler.entry.look_more_shift": "§7按下 §e§lshift §r§7查看更多信息",
   "modifiler.entry.attribute_gather": "§7属性集合: ",

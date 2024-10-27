@@ -40,6 +40,7 @@ public class ExAttribute {
     public static final RegistryObject<Attribute> ARROWBASEDAMAGE = ATTRIBUTES.register("arrow_base_damage", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".arrow_base_damage", 0, 0, 100000000)).setSyncable(true));
     public static final RegistryObject<Attribute> DIG_SPEED = ATTRIBUTES.register("dig_speed", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dig_speed", 1, 0, 100000000)).setSyncable(true));
     public static final RegistryObject<Attribute> DODGE = ATTRIBUTES.register("dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dodge", 1, 0, 10000000)).setSyncable(true));
+    public static final RegistryObject<Attribute> MAX_INJURY_FREE = ATTRIBUTES.register("max_injury_free", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".max_injury_free", 1.85, 0, 10000000)).setSyncable(true));
     public static final RegistryObject<Attribute> MAX_DODGE = ATTRIBUTES.register("max_dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".max_dodge", 1.85, 0, 10000000)).setSyncable(true));
     public static final RegistryObject<Attribute> HIT_RATE = ATTRIBUTES.register("hit_rate", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".hit_rate", 1, 0, 10000000)).setSyncable(true));
     public static final RegistryObject<Attribute> PERCENT_HEAL = ATTRIBUTES.register("percent_heal", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".percent_heal", 1, 0, 10000000)).setSyncable(true));
@@ -62,8 +63,10 @@ public class ExAttribute {
             event.add(e, HIT_RATE.get());
             event.add(e, PERCENT_HEAL.get());
             event.add(e, ARROWBASEDAMAGE.get());
-            if (e.equals(EntityType.PLAYER)) event.add(e, MAX_DODGE.get());
-
+            if (e.equals(EntityType.PLAYER)) {
+                event.add(e, MAX_DODGE.get());
+                event.add(e, MAX_INJURY_FREE.get());
+            }
         });
 
 

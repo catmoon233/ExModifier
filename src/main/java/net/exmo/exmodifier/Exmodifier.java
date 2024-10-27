@@ -125,11 +125,14 @@ public class Exmodifier {
         // Register the processIMC method for modloading
         modEventBus.addListener(this::processIMC);
         RegisterOther.EffectAbout.REGISTRY.register(modEventBus);
+        RegisterOther.BlockAbout.REGISTRY.register(modEventBus);
+        RegisterOther.ItemAbout.REGISTRY.register(modEventBus);
         modEventBus.addListener(this::AddToTab);
         if (ModList.get().isLoaded("attributeslib")){
             MinecraftForge.EVENT_BUS.addListener(new ApothCompat()::SkinAttr);
         }
-
+        RegisterOther.MenuAbout.REGISTRY.register(modEventBus);
+        RegisterOther.BlockEntityAbout.REGISTRY.register(modEventBus);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
         long time_end = System.currentTimeMillis();
@@ -154,6 +157,9 @@ public class Exmodifier {
     }
 
     public void AddToTab(BuildCreativeModeTabContentsEvent event){
+        if (event.getTabKey()== CreativeModeTabs.FUNCTIONAL_BLOCKS){
+            event.accept(RegisterOther.ItemAbout.Refresh_Table);
+        }
         if (event.getTab() == ExModifierTab.get()) {
             Map<String,WeightedUtil<String>> weights = new HashMap<>();
 

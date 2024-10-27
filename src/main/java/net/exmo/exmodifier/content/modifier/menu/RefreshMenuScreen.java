@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.modifier.menu;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 import net.minecraft.client.gui.screens.inventory.ItemCombinerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -12,11 +13,14 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class RefreshMenuScreen extends ItemCombinerScreen<RefreshMenu> {
+
     private final Player player;
-    private static final ResourceLocation ANVIL_LOCATION = new ResourceLocation("textures/gui/container/anvil.png");
-    public RefreshMenuScreen(RefreshMenu p_98901_, Inventory p_98902_, Component p_98903_, ResourceLocation p_98904_) {
-        super(p_98901_, p_98902_, p_98903_, p_98904_);
-        this.player = p_98902_.player;
+    private static final ResourceLocation ANVIL_LOCATION = new ResourceLocation("exmodifier:textures/gui/container/refresh_table.png");
+
+    public RefreshMenuScreen(RefreshMenu p_97874_, Inventory p_97875_, Component p_97876_) {
+        super(p_97874_, p_97875_, p_97876_, ANVIL_LOCATION);
+        this.player = p_97875_.player;
+
     }
 
     @Override
