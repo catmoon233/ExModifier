@@ -47,4 +47,20 @@ public class EntityAttrUtil {
                 break;
         }
     }
+    public static void entityAddAttrTF(AttrGether attrGether, LivingEntity entity, WearOrTake wearOrTake) {
+        Attribute attribute = attrGether.attribute;
+        AttributeModifier attributeModifier = attrGether.attributeModifier;
+
+        switch (wearOrTake) {
+            case WEAR:
+                if (entity.getAttributes().hasAttribute(attribute)) if (!(entity.getAttribute(attribute).hasModifier(attributeModifier)))   entity.getAttribute(attribute).addPermanentModifier(attributeModifier);
+
+                break;
+            case TAKE:
+                if (entity.getAttributes().hasAttribute(attribute)) if ((entity.getAttribute(attribute).hasModifier(attributeModifier)))
+                    entity.getAttribute(attribute).removeModifier(attributeModifier);
+
+                break;
+        }
+    }
 }

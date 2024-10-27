@@ -114,7 +114,7 @@ public class ModifierEntry {
             }
             if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot))continue;
             //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
-            //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
+            //   if (!itemStack.getAttributeModifiersAffix(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
             double d0 = attributemodifier.getAmount();
             boolean flag = false;
             String percent = "";

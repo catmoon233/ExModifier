@@ -159,20 +159,19 @@ dependencies {
         jarJar.ranged(it, "[0.2.0,)")
     }
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-    implementation fg.deobf("curse.maven:patchouli-306770:3846086")
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.1")
     compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.1:api")
     implementation fg.deobf("curse.maven:apotheosis-313970:4634636")
+    implementation fg.deobf("net.darkhax.bookshelf:Bookshelf:13.3.56")
     implementation fg.deobf("curse.maven:max-health-fix-492246:5127466")
-
+    implementation fg.deobf("shadows.placebo:Placebo:6.6.6")
+    implementation fg.deobf("curse.maven:patchouli-306770:3846086")
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
     // The "userdev" classifier will be requested and setup by ForgeGradle.
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    implementation fg.deobf("shadows.placebo:Placebo:6.6.6")
-    implementation fg.deobf("net.darkhax.bookshelf:Bookshelf:13.3.56")
     implementation fg.deobf("curse.maven:artifacts-312353:5577758")
     implementation fg.deobf("curse.maven:cloth-config-348521:4973439")    // Exa
     implementation fg.deobf("curse.maven:expandability-465066:3678612")

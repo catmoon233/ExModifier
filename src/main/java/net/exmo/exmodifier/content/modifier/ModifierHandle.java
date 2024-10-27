@@ -6,7 +6,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
-import net.exmo.exmodifier.content.level.ItemLevel;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.*;
@@ -150,7 +149,7 @@ public class ModifierHandle {
                     }
                     if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot))continue;
                     //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
-                    //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
+                    //   if (!itemStack.getAttributeModifiersAffix(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
                     double d0 = attributemodifier.getAmount();
                     boolean flag = false;
                     String percent = "";
@@ -206,7 +205,7 @@ public class ModifierHandle {
             int numAddedModifiers = 0;
             LOGGER.debug("curios item3");
             List<ModifierAttriGether> finalAttriGethers = new ArrayList<>();
-            Set<String> appliedModifiers = new HashSet<>();
+            //Set<String> appliedModifiers = new HashSet<>();
             List<ModifierEntry> modifierEntries = new ArrayList<>();
             if (weightedUtil.weights.size()<refreshments)refreshments = weightedUtil.weights.size();
             while (numAddedModifiers < refreshments) {
@@ -224,10 +223,10 @@ public class ModifierHandle {
                     return;
                 }
 
-                if (!appliedModifiers.contains(modifierEntry.id)) {
+          //      if (!appliedModifiers.contains(modifierEntry.id)) {
                     LOGGER.debug("add entry start: " + modifierEntry.id);
-                    appliedModifiers.add(modifierEntry.id);
-
+           //         appliedModifiers.add(modifierEntry.id);
+                    weightedUtil.removeKey(modifierEntry.id);
                     stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.id);
                     numAddedModifiers++;
                     LOGGER.debug("add entry ing: " + modifierEntry.id);
@@ -247,7 +246,7 @@ public class ModifierHandle {
                         break;
                     }
                 }
-            }
+        //    }
 
             applyModifiersCurios(stack, finalAttriGethers, slots);
         }
@@ -255,7 +254,7 @@ public class ModifierHandle {
             int numAddedModifiers = 0;
 
             List<ModifierAttriGether> finalAttriGethers = new ArrayList<>();
-            Set<String> appliedModifiers = new HashSet<>();
+           // Set<String> appliedModifiers = new HashSet<>();
             List<ModifierEntry> modifierEntries = new ArrayList<>();
             if (weightedUtil.weights.size()<refreshments)refreshments = weightedUtil.weights.size();
 
@@ -269,10 +268,10 @@ public class ModifierHandle {
                     return;
                 }
 
-                if (!appliedModifiers.contains(modifierEntry.id)) {
+              //  if (!appliedModifiers.contains(modifierEntry.id)) {
                     LOGGER.debug("add entry start: " + modifierEntry.id);
-                    appliedModifiers.add(modifierEntry.id);
-
+               //     appliedModifiers.add(modifierEntry.id);
+                weightedUtil.removeKey(modifierEntry.id);
                     stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.id);
                     numAddedModifiers++;
                     LOGGER.debug("add entry ing: " + modifierEntry.id);
@@ -289,7 +288,7 @@ public class ModifierHandle {
                         stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", modifierEntry.id);
                         break;
                     }
-                }
+             //   }
             }
 
             applyModifiers(stack, finalAttriGethers, slot);
@@ -326,22 +325,22 @@ public class ModifierHandle {
                 if (!over && isValidForType(stack, type)) {
                     WeightedUtil<String> weightedUtil = new WeightedUtil<>(
                             modifierEntryMap.entrySet().stream()
-                                    .filter(e -> e.getValue().type == type )
-                                    .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
-                                    .filter(e -> !e.getValue().cantSelect)
-                                    .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= rarity)
-                                    .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
-                                    .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
                                     .filter(e -> {
+                                        var modifier = e.getValue();
                                         boolean hasWashItem = materialsList.stream()
-                                                .filter(m -> m.ItemId.equals(washItem))
-                                                .findAny()
-                                                .map(m -> !m.OnlyHasWashEntry)
-                                                .orElse(true);
+                                                .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
 
-                                        return hasWashItem || e.getValue().OnlyWashItems.contains(washItem);
+                                        return modifier.type == type &&
+                                                (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
+                                                !modifier.cantSelect &&
+                                                (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
+                                                (modifier.OnlyTags.isEmpty() || modifier.containTag(stack)) &&
+                                                (modifier.OnlyWashItems.isEmpty() || modifier.OnlyWashItems.contains(washItem) || hasWashItem);
                                     })
-                                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))
+                                    .collect(Collectors.toMap(
+                                            Map.Entry::getKey,
+                                            e -> e.getValue().weight
+                                    ))
                     );
 
                     if (!weightedUtil.weights.isEmpty()) {
@@ -454,31 +453,35 @@ public class ModifierHandle {
             }
         }
         private static void applyModifiersCurios(ItemStack stack, List<ModifierAttriGether> attriGethers, List<String> CuriosSlots) {
-            Map<String, Multimap<Attribute, AttributeModifier>> attriMap = new HashMap<>();
-            for (String CuriosSlot : CuriosSlots) {
-                attriMap.put(CuriosSlot, CuriosUtil.getAttributeModifiers(stack, CuriosSlot));
-            }
-            List<CuriosUtil.slotInfo> attriList = CuriosUtil.getCurioAttributeModifiers(stack);
+//            Map<String, Multimap<Attribute, AttributeModifier>> attriMap = new HashMap<>();
+//            for (String CuriosSlot : CuriosSlots) {
+//                attriMap.put(CuriosSlot, CuriosUtil.getAttributeModifiersAffix(stack, CuriosSlot));
+//            }
+//            List<CuriosUtil.slotInfo> attriList = CuriosUtil.getCurioAttributeModifiers(stack);
             for (ModifierAttriGether attriGether : attriGethers) {
                 attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName()+stack).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
-                    for (String CuriosSlot : CuriosSlots) CuriosUtil.addAttributeModifierApi(stack,attriGether,CuriosSlot);
+                    CuriosUtil.addAttributeModifierAffix(stack, new AttrGether(attriGether.attribute, attriGether.modifier));
+                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attriGether.attribute,attriGether.modifier), true, null);
+                    MinecraftForge.EVENT_BUS.post(event);
+//                    for (String CuriosSlot : CuriosSlots) CuriosUtil.addAttributeModifierApi(stack,attriGether,CuriosSlot);
                     //   ItemAttrUtil.addItemAttributeModifier(stack, attriGether.attribute, attriGether.modifier, applicableSlot);
                 } else {
                     LOGGER.debug("attribute is not exists");
                 }
             }
-            attriMap.forEach((key, value)->{
-                value.forEach((attribute, modifier) -> {
-                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attribute,modifier), true, key);
-                    MinecraftForge.EVENT_BUS.post(event);
-                    CuriosUtil.addAttributeModifierApi(event.stack,event.attriGether,event.curiosSlot);
-                });
-            });
-            for (CuriosUtil.slotInfo slotInfo : attriList){
-                CuriosApi.getCuriosHelper().addSlotModifier(stack,slotInfo.identifie,slotInfo.name,slotInfo.uuid,slotInfo.amount,slotInfo.operation,slotInfo.slot);
-            }
+//            attriMap.forEach((key, value)->{
+//                value.forEach((attribute, modifier) -> {
+//                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attribute,modifier), true, key);
+//                    MinecraftForge.EVENT_BUS.post(event);
+//
+//                    //CuriosUtil.addAttributeModifierApi(event.stack,event.attriGether,event.curiosSlot);
+//                });
+//            });
+//            for (CuriosUtil.slotInfo slotInfo : attriList){
+//                CuriosApi.getCuriosHelper().addSlotModifier(stack,slotInfo.identifie,slotInfo.name,slotInfo.uuid,slotInfo.amount,slotInfo.operation,slotInfo.slot);
+//            }
         }
         private static void applyModifiers(ItemStack stack, List<ModifierAttriGether> attriGethers, EquipmentSlot slot) {
             for (ModifierAttriGether attriGether : attriGethers) {
@@ -508,14 +511,21 @@ public class ModifierHandle {
             List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
             WeightedUtil<String> weightedUtil = new WeightedUtil<>(
                     modifierEntryMap.entrySet().stream()
-                            .filter(e -> e.getValue().type == ModifierEntry.Type.CURIOS)
-                            .filter(e -> curiosType.contains(e.getValue().curiosType)|| e.getValue().curiosType.equals("ALL"))
-                            .filter(e -> (e.getValue().OnlyItems.isEmpty() ||e.getValue().OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
-                            .filter(e -> !e.getValue().cantSelect)
-                            .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= rarity)
-                            .filter(e -> e.getValue().OnlyTags.isEmpty() ||e.getValue().containTag(stack))
-                            .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
-                            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight +1)));
+                            .filter(e -> {
+                                var modifier = e.getValue();
+                                return ModifierEntry.Type.CURIOS == modifier.type &&
+                                        (curiosType.contains(modifier.curiosType) || "ALL".equals(modifier.curiosType)) &&
+                                        (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
+                                        !modifier.cantSelect &&
+                                        (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
+                                        (modifier.OnlyTags.isEmpty() || modifier.containTag(stack)) &&
+                                        (modifier.OnlyWashItems.isEmpty() || modifier.OnlyWashItems.contains(washItem));
+                            })
+                            .collect(Collectors.toMap(
+                                    Map.Entry::getKey,
+                                    e -> e.getValue().weight + 1
+                            ))
+            );
             weightedUtil.increaseWeightsByRarity(rarity);
             RandomEntryCurios(stack, weightedUtil, curiosType, refreshnumber);
             stack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
@@ -559,7 +569,7 @@ public class ModifierHandle {
                     else {
                         for (String curioType : curiosType)
                         {
-                            if (ForgeRegistries.ATTRIBUTES.containsValue(modifierAttriGether1.getAttribute())&&ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute())!=null) CuriosUtil.removeAttributeModifier(stack,ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute()).toString(), modifierAttriGether1.getModifier().getAmount(),modifierAttriGether1.getModifier().getOperation().toValue(), curioType);
+                            if (ForgeRegistries.ATTRIBUTES.containsValue(modifierAttriGether1.getAttribute())&&ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute())!=null) CuriosUtil.removeAttributeModifierAffix(stack,ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute()).toString(), modifierAttriGether1.getModifier().getName());
                         }
                     }
                     stack.getOrCreateTag().remove("exmodifier_armor_modifier_applied"+i);

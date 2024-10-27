@@ -63,7 +63,7 @@ public class AttriGether {
 
         //    if (modifierAttriGether.slot==null)continue;
         //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
-        //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
+        //   if (!itemStack.getAttributeModifiersAffix(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
         double d0 = attributemodifier.getAmount();
         boolean flag = false;
         String percent = "";

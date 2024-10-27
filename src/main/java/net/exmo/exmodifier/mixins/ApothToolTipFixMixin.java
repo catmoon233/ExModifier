@@ -2,6 +2,8 @@ package net.exmo.exmodifier.mixins;
 
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.exmo.exmodifier.content.level.ItemLevel;
+import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
@@ -23,7 +25,11 @@ public  class ApothToolTipFixMixin    {
    private static Multimap<Attribute, AttributeModifier> getSortedModifiers(Multimap<Attribute, AttributeModifier> original, ItemStack stack,EquipmentSlot slot) {
        List<ModifierEntry> entrys = ModifierHandle.getEntrysFromItemStack(stack);
        List<ModifierAttriGether> attriGethers = new ArrayList<>();
-
+       for (ItemLevel entry : ItemLevelHandle.getItemLevels(stack)) {
+           if (entry != null) {
+               attriGethers.addAll(entry.attriGethers);
+           }
+       }
        for (ModifierEntry entry : entrys) {
            if (entry != null) {
                attriGethers.addAll(entry.attriGether);

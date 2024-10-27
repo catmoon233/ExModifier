@@ -15,7 +15,11 @@ public class WeightedUtil<T> {
         this.totalWeight = calculateTotalWeight();
         this.cumulativeWeights = calculateCumulativeWeights();
     }
-
+    public void removeKey(T key) {
+        weights.remove(key);
+        totalWeight = calculateTotalWeight();
+        cumulativeWeights = calculateCumulativeWeights();
+    }
     private float calculateTotalWeight() {
         float total = 0f;
         for (Float weight : weights.values()) {

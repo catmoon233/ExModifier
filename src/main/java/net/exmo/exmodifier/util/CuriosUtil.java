@@ -3,6 +3,7 @@ package net.exmo.exmodifier.util;
 import com.google.common.collect.Multimap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
@@ -33,6 +34,54 @@ public class CuriosUtil {
             this.operation = operation;
             this.slot = slot;
         }
+    }
+    public static void addAttributeModifierAffix(ItemStack itemStack,AttrGether attriGether){
+        CompoundTag tag = itemStack.getOrCreateTag();
+        if (!tag.contains("ExCurioAttributeModifiers")) tag.put("ExCurioAttributeModifiers", new ListTag());
+        ListTag modifiersList = tag.getList("ExCurioAttributeModifiers", 10);
+        CompoundTag tag1 = new CompoundTag();
+        tag1.putString("AttributeName", attriGether.attribute.getRegistryName().toString());
+        tag1.putString("Name", attriGether.attributeModifier.getName());
+        tag1.putString("UUID", attriGether.attributeModifier.getId().toString());
+        tag1.putDouble("Amount", attriGether.attributeModifier.getAmount());
+        tag1.putInt("Operation", attriGether.attributeModifier.getOperation().toValue());
+        modifiersList.add(tag1);
+    }
+    public static void removeAttributeModifierAffix(ItemStack itemStack, String attributeName,String name)
+    {
+        CompoundTag tag = itemStack.getOrCreateTag();
+        if (!tag.contains("ExCurioAttributeModifiers")) return;
+        ListTag modifiersList = tag.getList("ExCurioAttributeModifiers", 10);
+        for (int i = 0; i < modifiersList.size(); i++) {
+            CompoundTag modifier = modifiersList.getCompound(i);
+            if (modifier.getString("AttributeName").equals(attributeName) && modifier.getString("Name").equals(name)){
+                modifiersList.remove(i);
+                tag.put("ExCurioAttributeModifiers", modifiersList);
+                break;
+            }
+        }
+    }
+    public static List<AttrGether> getAttributeModifiersAffix(ItemStack itemStack)
+    {
+        CompoundTag tag = itemStack.getTag();
+        List<AttrGether> attrGethers = new ArrayList<>();
+        if (tag==null)return attrGethers;
+        if (tag.contains("ExCurioAttributeModifiers")) {
+            ListTag modifiersList = tag.getList("ExCurioAttributeModifiers", 10);
+            for (int i = 0; i < modifiersList.size(); i++) {
+                CompoundTag modifier = modifiersList.getCompound(i);
+                String attributeName = modifier.getString("AttributeName");
+                String name = modifier.getString("Name");
+                double amount = modifier.getDouble("Amount");
+                String string = modifier.getString("UUID");
+                UUID uuid = UUID.nameUUIDFromBytes((itemStack.toString() + name + attributeName).getBytes());
+                if (string.length()>=36) uuid = UUID.fromString(string);
+                int operation= modifier.getInt("Operation");
+                attrGethers.add(new AttrGether(ForgeRegistries.ATTRIBUTES.getValue(ResourceLocation.tryParse(attributeName)), new AttributeModifier(uuid, name, amount, AttributeModifier.Operation.fromValue(operation))));
+
+            }
+        }
+        return attrGethers;
     }
     public static List<String> getSlotsFromItemstack(ItemStack itemStack) {
 //        if (CuriosUtil.isCuriosItem(itemStack)) {
@@ -81,7 +130,7 @@ public class CuriosUtil {
         }
         return slotInfos;
     }
-    public static Multimap<Attribute, AttributeModifier> getAttributeModifiers(ItemStack itemStack, String slot) {
+    public static Multimap<Attribute, AttributeModifier> getAttributeModifiersAffix(ItemStack itemStack, String slot) {
       return   CuriosApi.getCuriosHelper().getAttributeModifiers(slot, itemStack);
     }
     /**
@@ -97,9 +146,9 @@ public class CuriosUtil {
         if (itemStack.getTag()==null)return;
         CompoundTag itemTag = itemStack.getTag();
 
-        // 检查是否已经有CurioAttributeModifiers标签
-        if (itemTag.contains("CurioAttributeModifiers", 9)) {
-            ListTag modifiersList = itemTag.getList("CurioAttributeModifiers", 10);
+        // 检查是否已经有ExCurioAttributeModifiers标签
+        if (itemTag.contains("ExCurioAttributeModifiers", 9)) {
+            ListTag modifiersList = itemTag.getList("ExCurioAttributeModifiers", 10);
 
             // 创建一个新的列表来保存未匹配的修饰符
             ListTag newModifiersList = new ListTag();
@@ -121,7 +170,7 @@ public class CuriosUtil {
             }
 
             // 替换旧的修饰符列表
-            itemTag.put("CurioAttributeModifiers", newModifiersList);
+            itemTag.put("ExCurioAttributeModifiers", newModifiersList);
         }
 
         itemStack.setTag(itemTag);
@@ -139,12 +188,12 @@ public class CuriosUtil {
     public static void addAttributeModifier(ItemStack itemStack, String attributeName, double amount, int operation, String slot) {
         CompoundTag itemTag = itemStack.getOrCreateTag();
 
-        // 检查是否已经有CurioAttributeModifiers标签
-        if (!itemTag.contains("CurioAttributeModifiers", 9)) {
-            itemTag.put("CurioAttributeModifiers", new ListTag());
+        // 检查是否已经有ExCurioAttributeModifiers标签
+        if (!itemTag.contains("ExCurioAttributeModifiers", 9)) {
+            itemTag.put("ExCurioAttributeModifiers", new ListTag());
         }
 
-        ListTag modifiersList = itemTag.getList("CurioAttributeModifiers", 10);
+        ListTag modifiersList = itemTag.getList("ExCurioAttributeModifiers", 10);
         boolean found = false;
 
         // 查找已存在的修饰符
@@ -169,7 +218,7 @@ public class CuriosUtil {
             modifiersList.add(newModifier);
         }
 
-        itemTag.put("CurioAttributeModifiers", modifiersList);
+        itemTag.put("ExCurioAttributeModifiers", modifiersList);
         itemStack.setTag(itemTag);
     }
 }
