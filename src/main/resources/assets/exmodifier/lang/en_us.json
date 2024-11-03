@@ -16,6 +16,7 @@
   "modifier.entry": "§7Entry:",
   "modifier.entry.UNKNOWN": "§7Unknown",
   "itemGroup.exmodifier_tab": "§6Modifier Book",
+  "attribute.exmodifier.durability": "durability",
   "exmodifier.tooltip.error": "§4error",
   "exmodifier.block.refresh_table": "refresh table",
   "block.exmodifier.refresh_table": "refresh table",

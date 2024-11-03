@@ -64,7 +64,7 @@ public class ExSuitHandle {
         }
         return exSuits;
     }
-    public static void addSuitLevel(Player player,String s,int amount){
+    public static void addSuitLevel(Player player,ExSuit s,int amount){
         player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
             if (capability.SuitsNum.containsKey(s)){
                 capability.SuitsNum.put(s,capability.SuitsNum.get(s)+amount);
@@ -80,7 +80,7 @@ public class ExSuitHandle {
     public static int getPlayerLevelFromExSuitId(Player player,String id){
         return player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).map(capability -> capability.SuitsNum.getOrDefault(id, 0)).orElse(0);
     }
-    public static void RemoveSuitLevel(Player player,String s,int amount){
+    public static void RemoveSuitLevel(Player player,ExSuit s,int amount){
         player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
             if (capability.SuitsNum.containsKey(s)){
                 if (capability.SuitsNum.get(s)==amount){
@@ -92,7 +92,7 @@ public class ExSuitHandle {
             capability.syncPlayerVariables(player);
         });
     }
-    public static void SetSuitLevel(Player player,String s,int level){
+    public static void SetSuitLevel(Player player,ExSuit s,int level){
         player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
             if (capability.SuitsNum.containsKey(s)){
                 capability.SuitsNum.put(s,level);
@@ -102,7 +102,7 @@ public class ExSuitHandle {
             capability.syncPlayerVariables(player);
         });
     }
-    public static Integer GetSuitLevel(Player player,String s){
+    public static Integer GetSuitLevel(Player player,ExSuit s){
         return player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).map(capability -> capability.SuitsNum.getOrDefault(s, 0)).orElse(0);
     }
     public static void RegisterExSuit(ExSuit exSuit){

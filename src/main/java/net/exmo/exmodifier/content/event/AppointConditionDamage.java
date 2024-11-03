@@ -48,6 +48,7 @@ public class AppointConditionDamage {
     }
     public static void Operate(ExSuit exSuit,Player player){
         Map<String,String> items = new HashMap<>();
+        if (exSuit==null)return;
         for (EquipmentSlot equipmentSlot : EquipmentSlot.values())
         {
             ItemStack is= player.getItemBySlot(equipmentSlot);
@@ -98,11 +99,12 @@ public class AppointConditionDamage {
         if (!exAfterArmorChange.isSuitOperate){
             Player player = (Player) exAfterArmorChange.event.getEntity();
             ExModifiervaV.PlayerVariables vars = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
-            for (String exSuit : vars.Suits){
-                ExSuitHandle.FindExSuit(exSuit).forEach(suit -> {
-                    Operate(suit,player);
-
-                });
+            for (ExSuit exSuit : vars.Suits){
+                Operate(exSuit,player);
+//                ExSuitHandle.FindExSuit(exSuit).forEach(suit -> {
+//                    Operate(suit,player);
+//
+//                });
             }
         }
 

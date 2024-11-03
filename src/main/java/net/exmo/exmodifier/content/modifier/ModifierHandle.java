@@ -96,7 +96,7 @@ public class ModifierHandle {
                 for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
                         .toList()) {
                     if (suit.visible) {
-                        Integer integer = pv.SuitsNum.get(suit.id);
+                        Integer integer = pv.SuitsNum.get(suit);
                         if (integer == null) integer = 0;
                         tooltips.add(Component.translatable("modifier.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
                         if (!suit.LocalDescription.isEmpty())
@@ -777,7 +777,8 @@ public class ModifierHandle {
         }
         modifierEntry.id = modifierEntry.type.toString().substring(0, 2) + entry.getKey();
         modifierEntry.isRandom = itemObject.has("isRandom") && itemObject.get("isRandom").getAsBoolean();
-        modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry".toLowerCase()) && itemObject.get("OnlyHasThisEntry").getAsBoolean();
+        modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry") && itemObject.get("OnlyHasThisEntry").getAsBoolean();
+
         modifierEntry.RandomNum = itemObject.has("RandomNum") ? itemObject.get("RandomNum").getAsInt() : 0;
         modifierEntry.weight = itemObject.has("weight") ? itemObject.get("weight").getAsFloat() : 1.0f;
         modifierEntry.needFreshValue = itemObject.has("needFreshValue") ? itemObject.get("needFreshValue").getAsFloat() : 0.0F;
@@ -886,6 +887,7 @@ public class ModifierHandle {
         if (attrGetherObj.has("minValue")){
             attrGether.minValue = attrGetherObj.get("minValue").getAsDouble();
         }
+        attrGether.Expression = attrGetherObj.has("ValueExpression") ? attrGetherObj.get("ValueExpression").getAsString() : "";
         attrGether.maxValue = attrGetherObj.has("maxValue") ? attrGetherObj.get("maxValue").getAsDouble() : attrGether.minValue;
         attrGether.reserveDouble = attrGetherObj.has("reserveDouble") ? attrGetherObj.get("reserveDouble").getAsInt() : 0;
         Map<Double, Float> simpleWeight = new HashMap<>();

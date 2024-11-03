@@ -7,6 +7,8 @@
   "mixins": [
     "AbstractArrowMixin",
     "AttackBaseChange",
+    "ChangeDurability",
+    "ChangeDurabilityBar",
     "DigSpeedMixin",
     "ItemCombinerMenuMixin",
     "ItemStackMixin",

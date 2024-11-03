@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.quality;
 
+import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.minecraft.world.item.ItemStack;
 
 import javax.print.attribute.Attribute;
@@ -10,6 +11,8 @@ import java.util.Map;
 
 public class ItemQuality {
     public int rarity; //稀有度
+    public List<ModifierEntry> entries = new ArrayList<>();
+    public boolean cantRemoveEntry = false;
     public String id ;
     public String LocalDescription; //描述
     public List<String> items = new ArrayList<>();
@@ -18,12 +21,9 @@ public class ItemQuality {
     public int refineNum = 0;
     public boolean isRandom = true;
     public List<String> materials = new ArrayList<>();
-    //你要怎么搞,新建文件还是修改原文件我去吃饭了
-    //xing
     public ItemQuality(int rarity, String id) {
         this.rarity = rarity;
         this.id = id;
     }
-    //你去写个handle吧
 
 }

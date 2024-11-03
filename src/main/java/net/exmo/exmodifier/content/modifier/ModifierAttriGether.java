@@ -30,6 +30,9 @@ public class ModifierAttriGether extends AttriGether {
     public double minValue = 0;
     public double maxValue = 0;
     public Map<Double, Float> simpleWeight = new HashMap<>();
+    public String Expression;
+
+
 
     @Override
     public String toString() {

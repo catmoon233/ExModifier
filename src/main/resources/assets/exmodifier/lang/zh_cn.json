@@ -23,7 +23,13 @@
   "modifier.level.up": "§7由 §4%s§r §7升级至§r §a%s§r §7↑§l%s",
   "attribute.exmodifier.dodge": "闪避几率",
   "attribute.exmodifier.hit_rate": "命中几率",
+  "effect.exmodifier.dodge": "§7隐蔽",
+  "effect.exmodifier.reduce_injuries": "§7减伤",
+  "effect.exmodifier.potion_power": "§9药水增强",
+  "effect.exmodifier.hit_rate": "§a命中",
+  "effect.exmodifier.vulnerability": "§4易伤",
   "attribute.exmodifier.dig_speed": "挖掘效率",
+  "attribute.exmodifier.durability": "耐久度",
   "attribute.exmodifier.percent_heal": "攻击百分比回血",
   "attribute.exmodifier.arrow_base_damage": "基础弓箭伤害",
 

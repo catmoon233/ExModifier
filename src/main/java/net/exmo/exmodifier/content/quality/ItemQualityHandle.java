@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.FileNotFoundException;
@@ -17,6 +18,7 @@ import java.util.Map;
 import static net.exmo.exmodifier.Exmodifier.LOGGER;
 
 public class ItemQualityHandle {
+
     public static Map<String,ItemQuality> itemQualityMap = new HashMap<>();
     public static final Path ItemsQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/ItemsQualityConfigPath.json");
     public static void init() throws FileNotFoundException {
@@ -40,6 +42,7 @@ public class ItemQualityHandle {
             String id = entry.getKey();
             String LocalDescription = jsonObject.has("LocalDescription") ? jsonObject.get("LocalDescription").getAsString() : "";
             List<String> items = new ArrayList<>();
+            List<ModifierEntry> modifierEntries = new ArrayList<>();
             List<String> materials = new ArrayList<>();
             if (jsonObject.has("items")) {
                 for (JsonElement item : jsonObject.get("items").getAsJsonArray()) {
@@ -51,11 +54,18 @@ public class ItemQualityHandle {
                     materials.add(material.getAsString());
                 }
             }
+            if (jsonObject.has("ModifierEntries")) {
+                for (JsonElement modifier : jsonObject.get("ModifierEntries").getAsJsonArray()){
+                    modifierEntries.add(ModifierHandle.modifierEntryMap.get(modifier.getAsString()));
+                }
+            }
             ItemQuality itemQuality = new ItemQuality(rarity,id);
             itemQuality.items = items;
+            itemQuality.entries = modifierEntries;
+            itemQuality.cantRemoveEntry = jsonObject.has("cantRemoveEntry") && jsonObject.get("cantRemoveEntry").getAsBoolean();
             itemQuality.LocalDescription = LocalDescription;
-            itemQuality.autoRefresh = jsonObject.has("autoRefresh") ? jsonObject.get("autoRefresh").getAsBoolean() : false;
-            itemQuality.isRandom = jsonObject.has("isRandom") ? jsonObject.get("isRandom").getAsBoolean() : true;
+            itemQuality.autoRefresh = jsonObject.has("autoRefresh") && jsonObject.get("autoRefresh").getAsBoolean();
+            itemQuality.isRandom = !jsonObject.has("isRandom") || jsonObject.get("isRandom").getAsBoolean();
             itemQuality.materials = materials;
             itemQualityMap.put(id,itemQuality);
             LOGGER.debug("Add ItemsQuality: "+id );
@@ -79,4 +89,3 @@ public class ItemQualityHandle {
 	武器进阶可以设置消耗同等等级的武器来进阶
      */
 }
-//我写个默认词条 等等哈

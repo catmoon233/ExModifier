@@ -2,6 +2,8 @@ package net.exmo.exmodifier.network;
 
 
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -246,8 +248,8 @@ public class ExModifiervaV {
     }
 
     public static class PlayerVariables {
-        public  List<String> Suits = new ArrayList<>();
-        public Map<String, Integer> SuitsNum = new HashMap<>();
+        public  List<ExSuit> Suits = new ArrayList<>();
+        public Map<ExSuit, Integer> SuitsNum = new HashMap<>();
         public Map<String, Float> itemsDamage = new HashMap<>();
         public Map<String,String> syncContent = new HashMap<>();
         public ItemStack Sitemstack = ItemStack.EMPTY;
@@ -262,14 +264,16 @@ public class ExModifiervaV {
 
             nbt.put("Sitemstack", Sitemstack.save(new CompoundTag()));
             ListTag taskListTag = new ListTag();
-            for (String value : Suits) {
-                taskListTag.add(StringTag.valueOf(value));
+            for (ExSuit value : Suits) {
+                if (value != null) {
+                    taskListTag.add(StringTag.valueOf(value.id));
+                }
             }
             nbt.put("Suits", taskListTag);
 
             CompoundTag SuitsNuma = new CompoundTag();
-            for (Map.Entry<String, Integer> entry : SuitsNum.entrySet()) {
-                SuitsNuma.putString(entry.getKey(), entry.getValue().toString());
+            for (Map.Entry<ExSuit, Integer> entry : SuitsNum.entrySet()) {
+                SuitsNuma.putString(entry.getKey().id, entry.getValue().toString());
             }
             nbt.put("SuitsNum", SuitsNuma);
 
@@ -291,16 +295,16 @@ public class ExModifiervaV {
             CompoundTag nbt = (CompoundTag) Tag;
             Sitemstack = ItemStack.of(nbt.getCompound("Sitemstack"));
             ListTag taskListTag = nbt.getList("Suits", 8);
-            List<String> SuitsList = new ArrayList<>();
+            List<ExSuit> SuitsList = new ArrayList<>();
             for (int i = 0; i < taskListTag.size(); ++i) {
-                SuitsList.add(taskListTag.getString(i));
+                SuitsList.add(ExSuitHandle.LoadExSuit.get(taskListTag.getString(i)));
             }
             Suits = SuitsList;
 
             CompoundTag SuitsNuma = nbt.getCompound("SuitsNum");
             for (String key : SuitsNuma.getAllKeys()) {
                 String value = SuitsNuma.getString(key);
-                SuitsNum.put(key, Integer.parseInt(value));
+                SuitsNum.put(ExSuitHandle.LoadExSuit.get(key), Integer.parseInt(value));
             }
 
             CompoundTag syncContenta = nbt.getCompound("syncContent");

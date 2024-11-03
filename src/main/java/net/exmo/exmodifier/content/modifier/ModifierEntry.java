@@ -6,7 +6,10 @@ import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -32,9 +35,30 @@ public class ModifierEntry {
     public Map<String,String> setting = new HashMap<>();
     public float weight;
     public boolean cantSelect = false;
+    public boolean isRandom = true;
+    public boolean OnlyHasThisEntry = false;
+    public Type type;
+    public boolean isCuriosEntry =false;
+    public float needFreshValue = 0;
+    public String curiosType;
+    public List<String> OnlyTags = new ArrayList<>();
+    public List<String> OnlyItems = new ArrayList<>();
+    public List<String> OnlyWashItems = new ArrayList<>();
+    public List<String> Commands = new ArrayList<>();
+    public String id;
+    public String Expression;
+    public int RandomNum;
+    public List<ModifierAttriGether> attriGether = new java.util.ArrayList<>();
     public List<String> getUnlessItemTags() {
         return UnlessItemTags;
     }
+
+
+
+
+
+
+
 
     public void setUnlessItemTags(List<String> unlessItemTags) {
         UnlessItemTags = unlessItemTags;
@@ -55,6 +79,30 @@ public class ModifierEntry {
             if (containItemType(item, type)) return true;
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "ModifierEntry{" +
+                "setting=" + setting +
+                ", weight=" + weight +
+                ", cantSelect=" + cantSelect +
+                ", UnlessItemTags=" + UnlessItemTags +
+                ", UnlessItemIds=" + UnlessItemIds +
+                ", isRandom=" + isRandom +
+                ", OnlyHasThisEntry=" + OnlyHasThisEntry +
+                ", type=" + type +
+                ", isCuriosEntry=" + isCuriosEntry +
+                ", needFreshValue=" + needFreshValue +
+                ", curiosType='" + curiosType + '\'' +
+                ", OnlyTags=" + OnlyTags +
+                ", OnlyItems=" + OnlyItems +
+                ", OnlyWashItems=" + OnlyWashItems +
+                ", Commands=" + Commands +
+                ", id='" + id + '\'' +
+                ", RandomNum=" + RandomNum +
+                ", attriGether=" + attriGether +
+                '}';
     }
 
     // public double level;
@@ -344,19 +392,7 @@ public class ModifierEntry {
         }
         return true;
     }
-    public boolean isRandom = true;
-    public boolean OnlyHasThisEntry = false;
-    public Type type;
-    public boolean isCuriosEntry =false;
-    public float needFreshValue = 0;
-    public String curiosType;
-    public List<String> OnlyTags = new ArrayList<>();
-    public List<String> OnlyItems = new ArrayList<>();
-    public List<String> OnlyWashItems = new ArrayList<>();
-    public List<String> Commands = new ArrayList<>();
-    public String id;
-    public int RandomNum;
-    public List<ModifierAttriGether> attriGether = new java.util.ArrayList<>();
+
 
     public float getWeight() {
         return weight;
@@ -366,23 +402,6 @@ public class ModifierEntry {
         return id;
     }
 
-    @Override
-    public String toString() {
-        return "ModifierEntry{" +
-                "weight=" + weight +
-                ", isRandom=" + isRandom +
-                ", OnlyHasThisEntry=" + OnlyHasThisEntry +
-                ", type=" + type +
-                ", isCuriosEntry=" + isCuriosEntry +
-                ", curiosType='" + curiosType + '\'' +
-                ", OnlyTags=" + OnlyTags +
-                ", OnlyItems=" + OnlyItems +
-                ", OnlyWashItems=" + OnlyWashItems +
-                ", id='" + id + '\'' +
-                ", RandomNum=" + RandomNum +
-                ", attriGether=" + attriGether +
-                '}';
-    }
     public List<Component> GenerateItemTooltip()
     {
         List<Component> list = new ArrayList<>();

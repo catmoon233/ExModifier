@@ -15,6 +15,7 @@ import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.CuriosUtil;
+import net.exmo.exmodifier.util.DynamicExpressionEvaluator;
 import net.exmo.exmodifier.util.EntityAttrUtil;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -24,6 +25,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 //import net.minecraftforge.client.eventC.MovementInputUpdateEvent;
@@ -167,7 +169,18 @@ public class MainEvent {
 //                }
 //            }
 //        }
-
+@SubscribeEvent
+public static void iLevelAttriGetherModifier(ExAddEntryAttrigetherEvent event){
+    if(!event.selectedAttriGether.Expression.isEmpty()){
+        ItemStack stack = event.stack;
+        AttributeModifier modifier =  event.selectedAttriGether.getModifier();
+        int level = ModifierEntryHelper.of(stack).getModifierEntryLevel(event.getModifierEntry().id);
+        DynamicExpressionEvaluator dynamicExpressionEvaluator = new DynamicExpressionEvaluator();
+        dynamicExpressionEvaluator.setVariable("level", level);
+        double amout = dynamicExpressionEvaluator.evaluate(event.selectedAttriGether.Expression);
+        event.selectedAttriGether.modifier = new AttributeModifier(modifier.getId(), modifier.getName(), amout, modifier.getOperation());
+    }
+}
         public static List<Component> ItemToolTipsChange(ItemStack stack, List<Component> tooltip, Player player) {
             if (stack.getTag()!=null){
                 ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(stack);
@@ -202,7 +215,7 @@ public class MainEvent {
             Player player = (Player) event.getEntity();
             player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
 
-                Map<String,Integer> map = capability.SuitsNum ;
+                Map<ExSuit,Integer> map = capability.SuitsNum ;
                 capability.SuitsNum = map.entrySet().stream()
                         .collect(Collectors.toMap(
                                 Map.Entry::getKey,
@@ -238,10 +251,9 @@ public class MainEvent {
                     commandSourceStack = null;
                 }
 
-                for (String suitId : capability.Suits){
-                    ExSuit suit = ExSuitHandle.LoadExSuit.get(suitId);
+                for (ExSuit suit : capability.Suits){
                     if (suit == null)continue;
-                    int suitLevel = ExSuitHandle.GetSuitLevel(player, suitId);
+                    int suitLevel = ExSuitHandle.GetSuitLevel(player, suit);
                     for (int level = 1; level <= suitLevel; level++) {
                         //事件触发器在此 !!!!!!!!!!!!!!!!!!!
                         if (suit.getTriggers().get(level) != trigger)continue;
@@ -250,7 +262,7 @@ public class MainEvent {
                         if (commands != null && !player.level().isClientSide() && player.getServer() != null &&commandSourceStack!=null) {
                             int finalLevel = level;
                             commands.forEach(command ->{
-                                if (trigger == ExSuit.Trigger.ATTACK) {
+                                if (trigger == ExSuit.Trigger.ATTACK || trigger == ExSuit.Trigger.PROJECTILE_HIT) {
                                     String string = player.getPersistentData().getString("hurtentity-uuid");
                                     if (!string.equals("null")) {
                                         command = command.replace("$(hurtentity)", string);
@@ -340,8 +352,9 @@ public class MainEvent {
         }
         @SubscribeEvent
         public static void PlayerProjectile(ProjectileImpactEvent event){
-            if ((event.getEntity() instanceof Player player)){
+            if ((event.getProjectile().getOwner() instanceof Player player)){
                 List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                if (event.getEntity()!=null) player.getPersistentData().putString("hurtentity-uuid",event.getEntity().getUUID().toString());
                 addx(player,eventParameters,"PROJECTILE_HIT");
                 ApplySuitEffect(player, ExSuit.Trigger.PROJECTILE_HIT);
             }
@@ -563,14 +576,14 @@ public class MainEvent {
                     }
 
                     if (effectType == WEAR) {
-                        ExSuitHandle.addSuitLevel(player, suit.id, 1);
+                        ExSuitHandle.addSuitLevel(player, suit, 1);
                     } else {
-                        ExSuitHandle.RemoveSuitLevel(player, suit.id, 1);
+                        ExSuitHandle.RemoveSuitLevel(player, suit, 1);
                     }
                     flag =true;
 
 
-                    int suitLevel = ExSuitHandle.GetSuitLevel(player, suit.id);
+                    int suitLevel = ExSuitHandle.GetSuitLevel(player, suit);
                     List<ModifierAttriGether> attriGethers = suit.attriGether.get(effectType == WEAR ? suitLevel : suitLevel + 1);
 
                     if (attriGethers != null) {
@@ -590,11 +603,11 @@ public class MainEvent {
                     ExSuitApplyOnChangeEvent event = new ExSuitApplyOnChangeEvent(player, suit, i, effectType);
                     MinecraftForge.EVENT_BUS.post(event);
                     player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-                        List<String> suitsList = capability.Suits;
-                        if (suitLevel > 0 && !suitsList.contains(suit.id)) {
-                            suitsList.add(suit.id);
-                        } else if (suitLevel <= 0 && suitsList.contains(suit.id)) {
-                            suitsList.remove(suit.id);
+                        List<ExSuit> suitsList = capability.Suits;
+                        if (suitLevel > 0 && !suitsList.contains(suit)) {
+                            suitsList.add(suit);
+                        } else if (suitLevel <= 0 && suitsList.contains(suit)) {
+                            suitsList.remove(suit);
                         }
                         capability.Suits = suitsList;
                         capability.syncPlayerVariables(player);

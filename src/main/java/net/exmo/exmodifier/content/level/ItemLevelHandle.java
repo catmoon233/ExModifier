@@ -7,8 +7,10 @@ import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ItemLevelHelper;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.events.ExAddEntryAttrigetherEvent;
 import net.exmo.exmodifier.events.ExItemUpEvent;
 import net.exmo.exmodifier.events.ExLevelRegistryEvent;
 import net.exmo.exmodifier.util.*;
@@ -119,6 +121,7 @@ public class ItemLevelHandle {
         }
 
     }
+
     public static void ItemLevelRefresh(ItemStack stack,int rarity ,int refreshnumber,String washItem)  {
         if (stack.getTag() == null)return;
         if (  ItemLevelHelper.of(stack).getItemLevelsSize()>0) return;
