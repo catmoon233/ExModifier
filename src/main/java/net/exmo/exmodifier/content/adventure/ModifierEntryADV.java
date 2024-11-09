@@ -29,21 +29,21 @@ public class ModifierEntryADV {
                 .weight(5)
                 .addModifierAttriGether().setModifierCreateHelper(ExAttribute.DODGE.get(),0.2, AttributeModifier.Operation.ADDITION).finish_add().
                 addIntoListAndReload(entries,"armor2");
-        for (int swim=0;swim<100;swim++){
+        for (int swim=0;swim<15;swim++){
             new ModifierCreateHelper("swim"+swim,ModifierEntry.Type.ATTACKABLE)
                     .weight(swim+1)
                     .addModifierAttriGether().setModifierCreateHelper(ForgeMod.SWIM_SPEED.get(),
                             101-swim, AttributeModifier.Operation.ADDITION).finish_add().
                     addIntoListAndReload(entries);
         }
-        for (int atk=0;atk<100;atk++){
+        for (int atk=0;atk<15;atk++){
             new ModifierCreateHelper("atk"+atk,ModifierEntry.Type.ATTACKABLE)
                     .weight(atk+1)
                     .addModifierAttriGether().setModifierCreateHelper(Attributes.ATTACK_DAMAGE,
                             (101-atk)*2, AttributeModifier.Operation.ADDITION).finish_add().
                     addIntoListAndReload(entries);
         }
-        for (int kui=0;kui<100;kui++){
+        for (int kui=0;kui<15;kui++){
             new ModifierCreateHelper("kui"+kui,ModifierEntry.Type.ATTACKABLE)
                     .weight(kui+1)
                     .addModifierAttriGether().setModifierCreateHelper(Attributes.ARMOR_TOUGHNESS,
