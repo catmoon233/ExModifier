@@ -49,7 +49,7 @@ public abstract class ToolTipMixin {
 
         // 遍历 multimap 并记录需要删除的 AttributeModifier
         multimap.forEach((attribute, attributeModifier) -> {
-         //   Exmodifier.LOGGER.debug("Attribute: " + attribute + ", Modifier: " + attributeModifier + "id " + attributeModifier.getId());
+         //   Exmodifier.LOGGER.debug("Attribute: " + attribute + ", Modifier: " + attributeModifier + "Id " + attributeModifier.getId());
             if (attriGethers.stream().anyMatch(modifierAttriGether -> modifierAttriGether.getModifier().getName().equals(attributeModifier.getName()))) {
                 toRemove.add(attributeModifier);
             }

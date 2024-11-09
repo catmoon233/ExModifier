@@ -2,25 +2,33 @@ package net.exmo.exmodifier.content.quality;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.exmo.exmodifier.Exmodifier;
+
+import net.exmo.exmodifier.content.helper.ItemLevelHelper;
+import net.exmo.exmodifier.content.helper.ItemQualityHelper;
+import net.exmo.exmodifier.content.level.ItemLevelInstant;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.util.WeightedUtil;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Exmodifier.LOGGER;
 
+
 public class ItemQualityHandle {
 
-    public static Map<String,ItemQuality> itemQualityMap = new HashMap<>();
-    public static final Path ItemsQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/ItemsQualityConfigPath.json");
+    public static Map<String, ItemQuality> itemQualityMap = new java.util.HashMap<>();
+
+    public static final Path ItemsQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/ItemsQualityConfig.json");
     public static void init() throws FileNotFoundException {
         if (Files.exists(ItemsQualityConfigPath)) {
             itemQualityMap = new HashMap<>();
@@ -31,7 +39,77 @@ public class ItemQualityHandle {
             }
         }
     }
+    public static class CommonEvent {
 
+    }
+    public static void contaiff(ItemStack stack, int rarity , int refreshnumber, ModifierEntry.Type type)  {
+        Exmodifier.LOGGER.debug("itemQualityRefresh: " + stack.getDescriptionId() + " " + type);
+        WeightedUtil<String> weightedUtil = new WeightedUtil<>(
+                itemQualityMap.entrySet().stream()
+                        .filter(e -> e.getValue().type == type )
+                        .filter(e -> (e.getValue().getOnlyItemIds().isEmpty() ||e.getValue().getOnlyItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
+//                                .filter(e -> !e.getValue().cantSelect)
+//                                .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
+                        .filter(e -> e.getValue().getOnlyItemTags().isEmpty() ||e.getValue().containTag(stack))
+                        .filter(e -> e.getValue().getOnlyWashItems().isEmpty() ||e.getValue().getOnlyWashItems().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()))
+//                                .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
+//                                .filter(e -> {
+//                                    boolean hasWashItem = materialsList.stream()
+//                                            .filter(m -> m.ItemId.equals(washItem))
+//                                            .findAny()
+//                                            .map(m -> !m.OnlyHasWashEntry)
+//                                            .orElse(true);
+//
+//                                    return hasWashItem || e.getValue().OnlyWashItems.contains(washItem);
+//                                })
+                        .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getWeight()))
+        );
+        //RandomEntryCurios(stack, weightedUtil, curiosType, refreshnumber);
+        if (!weightedUtil.weights.isEmpty()) {
+            Exmodifier.LOGGER.debug("RandomLevelEntry: " + type);
+            weightedUtil.increaseWeightsByRarity(rarity);
+            itemQualityRefresh2(stack, weightedUtil, refreshnumber);
+
+            Exmodifier.LOGGER.debug("RandomLevel: " + type + " " + stack.getDescriptionId());
+//            stack.getTag().putInt("exmodifier_level_modifier_applied",
+//                    stack.getTag().getInt("exmodifier_level_modifier_applied") + 1);
+        }
+
+    }
+    public static void itemQualityRefresh2(ItemStack stack, WeightedUtil<String> weightedUtil, int refreshnumber)  {
+        int numAddedModifiers = 0;
+        List<ItemQuality> foundItemLevels = new ArrayList<>();
+
+        if (weightedUtil.weights.size()<refreshnumber)refreshnumber = weightedUtil.weights.size();
+        while (numAddedModifiers < refreshnumber) {
+            ItemQuality itemQuality = itemQualityMap.get(weightedUtil.selectRandomKeyBasedOnWeights());
+            if (foundItemLevels.contains(itemQuality))continue;
+            Exmodifier.LOGGER.debug("add leelentry: " + itemQuality.Id);
+            foundItemLevels.add(itemQuality);
+            ItemQualityHelper.of(stack).addQualityEntry(itemQuality,true,true);
+
+            numAddedModifiers++;
+
+        }
+    }
+    public static void ItemQualityRefresh(ItemStack stack, int rarity , int refreshnumber, String washItem)  {
+        if (stack.getTag() == null)return;
+        if (  ItemQualityHelper.of(stack).of(stack).getQualityEntriesSize()>0) return;
+        // List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
+        boolean find = false;
+        for (ModifierEntry.Type type : Arrays.stream(ModifierEntry.Type.values()).filter(e -> e != ModifierEntry.Type.UNKNOWN).filter(e -> e != ModifierEntry.Type.ALL).toList()) {
+            if (ModifierEntry.containItemType(stack, type)) {
+                contaiff(stack,rarity,refreshnumber,type);
+                find = true;
+                break;
+            }
+
+        }
+        if (!find) {
+            contaiff(stack,rarity,refreshnumber, ModifierEntry.Type.ALL);
+            Exmodifier.LOGGER.debug("ItemQualityRefresh: No Type And refresh ALL TYPE");
+        }
+    }
     private static void processItemsQualityConfigEntry(Map.Entry<String, JsonElement> entry) {
         if (!entry.getValue().isJsonObject()) {
             return;

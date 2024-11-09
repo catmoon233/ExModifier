@@ -8,6 +8,7 @@ public class ModifierInstant {
     private ModifierEntry modifierEntry;
     private int level;
     private boolean itemQualityLock;
+
     private CompoundTag data;
     public static ModifierInstant of (ModifierEntry modifierEntry, int level, CompoundTag data) {
         return new ModifierInstant(modifierEntry,level).setData(data);

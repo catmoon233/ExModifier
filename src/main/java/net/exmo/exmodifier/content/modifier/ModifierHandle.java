@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.helper.ItemInfo;
+import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevel;
 import net.exmo.exmodifier.content.suit.ExSuit;
@@ -128,6 +129,7 @@ public class ModifierHandle {
                 }
                 tooltips.addAll(GenSuitInfo(player,modifierEntry));
 
+
                 for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
                     AttributeModifier attributemodifier = modifierAttriGether.getModifier();
                     Attribute attribute = modifierAttriGether.getAttribute();
@@ -138,10 +140,18 @@ public class ModifierHandle {
 //                    if (modifierAttriGether.IsAutoEquipmentSlot){
 //                        slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
 //                    }
-                    if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot) && CuriosUtil.getAttributeModifiersAffix(itemStack).stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(attributemodifier.getName())))continue;
+                    AttributeModifier finalAttributemodifier = attributemodifier;
+                    if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot) && CuriosUtil.getAttributeModifiersAffix(itemStack).stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(finalAttributemodifier.getName())))continue;
                     //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
                     //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
+//                    attributemodifier = ItemAttrUtil.getAttributeModifierFromNamed(attributemodifier.getName(),itemStack);
+//                    if (attributemodifier==null)continue;
                     double d0 = attributemodifier.getAmount();
+                    if (modifierAttriGether.Expression!=null&& !modifierAttriGether.Expression.isEmpty()){
+                       DynamicExpressionEvaluator evaluator = new DynamicExpressionEvaluator();
+                       evaluator.setVariable("level", level);
+                       d0 = evaluator.evaluate(modifierAttriGether.Expression);
+                    }
                     boolean flag = false;
                     String percent = "";
                     double d1;
@@ -209,27 +219,27 @@ public class ModifierHandle {
                     return;
                 }
                 weightedUtil.removeKey(modifierEntry.id);
-        //        if (!appliedModifiers.contains(modifierEntry.id)) {
+        //        if (!appliedModifiers.contains(modifierEntry.Id)) {
                     LOGGER.debug("add entry start: " + modifierEntry.id);
-                   // appliedModifiers.add(modifierEntry.id);
+                   // appliedModifiers.add(modifierEntry.Id);
 
-//                    stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.id);
+//                    stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.Id);
                     numAddedModifiers++;
                     LOGGER.debug("add entry ing: " + modifierEntry.id);
-                ModifierEntryHelper.of(stack).addModifierEntry(ModifierInstant.of(modifierEntry),true);
+                ModifierEntryHelper.of(stack).addModifierEntry(ModifierInstant.of(modifierEntry),true,true);
 
 //                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
 //                    ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, true, refreshments, attriGethers,modifierEntry,modifierEntries);
 //                    MinecraftForge.EVENT_BUS.post(event);
 //
-//                    LOGGER.debug("add entry end: " + modifierEntry.id +" "+attriGethers);
+//                    LOGGER.debug("add entry end: " + modifierEntry.Id +" "+attriGethers);
 //                    finalAttriGethers.addAll(event.getAttriGether());
 //                    if (modifierEntry.OnlyHasThisEntry){
 //                        finalAttriGethers = new ArrayList<>(event.getAttriGether());
 //                        for (int i = numAddedModifiers ; i < refreshments; i++){
 //                            stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + i, "");
 //                        }
-//                        stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", modifierEntry.id);
+//                        stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", modifierEntry.Id);
 //                        break;
 //                    }
 //             //   }
@@ -255,13 +265,13 @@ public class ModifierHandle {
                     return;
                 }
 
-               // if (!appliedModifiers.contains(modifierEntry.id)) {
+               // if (!appliedModifiers.contains(modifierEntry.Id)) {
                     LOGGER.debug("add entry start: " + modifierEntry.id);
-                  //  appliedModifiers.add(modifierEntry.id);
+                  //  appliedModifiers.add(modifierEntry.Id);
                 weightedUtil.removeKey(modifierEntry.id);
                 ItemInfo itemInfo = new ItemInfo(stack);
-                itemInfo.getModifierEntryHelper().addModifierEntry(new ModifierInstant(modifierEntry,1),true);
-                 //   stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.id);
+                itemInfo.getModifierEntryHelper().addModifierEntry(new ModifierInstant(modifierEntry,1),true,true);
+                 //   stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.Id);
                     numAddedModifiers++;
                     LOGGER.debug("add entry ing: " + modifierEntry.id);
 
@@ -382,7 +392,7 @@ public class ModifierHandle {
                                 ExAddEntryAttrigetherEvent event = new ExAddEntryAttrigetherEvent(modifierEntry, selectedAttriGether, stack);
                                 MinecraftForge.EVENT_BUS.post(event);
                                 attriGethers.add(event.selectedAttriGether);
-                                LOGGER.debug("add Random entry: " + selectedAttriGether.getAttribute().getDescriptionId());
+                                LOGGER.debug("add Random entry: " + event.selectedAttriGether.getAttribute().getDescriptionId());
                             }
                         }
 
@@ -475,13 +485,13 @@ public class ModifierHandle {
 //                CuriosApi.getCuriosHelper().addSlotModifier(stack,slotInfo.identifie,slotInfo.name,slotInfo.uuid,slotInfo.amount,slotInfo.operation,slotInfo.slot);
 //            }
         }
-        public static void applyModifiers(ItemStack stack, List<ModifierAttriGether> attriGethers, EquipmentSlot slot) {
+        public static void applyModifiers(ItemStack stack, List<ModifierAttriGether> attriGethers, EquipmentSlot slot,ModifierInstant modifierInstant) {
             for (ModifierAttriGether attriGether : attriGethers) {
                 EquipmentSlot applicableSlot = attriGether.IsAutoEquipmentSlot ? slot : attriGether.slot;
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
                     attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName()+stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
-                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, attriGether, applicableSlot);
+                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, attriGether, applicableSlot,modifierInstant);
                     MinecraftForge.EVENT_BUS.post(event);
                     ItemAttrUtil.addItemAttributeModifier(event.stack,event.attriGether.attribute, event.attriGether.modifier, event.slot);
                 } else {
@@ -742,13 +752,12 @@ public class ModifierHandle {
         WeightedUtil<String> weightedUtil = new WeightedUtil<String>(
                 entries.stream().collect(Collectors.toMap(ModifierEntry::getId, ModifierEntry::getWeight))
         );
-
-        entries.forEach(entry -> {
+        ExEntryRegistryEvent event = new ExEntryRegistryEvent(entries);
+        MinecraftForge.EVENT_BUS.post(event);
+        event.entries.forEach(entry -> {
             RegisterModifierEntry(entry);
             LOGGER.debug(entry.id + " 出现概率 " + weightedUtil.getProbability(entry.id) * 100 + "%");
         });
-        ExEntryRegistryEvent event = new ExEntryRegistryEvent(entries);
-        MinecraftForge.EVENT_BUS.post(event);
 
         LOGGER.debug("ReadConfig Over: Type: " + moconfig.type + " Path: " + moconfig.configFile + " entries: " + entries.size());
     }
@@ -798,6 +807,12 @@ public class ModifierHandle {
                 modifierEntry.OnlyItems.add(item.getAsString());
             });
         }
+        if (itemObject.has("specialTags")){
+            JsonArray OnlyItems = itemObject.get("specialTags").getAsJsonArray();
+            OnlyItems.forEach(item -> {
+                modifierEntry.specialTags.add(item.getAsString());
+            });
+        }
         if (itemObject.has("OnlyTags")){
             JsonArray OnlyItems = itemObject.get("OnlyTags").getAsJsonArray();
             OnlyItems.forEach(item -> {
@@ -832,7 +847,7 @@ public class ModifierHandle {
             processAttrGethers(moconfig, modifierEntry, itemObject.getAsJsonObject("attrGethers"));
         }
 
-        LOGGER.debug("ReadConfig: Type: " + moconfig.type + " Path: " + moconfig.configFile + " id: " + entry.getKey() + " attrGethers: " + modifierEntry.attriGether.size());
+        LOGGER.debug("ReadConfig: Type: " + moconfig.type + " Path: " + moconfig.configFile + " Id: " + entry.getKey() + " attrGethers: " + modifierEntry.attriGether.size());
         entries.add(modifierEntry);
     }
 

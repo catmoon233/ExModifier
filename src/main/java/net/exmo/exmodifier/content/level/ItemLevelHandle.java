@@ -10,7 +10,6 @@ import net.exmo.exmodifier.content.helper.ItemLevelHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
-import net.exmo.exmodifier.events.ExAddEntryAttrigetherEvent;
 import net.exmo.exmodifier.events.ExItemUpEvent;
 import net.exmo.exmodifier.events.ExLevelRegistryEvent;
 import net.exmo.exmodifier.util.*;
@@ -111,7 +110,7 @@ public class ItemLevelHandle {
         );
         //RandomEntryCurios(stack, weightedUtil, curiosType, refreshnumber);
         if (!weightedUtil.weights.isEmpty()) {
-            Exmodifier.LOGGER.debug("RandomLeelEntry: " + type);
+            Exmodifier.LOGGER.debug("RandomLevelEntry: " + type);
             weightedUtil.increaseWeightsByRarity(rarity);
             ItemLevelRefresh2(stack, weightedUtil, refreshnumber);
 
@@ -169,10 +168,10 @@ public class ItemLevelHandle {
         for (ItemLevelInstant il : ItemLevelHelper.of(stack).getItemLevelInstants()){
             if (il==null)continue;
             if (il.itemLevel==null)continue;
-            // Exmodifier.LOGGER.debug("ItemLevelUp: " + il.id);
+            // Exmodifier.LOGGER.debug("ItemLevelUp: " + il.Id);
             if ( eventName.equalsIgnoreCase(il.itemLevel.getUpEvent())) {
-                //   Exmodifier.LOGGER.debug("ItemLevelUp1: " + il.id + " " + event1.getClass().getName());
-                    //     Exmodifier.LOGGER.debug("ItemLevelUp2: " + il.id + " " + event1.getClass().getName());
+                //   Exmodifier.LOGGER.debug("ItemLevelUp1: " + il.Id + " " + event1.getClass().getName());
+                    //     Exmodifier.LOGGER.debug("ItemLevelUp2: " + il.Id + " " + event1.getClass().getName());
                    new ItemInfo(stack).getItemLevelHelper().ItemAddXpM(stack, params, il, entity);
 
             }
@@ -208,9 +207,9 @@ public class ItemLevelHandle {
 //            evaluator.setVariable(param.getKey(), param.getDouble());
 //        }
 //        double addXp = evaluator.evaluate(itemLevel.getXpAddExpression());
-//        double level = getLevelItemLevel(stack, itemLevel.id);
-//        double xp = getLevelItemXp(stack, itemLevel.id);
-//        double needXp = getLevelItemNeedXpUp(stack, itemLevel.id);
+//        double level = getLevelItemLevel(stack, itemLevel.Id);
+//        double xp = getLevelItemXp(stack, itemLevel.Id);
+//        double needXp = getLevelItemNeedXpUp(stack, itemLevel.Id);
 //        double _level = level;
 //        double finalXp = xp + addXp;
 //        if (finalXp > 0) {
@@ -224,9 +223,9 @@ public class ItemLevelHandle {
 //                } else break;
 //
 //            }
-//            setLevelItemLevel(stack, itemLevel.id, (int) level);
-//            setLevelItemXp(stack, itemLevel.id, (int) finalXp);
-//            setItemNeedXpUp(stack, itemLevel.id, needXp);
+//            setLevelItemLevel(stack, itemLevel.Id, (int) level);
+//            setLevelItemXp(stack, itemLevel.Id, (int) finalXp);
+//            setItemNeedXpUp(stack, itemLevel.Id, needXp);
 //
 //        }
 //        if (_level != level) {
@@ -294,11 +293,11 @@ public class ItemLevelHandle {
     }
 //    public static void addLevelSystemToItem(ItemStack stack,ItemLevel level,int index) {
 //        if (stack.getTag()==null)return;
-//        stack.getTag().putString("exmodifier_level_modifier_applied" + index, level.id);
-//        stack.getTag().putInt(level.id +"_level", level.getDefaultLevel());
-//        stack.getTag().putInt(level.id +"_MaxLevel", level.getMaxLevel());
-//        setItemNeedXpUp(stack,level.id, generateLevelNeedXp(level,level.getDefaultLevel()));
-//        stack.getTag().putDouble(level.id +"_Xp", 0);
+//        stack.getTag().putString("exmodifier_level_modifier_applied" + index, level.Id);
+//        stack.getTag().putInt(level.Id +"_level", level.getDefaultLevel());
+//        stack.getTag().putInt(level.Id +"_MaxLevel", level.getMaxLevel());
+//        setItemNeedXpUp(stack,level.Id, generateLevelNeedXp(level,level.getDefaultLevel()));
+//        stack.getTag().putDouble(level.Id +"_Xp", 0);
 //    }
 
     private static void ItemLevelRefresh2(ItemStack stack, WeightedUtil<String> weightedUtil, int refreshnumber)  {

@@ -77,7 +77,7 @@ public class ItemLevel
     @Override
     public String toString() {
         return "ItemLevel{" +
-                "id='" + id + '\'' +
+                "Id='" + id + '\'' +
                 ", type=" + type +
                 ", OnlyWashItems=" + OnlyWashItems +
                 ", curiosType='" + curiosType + '\'' +

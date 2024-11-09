@@ -47,7 +47,7 @@ public class ExSuit {
                 "setting=" + setting +
                 ", hasMobEffect=" + hasMobEffect +
                 ", type=" + type +
-                ", id='" + id + '\'' +
+                ", Id='" + id + '\'' +
                 ", LocalDescription='" + LocalDescription + '\'' +
                 ", commands=" + commands +
                 ", MaxLevel=" + MaxLevel +

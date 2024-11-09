@@ -59,7 +59,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
             }
             if (item.getTag().getBoolean("entry_item_add")) {
                 //this.resultSlots.getItem(0).getOrCreateTag().remove("entry_item_add");
-                return player.experienceLevel >= this.cost.get() && this.cost.get() > 0;
+                return player.experienceLevel >= this.cost.get() ;
             }
         }
         return false;
@@ -76,8 +76,8 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
         if (!p_39790_.getAbilities().instabuild) {
             p_39790_.giveExperienceLevels(-this.cost.get());
         }
-        this.repairItemCountCost = p_39791_.getOrCreateTag().getInt("NeedCount");
-        if (p_39791_.getOrCreateTag().getBoolean("modifier_refresh")){
+       // this.repairItemCountCost = p_39791_.getOrCreateTag().getInt("NeedCount");
+        if (p_39791_.getOrCreateTag().getBoolean("modifier_refresh")||p_39791_.getOrCreateTag().getBoolean("entry_item_add")){
             this.inputSlots.setItem(0, ItemStack.EMPTY);
             if (this.repairItemCountCost > 0) {
                 ItemStack itemstack = this.inputSlots.getItem(1);
@@ -90,20 +90,23 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
             } else {
                 this.inputSlots.setItem(1, ItemStack.EMPTY);
             }
+            CompoundTag orCreateTag = p_39791_.getOrCreateTag();
             this.cost.set(0);
+            orCreateTag.remove("entry_item_add");
 
+            if (!p_39791_.getOrCreateTag().contains("entry_item_add")) {
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied0","");
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
 //            p_39791_.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
 
 
-            CompoundTag orCreateTag = p_39791_.getOrCreateTag();
-            orCreateTag.putBoolean("modifier_refresh", false);
-            //orCreateTag.putInt("exmodifier_armor_modifier_applied", 0);
-            orCreateTag.putBoolean("UNKNOWN",false);
 
-            if (p_39790_.level().isClientSide)return;
-            if (orCreateTag.getInt("modifier_refresh_add")!=0) {
+            orCreateTag.remove("modifier_refresh");
+            //orCreateTag.putInt("exmodifier_armor_modifier_applied", 0);
+            orCreateTag.remove("UNKNOWN");
+
+            if (p_39790_.level().isClientSide) return;
+            if (orCreateTag.getInt("modifier_refresh_add") != 0) {
                 List<String> curios = CuriosUtil.getSlotsFromItemstack(p_39791_);
                 MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getString("wash_item")));
                 if (curios.isEmpty())
@@ -112,14 +115,14 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                     RandomEntryCurios(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
             }
             int randomLevelSystemCount = orCreateTag.getInt("random_level_system_count");
-            if (randomLevelSystemCount !=0){
+            if (randomLevelSystemCount != 0) {
                 ItemLevelHandle.ItemLevelRefresh(p_39791_, randomLevelSystemCount, 1, orCreateTag.getString("wash_item"));
             }
             orCreateTag.remove("modifier_refresh_rarity");
             orCreateTag.remove("random_level_system_count");
             orCreateTag.remove("wash_item");
             orCreateTag.remove("modifier_refresh_add");
-
+        }
         }
     }
 
@@ -163,7 +166,8 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                                     CompoundTag orCreateTag = input.getOrCreateTag();
                                     orCreateTag.putInt("entryitem_add", 0);
                                     orCreateTag.putBoolean("UNKNOWN",true);
-                                    orCreateTag.putInt("NeedCount", washingMaterials.NeedCount);
+                                //    orCreateTag.putInt("NeedCount", washingMaterials.NeedCount);
+                                    this.repairItemCountCost = washingMaterials.NeedCount;
                                     //input.getOrCreateTag().putDouble("CostExp", washingMaterials.CostExp);
                                     this.cost.set((int) washingMaterials.CostExp + this.cost.get());
                                     orCreateTag.putBoolean("modifier_refresh", true);
@@ -204,18 +208,22 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
 
                     //  Exmodifier.LOGGER.debug("WashItem is EntryItem");
                     CompoundTag orCreateTag = input.getOrCreateTag();
+                    orCreateTag.putInt("NeedCount", 1);
                     int entryitemAdd = orCreateTag.getInt("entryitem_add");
+                    if (entryitemAdd == config.canAddEntry){
+                        orCreateTag.putBoolean("can_add_max", true);
+                         this.resultSlots.setItem(0, input);}
                     if (entryitemAdd < config.canAddEntry) {
 
-                        if (entryitemAdd + 1 == config.canAddEntry)
-                            orCreateTag.putBoolean("can_add_max", true);
+
                         orCreateTag.putInt("entryitem_add", entryitemAdd + 1);
-                        orCreateTag.putInt("NeedCount", 1);
+                    //    orCreateTag.putInt("NeedCount", 1);
                         orCreateTag.putBoolean("entry_item_add", true);
                         itemInfo = new ItemInfo(input);
                         modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
-                        modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(WashItem.getOrCreateTag().getString("modifier_id")),1),true);
+                        modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(WashItem.getOrCreateTag().getString("modifier_id")),1),true,true  );
                         this.resultSlots.setItem(0, input);
+                        this.repairItemCountCost = 1;
                     }
                 }
             }

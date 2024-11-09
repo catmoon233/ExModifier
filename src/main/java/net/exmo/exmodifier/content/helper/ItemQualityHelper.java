@@ -1,19 +1,16 @@
 package net.exmo.exmodifier.content.helper;
 
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
-import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.ModifierInstant;
 import net.exmo.exmodifier.content.quality.ItemQuality;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
-import net.exmo.exmodifier.util.CuriosUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-
-import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 
 public class ItemQualityHelper extends ExHelper{
     public ItemQualityHelper(ItemStack itemStack) {
@@ -21,6 +18,10 @@ public class ItemQualityHelper extends ExHelper{
     }
     public final static String IQT = "ItemQuality";
     public final static String IQID = "id";
+
+    public static ItemQualityHelper of(ItemStack itemStack){
+        return new ItemQualityHelper(itemStack);
+    }
 
     public int getQualityEntriesSize(){
         return getMainNbt().getList(IQT,10).size();
@@ -49,12 +50,12 @@ public class ItemQualityHelper extends ExHelper{
         if (!ValidMainNbt()) createMainNbt();
         createQualityNbt();
         CompoundTag tag1 = new CompoundTag();
-        tag1.putString(IQID,itemQuality.id);
+        tag1.putString(IQID,itemQuality.Id);
         ListTag modifiersList = getQualityEntriesNbt();
         modifiersList.add(tag1);
         if (addEntries) {
             for (int i = 0; i < itemQuality.entries.size(); i++) {
-                ModifierEntryHelper.of(this.itemStack).addModifierEntry(ModifierInstant.of(itemQuality.entries.get(i)).setItemQualityLock(itemQuality.cantRemoveEntry), addAttribute);
+                ModifierEntryHelper.of(this.itemStack).addModifierEntry(ModifierInstant.of(itemQuality.entries.get(i)).setItemQualityLock(itemQuality.cantRemoveEntry), addAttribute,true);
             }
         }
         return this;
@@ -64,7 +65,7 @@ public class ItemQualityHelper extends ExHelper{
         ListTag modifiersList = getQualityEntriesNbt();
         for (int i = 0; i < modifiersList.size(); i++) {
             CompoundTag tag = modifiersList.getCompound(i);
-            if (tag.getString(IQID).equals(itemQuality.id))
+            if (tag.getString(IQID).equals(itemQuality.Id))
             {
                 modifiersList.remove(i);
                 if (removeEntries) {
@@ -78,6 +79,17 @@ public class ItemQualityHelper extends ExHelper{
        }
         return this;
     }
+    public  List<MutableComponent> getQualityEntriesTooltip()
+    {
+        List<MutableComponent> list = new java.util.ArrayList<>();
+        ItemQualityHelper itemQualityHelper = ItemQualityHelper.of(itemStack);
+        for (ItemQuality itemQuality : itemQualityHelper.getQualityEntries()) {
+            list.add(Component.translatable("exmodifier.quality."+itemQuality.Id));
+            if (!itemQuality.LocalDescription.isEmpty()) list.add(Component.translatable(itemQuality.LocalDescription));
+        }
+        return list;
+    }
+
 public List<ItemQuality> getQualityEntries()
 {
     List<ItemQuality> list = new java.util.ArrayList<>();

@@ -30,7 +30,7 @@ public  class ItemAttrUtil {
             //         if (itemStack != null) {
             // 使用Objects.equals实现null安全比较
             String itemKey = ForgeRegistries.ITEMS.getKey(itemStack.getItem()).toString();
-            //   System.out.println("1: " +itemKey +" 2:"+id);
+            //   System.out.println("1: " +itemKey +" 2:"+Id);
             if (Objects.equals(id, itemKey)) {
                 EquipmentSlot slot = attrgroup.getEquipmentSlot();
                 if (slot != null) {
@@ -38,7 +38,7 @@ public  class ItemAttrUtil {
                     //   System.out.println("1: " +slot +" 2:"+itemStack.getEquipmentSlot());
                     if (slot == event.getSlotType()) {
                         event.addModifier(attrgroup.attr, attrgroup.attributeModifier);
-                        //  removelist.add(id);
+                        //  removelist.add(Id);
                         //  }
                     }
                 }
@@ -105,6 +105,39 @@ public  class ItemAttrUtil {
         return finalstring;
     }
 
+    public static List<AttributeModifier> getAttributeModifiers(ItemStack stack,Attribute attribute) {
+        ArrayList<AttributeModifier> list = new ArrayList<>();
+        if (stack.getTag() != null && stack.getTag().contains("ExAttributeModifiers", 9)) {
+            ListTag listtag = stack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
+            for (int i = 0; i < listtag.size(); ) { // 注意这里使用i而不是i++
+                i++;
+                CompoundTag compoundTag = listtag.getCompound(i);
+                  if ( compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+                      String modifierName = compoundTag.getString("Name");
+                      AttributeModifier.Operation operation = AttributeModifier.Operation.fromValue(compoundTag.getInt("Operation"));
+
+                      // 获取Amount和其他可能的参数，这里假设Amount是double类型
+                      double amount = compoundTag.getDouble("Amount");
+                      list.add(new AttributeModifier( modifierName, amount, operation));
+                  }
+
+                }
+
+        }
+        return list;
+    }
+    public static AttributeModifier getAttributeModifierFromNamed(String name,ItemStack stack) {
+        if (stack.getTag() != null && stack.getTag().contains("ExAttributeModifiers", 9)) {
+            ListTag listtag = stack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
+            for (int i = 0; i < listtag.size(); ) { // 注意这里使用i而不是i++
+                CompoundTag compoundTag = listtag.getCompound(i);
+                if (compoundTag.getString("Name").equals(name)) {
+                    return getAttributeModifierFromCompoundTag(compoundTag);
+                }
+            }
+        }
+        return null;
+    }
     public static void addItemAttributeModifier(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
         if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute)){
             Exmodifier.LOGGER.Logger.error("Attribute " + pAttribute + " does not exist");

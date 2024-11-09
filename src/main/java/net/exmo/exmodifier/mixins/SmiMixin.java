@@ -206,7 +206,7 @@ public abstract class SmiMixin extends ItemCombinerMenu {
                         orCreateTag.putBoolean("entry_item_add", true);
                         itemInfo = new ItemInfo(input);
                        modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
-                        modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(WashItem.getOrCreateTag().getString("modifier_id")),1),true);
+                        modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(WashItem.getOrCreateTag().getString("modifier_id")),1),true,true);
                         this.resultSlots.setItem(0, input);
                     }
                 }

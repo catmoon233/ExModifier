@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.events;
 
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
+import net.exmo.exmodifier.content.modifier.ModifierInstant;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.Event;
@@ -11,10 +12,12 @@ public class ExApplyEntryAttrigetherEvent extends Event {
     public boolean isCurios;
     public String curiosSlot;
     public EquipmentSlot slot;
-    public ExApplyEntryAttrigetherEvent(ItemStack stack, ModifierAttriGether attriGether, EquipmentSlot slot){
+    public ModifierInstant modifierInstant;
+    public ExApplyEntryAttrigetherEvent(ItemStack stack, ModifierAttriGether attriGether, EquipmentSlot slot, ModifierInstant modifierInstant){
         this.stack = stack;
         this.attriGether = attriGether;
         this.slot = slot;
+        this.modifierInstant = modifierInstant;
 
     }
 

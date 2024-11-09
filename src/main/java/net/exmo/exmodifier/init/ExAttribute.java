@@ -37,15 +37,50 @@ import java.util.Random;
 public class ExAttribute {
     public static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(ForgeRegistries.ATTRIBUTES, Exmodifier.MODID);
 
-    public static final RegistryObject<Attribute> ARROWBASEDAMAGE = ATTRIBUTES.register("arrow_base_damage", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".arrow_base_damage", 0, 0, 100000000)).setSyncable(true));
-    public static final RegistryObject<Attribute> DURABILITY = ATTRIBUTES.register("durability", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".durability", 1, 0, 100000000)).setSyncable(true));
-    public static final RegistryObject<Attribute> DIG_SPEED = ATTRIBUTES.register("dig_speed", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dig_speed", 1, 0, 100000000)).setSyncable(true));
-    public static final RegistryObject<Attribute> DODGE = ATTRIBUTES.register("dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".dodge", 1, 0, 10000000)).setSyncable(true));
-    public static final RegistryObject<Attribute> MAX_INJURY_FREE = ATTRIBUTES.register("max_injury_free", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".max_injury_free", 1.85, 0, 10000000)).setSyncable(true));
-    public static final RegistryObject<Attribute> MAX_DODGE = ATTRIBUTES.register("max_dodge", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".max_dodge", 1.85, 0, 10000000)).setSyncable(true));
-    public static final RegistryObject<Attribute> HIT_RATE = ATTRIBUTES.register("hit_rate", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".hit_rate", 1, 0, 10000000)).setSyncable(true));
-    public static final RegistryObject<Attribute> PERCENT_HEAL = ATTRIBUTES.register("percent_heal", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".percent_heal", 1, 0, 10000000)).setSyncable(true));
-    public static final RegistryObject<Attribute> INJURY_FREE = ATTRIBUTES.register("injury_free", () -> (new RangedAttribute("attribute." + Exmodifier.MODID + ".injury_free", 1, -100000, 10000000)).setSyncable(true));
+    // 属性注册对象
+    public static final RegistryObject<Attribute> ARROWBASEDAMAGE;
+    public static final RegistryObject<Attribute> DURABILITY;
+    public static final RegistryObject<Attribute> DIG_SPEED;
+    public static final RegistryObject<Attribute> DODGE;
+    public static final RegistryObject<Attribute> MAX_INJURY_FREE;
+    public static final RegistryObject<Attribute> MAX_DODGE;
+    public static final RegistryObject<Attribute> HIT_RATE;
+    public static final RegistryObject<Attribute> PERCENT_HEAL;
+    public static final RegistryObject<Attribute> INJURY_FREE;
+
+    static {
+        // 弓箭基础伤害
+        ARROWBASEDAMAGE = registerAttribute("arrow_base_damage", 0, 0, 100000000);
+
+        // 耐久度
+        DURABILITY = registerAttribute("durability", 1, 0, 100000000);
+
+        // 挖掘速度
+        DIG_SPEED = registerAttribute("dig_speed", 1, 0, 100000000);
+
+        // 闪避
+        DODGE = registerAttribute("dodge", 1, 0, 10000000);
+
+        // 最大免伤
+        MAX_INJURY_FREE = registerAttribute("max_injury_free", 1.85, 0, 10000000);
+
+        // 最大闪避
+        MAX_DODGE = registerAttribute("max_dodge", 1.85, 0, 10000000);
+
+        // 命中率
+        HIT_RATE = registerAttribute("hit_rate", 1, 0, 10000000);
+
+        // 击中时自己百分比生命恢复
+        PERCENT_HEAL = registerAttribute("percent_heal", 1, 0, 10000000);
+
+        // 免伤
+        INJURY_FREE = registerAttribute("injury_free", 1, -100000, 10000000);
+    }
+
+
+    private static RegistryObject<Attribute> registerAttribute(String name, double defaultValue, double minValue, double maxValue) {
+        return ATTRIBUTES.register(name, () -> new RangedAttribute("attribute." + Exmodifier.MODID + "." + name, defaultValue, minValue, maxValue).setSyncable(true));
+    }
     @SubscribeEvent
     public static void register(FMLConstructModEvent event) {
         event.enqueueWork(() -> {

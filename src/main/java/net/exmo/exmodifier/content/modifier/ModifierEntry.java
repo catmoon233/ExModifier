@@ -38,6 +38,7 @@ public class ModifierEntry {
     public boolean isRandom = true;
     public boolean OnlyHasThisEntry = false;
     public Type type;
+    public List<String> specialTags = new ArrayList<>();
     public boolean isCuriosEntry =false;
     public float needFreshValue = 0;
     public String curiosType;
@@ -49,6 +50,12 @@ public class ModifierEntry {
     public String Expression;
     public int RandomNum;
     public List<ModifierAttriGether> attriGether = new java.util.ArrayList<>();
+
+    public ModifierEntry(String id) {
+        this.id = id;
+    }
+    public ModifierEntry(){}
+
     public List<String> getUnlessItemTags() {
         return UnlessItemTags;
     }
@@ -99,7 +106,7 @@ public class ModifierEntry {
                 ", OnlyItems=" + OnlyItems +
                 ", OnlyWashItems=" + OnlyWashItems +
                 ", Commands=" + Commands +
-                ", id='" + id + '\'' +
+                ", Id='" + id + '\'' +
                 ", RandomNum=" + RandomNum +
                 ", attriGether=" + attriGether +
                 '}';
@@ -412,7 +419,7 @@ public class ModifierEntry {
         if (needFreshValue!=0) list.add(Component.translatable("modifier.entry.need_fresh_value").append(String.valueOf(needFreshValue)));
         if (!OnlyTags.isEmpty()) list.add(Component.translatable("modifier.entry.only_tags").append(String.join(",",OnlyTags)));
         if (!OnlyItems.isEmpty()) list.add(Component.translatable("modifier.entry.only_items").append(String.join(",",OnlyItems)));
-        if (isRandom) list.add(Component.translatable("modifier.entry.is_random").append(String.valueOf(RandomNum)));
+        if (isRandom&&RandomNum!=0) list.add(Component.translatable("modifier.entry.is_random").append(String.valueOf(RandomNum)));
         list.add(Component.translatable("modifier.entry.type").append(type.toString()));
         list.add(Component.translatable("modifier.entry.attribute_gather"));
         //list.add(Component.literal("§7["));

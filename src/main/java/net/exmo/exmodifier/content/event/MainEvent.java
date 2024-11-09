@@ -7,9 +7,11 @@ import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ItemLevelHelper;
+import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.*;
+import net.exmo.exmodifier.content.quality.ItemQualityHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.*;
@@ -91,14 +93,16 @@ public class MainEvent {
 
         @SubscribeEvent
         public static void TooltipChange(ItemTooltipEvent event) {
-            if (event.getItemStack().getTag()!= null){
+            ItemStack itemStack = event.getItemStack();
+            if (itemStack.getTag()!= null){
            // if (!CuriosUtil.isCuriosItem(event.getItemStack())) {
 
-                List<Component> toolTip = CommonEvent.ItemToolTipsChange(event.getItemStack(), event.getToolTip(), event.getEntity());
+                List<Component> toolTip = CommonEvent.ItemToolTipsChange(itemStack, event.getToolTip(), event.getEntity());
                 if (toolTip.isEmpty())return;
                 List<Component> tooo = new ArrayList<>();
                 tooo.add(toolTip.get(0));
-                tooo.addAll(ItemLevelHandle.genItemLevelInfo(event.getItemStack()));
+                tooo.addAll(ItemQualityHelper.of(itemStack).getQualityEntriesTooltip());
+                tooo.addAll(ItemLevelHandle.genItemLevelInfo(itemStack));
                 for (int i = 1; i < toolTip.size(); i++){
                     tooo.add(toolTip.get(i));
                 }
@@ -155,7 +159,7 @@ public class MainEvent {
 //                                    .toList()) {
 //                                if (suit.visible) {
 //
-//                                    event.getTooltipElements().add(Either.left(Component.translatable("modifier.entry.suit." + suit.id)));
+//                                    event.getTooltipElements().add(Either.left(Component.translatable("modifier.entry.suit." + suit.Id)));
 //                                    if (!suit.LocalDescription.isEmpty())
 //                                        event.getTooltipElements().add(Either.left(Component.translatable(suit.LocalDescription)));
 //
@@ -163,22 +167,23 @@ public class MainEvent {
 //                                }
 //                            }
 //                        }
-//                        event.getTooltipElements().add(Either.left((Component.translatable("modifier.entry." + modifierEntry.id.substring(2)))));
+//                        event.getTooltipElements().add(Either.left((Component.translatable("modifier.entry." + modifierEntry.Id.substring(2)))));
 //
 //                    }
 //                }
 //            }
 //        }
 @SubscribeEvent
-public static void iLevelAttriGetherModifier(ExAddEntryAttrigetherEvent event){
-    if(!event.selectedAttriGether.Expression.isEmpty()){
+public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event){
+    if(event.attriGether.Expression!=null&&!event.attriGether.Expression.isEmpty()){
         ItemStack stack = event.stack;
-        AttributeModifier modifier =  event.selectedAttriGether.getModifier();
-        int level = ModifierEntryHelper.of(stack).getModifierEntryLevel(event.getModifierEntry().id);
+        AttributeModifier modifier =  event.attriGether.getModifier();
+        int level = event.modifierInstant.getLevel();
+        Exmodifier.LOGGER.debug("iLevelAttriGetherModifier: "+event.attriGether.Expression + " level: "+level);
         DynamicExpressionEvaluator dynamicExpressionEvaluator = new DynamicExpressionEvaluator();
         dynamicExpressionEvaluator.setVariable("level", level);
-        double amout = dynamicExpressionEvaluator.evaluate(event.selectedAttriGether.Expression);
-        event.selectedAttriGether.modifier = new AttributeModifier(modifier.getId(), modifier.getName(), amout, modifier.getOperation());
+        double amout = dynamicExpressionEvaluator.evaluate(event.attriGether.Expression);
+        event.attriGether.modifier = new AttributeModifier(modifier.getId(), modifier.getName(), amout, modifier.getOperation());
     }
 }
         public static List<Component> ItemToolTipsChange(ItemStack stack, List<Component> tooltip, Player player) {
@@ -193,7 +198,7 @@ public static void iLevelAttriGetherModifier(ExAddEntryAttrigetherEvent event){
 
 
                         for (ModifierInstant modifierEntry : new ItemInfo(stack).getModifierEntryHelper().getModifierEntries()) {
-                            // Exmodifier.LOGGER.debug("modifier id:" + modifierEntry.id);
+                            // Exmodifier.LOGGER.debug("modifier Id:" + modifierEntry.Id);
                             if (!config.compact_tooltip) tooltip.add(Component.translatable("null"));
                             tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack));
 
@@ -465,7 +470,7 @@ public static void iLevelAttriGetherModifier(ExAddEntryAttrigetherEvent event){
                     }
                     if (itemsDefaultEntry.containsKey(string)) {
                         for (ModifierEntry modifierEntry : itemsDefaultEntry.get(string)) {
-                            new ModifierEntryHelper(stack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)), true);
+                            new ModifierEntryHelper(stack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)), true,true);
                         }
                     }
                     // Exmodifier.LOGGER.debug(eventC.getFrom().toString());
@@ -619,6 +624,7 @@ public static void iLevelAttriGetherModifier(ExAddEntryAttrigetherEvent event){
         public static void init() throws IOException {
             ModifierHandle.readConfig();
             ExSuitHandle.readConfig();
+            ItemQualityHandle.init();
             ModifierHandle.EEMatchQueueHandle();
 
         }
