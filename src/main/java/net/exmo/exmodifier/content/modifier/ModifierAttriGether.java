@@ -32,7 +32,10 @@ public class ModifierAttriGether extends AttriGether {
     public Map<Double, Float> simpleWeight = new HashMap<>();
     public String Expression;
 
-
+    public ModifierAttriGether setExpression(String expression) {
+        this.Expression = expression;
+        return this;
+    }
 
 
     @Override

@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.modifier;
 
+import net.exmo.exmodifier.content.SpecialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.util.CuriosUtil;
@@ -37,6 +38,8 @@ public class ModifierEntry {
     public boolean cantSelect = false;
     public boolean isRandom = true;
     public boolean OnlyHasThisEntry = false;
+    public String localDescription="";
+    public int maxLevel=1;
     public Type type;
     public List<String> specialTags = new ArrayList<>();
     public boolean isCuriosEntry =false;
@@ -407,6 +410,9 @@ public class ModifierEntry {
 
     public String getId() {
         return id;
+    }
+    public boolean hasSpecialEffect(SpecialEffect specialEffect){
+        return specialTags.contains(specialEffect.id);
     }
 
     public List<Component> GenerateItemTooltip()

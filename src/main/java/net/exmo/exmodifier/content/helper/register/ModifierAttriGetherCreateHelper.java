@@ -26,6 +26,9 @@ public class ModifierAttriGetherCreateHelper {
         this.modifierCreateHelper = modifierCreateHelper;
 
     }
+    public ModifierAttriGetherCreateHelper(int index) {
+        this.index = index;
+    }
 
     public ModifierCreateHelper getModifierCreateHelper() {
         return modifierCreateHelper;
@@ -40,6 +43,8 @@ public class ModifierAttriGetherCreateHelper {
         this.amount = amount;
         this.operation = operation;
         this.slot = slot;
+        this.modifierAttriGether = new ModifierAttriGether(null,null);
+
         return this;
     }
     public ModifierAttriGetherCreateHelper setModifierCreateHelper(Attribute attribute,double amount,AttributeModifier.Operation operation,String slot) {
@@ -47,6 +52,7 @@ public class ModifierAttriGetherCreateHelper {
         this.amount = amount;
         this.operation = operation;
         this.slot = slot;
+        this.modifierAttriGether = new ModifierAttriGether(null,null);
 
         return this;
     }
@@ -55,11 +61,20 @@ public class ModifierAttriGetherCreateHelper {
         this.amount = amount;
         this.operation = operation;
         this.slot = "auto";
-
+        this.modifierAttriGether = new ModifierAttriGether(null,null);
         return this;
     }
     public ModifierAttriGetherCreateHelper setWeight(float weight) {
         this.modifierAttriGether.weight = weight;
+        return this;
+    }
+
+    public ModifierAttriGetherCreateHelper setName(String name) {
+        this.name = name;
+        return this;
+    }
+    public ModifierAttriGetherCreateHelper setExpression(String expression) {
+        this.modifierAttriGether.Expression = expression;
         return this;
     }
 
@@ -69,6 +84,10 @@ public class ModifierAttriGetherCreateHelper {
         if (attribute==null)if(!AttributeName.isEmpty())attribute= ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(AttributeName));
         AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
         if (modifierAttriGether==null)modifierAttriGether = new ModifierAttriGether(attribute,modifier);
+        else {
+            modifierAttriGether.attribute = attribute;
+            modifierAttriGether.modifier = modifier;
+        }
         if (!slot.equals("auto")){
            modifierAttriGether.slot = EquipmentSlot.valueOf(slot);
         }else modifierAttriGether.IsAutoEquipmentSlot = true;
@@ -76,5 +95,16 @@ public class ModifierAttriGetherCreateHelper {
 //        modifierAttriGether.modifier = modifier;
         modifierCreateHelper.addModifierAttriGether(modifierAttriGether);
         return modifierCreateHelper;
+    }
+    public ModifierAttriGether finish(){
+        if (name.isEmpty())name = modifierCreateHelper.modifierEntry.id + index;
+        if (uuid==null)uuid = UUID.nameUUIDFromBytes(name.getBytes());
+        if (attribute==null)if(!AttributeName.isEmpty())attribute= ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(AttributeName));
+        AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
+        if (modifierAttriGether==null)modifierAttriGether = new ModifierAttriGether(attribute,modifier);
+        if (!slot.equals("auto")){
+            modifierAttriGether.slot = EquipmentSlot.valueOf(slot);
+        }else modifierAttriGether.IsAutoEquipmentSlot = true;
+        return modifierAttriGether;
     }
 }

@@ -13,6 +13,8 @@
   "null": "",
   "exmodifier.refresh_not_enough": "§7The quantity of items does not meet the requirements",
   "modifier.entry.suit": "Suits:",
+  "modifier.entry.maxlevel": "§7Max Level: ",
+  "modifier.entry.desc": "§7Description: ",
   "modifier.entry": "§7Entry:",
   "modifier.entry.UNKNOWN": "§7Unknown",
   "itemGroup.exmodifier_tab": "§6Modifier Book",

@@ -1,10 +1,8 @@
 package net.exmo.exmodifier.mixins;
 
 import net.exmo.exmodifier.init.ExAttribute;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -25,8 +23,8 @@ public abstract class AbstractArrowMixin extends Projectile {
     @Inject(at = @At("HEAD"),method = "onHitEntity")
     protected void onHitEntity(EntityHitResult p_36757_, CallbackInfo ci) {
         if (this.getOwner() instanceof LivingEntity entity){
-            if(   entity.getAttributes().hasAttribute(ExAttribute.ARROWBASEDAMAGE.get())){
-                baseDamage += entity.getAttributeValue(ExAttribute.ARROWBASEDAMAGE.get());
+            if(   entity.getAttributes().hasAttribute(ExAttribute.ARROW_BASE_DAMAGE.get())){
+                baseDamage += entity.getAttributeValue(ExAttribute.ARROW_BASE_DAMAGE.get());
             }
         }
     }

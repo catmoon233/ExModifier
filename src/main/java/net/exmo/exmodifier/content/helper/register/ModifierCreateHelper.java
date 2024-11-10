@@ -34,6 +34,15 @@ public class ModifierCreateHelper {
     modifierEntry.weight = weight;
     return this;
   }
+  public ModifierCreateHelper setMaxLevel(int maxLevel){
+    modifierEntry.maxLevel = maxLevel;
+    return this;
+  }
+  public ModifierCreateHelper cantSelect(boolean cantSelect){
+    modifierEntry.cantSelect = cantSelect;
+    return this;
+  }
+
 
 
   public void clear(){
@@ -52,6 +61,10 @@ public class ModifierCreateHelper {
     modifierEntry.attriGether.add(modifierAttriGether);
     return this;
   }
+  public ModifierCreateHelper setLocalDescription(String localDescription){
+    modifierEntry.localDescription = localDescription;
+    return this;
+  }
   public ModifierAttriGetherCreateHelper addModifierAttriGether(){
     index++;
     return new ModifierAttriGetherCreateHelper(this,index);
@@ -60,6 +73,9 @@ public class ModifierCreateHelper {
   public ModifierCreateHelper addIntoList(List<ModifierEntry> list){
     list.add(modifierEntry);
     return this;
+  }
+  public ModifierEntry finish(){
+    return modifierEntry;
   }
   public ModifierCreateHelper addIntoListAndReload(List<ModifierEntry> list){
     list.add(modifierEntry);

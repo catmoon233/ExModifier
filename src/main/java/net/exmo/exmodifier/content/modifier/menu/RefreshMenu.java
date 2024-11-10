@@ -202,10 +202,12 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
 
         }
         if (!isFound) {
-            if (WashItem.getItem() instanceof EntryItem) {
+            if (WashItem.getItem() instanceof EntryItem entryItem) {
                 ItemStack input = item.copy();
                 if ( ModifierEntry.containItemType(item, ModifierEntry.StringToType(WashItem.getOrCreateTag().getString("modifier_type")))) {
-
+                    ModifierEntryHelper modifierEntryHelper1 = ModifierEntryHelper.of(item);
+                    ModifierEntry modifierEntry = entryItem.getModifierEntry(this.inputSlots.getItem(1));
+                    if (modifierEntryHelper1.getModifierEntryLevel(modifierEntry.id)== modifierEntry.maxLevel)return;
                     //  Exmodifier.LOGGER.debug("WashItem is EntryItem");
                     CompoundTag orCreateTag = input.getOrCreateTag();
                     orCreateTag.putInt("NeedCount", 1);

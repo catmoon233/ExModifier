@@ -119,13 +119,22 @@ public class ModifierHandle {
             if (player ==null)return tooltips;
             if (id.length() >= 2) {
                 MutableComponent translatable = Component.translatable("modifier.entry." + id.substring(2));
+
                 if (config.compact_tooltip){
                     if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
                     tooltips.add(translatable);
+
                 }
+
                 else{
                     if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
                     tooltips.add(translatable.append(" : "));
+                }
+                if (!modifierEntry.localDescription.isEmpty())
+                //        if (Screen.hasShiftDown())
+                {
+                    tooltips.add(Component.translatable(modifierEntry.localDescription));
+
                 }
                 tooltips.addAll(GenSuitInfo(player,modifierEntry));
 
@@ -789,9 +798,12 @@ public class ModifierHandle {
         modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry") && itemObject.get("OnlyHasThisEntry").getAsBoolean();
 
         modifierEntry.RandomNum = itemObject.has("RandomNum") ? itemObject.get("RandomNum").getAsInt() : 0;
+        modifierEntry.maxLevel = itemObject.has("maxLevel") ? itemObject.get("maxLevel").getAsInt() : 1;
         modifierEntry.weight = itemObject.has("weight") ? itemObject.get("weight").getAsFloat() : 1.0f;
         modifierEntry.needFreshValue = itemObject.has("needFreshValue") ? itemObject.get("needFreshValue").getAsFloat() : 0.0F;
         modifierEntry.cantSelect = itemObject.has("cantSelect") && itemObject.get("cantSelect").getAsBoolean();
+        modifierEntry.localDescription = itemObject.has("localDescription") ? itemObject.get("localDescription").getAsString() : "";
+
         if (itemObject.has("exsuit")){
             List<String> exss = new ArrayList<>();
             for (JsonElement exsuit : itemObject.get("exsuit").getAsJsonArray()) {
