@@ -52,10 +52,14 @@ public class ExAttribute {
     public static final RegistryObject<Attribute> PERCENT_HEAL;
     public static final RegistryObject<Attribute> INJURY_FREE;
     public static final RegistryObject<Attribute> BEHIND_DAMAGE ;
+    public static final RegistryObject<Attribute> FIREWORK_DAMAGE ;
 
 
     static {
-        //背后伤害
+        // 烟花伤害
+        FIREWORK_DAMAGE = registerAttribute("firework_damage", 1, 0, 100000000);
+
+        // 背后伤害
         BEHIND_DAMAGE = registerAttribute("behind_damage", 1, -100000000, 100000000);
 
         // 弓箭基础伤害
@@ -112,6 +116,7 @@ public class ExAttribute {
             event.add(e, DURABILITY.get());
             if (e.equals(EntityType.PLAYER)) {
                 event.add(e, MAX_DODGE.get());
+                event.add(e, FIREWORK_DAMAGE.get());
                 event.add(e, MAX_INJURY_FREE.get());
             }
         });
@@ -187,9 +192,13 @@ public class ExAttribute {
                         event.setAmount((float) (multiplier * event.getAmount()));
                         Level level = attacker.level();
                         if (!level.isClientSide)
-                            level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            if (multiplier>1) level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.BLOCKS, 1.0F, 1.0F);
                     }
                     }
+                }
+                if (attacker != null && attacker.getAttributes().hasAttribute(ExAttribute.FIREWORK_DAMAGE.get())) {
+                    double multiplier = attacker.getAttributeValue(ExAttribute.FIREWORK_DAMAGE.get());
+                    event.setAmount((float) (multiplier * event.getAmount()));
                 }
             }
             if (entity.getAttributes().hasAttribute(ExAttribute.INJURY_FREE.get())){

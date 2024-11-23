@@ -50,7 +50,8 @@ public class ExHelper {
                 ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
                 ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
         ));
-
+        typeSlotMap.put(ModifierEntry.Type.CROSSBOW, EquipmentSlot.MAINHAND);
+        typeSlotMap.put(ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND);
         for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeSlotMap.entrySet()) {
             ModifierEntry.Type type = entry.getKey();
             EquipmentSlot slot = entry.getValue();

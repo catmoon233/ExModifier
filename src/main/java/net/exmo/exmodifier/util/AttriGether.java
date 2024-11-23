@@ -1,9 +1,10 @@
 package net.exmo.exmodifier.util;
 
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -12,14 +13,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 
 public class AttriGether {
-    public EquipmentSlot slot;
+    public EquipmentSlot slot = null;
     public boolean IsAutoEquipmentSlot = false;
     public Attribute attribute;
     public AttributeModifier modifier;
@@ -31,7 +31,45 @@ public class AttriGether {
         ItemStack itemStack;
 
     }
+    public CompoundTag toNBT1() {
+        CompoundTag tag = new CompoundTag();
+        String sslot = "";
+        if (slot != null)sslot = slot.getName();
+        tag.putString("slot", sslot);
+        tag.putBoolean("IsAutoEquipmentSlot", IsAutoEquipmentSlot);
+        tag.putString("attribute", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
+        if (modifier.getId()!=null)tag.putString("modifierId", modifier.getId().toString());
+        tag.putString("modifierName", modifier.getName());
+        tag.putDouble("modifierAmount", modifier.getAmount());
+        tag.putInt("modifierOperation", modifier.getOperation().toValue());
 
+        return tag;
+    }
+
+    public static AttriGether fromNBT1(CompoundTag tag) {
+        AttriGether attriGether = new AttriGether(null, null, null);
+        String slot1 = tag.getString("slot");
+        if (slot1.isEmpty()) attriGether.slot=null;
+        else attriGether.slot = EquipmentSlot.byName(slot1);
+        attriGether.IsAutoEquipmentSlot = tag.getBoolean("IsAutoEquipmentSlot");
+
+        String attributeId = tag.getString("attribute");
+        String modifierId1 = tag.getString("modifierId");
+        attriGether.attribute = ForgeRegistries.ATTRIBUTES.getValue(ResourceLocation.tryParse(attributeId));
+        UUID modifierId=null;
+        if (!modifierId1.isEmpty()){
+            modifierId = UUID.fromString(modifierId1);
+        }else{
+            modifierId = UUID.randomUUID();
+        }
+        String modifierName = tag.getString("modifierName");
+        double modifierAmount = tag.getDouble("modifierAmount");
+        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation modifierOperation = net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.fromValue(tag.getInt("modifierOperation"));
+
+        attriGether.modifier = new AttributeModifier(modifierId, modifierName, modifierAmount, modifierOperation);
+
+        return attriGether;
+    }
 
     public AttriGether(Attribute attribute, AttributeModifier modifier) {
         this.attribute = attribute;

@@ -1,11 +1,11 @@
 package net.exmo.exmodifier.content.modifier;
 
-import net.exmo.exmodifier.util.exconfig;
+import net.exmo.exmodifier.util.ExConfig;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 
-public class MoConfig extends exconfig {
+public class MoConfig extends ExConfig {
     public ModifierEntry.Type type = ModifierEntry.Type.UNKNOWN;
     public String CuriosType = "";
     public MoConfig(Path configFile) throws FileNotFoundException {

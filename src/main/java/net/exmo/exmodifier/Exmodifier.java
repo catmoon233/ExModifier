@@ -5,12 +5,12 @@ import net.exmo.exmodifier.compat.compat.apoth.ApothCompat;
 import net.exmo.exmodifier.content.client.EntryItemRender;
 import net.exmo.exmodifier.content.event.parameter.EventC;
 import net.exmo.exmodifier.content.event.parameter.EventCI;
-import net.exmo.exmodifier.content.modifier.EntryItem;
-import net.exmo.exmodifier.content.modifier.ModifierEntry;
-import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.init.RegisterOther;
+import net.exmo.exmodifier.network.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.DataGenerator;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +19,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
 import net.minecraftforge.common.MinecraftForge;
 
+import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -77,6 +79,7 @@ public class Exmodifier {
             Logger.error(s, e);
        }
    }
+
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
     private static int messageID = 0;
@@ -108,7 +111,7 @@ public class Exmodifier {
         long time_start = System.currentTimeMillis();
         // Register the setup method for modloading
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
+        PACKET_HANDLER.registerMessage(messageID++, SyncModifierEntryMessage.class, SyncModifierEntryMessage::encode, SyncModifierEntryMessage::decode, SyncModifierEntryMessage::handle);
 
         ITEMS.register(modEventBus);
         try {
@@ -122,6 +125,7 @@ public class Exmodifier {
         modEventBus.addListener(this::setup);
         // Register the enqueueIMC method for modloading
         modEventBus.addListener(this::enqueueIMC);
+        modEventBus.addListener(this::gatherData);
         // Register the processIMC method for modloading
         modEventBus.addListener(this::processIMC);
         RegisterOther.EffectAbout.REGISTRY.register(modEventBus);
@@ -138,6 +142,7 @@ public class Exmodifier {
         long time_end = System.currentTimeMillis();
         LOGGER.info("Mod loaded in " + (time_end - time_start) + "ms");
         RegisterOther.EventAbout.init();
+
 //    for (EventC<? extends LivingEvent> v : RegisterOther.EventAbout.EVENT_C_LIST.values()){
 //
 //            EventCI<? extends LivingEvent> eventCI = new EventCI<>(v);
@@ -149,7 +154,13 @@ public class Exmodifier {
 //        }
     }
 
-
+    public  void gatherData(GatherDataEvent event) {
+        DataGenerator generator = event.getGenerator();
+        ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
+        LOGGER.debug("ExGatherData");
+        APO provider = new APO(generator, existingFileHelper);
+        generator.addProvider(event.includeServer(), provider);
+    }
     private void setup(final FMLCommonSetupEvent event) {
         // Some preinit code
 //        LOGGER.info("HELLO FROM PREINIT");

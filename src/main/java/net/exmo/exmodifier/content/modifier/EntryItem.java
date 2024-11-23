@@ -33,6 +33,10 @@ public class EntryItem extends Item {
                     List<Component> lc = new ArrayList<>();
                     String modifierId = stack.getTag().getString("modifier_id");
                     ModifierEntry modifierEntry = ModifierHandle.modifierEntryMap.get(modifierId);
+                    if (modifierEntry==null){
+                        lc.add(Component.translatable("modifier.entry.unknown_modifier"));
+                        return;
+                    }
                     if (modifierId.length()<=2)return ;
                     lc.add(Component.translatable("modifier.entry." + modifierId.substring(2)));
                     if (!Screen.hasShiftDown()) {

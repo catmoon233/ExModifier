@@ -120,7 +120,9 @@ public class ModifierEntryHelper extends ExHelper {
         super(itemStack);
     }
     public int getModifierEntriesSize(){
-        return getMainNbt().getList(MES,10).size();
+        CompoundTag mainNbt = getMainNbt();
+        if (!ValidMainNbt()) return 0;
+        return mainNbt.getList(MES,10).size();
     }
 
     public boolean gatherModifierInstant(ModifierInstant modifierInstant){

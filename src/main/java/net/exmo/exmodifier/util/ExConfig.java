@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class exconfig {
+public class ExConfig {
    public Path configFile;
     public JsonObject AlljsonObject;
     public Set<Map.Entry<String, JsonElement>> entrys = new HashSet<>();
@@ -61,7 +61,7 @@ public class exconfig {
         }
         return null;
     }
-    public exconfig(Path configFile) throws FileNotFoundException {
+    public ExConfig(Path configFile) throws FileNotFoundException {
         this.configFile = configFile;
         this.AlljsonObject = read();
     }

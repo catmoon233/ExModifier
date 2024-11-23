@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import se.mickelus.tetra.items.modular.ModularItem;
+//import se.mickelus.tetra.items.modular.ModularItem;
 
 import java.util.List;
 

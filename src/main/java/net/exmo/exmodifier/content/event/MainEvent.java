@@ -23,7 +23,12 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -32,6 +37,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 //import net.minecraftforge.client.eventC.MovementInputUpdateEvent;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
@@ -59,10 +65,9 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Exmodifier.*;
@@ -631,9 +636,20 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
 
         @SubscribeEvent
         public static void atReload(AddReloadListenerEvent event) throws IOException {
-
             init();
+            event.addListener(new ModifierPreparableReloadListener());
+            for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()){
+                ModifierHandle.sendModifierEntryToAllClient(modifierEntry);
+            }
 
+        }
+        @SubscribeEvent
+        public static void playJoinServer(PlayerEvent.PlayerLoggedInEvent event) {
+            Player entity = event.getEntity();
+            if (!entity.level().isClientSide()) {
+                for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values())
+                    ModifierHandle.sendModifierEntryToClient(modifierEntry, (ServerPlayer) entity);
+            }
         }
     }
 }

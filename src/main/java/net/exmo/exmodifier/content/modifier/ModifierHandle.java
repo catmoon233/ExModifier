@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.helper.ItemInfo;
@@ -14,6 +15,7 @@ import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
+import net.exmo.exmodifier.network.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.ChatFormatting;
@@ -23,6 +25,8 @@ import net.minecraft.network.chat.Component;
 
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -32,6 +36,7 @@ import net.minecraft.world.item.*;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import top.theillusivec4.curios.api.CuriosApi;
 
@@ -57,7 +62,16 @@ public class ModifierHandle {
 //        readConfig();
 //    }
     public static List<String> percentAtr = new ArrayList<>();
+    public static void sendModifierEntryToServer(ModifierEntry modifierEntry) {
+        PACKET_HANDLER.sendToServer(new SyncModifierEntryMessage(modifierEntry));
+    }
 
+    public static void sendModifierEntryToClient(ModifierEntry modifierEntry, ServerPlayer player) {
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncModifierEntryMessage(modifierEntry));
+    }
+    public static void sendModifierEntryToAllClient(ModifierEntry modifierEntry) {
+        PACKET_HANDLER.send(PacketDistributor.ALL.noArg(), new SyncModifierEntryMessage(modifierEntry));
+    }
     static {
         ExModifierPercentAttr event = new ExModifierPercentAttr(List.of(
                 "twtp:mianshan",
@@ -552,6 +566,7 @@ public class ModifierHandle {
             if (type == ModifierEntry.Type.LEGGINGS) return hasLeggingsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.LEGS;
             if (type == ModifierEntry.Type.ARMOR) return stack.getItem() instanceof ArmorItem;
             if (type == ModifierEntry.Type.BOW) return stack.getItem() instanceof BowItem || stack.getUseAnimation() == UseAnim.BOW;
+            if (type == ModifierEntry.Type.CROSSBOW) return stack.getItem() instanceof CrossbowItem;
 
             if (type == ModifierEntry.Type.SHIELD) return stack.getUseAnimation() == UseAnim.BLOCK;
             if (type == ModifierEntry.Type.SWORD) return hasSwordConfig && stack.getItem() instanceof SwordItem;
@@ -752,17 +767,17 @@ public class ModifierHandle {
         List<ModifierEntry> entries = new ArrayList<>();
         for (Map.Entry<String, JsonElement> entry : moconfig.readEntrys()) {
             try {
-                processModifierEntry(moconfig, entry, entries);
+                processModifierEntry(moconfig, entry.getKey(),entry.getValue(), entries);
             } catch (Exception e) {
                 LOGGER.error("Error processing modifier entry: " + entry.getKey(), e);
             }
         }
-
-        WeightedUtil<String> weightedUtil = new WeightedUtil<String>(
-                entries.stream().collect(Collectors.toMap(ModifierEntry::getId, ModifierEntry::getWeight))
-        );
         ExEntryRegistryEvent event = new ExEntryRegistryEvent(entries);
         MinecraftForge.EVENT_BUS.post(event);
+        WeightedUtil<String> weightedUtil = new WeightedUtil<String>(
+                event.entries.stream().collect(Collectors.toMap(ModifierEntry::getId, ModifierEntry::getWeight))
+        );
+
         event.entries.forEach(entry -> {
             RegisterModifierEntry(entry);
             LOGGER.debug(entry.id + " 出现概率 " + weightedUtil.getProbability(entry.id) * 100 + "%");
@@ -771,11 +786,30 @@ public class ModifierHandle {
         LOGGER.debug("ReadConfig Over: Type: " + moconfig.type + " Path: " + moconfig.configFile + " entries: " + entries.size());
     }
     //LevelRead
+    public static void processModifierEntry(String read, List<ModifierEntry> entries) {
+        try {
+            // 使用 Gson 解析 JSON 字符串
+            JsonObject jsonObject = JsonParser.parseString(read).getAsJsonObject();
+            // 创建 MoConfig 对象并设置属性
+            MoConfig moconfig = new MoConfig(Path.of(""));
+            moconfig.type = ModifierEntry.StringToType(jsonObject.get("type").getAsString());
+           // moconfig.CuriosType = jsonObject.get("CuriosType").getAsString();
+
+            // 获取 modifier 入口项的集合
+
+
+            // 遍历每个 modifier 入口项
+                processModifierEntry(moconfig,jsonObject.get("id").getAsString(), jsonObject, entries);
+
+        } catch (Exception e) {
+            LOGGER.error("Error processing modifier entry", e);
+        }
+    }
 
 
     // 处理单个 Modifier 条目
-    private static void processModifierEntry(MoConfig moconfig, Map.Entry<String, JsonElement> entry, List<ModifierEntry> entries) {
-        JsonElement itemElement = entry.getValue();
+    private static void processModifierEntry(MoConfig moconfig, String key,JsonElement itemElement, List<ModifierEntry> entries) {
+
         if (!itemElement.isJsonObject()) {
             return;
         }
@@ -793,7 +827,7 @@ public class ModifierHandle {
                 if (moconfig.CuriosType.isEmpty()) modifierEntry.curiosType = "ALL";
             }
         }
-        modifierEntry.id = modifierEntry.type.toString().substring(0, 2) + entry.getKey();
+        modifierEntry.id = modifierEntry.type.toString().substring(0, 2) + key;
         modifierEntry.isRandom = itemObject.has("isRandom") && itemObject.get("isRandom").getAsBoolean();
         modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry") && itemObject.get("OnlyHasThisEntry").getAsBoolean();
 
@@ -856,30 +890,51 @@ public class ModifierHandle {
             });
         }
         if (itemObject.has("attrGethers")) {
-            processAttrGethers(moconfig, modifierEntry, itemObject.getAsJsonObject("attrGethers"));
+            processAttrGethers(moconfig, modifierEntry, itemObject.get("attrGethers"));
+        }
+        if (itemObject.has("attriGethers")) {
+            processAttriGethers(moconfig, modifierEntry, itemObject.get("attriGethers"));
         }
 
-        LOGGER.debug("ReadConfig: Type: " + moconfig.type + " Path: " + moconfig.configFile + " Id: " + entry.getKey() + " attrGethers: " + modifierEntry.attriGether.size());
+        LOGGER.debug("ReadConfig: Type: " + moconfig.type + " Path: " + moconfig.configFile + " Id: " + key + " attrGethers: " + modifierEntry.attriGether.size());
         entries.add(modifierEntry);
     }
 
     // 处理 attrGethers
-    private static void processAttrGethers(MoConfig moconfig, ModifierEntry modifierEntry, JsonObject attrGethers) {
-        int index = 0;
-        for (Map.Entry<String, JsonElement> attrGetherEntry : attrGethers.entrySet()) {
-            try {
-                processAttrGether(moconfig, modifierEntry, attrGetherEntry,index);
-                index++;
-            } catch (Exception e) {
-                LOGGER.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
+
+    public static void processAttrGethers(MoConfig moconfig, ModifierEntry modifierEntry, JsonElement attrGethers) {
+
+            // Fallback to the original behavior if it's still an object
+            JsonObject attrGethersObject = attrGethers.getAsJsonObject();
+            int index = 0;
+            for (Map.Entry<String, JsonElement> attrGetherEntry : attrGethersObject.entrySet()) {
+                try {
+                    processAttrGether(moconfig, modifierEntry, attrGetherEntry.getKey(),attrGetherEntry.getValue(), index);
+                    index++;
+                } catch (Exception e) {
+                    LOGGER.error("Error processing attrGether: " + attrGetherEntry.getKey(), e);
+                }
             }
-        }
+
+    }
+    public static void processAttriGethers(MoConfig moconfig, ModifierEntry modifierEntry, JsonElement attrGethers) {
+
+            JsonArray attrGethersArray = attrGethers.getAsJsonArray();
+            int index = 0;
+            for (JsonElement attrGetherElement : attrGethersArray) {
+                try {
+                    processAttrGether(moconfig, modifierEntry,attrGetherElement.getAsJsonObject().get("id").getAsString(), attrGetherElement, index);
+                    index++;
+                } catch (Exception e) {
+                    LOGGER.error("Error processing attrGether at index " + index, e);
+                }
+            }
     }
 
     // 处理单个 attrGether 条目
-    private static void processAttrGether(MoConfig moconfig, ModifierEntry modifierEntry, Map.Entry<String, JsonElement> attrGetherEntry,int index) {
-        JsonObject attrGetherObj = attrGetherEntry.getValue().getAsJsonObject();
-        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attrGetherEntry.getKey()));
+    private static void processAttrGether(MoConfig moconfig, ModifierEntry modifierEntry, String key, JsonElement attrGetherEntry,int index) {
+        JsonObject attrGetherObj = attrGetherEntry.getAsJsonObject();
+        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(key));
         double attrValue = attrGetherObj.has("value") ? attrGetherObj.get("value").getAsDouble() : 0;
 
 
@@ -904,8 +959,15 @@ public class ModifierHandle {
                 }
             }
         }
-        UUID uuid = (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) ? UUID.fromString(attrGetherObj.get("uuid").getAsString()) : UUID.nameUUIDFromBytes(modifierName.getBytes());
-        if(attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean()) uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
+        UUID uuid =null ;
+        if (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) {
+            UUID.fromString(attrGetherObj.get("uuid").getAsString());
+        }
+        else{
+            UUID.nameUUIDFromBytes(modifierName.getBytes());
+
+
+        }        if(attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean()) uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
         //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
         LOGGER.debug("uuid "+uuid);
 
@@ -957,7 +1019,7 @@ public class ModifierHandle {
             attrGether.isRandom = attrGetherObj.get("isRandom").getAsBoolean();
         }
 
-        LOGGER.debug("Attribute: " + attribute + " key: " + attrGetherEntry.getKey());
+        LOGGER.debug("Attribute: " + attribute + " key: " + key);
         modifierEntry.attriGether.add(attrGether);
 
 

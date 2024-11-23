@@ -1,11 +1,13 @@
 package net.exmo.exmodifier.content.AttributeEffect;
 
+import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AttriGetherEffectInstance {
     public int duration;
     public AttriGetherEffect attriGetherEffect;
     public int amplifier;
+    public ServerBossEvent bossEvent;
     public boolean showParticle;
     public boolean showBossBar;
 

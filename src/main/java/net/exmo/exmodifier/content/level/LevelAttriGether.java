@@ -1,8 +1,8 @@
 package net.exmo.exmodifier.content.level;
 
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
-import net.exmo.exmodifier.util.AttriGether;
 import net.exmo.exmodifier.util.DynamicExpressionEvaluator;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;

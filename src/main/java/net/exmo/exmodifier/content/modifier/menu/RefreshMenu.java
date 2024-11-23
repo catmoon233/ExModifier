@@ -168,8 +168,12 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                                     orCreateTag.putBoolean("UNKNOWN",true);
                                 //    orCreateTag.putInt("NeedCount", washingMaterials.NeedCount);
                                     this.repairItemCountCost = washingMaterials.NeedCount;
+                                    if (this.repairItemCountCost<=0)   this.repairItemCountCost = 1;
+                                    orCreateTag.putInt("NeedCount", this.repairItemCountCost);
                                     //input.getOrCreateTag().putDouble("CostExp", washingMaterials.CostExp);
                                     this.cost.set((int) washingMaterials.CostExp + this.cost.get());
+                                    if (this.cost.get()<=0)this.cost.set(1);
+
                                     orCreateTag.putBoolean("modifier_refresh", true);
                                     orCreateTag.putBoolean("can_add_max", false);
                                     if (washingMaterials.MinRandomTime * washingMaterials.MaxRandomTime == 0) {

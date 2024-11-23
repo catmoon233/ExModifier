@@ -154,6 +154,7 @@ dependencies {
     implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.2.0")) {
         jarJar.ranged(it, "[0.2.0,)")
     }
+
     //implementation fg.deobf("curse.maven:curios-309927:5680164")
     //runtimeOnly fg.deobf("curse.maven:architectury-api-419699:5137938")
     runtimeOnly fg.deobf('curse.maven:l2library-620203:5071762')
@@ -167,7 +168,7 @@ dependencies {
    // compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.1:api")
     implementation fg.deobf("curse.maven:attributefix-280510:4911084")
     implementation fg.deobf("dev.xkmc.l2serial:l2serial:1.2.2")
-    implementation fg.deobf("curse.maven:tetra-289712:5544287")
+    //implementation fg.deobf("curse.maven:tetra-289712:5544287")
     implementation fg.deobf("curse.maven:mutil-351914:4824501")
     implementation(jarJar(fg.deobf("dev.xkmc.l2damagetracker:l2damagetracker:0.3.7"))) {
         transitive = false

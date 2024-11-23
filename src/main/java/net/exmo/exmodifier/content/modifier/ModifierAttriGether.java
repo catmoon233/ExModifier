@@ -5,6 +5,9 @@ import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.util.AttriGether;
 import net.exmo.exmodifier.util.ExConfigHandle;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -30,13 +33,81 @@ public class ModifierAttriGether extends AttriGether {
     public double minValue = 0;
     public double maxValue = 0;
     public Map<Double, Float> simpleWeight = new HashMap<>();
-    public String Expression;
+    public String Expression ="";
+    public List<String> OnlyItems = new java.util.ArrayList<>();
+    public  List<String> OnlySlots = new java.util.ArrayList<>();
 
     public ModifierAttriGether setExpression(String expression) {
         this.Expression = expression;
         return this;
     }
+    public CompoundTag toNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.putFloat("weight", weight);
+        tag.putBoolean("isRandom", isRandom);
+        tag.putInt("reserveDouble", reserveDouble);
+        tag.putBoolean("hasUUID", hasUUID);
+        tag.putBoolean("IsAutoEquipmentSlot", IsAutoEquipmentSlot);
+        tag.putDouble("minValue", minValue);
+        tag.putDouble("maxValue", maxValue);
+        tag.putString("Expression", Expression);
 
+        ListTag onlyItemsTag = new ListTag();
+        for (String item : OnlyItems) {
+            onlyItemsTag.add(StringTag.valueOf(item));
+        }
+        tag.put("OnlyItems", onlyItemsTag);
+
+        ListTag onlySlotsTag = new ListTag();
+        for (String slot : OnlySlots) {
+            onlySlotsTag.add(StringTag.valueOf(slot));
+        }
+        tag.put("OnlySlots", onlySlotsTag);
+
+        ListTag simpleWeightTag = new ListTag();
+        for (Map.Entry<Double, Float> entry : simpleWeight.entrySet()) {
+            CompoundTag weightEntry = new CompoundTag();
+            weightEntry.putDouble("key", entry.getKey());
+            weightEntry.putFloat("value", entry.getValue());
+            simpleWeightTag.add(weightEntry);
+        }
+        tag.put("simpleWeight", simpleWeightTag);
+        tag.merge(this.toNBT1());
+        return tag;
+    }
+
+    public static ModifierAttriGether fromNBT(CompoundTag tag) {
+        AttriGether attriGether1 = AttriGether.fromNBT1(tag);
+        ModifierAttriGether attriGether = new ModifierAttriGether(attriGether1.attribute, attriGether1.modifier, attriGether1.slot);
+        attriGether.weight = tag.getFloat("weight");
+        attriGether.isRandom = tag.getBoolean("isRandom");
+        attriGether.reserveDouble = tag.getInt("reserveDouble");
+        attriGether.hasUUID = tag.getBoolean("hasUUID");
+        attriGether.minValue = tag.getDouble("minValue");
+        attriGether.maxValue = tag.getDouble("maxValue");
+        attriGether.Expression = tag.getString("Expression");
+        attriGether.IsAutoEquipmentSlot = tag.getBoolean("IsAutoEquipmentSlot");
+
+        ListTag onlyItemsTag = tag.getList("OnlyItems", 8);
+        for (int i = 0; i < onlyItemsTag.size(); i++) {
+            attriGether.OnlyItems.add(onlyItemsTag.getString(i));
+        }
+
+        ListTag onlySlotsTag = tag.getList("OnlySlots", 8);
+        for (int i = 0; i < onlySlotsTag.size(); i++) {
+            attriGether.OnlySlots.add(onlySlotsTag.getString(i));
+        }
+
+        ListTag simpleWeightTag = tag.getList("simpleWeight", 10);
+        for (int i = 0; i < simpleWeightTag.size(); i++) {
+            CompoundTag weightEntry = simpleWeightTag.getCompound(i);
+            double key = weightEntry.getDouble("key");
+            float value = weightEntry.getFloat("value");
+            attriGether.simpleWeight.put(key, value);
+        }
+
+        return attriGether;
+    }
 
     @Override
     public String toString() {
@@ -61,8 +132,7 @@ public class ModifierAttriGether extends AttriGether {
         return OnlySlots;
     }
 
-    public List<String> OnlyItems = new java.util.ArrayList<>();
-    public  List<String> OnlySlots = new java.util.ArrayList<>();
+
 
 
     public ModifierAttriGether(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
@@ -106,12 +176,13 @@ public class ModifierAttriGether extends AttriGether {
         AttributeModifier.Operation operation = ExConfigHandle.getOperation(attrGetherObj.get("operation").getAsString());
         EquipmentSlot slot = getEquipmentSlot(attrGetherObj);
         String modifierName = (attrGetherObj.has("modifierName")) ? attrGetherObj.get("modifierName").getAsString() :autokey + index;;
-
+        boolean autoName = false;
         if (attrGetherObj.has("autoName")){
             if (attrGetherObj.has("autoName")) {
                 if (attrGetherObj.get("autoName").getAsBoolean()) {
-                    modifierName = autokey + index;
 
+                    modifierName = autokey + index;
+                    autoName = true;
                 }
             }
         }

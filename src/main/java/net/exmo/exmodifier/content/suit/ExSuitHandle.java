@@ -266,7 +266,15 @@ public class ExSuitHandle {
                 }
             }
         }
-        UUID uuid = (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) ? UUID.fromString(attrGetherObj.get("uuid").getAsString()) : UUID.nameUUIDFromBytes(modifierName.getBytes());
+        UUID uuid =null ;
+        if (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) {
+            UUID.fromString(attrGetherObj.get("uuid").getAsString());
+        }
+        else{
+            UUID.nameUUIDFromBytes(modifierName.getBytes());
+
+
+        }
         if(attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean()) uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
         //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
         Exmodifier.LOGGER.debug("uuid "+uuid);

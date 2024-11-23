@@ -84,6 +84,7 @@ public class ItemQualityHelper extends ExHelper{
         List<MutableComponent> list = new java.util.ArrayList<>();
         ItemQualityHelper itemQualityHelper = ItemQualityHelper.of(itemStack);
         for (ItemQuality itemQuality : itemQualityHelper.getQualityEntries()) {
+            if (itemQuality ==null)continue;
             list.add(Component.translatable("exmodifier.quality."+itemQuality.Id));
             if (!itemQuality.LocalDescription.isEmpty()) list.add(Component.translatable(itemQuality.LocalDescription));
         }

@@ -17,6 +17,10 @@ public class ModifierCreateHelper {
     this.modifierEntry.type = type;
 
   }
+  public ModifierCreateHelper IsAutoEquipment(boolean isAutoEquipment){
+    modifierEntry.isRandom = isAutoEquipment;
+    return this;
+  }
   public ModifierCreateHelper addSpecialEffect(SpecialEffect effect){
     modifierEntry.specialTags.add(effect.id);
     return this;

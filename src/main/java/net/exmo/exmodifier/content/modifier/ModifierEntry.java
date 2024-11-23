@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.modifier;
 
+import dev.xkmc.l2serial.serialization.SerialClass;
 import net.exmo.exmodifier.content.SpecialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
@@ -19,6 +20,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
+import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
@@ -31,8 +34,9 @@ import java.util.stream.Collectors;
 import static net.exmo.exmodifier.content.modifier.EntryItem.CommonEvent.df;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
-
+//@SerialClass
 public class ModifierEntry {
+
     public Map<String,String> setting = new HashMap<>();
     public float weight;
     public boolean cantSelect = false;
@@ -40,18 +44,18 @@ public class ModifierEntry {
     public boolean OnlyHasThisEntry = false;
     public String localDescription="";
     public int maxLevel=1;
-    public Type type;
+    public Type type=Type.UNKNOWN;
     public List<String> specialTags = new ArrayList<>();
     public boolean isCuriosEntry =false;
     public float needFreshValue = 0;
-    public String curiosType;
+    public String curiosType ="";
     public List<String> OnlyTags = new ArrayList<>();
     public List<String> OnlyItems = new ArrayList<>();
     public List<String> OnlyWashItems = new ArrayList<>();
     public List<String> Commands = new ArrayList<>();
     public String id;
-    public String Expression;
-    public int RandomNum;
+    public String Expression="";
+    public int RandomNum = 0;
     public List<ModifierAttriGether> attriGether = new java.util.ArrayList<>();
 
     public ModifierEntry(String id) {
@@ -158,11 +162,18 @@ public class ModifierEntry {
         }
         if (type == Type.BOW) return stack.getItem() instanceof BowItem || stack.getUseAnimation() == UseAnim.BOW;
 
+        if (type==Type.CROSSBOW) return stack.getItem() instanceof CrossbowItem;
         if (type == Type.ARMOR){
             return stack.getItem() instanceof ArmorItem;
         }
         if (type == Type.WEAPON){
             return stack.getItem() instanceof SwordItem || stack.getItem() instanceof AxeItem;
+        }
+        if (type == Type.AXE    ){
+            return stack.getItem() instanceof AxeItem ;
+        }
+        if (type == Type.SWORD    ){
+            return stack.getItem() instanceof SwordItem ;
         }
         if (type== Type.ATTACKABLE){
            if ( stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream()
@@ -253,7 +264,7 @@ public class ModifierEntry {
     public static Type StringToType(String type) {
         if (type.toLowerCase().startsWith("curios")) return Type.CURIOS;
         for(var v : Type.values()){
-            if(v.toString().equals(type))return v;
+            if(v.toString().equalsIgnoreCase(type))return v;
         }
         /*switch (type) {
             case "ALL" -> {
