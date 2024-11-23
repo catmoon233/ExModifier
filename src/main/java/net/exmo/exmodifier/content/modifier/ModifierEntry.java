@@ -423,7 +423,7 @@ public class ModifierEntry {
         return id;
     }
     public boolean hasSpecialEffect(SpecialEffect specialEffect){
-        return specialTags.contains(specialEffect.id);
+        return specialTags.contains(specialEffect.id());
     }
 
     public List<Component> GenerateItemTooltip()

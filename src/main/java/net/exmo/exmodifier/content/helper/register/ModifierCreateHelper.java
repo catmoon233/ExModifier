@@ -22,7 +22,7 @@ public class ModifierCreateHelper {
     return this;
   }
   public ModifierCreateHelper addSpecialEffect(SpecialEffect effect){
-    modifierEntry.specialTags.add(effect.id);
+    modifierEntry.specialTags.add(effect.id());
     return this;
   }
   public ModifierCreateHelper addSpecialEffect(String effect){
