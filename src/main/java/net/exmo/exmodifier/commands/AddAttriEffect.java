@@ -1,0 +1,77 @@
+package net.exmo.exmodifier.commands;
+
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
+import net.exmo.exmodifier.content.AttributeEffect.AttriGetherEffect;
+import net.exmo.exmodifier.content.AttributeEffect.AttriGetherEffectHandle;
+import net.exmo.exmodifier.content.AttributeEffect.AttriGetherEffectInstance;
+import net.exmo.exmodifier.content.helper.ItemQualityHelper;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
+import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.modifier.ModifierInstant;
+import net.exmo.exmodifier.content.quality.ItemQuality;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.common.util.FakePlayerFactory;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+
+import java.util.stream.Collectors;
+
+import static net.exmo.exmodifier.content.quality.ItemQualityHandle.itemQualityMap;
+@Mod.EventBusSubscriber
+public class AddAttriEffect {
+    public static final SuggestionProvider<CommandSourceStack> Suggestion_Effect = (ctx, builder) ->
+            SharedSuggestionProvider.suggest(
+                    AttriGetherEffectHandle.getAttriGetherMap().keySet()
+                            .stream()
+                            .map(key -> "\"" + key + "\"") // 在每个 key 前后加上双引号
+                            .collect(Collectors.toList()), // 将流转换为列表
+                    builder
+            );
+
+
+
+    @SubscribeEvent
+    public static void registerCommand(RegisterCommandsEvent event) {
+
+        event.getDispatcher().register(
+                Commands.literal("attriEffect").requires(s -> s.hasPermission(4))
+                        .then(Commands.literal("add").then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("effectid", StringArgumentType.string()).suggests(Suggestion_Effect).then(Commands.argument("level", IntegerArgumentType.integer(1)).then(Commands.argument("duration", IntegerArgumentType.integer(1)).then(Commands.argument("replace", BoolArgumentType.bool())
+                        .executes(arguments -> {
+            Level world = arguments.getSource().getUnsidedLevel();
+            String _setval = StringArgumentType.getString(arguments, "effectid");
+
+            int level = IntegerArgumentType.getInteger(arguments, "level");
+            int duration = IntegerArgumentType.getInteger(arguments, "duration");
+            Player player = EntityArgument.getPlayer(arguments, "player");
+            boolean replace = BoolArgumentType.getBool(arguments, "replace");
+            try {
+                AttriGetherEffect byId = AttriGetherEffectHandle.getById(new ResourceLocation(_setval));
+                AttriGetherEffectInstance attriGetherEffectInstance = new AttriGetherEffectInstance(duration, byId, level, true, true, true);
+                if (replace){
+                    AttriGetherEffectHandle.addOrReplaceAttriGetherEffect(attriGetherEffectInstance,player);
+                }else AttriGetherEffectHandle.addAttriGetherEffect(attriGetherEffectInstance,player);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return 0;
+        }))))))));
+    }
+
+
+    }
+

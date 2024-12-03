@@ -34,7 +34,7 @@ public class ExModifierReloadCommand {
     public static void registerCommand(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("exmodifierreload").requires(s -> s.hasPermission(4)).executes(arguments -> {
             try {
-                MainEvent.CommonEvent.init();
+                MainEvent.CommonEvent.init(null);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

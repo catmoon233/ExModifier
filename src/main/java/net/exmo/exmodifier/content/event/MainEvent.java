@@ -626,21 +626,29 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             }
             return flag;
         }
-        public static void init() throws IOException {
+        public static void init(Runnable runnable) throws IOException {
             ModifierHandle.readConfig();
             ExSuitHandle.readConfig();
             ItemQualityHandle.init();
+            if (runnable!=null) runnable.run();
             ModifierHandle.EEMatchQueueHandle();
 
         }
 
         @SubscribeEvent
         public static void atReload(AddReloadListenerEvent event) throws IOException {
-            init();
-            event.addListener(new ModifierPreparableReloadListener());
-            for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()){
-                ModifierHandle.sendModifierEntryToAllClient(modifierEntry);
-            }
+            init(new Runnable() {
+                @Override
+                public void run() {
+                    event.addListener(new ModifierPreparableReloadListener());
+                    if (event.getServerResources()!=null) {
+                        for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()) {
+                            ModifierHandle.sendModifierEntryToAllClient(modifierEntry);
+                        }
+                    }
+                }
+            });
+
 
         }
         @SubscribeEvent

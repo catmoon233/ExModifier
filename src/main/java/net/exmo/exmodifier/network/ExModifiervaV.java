@@ -2,6 +2,7 @@ package net.exmo.exmodifier.network;
 
 
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.AttributeEffect.AttriGetherEffectInstance;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.minecraft.client.Minecraft;
@@ -11,9 +12,12 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -31,11 +35,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -81,6 +83,7 @@ public class ExModifiervaV {
             if (!event.isWasDeath())
             {
                 clone.syncContent = original.syncContent;
+                clone.attriGetherEffectInstances = original.attriGetherEffectInstances;
                 clone.itemsDamage = original.itemsDamage;
                 clone.SuitsNum = original.SuitsNum;
             }
@@ -145,7 +148,36 @@ public class ExModifiervaV {
 
     public static class MapVariables extends SavedData {
         public static final String DATA_NAME = "exmodifier_mapvars";
-        public boolean jjcload = false;
+        public static List<Map.Entry<ServerBossEvent, UUID>> bossBarList = new ArrayList<>();
+
+        private @NotNull CompoundTag getBossBarCompoundTag(ServerBossEvent bossEvent) {
+        CompoundTag bossEventNBT = new CompoundTag();
+        bossEventNBT.putString("Name", bossEvent.getName().getString());
+        bossEventNBT.putString("Color", bossEvent.getColor().getName());
+        ServerPlayer serverPlayer = bossEvent.getPlayers().stream().findFirst().orElse(null);
+        if (serverPlayer != null) bossEventNBT.putString("Player", serverPlayer.getName().getString());
+        bossEventNBT.putString("BossBarOverlay", bossEvent.getOverlay().getName());
+        bossEventNBT.putString("Player", bossEvent.getOverlay().getName());
+        bossEventNBT.putBoolean("IsVisible", bossEvent.isVisible());
+        bossEventNBT.putFloat("Progress", bossEvent.getProgress());
+        return bossEventNBT;
+    }
+    private ServerBossEvent getBossBarFromNBT(CompoundTag bossEventNBT) {
+            ServerBossEvent bossEvent = null;
+            Component name = Component.translatable(bossEventNBT.getString("Name"));
+            int progress = bossEventNBT.getInt("Progress");
+            BossEvent.BossBarOverlay overlay = BossEvent.BossBarOverlay.valueOf(bossEventNBT.getString("BossBarOverlay"));
+
+            //ServerPlayer serverPlayer = (bossEventNBT.getString("Player"));
+            BossEvent.BossBarColor color = BossEvent.BossBarColor.valueOf(bossEventNBT.getString("Color"));
+            bossEvent = new ServerBossEvent(name, color, overlay);
+            bossEvent.setProgress(progress);
+            bossEvent.setVisible(bossEventNBT.getBoolean("IsVisible"));
+           // bossEvent.addPlayer(serverPlayer);
+        return bossEvent;
+
+
+    }
 
         public static MapVariables load(CompoundTag tag) {
             MapVariables data = new MapVariables();
@@ -154,12 +186,12 @@ public class ExModifiervaV {
         }
 
         public void read(CompoundTag nbt) {
-            jjcload = nbt.getBoolean("jjcload");
+
         }
 
         @Override
         public CompoundTag save(CompoundTag nbt) {
-            nbt.putBoolean("jjcload", jjcload);
+
             return nbt;
         }
 
@@ -252,6 +284,7 @@ public class ExModifiervaV {
         public Map<ExSuit, Integer> SuitsNum = new HashMap<>();
         public Map<String, Float> itemsDamage = new HashMap<>();
         public Map<String,String> syncContent = new HashMap<>();
+        public List<AttriGetherEffectInstance> attriGetherEffectInstances = new ArrayList<>();
         public ItemStack Sitemstack = ItemStack.EMPTY;
 
         public void syncPlayerVariables(Entity entity) {
@@ -263,13 +296,21 @@ public class ExModifiervaV {
             CompoundTag nbt = new CompoundTag();
 
             nbt.put("Sitemstack", Sitemstack.save(new CompoundTag()));
-            ListTag taskListTag = new ListTag();
+            ListTag ExsuitListTag = new ListTag();
             for (ExSuit value : Suits) {
                 if (value != null) {
-                    taskListTag.add(StringTag.valueOf(value.id));
+                    ExsuitListTag.add(StringTag.valueOf(value.id));
                 }
             }
-            nbt.put("Suits", taskListTag);
+            nbt.put("Suits", ExsuitListTag);
+
+            ListTag EFListTag = new ListTag();
+            for (AttriGetherEffectInstance value : attriGetherEffectInstances) {
+                if (value != null) {
+                    EFListTag.add(value.toNBT());
+                }
+            }
+            nbt.put("attriGetherEffectInstances", EFListTag);
 
             CompoundTag SuitsNuma = new CompoundTag();
             for (Map.Entry<ExSuit, Integer> entry : SuitsNum.entrySet()) {
@@ -295,12 +336,19 @@ public class ExModifiervaV {
         public void readNBT(Tag Tag) {
             CompoundTag nbt = (CompoundTag) Tag;
             Sitemstack = ItemStack.of(nbt.getCompound("Sitemstack"));
-            ListTag taskListTag = nbt.getList("Suits", 8);
+            ListTag ExSuitListTag = nbt.getList("Suits", 8);
             List<ExSuit> SuitsList = new ArrayList<>();
-            for (int i = 0; i < taskListTag.size(); ++i) {
-                SuitsList.add(ExSuitHandle.LoadExSuit.get(taskListTag.getString(i)));
+            for (int i = 0; i < ExSuitListTag.size(); ++i) {
+                SuitsList.add(ExSuitHandle.LoadExSuit.get(ExSuitListTag.getString(i)));
             }
             Suits = SuitsList;
+
+            ListTag EFListTag = nbt.getList("attriGetherEffectInstances", 10);
+            List<AttriGetherEffectInstance> EFList = new ArrayList<>();
+            for (int i = 0; i < EFListTag.size(); ++i) {
+                EFList.add(AttriGetherEffectInstance.fromNBT(EFListTag.getCompound(i)));
+            }
+            attriGetherEffectInstances = EFList;
 
             CompoundTag SuitsNuma = nbt.getCompound("SuitsNum");
             for (String key : SuitsNuma.getAllKeys()) {
@@ -346,6 +394,7 @@ public class ExModifiervaV {
                     variables.Sitemstack = message.data.Sitemstack;
                     variables.Suits = message.data.Suits;
                     variables.SuitsNum = message.data.SuitsNum;
+                    variables.attriGetherEffectInstances = message.data.attriGetherEffectInstances;
                     variables.itemsDamage = message.data.itemsDamage;
                     variables.syncContent = message.data.syncContent;
 

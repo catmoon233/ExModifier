@@ -18,7 +18,10 @@ import java.util.Optional;
 public class AttriGetherEffect
 {
     private BossEvent.BossBarColor bossBarColor;
+    private boolean randomAttrUUID;
     private BossEvent.BossBarOverlay bossBarOverlay;
+    private String bossBarName;
+    private ResourceLocation id;
     private SimpleParticleType particle;
     public static SimpleParticleType StringToParticle(String particle)
     {
@@ -35,12 +38,14 @@ public class AttriGetherEffect
     private String localDescription;
     private boolean visible;
     private List<AttriGether> attriGethers;
-    public AttriGetherEffect(BossEvent.BossBarColor bossBarColor,BossEvent.BossBarOverlay bossBarOverlay,boolean visible,String localDescription ,List<AttriGether> attriGethers) {
+    public AttriGetherEffect(BossEvent.BossBarColor bossBarColor,BossEvent.BossBarOverlay bossBarOverlay,String bossBarName,boolean visible,ResourceLocation id ,List<AttriGether> attriGethers) {
         this.bossBarColor = bossBarColor;
         this.bossBarOverlay = bossBarOverlay;
-        this.localDescription = localDescription;
+        this.id = id;
+        this.bossBarName = bossBarName;
         this.visible = visible;
         this.attriGethers = attriGethers;
+
         if (attriGethers.isEmpty())
             Exmodifier.LOGGER.Logger.error(("AttriGetherEffect must have at least one AttriGether"));
     }
@@ -82,4 +87,36 @@ public class AttriGetherEffect
     }
 
 
+    public String getBossBarName() {
+        return bossBarName;
+    }
+
+    public void setBossBarName(String bossBarName) {
+        this.bossBarName = bossBarName;
+    }
+
+    public ResourceLocation getId() {
+        return id;
+    }
+
+    public void setId(ResourceLocation id) {
+        this.id = id;
+    }
+
+    public SimpleParticleType getParticle() {
+        return particle;
+    }
+
+    public void setParticle(SimpleParticleType particle) {
+        this.particle = particle;
+    }
+
+    public boolean isRandomAttrUUID() {
+        return randomAttrUUID;
+    }
+
+    public AttriGetherEffect setRandomAttrUUID(boolean randomAttrUUID) {
+        this.randomAttrUUID = randomAttrUUID;
+    return this;
+    }
 }

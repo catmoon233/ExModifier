@@ -73,7 +73,11 @@ public class AddHandItemEntry {
             }
             return 0;
         })))));
-        event.getDispatcher().register(Commands.literal("addHandItemQuality").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("QualityId", StringArgumentType.word()).suggests(Suggestion_Qualities).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("addHandItemQuality").requires(s -> s.hasPermission(4)).
+                then(Commands.argument("player", EntityArgument.player()).
+                        then(Commands.argument("QualityId", StringArgumentType.word())
+                                .suggests(Suggestion_Qualities)
+                                .executes(arguments -> {
             Level world = arguments.getSource().getUnsidedLevel();
             double x = arguments.getSource().getPosition().x();
             double y = arguments.getSource().getPosition().y();

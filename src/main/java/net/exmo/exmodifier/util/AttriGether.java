@@ -31,13 +31,20 @@ public class AttriGether {
         ItemStack itemStack;
 
     }
+    public AttriGether setModifierUUID(UUID uuid){
+        this.modifier = new AttributeModifier(uuid, modifier.getName(), modifier.getAmount(), modifier.getOperation());
+        return this;
+    }
     public CompoundTag toNBT1() {
         CompoundTag tag = new CompoundTag();
         String sslot = "";
         if (slot != null)sslot = slot.getName();
         tag.putString("slot", sslot);
         tag.putBoolean("IsAutoEquipmentSlot", IsAutoEquipmentSlot);
-        tag.putString("attribute", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
+        ResourceLocation key = ForgeRegistries.ATTRIBUTES.getKey(attribute);
+        if (key!=null) {
+            tag.putString("attribute", key.toString());
+        }
         if (modifier.getId()!=null)tag.putString("modifierId", modifier.getId().toString());
         tag.putString("modifierName", modifier.getName());
         tag.putDouble("modifierAmount", modifier.getAmount());

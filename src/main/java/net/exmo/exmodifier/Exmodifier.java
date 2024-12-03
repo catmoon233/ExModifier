@@ -115,7 +115,7 @@ public class Exmodifier {
 
         ITEMS.register(modEventBus);
         try {
-            init();
+            init(null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

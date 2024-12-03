@@ -19,12 +19,14 @@ import net.exmo.exmodifier.network.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -63,15 +65,21 @@ public class ModifierHandle {
 //    }
     public static List<String> percentAtr = new ArrayList<>();
     public static void sendModifierEntryToServer(ModifierEntry modifierEntry) {
+
         PACKET_HANDLER.sendToServer(new SyncModifierEntryMessage(modifierEntry));
-    }
+            // 处理服务器未初始化的情况
+            LOGGER.Logger.error("Server is not initialized yet.");
+
+        }
 
     public static void sendModifierEntryToClient(ModifierEntry modifierEntry, ServerPlayer player) {
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncModifierEntryMessage(modifierEntry));
     }
     public static void sendModifierEntryToAllClient(ModifierEntry modifierEntry) {
-        PACKET_HANDLER.send(PacketDistributor.ALL.noArg(), new SyncModifierEntryMessage(modifierEntry));
+        if (Minecraft.getInstance().isLocalServer()) {
+            PACKET_HANDLER.send(PacketDistributor.ALL.noArg(), new SyncModifierEntryMessage(modifierEntry));
     }
+}
     static {
         ExModifierPercentAttr event = new ExModifierPercentAttr(List.of(
                 "twtp:mianshan",
