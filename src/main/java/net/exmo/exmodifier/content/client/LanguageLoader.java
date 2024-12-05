@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.client;
 
+import net.exmo.exmodifier.ExModifier;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
@@ -63,19 +64,19 @@ public final class LanguageLoader {
             try (InputStream inputStream = Files.newInputStream(file.toPath())) {
                 Map<String, String> languages = Maps.newHashMap();
                 Language.loadFromJson(inputStream, languages::put);
-                ClientAssetManager.INSTANCE.putLanguage(languageCode, languages);
+                putLanguage(languageCode, languages);
             } catch (IOException | JsonSyntaxException | JsonIOException exception) {
-                GunMod.LOGGER.warn(MARKER, "Failed to read language file: {}", file);
+                ExModifier.LOGGER.warn(MARKER, "Failed to read language file: {}", file);
                 exception.printStackTrace();
             }
         }
     }
-    public static void addLanguage(String region, Map<String, String> lang){
+    public static void putLanguage(String region, Map<String, String> lang){
         Map<String, String> language = LANGUAGES.getOrDefault(region, Maps.newHashMap());
         language.putAll(lang);
         LANGUAGES.put(region, language);
     }
-    public static Map<String, String> getLanguage(String region){
+    public static Map<String, String> getLanguages(String region){
         return LANGUAGES.get(region);
     }
 }
