@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import dev.shadowsoffire.placebo.events.ItemUseEvent;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.content.client.LanguageLoader;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ItemLevelHelper;
@@ -632,7 +633,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             ItemQualityHandle.init();
             if (runnable!=null) runnable.run();
             ModifierHandle.EEMatchQueueHandle();
-
+            LanguageLoader.load(FMLPaths.GAMEDIR.get().resolve(LanguageLoader.LANGUAGES_FILE_PATH));
         }
 
         @SubscribeEvent
