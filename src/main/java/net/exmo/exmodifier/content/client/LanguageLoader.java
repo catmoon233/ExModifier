@@ -1,6 +1,6 @@
 package net.exmo.exmodifier.content.client;
 
-import net.exmo.exmodifier.ExModifier;
+import net.exmo.exmodifier.Exmodifier;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
@@ -66,7 +66,7 @@ public final class LanguageLoader {
                 Language.loadFromJson(inputStream, languages::put);
                 putLanguage(languageCode, languages);
             } catch (IOException | JsonSyntaxException | JsonIOException exception) {
-                ExModifier.LOGGER.warn(MARKER, "Failed to read language file: {}", file);
+                Exmodifier.LOGGER.warn(MARKER, "Failed to read language file: {}", file);
                 exception.printStackTrace();
             }
         }
