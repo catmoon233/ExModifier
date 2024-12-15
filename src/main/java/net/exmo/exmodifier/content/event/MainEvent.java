@@ -620,6 +620,9 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                         } else if (suitLevel <= 0 && suitsList.contains(suit)) {
                             suitsList.remove(suit);
                         }
+                        for (ExSuit suit1 : suitsList){
+                            if (!ExSuitHandle.LoadExSuit.containsValue(suit1))suitsList.remove(suit1);
+                        }
                         capability.Suits = suitsList;
                         capability.syncPlayerVariables(player);
                     });

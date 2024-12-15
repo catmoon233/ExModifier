@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.getUUID;
 import static net.exmo.exmodifier.content.suit.ExSuit.StringToTrigger;
@@ -73,6 +74,19 @@ public class ExSuitHandle {
             }
             capability.syncPlayerVariables(player);
         });
+    }
+    public static boolean hasSuitByID(Player player,String id){
+        AtomicBoolean flag = new AtomicBoolean(false);
+        player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+            for (ExSuit exSuit : capability.Suits){
+                if (exSuit.id.equals(id)){
+                    flag.set(true);
+                    break;
+                }
+            }
+        });
+        return flag.get();
+
     }
     public int getPlayerLevel(Player player){
         return player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).map(capability -> capability.SuitsNum.values().stream().mapToInt(Integer::intValue).sum()).orElse(0);
