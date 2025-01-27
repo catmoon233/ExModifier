@@ -1,9 +1,9 @@
 package net.exmo.exmodifier.content.client;
 
+import net.exmo.exmodifier.Exmodifier;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import net.exmo.exmodifier.Exmodifier;
 import net.minecraft.locale.Language;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
@@ -23,24 +23,24 @@ public final class LanguageLoader {
     public static final Map<String, Map<String, String>> LANGUAGES = Maps.newHashMap();
     private static final Marker MARKER = MarkerManager.getMarker("LanguageLoader");
     public static final String LANGUAGES_FILE_PATH = "config/exmo/lang";
-    //private static final Pattern LANG_PATTERN = Pattern.compile("^\\w+/lang/(\\w+)\\.json$");
+    /*private static final Pattern LANG_PATTERN = Pattern.compile("^\\w+/lang/(\\w+)\\.json$");
 
-    /*public static boolean load(ZipFile zipFile, String zipPath) {
+    public static boolean load(ZipFile zipFile, String zipPath) {
         Matcher matcher = LANG_PATTERN.matcher(zipPath);
         if (matcher.find()) {
             String languageCode = matcher.group(1);
             ZipEntry entry = zipFile.getEntry(zipPath);
             if (entry == null) {
-                Exmodifier.LOGGER.warn(MARKER, "{} file don't exist", zipPath);
+                GunMod.LOGGER.warn(MARKER, "{} file don't exist", zipPath);
                 return false;
             }
             try (InputStream zipEntryStream = zipFile.getInputStream(entry)) {
                 Map<String, String> languages = Maps.newHashMap();
                 Language.loadFromJson(zipEntryStream, languages::put);
-                addLanguage(languageCode, languages);
+                ClientAssetManager.INSTANCE.putLanguage(languageCode, languages);
                 return true;
             } catch (IOException | JsonSyntaxException | JsonIOException exception) {
-                Exmodifier.LOGGER.warn(MARKER, "Failed to read language file: {}, entry: {}", zipFile, entry);
+                GunMod.LOGGER.warn(MARKER, "Failed to read language file: {}, entry: {}", zipFile, entry);
                 exception.printStackTrace();
             }
         }
@@ -64,14 +64,14 @@ public final class LanguageLoader {
             try (InputStream inputStream = Files.newInputStream(file.toPath())) {
                 Map<String, String> languages = Maps.newHashMap();
                 Language.loadFromJson(inputStream, languages::put);
-                addLanguages(languageCode, languages);
+                putLanguage(languageCode, languages);
             } catch (IOException | JsonSyntaxException | JsonIOException exception) {
-                Exmodifier.LOGGER.Logger.warn("Failed to read language file: {}", file);
+                Exmodifier.LOGGER.warn(MARKER, "Failed to read language file: {}", file);
                 exception.printStackTrace();
             }
         }
     }
-    public static void addLanguages(String region, Map<String, String> lang){
+    public static void putLanguage(String region, Map<String, String> lang){
         Map<String, String> language = LANGUAGES.getOrDefault(region, Maps.newHashMap());
         language.putAll(lang);
         LANGUAGES.put(region, language);
