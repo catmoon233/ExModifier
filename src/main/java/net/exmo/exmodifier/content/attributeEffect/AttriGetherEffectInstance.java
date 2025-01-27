@@ -1,4 +1,4 @@
-package net.exmo.exmodifier.content.AttributeEffect;
+package net.exmo.exmodifier.content.attributeEffect;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;

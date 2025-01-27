@@ -94,8 +94,9 @@ public class ItemQualityHelper extends ExHelper{
 public List<ItemQuality> getQualityEntries()
 {
     List<ItemQuality> list = new java.util.ArrayList<>();
-    for (int i = 0; i < getQualityEntriesNbt().size(); i++){
-        list.add(ItemQualityHandle.itemQualityMap.get(getQualityEntriesNbt().getCompound(i).getString(IQID)));
+    ListTag qualityEntriesNbt = getQualityEntriesNbt();
+    for (int i = 0; i < qualityEntriesNbt.size(); i++){
+        list.add(ItemQualityHandle.itemQualityMap.get(qualityEntriesNbt.getCompound(i).getString(IQID)));
     }
     return list;
 }

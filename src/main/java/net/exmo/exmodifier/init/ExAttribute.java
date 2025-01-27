@@ -53,6 +53,7 @@ public class ExAttribute {
     public static final RegistryObject<Attribute> INJURY_FREE;
     public static final RegistryObject<Attribute> BEHIND_DAMAGE ;
     public static final RegistryObject<Attribute> FIREWORK_DAMAGE ;
+    public static final RegistryObject<Attribute> DEFENSE ;
 
 
     static {
@@ -88,6 +89,9 @@ public class ExAttribute {
 
         // 免伤
         INJURY_FREE = registerAttribute("injury_free", 1, -100000, 10000000);
+
+        // 防御
+        DEFENSE = registerAttribute("defense", 0, -100000, 10000000);
     }
 
 
@@ -114,6 +118,7 @@ public class ExAttribute {
             event.add(e, BEHIND_DAMAGE.get());
             event.add(e, ARROW_BASE_DAMAGE.get());
             event.add(e, DURABILITY.get());
+            event.add(e, DEFENSE.get());
             if (e.equals(EntityType.PLAYER)) {
                 event.add(e, MAX_DODGE.get());
                 event.add(e, FIREWORK_DAMAGE.get());
@@ -181,15 +186,16 @@ public class ExAttribute {
             }
         }
         @SubscribeEvent
-        public static void AtHurt(LivingHurtEvent event) {
+        public static void DamageModifier(LivingHurtEvent event) {
             LivingEntity entity = ((LivingEntity) event.getEntity());
+            float FinallyDanage = event.getAmount();
             LivingEntity attacker = event.getSource().getEntity() instanceof LivingEntity ? (LivingEntity) event.getSource().getEntity() : null;
             if (event.getSource().getEntity() instanceof LivingEntity) {
                 if( isLookingBehindTarget(event.getEntity(), event.getSource().getSourcePosition())) {
                     if (attacker!=null){
                     if (attacker.getAttributes().hasAttribute(ExAttribute.BEHIND_DAMAGE.get())) {
                         double multiplier = attacker.getAttributeValue(ExAttribute.BEHIND_DAMAGE.get());
-                        event.setAmount((float) (multiplier * event.getAmount()));
+                        FinallyDanage = ((float) (multiplier * FinallyDanage));
                         Level level = attacker.level();
                         if (!level.isClientSide)
                             if (multiplier>1) level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -198,12 +204,18 @@ public class ExAttribute {
                 }
                 if (attacker != null && attacker.getAttributes().hasAttribute(ExAttribute.FIREWORK_DAMAGE.get())) {
                     double multiplier = attacker.getAttributeValue(ExAttribute.FIREWORK_DAMAGE.get());
-                    event.setAmount((float) (multiplier * event.getAmount()));
+                    FinallyDanage = ((float) (multiplier * FinallyDanage));
                 }
+            }
+
+            if (entity.getAttributes().hasAttribute(ExAttribute.DEFENSE.get())){
+                double v = entity.getAttributeValue(ExAttribute.DEFENSE.get());
+                FinallyDanage = (float) (FinallyDanage * Math.round(100 * (100 / (((LivingEntity) entity).getAttribute(ExAttribute.DEFENSE.get()).getValue() - 1 + 100))) * 0.01);
+
             }
             if (entity.getAttributes().hasAttribute(ExAttribute.INJURY_FREE.get())){
                 double v = entity.getAttributeValue(ExAttribute.INJURY_FREE.get());
-                event.setAmount((float) ((2- v) * (event.getAmount())));
+                FinallyDanage = ((float) ((2- v) * (FinallyDanage)));
             }
             if ((event.getSource().getEntity() instanceof LivingEntity entity1)) {
                 if (entity1.getAttributes().hasAttribute(ExAttribute.PERCENT_HEAL.get()) && entity1.getAttributes().hasAttribute(Attributes.MAX_HEALTH)) {
@@ -211,6 +223,7 @@ public class ExAttribute {
                     entity1.heal((float) (entity1.getAttributeValue(Attributes.MAX_HEALTH) * (v - 1)));
                 }
             }
+            event.setAmount(FinallyDanage);
         }
         @SubscribeEvent
         public static void persistAttributes(PlayerEvent.Clone event) {
@@ -220,6 +233,7 @@ public class ExAttribute {
             newP.getAttribute(BEHIND_DAMAGE.get()).setBaseValue(oldP.getAttribute(BEHIND_DAMAGE.get()).getBaseValue());
             newP.getAttribute(PERCENT_HEAL.get()).setBaseValue(oldP.getAttribute(PERCENT_HEAL.get()).getBaseValue());
             newP.getAttribute(HIT_RATE.get()).setBaseValue(oldP.getAttribute(HIT_RATE.get()).getBaseValue());
+            newP.getAttribute(DEFENSE.get()).setBaseValue(oldP.getAttribute(DEFENSE.get()).getBaseValue());
         }
     }
 }

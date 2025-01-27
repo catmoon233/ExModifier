@@ -1,19 +1,13 @@
-package net.exmo.exmodifier.content.AttributeEffect;
+package net.exmo.exmodifier.content.attributeEffect;
 
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.util.AttriGether;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.BossEvent;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 public class AttriGetherEffect
 {

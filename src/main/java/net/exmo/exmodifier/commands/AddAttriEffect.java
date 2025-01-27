@@ -4,32 +4,22 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import net.exmo.exmodifier.content.AttributeEffect.AttriGetherEffect;
-import net.exmo.exmodifier.content.AttributeEffect.AttriGetherEffectHandle;
-import net.exmo.exmodifier.content.AttributeEffect.AttriGetherEffectInstance;
-import net.exmo.exmodifier.content.helper.ItemQualityHelper;
-import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
-import net.exmo.exmodifier.content.modifier.ModifierHandle;
-import net.exmo.exmodifier.content.modifier.ModifierInstant;
-import net.exmo.exmodifier.content.quality.ItemQuality;
+import net.exmo.exmodifier.content.attributeEffect.AttriGetherEffect;
+import net.exmo.exmodifier.content.attributeEffect.AttriGetherEffectHandle;
+import net.exmo.exmodifier.content.attributeEffect.AttriGetherEffectInstance;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.stream.Collectors;
 
-import static net.exmo.exmodifier.content.quality.ItemQualityHandle.itemQualityMap;
 @Mod.EventBusSubscriber
 public class AddAttriEffect {
     public static final SuggestionProvider<CommandSourceStack> Suggestion_Effect = (ctx, builder) ->

@@ -11,9 +11,11 @@ import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevel;
+import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.*;
+import net.exmo.exmodifier.network.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.network.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.*;
@@ -26,6 +28,7 @@ import net.minecraft.network.chat.Component;
 
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.Main;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,11 +38,13 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import top.theillusivec4.curios.api.CuriosApi;
 
 
@@ -72,14 +77,36 @@ public class ModifierHandle {
 
         }
 
+        public static ModifierEntry findModifierEntry(String id) {
+            return modifierEntryMap.get(id);
+        }
     public static void sendModifierEntryToClient(ModifierEntry modifierEntry, ServerPlayer player) {
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncModifierEntryMessage(modifierEntry));
     }
-    public static void sendModifierEntryToAllClient(ModifierEntry modifierEntry) {
-        if (Minecraft.getInstance().isLocalServer()) {
-            PACKET_HANDLER.send(PacketDistributor.ALL.noArg(), new SyncModifierEntryMessage(modifierEntry));
+    public static void sendClearModifierEntryToClient( ServerPlayer player) {
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearModifierEntryMessage());
     }
-}
+    public static void sendModifierEntryToAllClient(ModifierEntry modifierEntry) {
+        MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
+        if (currentServer == null) {
+            LOGGER.Logger.error("Server is not initialized yet.");
+            return;
+        }
+        for (ServerPlayer player : currentServer.getPlayerList().getPlayers()) {
+            PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() ->player), new SyncModifierEntryMessage(modifierEntry));
+        }
+    }
+    public static void sendClearModifierEntryToAllClient() {
+        MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
+        if (currentServer == null) {
+            LOGGER.Logger.error("Server is not initialized yet.");
+            return;
+        }
+        for (ServerPlayer player : currentServer.getPlayerList().getPlayers()) {
+            PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() ->player), new ClearModifierEntryMessage());
+        }
+    }
+
     static {
         ExModifierPercentAttr event = new ExModifierPercentAttr(List.of(
                 "twtp:mianshan",
@@ -104,6 +131,7 @@ public class ModifierHandle {
         MinecraftForge.EVENT_BUS.post(event);
         percentAtr = event.attrs;
     }
+
     private static DecimalFormat df = new DecimalFormat("#.#####");
 
     @Mod.EventBusSubscriber
@@ -364,6 +392,7 @@ public class ModifierHandle {
                                                 (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
                                                 (modifier.getUnlessItemIds().isEmpty() || !modifier.getUnlessItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
                                                 !modifier.cantSelect &&
+                                                (modifier.Slots.isEmpty())  &&
                                                 (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
                                                 (modifier.OnlyTags.isEmpty() || modifier.containTag(stack)) &&
                                                 (modifier.getUnlessItemIds().isEmpty() || !modifier.unContainTag(stack))&&
@@ -390,7 +419,59 @@ public class ModifierHandle {
                 }
             }
         }
-        public static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry, ItemStack stack) {
+
+
+//            public static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry, ItemStack stack) {
+//                List<ModifierAttriGether> attriGethers = new ArrayList<>();
+//
+//                if (modifierEntry.RandomNum > 0) {
+//                    int remainingRandoms = modifierEntry.RandomNum;
+//                    Map<String, ModifierAttriGether> toRandom = new HashMap<>();
+//                    Map<String, Float> weightMap = new HashMap<>();
+//
+//                    // Populate toRandom and weightMap in a single loop
+//                    for (int i = 0; i < modifierEntry.attriGether.size(); i++) {
+//                        ModifierAttriGether attriGether = modifierEntry.attriGether.get(i);
+//                        if (attriGether.weight > 0) {
+//                            String key = String.valueOf(i);
+//                            toRandom.put(key, attriGether);
+//                            weightMap.put(key, attriGether.weight);
+//                        } else if (attriGether.weight == 0 && !attriGether.isRandom) {
+//                            attriGethers.add(attriGether);
+//                        }
+//                    }
+//
+//                    remainingRandoms -= attriGethers.size();
+//
+//                    WeightedUtil<String> weightedUtil = new WeightedUtil<>(weightMap);
+//
+//                    while (remainingRandoms > 0) {
+//                        String selectedKey = weightedUtil.selectRandomKeyBasedOnWeights();
+//                        ModifierAttriGether selectedAttriGether = toRandom.get(selectedKey);
+//
+//                        if (selectedAttriGether != null && !attriGethers.contains(selectedAttriGether)) {
+//                            ExAddEntryAttrigetherEvent event = new ExAddEntryAttrigetherEvent(modifierEntry, selectedAttriGether, stack);
+//                            MinecraftForge.EVENT_BUS.post(event);
+//                            attriGethers.add(event.selectedAttriGether);
+//                            Exmodifier.LOGGER.debug ("add Random entry: " + event.selectedAttriGether.getAttribute().getDescriptionId());
+//                            remainingRandoms--;
+//                        }
+//                    }
+//
+//                } else {
+//                    attriGethers.addAll(modifierEntry.attriGether.stream()
+//                            .filter(attriGether -> !attriGether.isRandom)
+//                            .toList());
+//                }
+//
+//                return attriGethers;
+//            }
+//
+//
+
+
+
+                public static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry, ItemStack stack) {
             List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
             if (modifierEntry.RandomNum > 0) {
@@ -548,6 +629,7 @@ public class ModifierHandle {
                                         (curiosType.contains(modifier.curiosType) || "ALL".equals(modifier.curiosType)) &&
                                         (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
                                         !modifier.cantSelect &&
+                                        (modifier.Slots.isEmpty())&&
                                         (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
                                         (modifier.OnlyTags.isEmpty() || modifier.containTag(stack)) &&
                                         (modifier.OnlyWashItems.isEmpty() || modifier.OnlyWashItems.contains(washItem));
@@ -609,13 +691,16 @@ public class ModifierHandle {
     public static Map<String,List<ModifierEntry>> itemsDefaultEntry = new HashMap<>();
     public static List<String> onlyCanRefreshPointEntryItemIds = new ArrayList<>();
     public static void RegisterModifierEntry(ModifierEntry modifierEntry){
-        if (!hasBootsConfig)if (modifierEntry.type == ModifierEntry.Type.BOOTS)hasBootsConfig=true;
-        if (!hasLeggingsConfig)if (modifierEntry.type == ModifierEntry.Type.LEGGINGS)hasLeggingsConfig=true;
-        if (!hasChestConfig)if (modifierEntry.type == ModifierEntry.Type.CHESTPLATE)hasChestConfig=true;
-        if (!hasHelmetConfig)if (modifierEntry.type == ModifierEntry.Type.HELMET)hasHelmetConfig=true;
-        if (!hasSwordConfig)if (modifierEntry.type == ModifierEntry.Type.SWORD)hasSwordConfig=true;
-        modifierEntryMap.put(modifierEntry.id,modifierEntry);
-        LOGGER.debug("RegisterModifierEntry: Type:" + modifierEntry.type + " Target:" + modifierEntry.id  );
+        ModifierEntry.Type type = modifierEntry.type;
+        if (!hasBootsConfig)if (type == ModifierEntry.Type.BOOTS)hasBootsConfig=true;
+        if (!hasLeggingsConfig)if (type == ModifierEntry.Type.LEGGINGS)hasLeggingsConfig=true;
+        if (!hasChestConfig)if (type == ModifierEntry.Type.CHESTPLATE)hasChestConfig=true;
+        if (!hasHelmetConfig)if (type == ModifierEntry.Type.HELMET)hasHelmetConfig=true;
+        if (!hasSwordConfig)if (type == ModifierEntry.Type.SWORD)hasSwordConfig=true;
+        String id = modifierEntry.id;
+        modifierEntryMap.put(id,modifierEntry);
+        BaseItemSelected.IDS.put(StringToIntConverter.stringToInt(id),modifierEntry);
+        LOGGER.debug("RegisterModifierEntry: Type:" + type + " Target:" + id);
     }
     public static void EEMatchQueueHandle(){
         EEMatchQueue.forEach((k,v)->{
@@ -859,6 +944,13 @@ public class ModifierHandle {
             JsonArray OnlyItems = itemObject.get("OnlyItems").getAsJsonArray();
             OnlyItems.forEach(item -> {
                 modifierEntry.OnlyItems.add(item.getAsString());
+            });
+        }
+        modifierEntry.Slots = new ArrayList<>();
+        if (itemObject.has("slots")){
+            JsonArray OnlyItems = itemObject.get("slots").getAsJsonArray();
+            OnlyItems.forEach(item -> {
+                modifierEntry.Slots.add(item.getAsString());
             });
         }
         if (itemObject.has("specialTags")){

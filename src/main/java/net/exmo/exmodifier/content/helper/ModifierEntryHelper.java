@@ -28,6 +28,7 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.modifierEntryM
 public class ModifierEntryHelper extends ExHelper {
     public static final String MES = "ModifierEntry";
     public static final String MEID = "EntryID";
+    public static final String SLOT = "slot";
 
     public static ModifierEntryHelper of(ItemStack itemStack){
         return new ModifierEntryHelper(itemStack);
@@ -46,6 +47,9 @@ public class ModifierEntryHelper extends ExHelper {
             tag.remove("exmodifier_armor_modifier_applied");
         }
     }
+//    public boolean containEntry(String id){
+//
+//    }
     public boolean ValidModifierEntry()
     {
         return ValidMainNbt()&&getMainNbt().contains(MES);
@@ -116,6 +120,23 @@ public class ModifierEntryHelper extends ExHelper {
         }
         return 0;
     }
+    public Optional<String> getModifierEntrySlot(String entryID){
+        ListTag modifierEntriesNbt = getModifierEntriesNbt();
+        for (int i = 0; i < modifierEntriesNbt.size(); i++){
+            if (modifierEntriesNbt.getCompound(i).getString(MEID).equals(entryID)) return Optional.of(modifierEntriesNbt.getCompound(i).getString(SLOT));
+        }
+        return Optional.empty();
+    }
+    public ModifierEntryHelper setModifierEntrySlot(String entryID, String slot){
+        ListTag modifierEntriesNbt = getModifierEntriesNbt();
+        for (int i = 0; i < modifierEntriesNbt.size(); i++){
+            if (modifierEntriesNbt.getCompound(i).getString(MEID).equals(entryID)){
+                modifierEntriesNbt.getCompound(i).putString(SLOT,slot);
+                return this;
+            }
+        }
+        return this;
+    }
     public ModifierEntryHelper(ItemStack itemStack) {
         super(itemStack);
     }
@@ -130,7 +151,7 @@ public class ModifierEntryHelper extends ExHelper {
         if (modifierEntries.stream().anyMatch(x->x.getModifierEntry().id.equals(modifierInstant.getModifierEntry().id))){
             int level = modifierInstant.getLevel()+ getModifierEntryLevel(modifierInstant.getModifierEntry().id);
             removeModifierEntryUnLock(modifierInstant,true);
-            addModifierEntry(new ModifierInstant(modifierInstant.getModifierEntry(),level),true,false);
+            addModifierEntry(new ModifierInstant(modifierInstant.getModifierEntry(),level).setSlot(modifierInstant.getSlot().get()),true,false);
             return true;
         }
         return false;
@@ -152,12 +173,15 @@ public class ModifierEntryHelper extends ExHelper {
                 if (modifierEntry!=null)
                 {
                     int level =1;
+                    String slot = "";
                     if (tag1.contains("Level"))level = tag1.getInt("Level");
+                    if (tag1.contains(SLOT))slot = tag1.getString(SLOT);
                     CompoundTag tag2 = tag1.copy();
                     tag2.remove("Level");
+                    tag2.remove(SLOT);
                     tag2.remove(MEID);
                     modifierEntries.add(new ModifierInstant(modifierEntry, level)
-                            .setData(tag2)
+                            .setData(tag2).setSlot(slot)
                     );
                 }
                 }
@@ -175,6 +199,7 @@ public class ModifierEntryHelper extends ExHelper {
         }
         return modifierEntries;
     }
+
     public ModifierEntryHelper addModifierEntry(ModifierInstant modifierInstant,boolean addAttribute,boolean gather)
     {
         createNbt();
@@ -185,6 +210,7 @@ public class ModifierEntryHelper extends ExHelper {
         tag1.putString(MEID,modifierInstant.getModifierEntry().id);
         if (modifierInstant.isItemQualityLock())tag1.putBoolean("ItemQualityLock",true);
         tag1.putInt("Level",modifierInstant.getLevel());
+        if (modifierInstant.getSlot().isPresent())tag1.putString(SLOT,modifierInstant.getSlot().get());
         ListTag modifiersList = getModifierEntriesNbt();
         modifiersList.add(tag1);
         if (addAttribute){
@@ -195,6 +221,13 @@ public class ModifierEntryHelper extends ExHelper {
             else applyModifiers(itemStack,addTo,getEquipmentSlot(itemStack),modifierInstant);
         }
         return this;
+    }
+    public ModifierEntryHelper removeModifierEntryLevel(ModifierInstant modifierInstant, boolean removeAttribute){
+        var old_modifier_level = getModifierEntryLevel(modifierInstant.getModifierEntry().id);
+        if (old_modifier_level>modifierInstant.getLevel()){
+            return this.setModifierEntryLevel(modifierInstant.getModifierEntry().id,old_modifier_level-modifierInstant.getLevel());
+        }else return this.removeModifierEntry(modifierInstant,removeAttribute);
+
     }
     public ModifierEntryHelper removeModifierEntry(ModifierInstant modifierInstant, boolean removeAttribute) {
         createNbt();

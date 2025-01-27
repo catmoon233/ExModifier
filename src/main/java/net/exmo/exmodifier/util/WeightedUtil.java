@@ -79,6 +79,17 @@ public class WeightedUtil<T> {
             return null; // Or handle this case as needed
         }
     }
+    public int size(){
+        return weights.size();
+    }
+    public T selectRandomKeyBasedOnWeightsAndRemoved() {
+        if (weights.isEmpty()) {
+            return null; // Or throw an exception, depending on your use case
+        }
+        T t = selectRandomKeyBasedOnWeights();
+        this.weights.remove(t);
+        return t;
+    }
 
     private int findIndexForValue(float value) {
         int index = -1;
@@ -110,5 +121,9 @@ public class WeightedUtil<T> {
         weights = newWeights;
         totalWeight = calculateTotalWeight();
         cumulativeWeights = calculateCumulativeWeights();
+    }
+
+    public boolean isEmpty() {
+        return weights.isEmpty();
     }
 }

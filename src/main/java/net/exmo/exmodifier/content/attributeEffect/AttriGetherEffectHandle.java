@@ -1,4 +1,4 @@
-package net.exmo.exmodifier.content.AttributeEffect;
+package net.exmo.exmodifier.content.attributeEffect;
 
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.network.ExModifiervaV;
@@ -145,33 +145,33 @@ public static void init(FMLCommonSetupEvent event){
         }
         @SubscribeEvent
         public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-            Player player1 = event.player;
-            if (!player1.level().isClientSide()) { // 确保只在服务端运行
-                if (event.phase == TickEvent.Phase.END) {
-                    boolean bossBarVisible = false;
-                    for (ServerBossEvent bossBar : bossBars) {
-                        if (bossBar.getPlayers().contains(((ServerPlayer) player1))) {
-                            bossBarVisible = true;
-                            float hp = player1.getHealth() / player1.getMaxHealth();
-
-                            if (hp < 0.5f) {
-                                bossBar.setProgress(hp); // 这里只是一个例子，你可以根据需要改变这个值
-                                bossBar.setVisible(true);
-
-                            } else {
-                                bossBar.setVisible(false);
-
-                            }
-                        }
-                    }
-                    if (!bossBarVisible) {
-                        ServerBossEvent e = new ServerBossEvent(Component.literal("\u00a74生命值"), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
-                        e.addPlayer((ServerPlayer) player1);
-                        bossBars.add(e);
-
-                    }
-                }
-            }
+//            Player player1 = event.player;
+//            if (!player1.level().isClientSide()) { // 确保只在服务端运行
+//                if (event.phase == TickEvent.Phase.END) {
+//                    boolean bossBarVisible = false;
+//                    for (ServerBossEvent bossBar : bossBars) {
+//                        if (bossBar.getPlayers().contains(((ServerPlayer) player1))) {
+//                            bossBarVisible = true;
+//                            float hp = player1.getHealth() / player1.getMaxHealth();
+//
+//                            if (hp < 0.5f) {
+//                                bossBar.setProgress(hp); // 这里只是一个例子，你可以根据需要改变这个值
+//                                bossBar.setVisible(true);
+//
+//                            } else {
+//                                bossBar.setVisible(false);
+//
+//                            }
+//                        }
+//                    }
+//                    if (!bossBarVisible) {
+//                        ServerBossEvent e = new ServerBossEvent(Component.literal("\u00a74生命值"), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
+//                        e.addPlayer((ServerPlayer) player1);
+//                        bossBars.add(e);
+//
+//                    }
+//                }
+//            }
         }
 
         @SubscribeEvent

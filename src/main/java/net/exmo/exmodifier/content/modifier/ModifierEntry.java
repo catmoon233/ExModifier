@@ -1,17 +1,12 @@
 package net.exmo.exmodifier.content.modifier;
 
-import dev.xkmc.l2serial.serialization.SerialClass;
-import net.exmo.exmodifier.content.SpecialEffects.SpecialEffect;
+import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -20,8 +15,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
@@ -44,6 +37,7 @@ public class ModifierEntry {
     public boolean OnlyHasThisEntry = false;
     public String localDescription="";
     public int maxLevel=1;
+    public List<String> Slots = new ArrayList<>();
     public Type type=Type.UNKNOWN;
     public List<String> specialTags = new ArrayList<>();
     public boolean isCuriosEntry =false;

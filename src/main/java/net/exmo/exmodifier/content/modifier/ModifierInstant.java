@@ -4,9 +4,13 @@ import net.exmo.exmodifier.content.helper.ItemLevelHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.minecraft.nbt.CompoundTag;
 
+import java.security.PublicKey;
+import java.util.Optional;
+
 public class ModifierInstant {
     private ModifierEntry modifierEntry;
     private int level;
+    private String slot;
     private boolean itemQualityLock;
 
     private CompoundTag data;
@@ -57,6 +61,11 @@ public class ModifierInstant {
         this.data = data;
         return this;
     }
+    public ModifierInstant setSlot(String slot) {
+        if (slot.isEmpty())return this;
+        this.slot = slot;
+        return this;
+    }
     public CompoundTag serializeNBT(){
         CompoundTag tag = new CompoundTag();
         tag.putString(ModifierEntryHelper.MEID,this.modifierEntry.id);
@@ -73,4 +82,10 @@ public class ModifierInstant {
         this.itemQualityLock = itemQualityLock;
         return this;
     }
+
+    public Optional<String> getSlot() {
+        return Optional.ofNullable(slot);
+    }
+
+
 }

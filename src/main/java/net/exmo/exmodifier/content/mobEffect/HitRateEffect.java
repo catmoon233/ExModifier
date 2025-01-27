@@ -1,4 +1,4 @@
-package net.exmo.exmodifier.content.MobEffect;
+package net.exmo.exmodifier.content.mobEffect;
 
 import net.exmo.exmodifier.init.ExAttribute;
 import net.minecraft.world.effect.MobEffectCategory;

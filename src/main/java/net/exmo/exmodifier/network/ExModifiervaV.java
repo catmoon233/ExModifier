@@ -2,7 +2,7 @@ package net.exmo.exmodifier.network;
 
 
 import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.content.AttributeEffect.AttriGetherEffectInstance;
+import net.exmo.exmodifier.content.attributeEffect.AttriGetherEffectInstance;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.minecraft.client.Minecraft;

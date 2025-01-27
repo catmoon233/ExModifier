@@ -14,6 +14,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,10 @@ public class ModifierEntryDataBuilder {
 
     public ModifierEntryDataBuilder setType(ModifierEntry.Type type) {
         entry.type = type;
+        return this;
+    }
+    public ModifierEntryDataBuilder setSlots(List<String> slots) {
+        entry.Slots = slots;
         return this;
     }
 
@@ -251,6 +256,11 @@ public class ModifierEntryDataBuilder {
             specialTagsTag.add(StringTag.valueOf(tagStr));
         }
         tag.put("specialTags", specialTagsTag);
+        ListTag slotsTags = new ListTag();
+        for (String tagStr : entry.Slots) {
+            slotsTags.add(StringTag.valueOf(tagStr));
+        }
+        tag.put("slotsTags", slotsTags);
 
         ListTag onlyTagsTag = new ListTag();
         for (String tagStr : entry.OnlyTags) {
@@ -303,29 +313,46 @@ public class ModifierEntryDataBuilder {
         builder.setNeedFreshValue(tag.getFloat("needFreshValue"));
 
         ListTag specialTagsTag = tag.getList("specialTags", 8);
+        List<String> specialTags = new ArrayList<>();
         for (int i = 0; i < specialTagsTag.size(); i++) {
-            builder.setSpecialTags(List.of(specialTagsTag.getString(i)));
+            specialTags.add(specialTagsTag.getString(i));
         }
+        builder.setSpecialTags(specialTags);
 
         ListTag onlyTagsTag = tag.getList("OnlyTags", 8);
+        List<String> onlyTags = new ArrayList<>();
         for (int i = 0; i < onlyTagsTag.size(); i++) {
-            builder.setOnlyTags(List.of(onlyTagsTag.getString(i)));
+            onlyTags.add(onlyTagsTag.getString(i));
         }
+        builder.setOnlyTags(onlyTags);
 
         ListTag onlyItemsTag = tag.getList("OnlyItems", 8);
+        List<String> onlyItems = new ArrayList<>();
         for (int i = 0; i < onlyItemsTag.size(); i++) {
-            builder.setOnlyItems(List.of(onlyItemsTag.getString(i)));
+            onlyItems.add(onlyItemsTag.getString(i));
         }
+        builder.setOnlyItems(onlyItems);
+
+        ListTag slotsTags = tag.getList("slotsTags", 8);
+        List<String> slots = new ArrayList<>();
+        for (int i = 0; i < slotsTags.size(); i++) {
+            slots.add(slotsTags.getString(i));
+        }
+        builder.setSlots(slots);
 
         ListTag onlyWashItemsTag = tag.getList("OnlyWashItems", 8);
+        List<String> onlyWashItems = new ArrayList<>();
         for (int i = 0; i < onlyWashItemsTag.size(); i++) {
-            builder.setOnlyWashItems(List.of(onlyWashItemsTag.getString(i)));
+            onlyWashItems.add(onlyWashItemsTag.getString(i));
         }
+        builder.setOnlyWashItems(onlyWashItems);
 
         ListTag commandsTag = tag.getList("Commands", 8);
+        List<String> commands = new ArrayList<>();
         for (int i = 0; i < commandsTag.size(); i++) {
-            builder.setCommands(List.of(commandsTag.getString(i)));
+            commands.add(commandsTag.getString(i));
         }
+        builder.setCommands(commands);
 
         builder.setId(tag.getString("id"));
         builder.setExpression(tag.getString("Expression"));

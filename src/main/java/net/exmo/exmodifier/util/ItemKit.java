@@ -15,6 +15,7 @@ public 	int Count;
 //		this.Count = count;
 //	}
 	public boolean firstHas =true;
+
 	public ItemKit(int slot, String s, int count) throws Exception {
 		this.slot = slot;
 		this.Count = count;
@@ -24,6 +25,11 @@ public 	int Count;
 		this.equipmentSlot = equipmentSlot;
 		this.Count = count;
 		this.itemStack = CustomItemUtil.getItemFromString(s);
+	}
+	public ItemKit(EquipmentSlot equipmentSlot, ItemStack s, int count) throws Exception {
+		this.equipmentSlot = equipmentSlot;
+		this.Count = count;
+		this.itemStack = s;
 	}
 	public ItemKit(int slot, String s, int count, boolean firstHas) throws Exception {
 		this.firstHas = firstHas;

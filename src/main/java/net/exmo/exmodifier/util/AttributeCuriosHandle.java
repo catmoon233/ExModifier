@@ -1,30 +1,17 @@
-/**
- * The code of this mod element is always locked.
- *
- * You can register new events in this class too.
- *
- * If you want to make a plain independent class, create it using
- * Project Browser -> New... and make sure to make the class
- * outside net.exmo.rottenketime as this package is managed by MCreator.
- *
- * If you change workspace package, modid or prefix, you will need
- * to manually adapt this file to these changes or remake it.
- *
- * This class will be added in the mod root package.
-*/
+
 package net.exmo.exmodifier.util;
 
+
 import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
-import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.events.ExCuriosAttributeTooltipEvent;
 import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -49,14 +36,16 @@ public class AttributeCuriosHandle {
     }
 
     @Mod.EventBusSubscriber
-    private static class ForgeBusEvents {
+    public static class ForgeBusEvents {
         private static void setDeltaMovement(Player player,Vec3 vec3){
             player.move(net.minecraft.world.entity.MoverType.SELF, vec3);
         }
 
 
-        @SubscribeEvent
         public static void RenderCustomCuriosAttributes(ItemTooltipEvent event){
+            if (event.getItemStack().getItem() instanceof AttributeCurios attributeCurios){
+             //   if (attributeCurios.HideAttribute)return;
+            }
             List<AttrGether> attributeModifiers = CuriosUtil.getAttributeModifiersAffix(event.getItemStack());
             if (!attributeModifiers.isEmpty()){
                 List<Component> adds = new ArrayList<>();
@@ -73,28 +62,24 @@ public class AttributeCuriosHandle {
 
             }
         }
-        @SubscribeEvent
-        public static void CuriosEntryAttributeTooltip(ExCuriosAttributeTooltipEvent event){
-            List<ModifierEntry> entrys = new ModifierEntryHelper(event.itemStack).getModifierEntriesB();
-            for (ModifierEntry entry : entrys) {
-                if (entry != null) {
-                    List<AttrGether> attributeModifiers = event.attributeModifiers;
-                    List<ModifierAttriGether> attriGether1 = entry.attriGether;
-                    for ( ModifierAttriGether attriGether : attriGether1){
-                     event.attributeModifiers.removeAll(attributeModifiers.stream().filter(attrGether1 -> attrGether1.attributeModifier.getName().equals(attriGether.getModifier().getName())).toList());
 
-                    }
-
-                }
-            }
-
-        }
 
         @SubscribeEvent
         public static void RenderTooltips(ItemTooltipEvent event) {
-            if (event.getItemStack().getItem() instanceof AttributeCurios a ) {
+            ItemStack itemStack = event.getItemStack();
+            if (itemStack.getItem() instanceof AttributeCurios a ) {
+                if (a.extraTooltip(new ArrayList<>(), itemStack)!=null){
+                    event.getToolTip().add(Component.literal(""));
+                    if (!Screen.hasShiftDown()){
+                        event.getToolTip().add(Component.translatable("attribute.curios.tooltip.shift").withStyle(ChatFormatting.GOLD));
+
+                    }else {
+                        event.getToolTip().addAll(a.extraTooltip(new ArrayList<>(), itemStack));
+                    }
+               //     event.getToolTip().add(Component.literal(""));
+                }
                 if (a.CoolDown !=0){
-                    event.getToolTip().add(Component.literal("attribute.curios.cooldown").append(Component.literal("§l§e " + a.CoolDown*0.05+ " " ).append(Component.literal("attribute.curios.cooldown.second"))));
+                    event.getToolTip().add(Component.translatable("attribute.curios.cooldown").append(Component.literal("§l§e " + a.CoolDown*0.05+ " " ).append(Component.translatable("attribute.curios.cooldown.second"))));
                 }
 
                 if (a.Star_rating != 0) {
@@ -119,27 +104,32 @@ public class AttributeCuriosHandle {
                     event.getToolTip().add(Component.literal("§l§e" + starString));
                 }
                 event.getToolTip().add(Component.literal(""));
-            if (a.customTooltips.isEmpty() ) event.getToolTip().add(Component.translatable("attribute.curios.tooltip").withStyle(ChatFormatting.GOLD));
-                if (a.attrGethers !=null) {
+
+                if (!a.attrGethers.isEmpty() ||!a.HideAttribute ) {
+                    if (a.customTooltips.isEmpty() )  event.getToolTip().add(Component.translatable("attribute.curios.tooltip").withStyle(ChatFormatting.GOLD));
+
                     for (AttrGether attrGether : a.attrGethers) {
                         if (attrGether != null) {
-                            String as = "+";
-                            String as1 = "";
-                            String amouts = "";
-
-                            if (attrGether.attributeModifier.getAmount() < 0) as = "-";
-                            double amout = attrGether.attributeModifier.getAmount();
-
-
-//                            if (attrGether.attribute instanceof RangedAttribute&&attrGether.attribute != TaskexModAttributes.DEFENSE.get() || attrGether.attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE || attrGether.attribute == RottenKeTimeModAttributes.FREEZINGPROBABILITY.get()||attrGether.attribute == RottenKeTimeModAttributes.DODGE.get()) {
-//                                amout = amout * 100;
-//                                as1 = "%";
-//                            }
-
-                            amouts = String.valueOf(amout);
-                            if ((amout - (int) amout == 0)) amouts = String.valueOf((int) amout);
-                            event.getToolTip().add(Component.literal("\u00a79" + as + amouts + as1 + " ").append(Component.literal((attrGether.attribute.getDescriptionId()))).withStyle(ChatFormatting.BLUE));
-
+                            MutableComponent e = attrGether.generateTooltipBase();
+                            if (e.equals(Component.translatable("exmodifier.tooltip.error3")))continue;
+                            event.getToolTip().add(e);
+//                            String as = "+";
+//                            String as1 = "";
+//                            String amouts = "";
+//
+//                            if (attrGether.attributeModifier.getAmount() < 0) as = "-";
+//                            double amout = attrGether.attributeModifier.getAmount();
+//                            if (attrGether.attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL)as+="%";
+//
+////                            if (attrGether.attribute instanceof RangedAttribute&&attrGether.attribute != TaskexModAttributes.DEFENSE.get() || attrGether.attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE || attrGether.attribute == RottenKeTimeModAttributes.FREEZINGPROBABILITY.get()||attrGether.attribute == RottenKeTimeModAttributes.DODGE.get()) {
+////                                amout = amout * 100;
+////                                as1 = "%";
+////                            }
+//
+//                            amouts = String.valueOf(amout);
+//                            if ((amout - (int) amout == 0)) amouts = String.valueOf((int) amout);
+//                            event.getToolTip().add(Component.literal("\u00a79" + as + amouts + as1 + " ").append(Component.translatable((attrGether.attribute.getDescriptionId()))).withStyle(ChatFormatting.BLUE));
+//
 
                         }
                     }
@@ -150,55 +140,62 @@ public class AttributeCuriosHandle {
                         event.getToolTip().add(component);
                     }
                 }
+                RenderCustomCuriosAttributes(event);
+
 
         }
             }
+
 
         @SubscribeEvent
         public static void OnCurioChange(CurioChangeEvent event) {
 
-            if (event.getFrom().getItem() instanceof AttributeCurios a) {
-                if (attributeCurios.contains(a)) {
-                    if (a.attrGethers !=null) {
-                        for (AttrGether attrGether : a.attrGethers) {
-                            if (attrGether!=null)      EntityAttrUtil.entityAddAttrTF(attrGether,  event.getEntity(), EntityAttrUtil.WearOrTake.TAKE);
-                        }
-                    }
-                }
-            }
-            if (event.getTo().getItem() instanceof AttributeCurios a) {
-                if (attributeCurios.contains(a)) {
-                    if (a.attrGethers !=null) {
-
-                        for (AttrGether attrGether : a.attrGethers) {
-                            if (attrGether !=null) EntityAttrUtil.entityAddAttrTF(attrGether, event.getEntity(), EntityAttrUtil.WearOrTake.WEAR);
-                        }
-                    }
-                }
-            }
-            //util
-            List<AttrGether> attributeModifiers;
-            if (!event.getFrom().isEmpty()) {
-                attributeModifiers = CuriosUtil.getAttributeModifiersAffix(event.getFrom());
-                if (!attributeModifiers.isEmpty()) {
-                    for (AttrGether attrGether : attributeModifiers) {
-                        EntityAttrUtil.entityAddAttrTF(attrGether, (Player) event.getEntity(), EntityAttrUtil.WearOrTake.TAKE);
-                        Exmodifier.LOGGER.Logger.debug("attributeModifiers0:" + attrGether.attributeModifier.getAmount());
-                    }
-                }
-            }
-            if (!event.getTo().isEmpty()) {
-                attributeModifiers = CuriosUtil.getAttributeModifiersAffix(event.getTo());
-                if (!attributeModifiers.isEmpty()) {
-                    for (AttrGether attrGether : attributeModifiers) {
-                        EntityAttrUtil.entityAddAttrTF(attrGether, (LivingEntity) event.getEntity(), EntityAttrUtil.WearOrTake.WEAR);
-                        Exmodifier.LOGGER.Logger.debug("attributeModifiers1:" + attrGether.attributeModifier.getAmount());
-                    }
-                }
-            }
+            handleCurios(event);
 
         }
 
 
+    }
+
+    public static void handleCurios(CurioChangeEvent event) {
+        if (event.getFrom().getItem() instanceof AttributeCurios a) {
+            if (attributeCurios.contains(a)) {
+                if (a.attrGethers !=null) {
+                    for (AttrGether attrGether : a.attrGethers) {
+                        if (attrGether!=null)      EntityAttrUtil.entityAddAttrTF(attrGether,  event.getEntity(), EntityAttrUtil.WearOrTake.TAKE);
+                    }
+                }
+            }
+        }
+        if (event.getTo().getItem() instanceof AttributeCurios a) {
+            if (attributeCurios.contains(a)) {
+                if (a.attrGethers !=null) {
+
+                    for (AttrGether attrGether : a.attrGethers) {
+                        if (attrGether !=null) EntityAttrUtil.entityAddAttrTF(attrGether, event.getEntity(), EntityAttrUtil.WearOrTake.WEAR);
+                    }
+                }
+            }
+        }
+        //util
+        List<AttrGether> attributeModifiers;
+        if (!event.getFrom().isEmpty()) {
+            attributeModifiers = CuriosUtil.getAttributeModifiersAffix(event.getFrom());
+            if (!attributeModifiers.isEmpty()) {
+                for (AttrGether attrGether : attributeModifiers) {
+                    EntityAttrUtil.entityAddAttrTF(attrGether, (Player) event.getEntity(), EntityAttrUtil.WearOrTake.TAKE);
+                    Exmodifier.LOGGER.debug("attributeModifiers0:" + attrGether.attributeModifier.getAmount());
+                }
+            }
+        }
+        if (!event.getTo().isEmpty()) {
+            attributeModifiers = CuriosUtil.getAttributeModifiersAffix(event.getTo());
+            if (!attributeModifiers.isEmpty()) {
+                for (AttrGether attrGether : attributeModifiers) {
+                    EntityAttrUtil.entityAddAttrTF(attrGether, (LivingEntity) event.getEntity(), EntityAttrUtil.WearOrTake.WEAR);
+                    Exmodifier.LOGGER.debug("attributeModifiers1:" + attrGether.attributeModifier.getAmount());
+                }
+            }
+        }
     }
 }

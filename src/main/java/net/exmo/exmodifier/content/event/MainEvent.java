@@ -1,7 +1,5 @@
 package net.exmo.exmodifier.content.event;
 
-import com.mojang.datafixers.util.Either;
-import dev.shadowsoffire.placebo.events.ItemUseEvent;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.client.LanguageLoader;
@@ -13,36 +11,37 @@ import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
+import net.exmo.exmodifier.content.selected.BaseItemSelected;
+import net.exmo.exmodifier.content.slot.ModifierSlotHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
+import net.exmo.exmodifier.util.AttributeCuriosHandle;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.DynamicExpressionEvaluator;
 import net.exmo.exmodifier.util.EntityAttrUtil;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 //import net.minecraftforge.client.eventC.MovementInputUpdateEvent;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.storage.loot.LootDataType;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.*;
@@ -51,34 +50,27 @@ import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
-import top.theillusivec4.curios.api.CuriosApi;
+import org.joml.Vector2ic;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
 
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static net.exmo.exmodifier.Exmodifier.*;
 import static net.exmo.exmodifier.config.refresh_time;
-import static net.exmo.exmodifier.content.event.MainEvent.CommonEvent.init;
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.ItemLevelRefresh;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEntry;
 import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.TAKE;
 import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.WEAR;
+import static net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil.renderTooltipBackground;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MainEvent {
@@ -141,10 +133,12 @@ public class MainEvent {
                         //  stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
 
                         RandomEntryCurios(stack, stack.getOrCreateTag().getInt("modifier_refresh_rarity"), stack.getOrCreateTag().getInt("modifier_refresh_add"),stack.getTag().getString("wash_item"));
+                        AttributeCuriosHandle.handleCurios(new CurioChangeEvent(player,event.getIdentifier(),event.getSlotIndex(),event.getFrom(),stack));
                     }
                 }
             }
             SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
+
         }
 //@SubscribeEvent
 //        public static void CuriosTooltipChange(RenderTooltipEvent.GatherComponents event) {
@@ -188,6 +182,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         Exmodifier.LOGGER.debug("iLevelAttriGetherModifier: "+event.attriGether.Expression + " level: "+level);
         DynamicExpressionEvaluator dynamicExpressionEvaluator = new DynamicExpressionEvaluator();
         dynamicExpressionEvaluator.setVariable("level", level);
+        dynamicExpressionEvaluator.setVariable("l", level);
         double amout = dynamicExpressionEvaluator.evaluate(event.attriGether.Expression);
         event.attriGether.modifier = new AttributeModifier(modifier.getId(), modifier.getName(), amout, modifier.getOperation());
     }
@@ -204,6 +199,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
 
 
                         for (ModifierInstant modifierEntry : new ItemInfo(stack).getModifierEntryHelper().getModifierEntries()) {
+                            if (modifierEntry.getSlot().isPresent())continue;
                             // Exmodifier.LOGGER.debug("modifier Id:" + modifierEntry.Id);
                             if (!config.compact_tooltip) tooltip.add(Component.translatable("null"));
                             tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack));
@@ -217,10 +213,85 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
 
             return tooltip;
         }
+        @OnlyIn(Dist.CLIENT)
         @SubscribeEvent
-        public static void tooltip(ItemTooltipEvent event){
+        public static void RenderExtraTooltip(RenderTooltipEvent.Pre event) {
+            var g = event.getGraphics();
+            var mc = Minecraft.getInstance();
+            if (mc.screen != null) {
+                List<Component> extraComponents = ModifierSlotHandle.getTooltip(event.getItemStack(), mc.player);
+                if (extraComponents.isEmpty())return;
+                @NotNull List<ClientTooltipComponent> originalComponents = event.getComponents();
 
+                Font font = mc.font;
+
+                // Calculate the width and height of the original tooltip
+                int originalWidth = 30;
+                for (ClientTooltipComponent component : originalComponents) {
+                    originalWidth = Math.max(originalWidth, (component.getWidth(font)));
+                }
+               // int originalHeight = originalComponents.size() * font.lineHeight;
+
+                // Calculate the width and height of the extra tooltip
+                int extraWidth = 0;
+                for (Component component : extraComponents) {
+                    extraWidth = Math.max(extraWidth, font.width(component));
+                }
+                int extraHeight = extraComponents.size() * font.lineHeight;
+                Vector2ic vector2ic = event.getTooltipPositioner().positionTooltip(g.guiWidth(), g.guiHeight(), event.getX(), event.getY(), extraWidth, extraHeight);
+                int screenW = mc.screen.width;
+                int screenH = mc.screen.height;
+                int tooltipX = vector2ic.x();
+                int tooltipY = vector2ic.y() ; // Start at the same Y as the original tooltip
+
+                // Determine the position for the extra tooltip
+//                if (tooltipX + originalWidth + extraWidth > screenW) {
+//                    // Not enough space on the right, try the left
+//                    if (tooltipX - extraWidth < 0) {
+//                        // Not enough space on the left, render on the right
+//                        tooltipX = event.getX() + originalWidth+5;
+//                    } else {
+//                        // Render on the left
+                        tooltipX = event.getX() - extraWidth  ;
+//                   }
+//                }
+
+                // Adjust X position based on longest line in respective tooltips
+           //     if (tooltipX == event.getX()) {
+                    // Rendering on the right, adjust by longest line in original tooltip
+            //        tooltipX += originalWidth -10;
+            //    } else {
+                    // Rendering on the left, adjust by longest line in extra tooltip
+            //        tooltipX -= extraWidth -50;
+            //    }
+
+                // Render the extra tooltip text first with a darker color
+                AtomicInteger line = new AtomicInteger();
+                int finalTooltipX = tooltipX;
+                g.pose().pushPose();
+                TooltipRenderUtil.renderTooltipBackground(g, tooltipX, tooltipY, extraWidth, extraHeight, 400);
+                g.pose().translate(0.0F, 0.0F, 400.0F);
+                extraComponents.forEach(component -> {
+                    ClientTooltipComponent clientTooltipComponent = ClientTooltipComponent.create(component.getVisualOrderText());
+                    clientTooltipComponent.renderText(font, finalTooltipX, tooltipY + line.get() * font.lineHeight, g.pose().last().pose(), g.bufferSource());
+                    line.getAndIncrement();
+                });
+                g.pose().popPose();
+                // Render the extra tooltip background above the text
+
+                // Update the event's Y position to account for the extra tooltip
+            //    event.setY(tooltipY + extraHeight);
+            }
         }
+
+
+
+
+
+
+
+
+
         @SubscribeEvent
         public static void AtJoinGame(PlayerEvent.PlayerLoggedInEvent event) {
             Player player = (Player) event.getEntity();
@@ -631,10 +702,16 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             return flag;
         }
         public static void init(Runnable runnable) throws IOException {
+            BaseItemSelected.IDS = new HashMap<>();
+            ModifierHandle.sendClearModifierEntryToAllClient();
             ModifierHandle.readConfig();
             ExSuitHandle.readConfig();
+            ModifierSlotHandle.reload();
             ItemQualityHandle.init();
             if (runnable!=null) runnable.run();
+            for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()) {
+                ModifierHandle.sendModifierEntryToAllClient(modifierEntry);
+            }
             ModifierHandle.EEMatchQueueHandle();
             LanguageLoader.load(FMLPaths.GAMEDIR.get().toFile().toPath().resolve(LanguageLoader.LANGUAGES_FILE_PATH));
         }
@@ -645,11 +722,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                 @Override
                 public void run() {
                     event.addListener(new ModifierPreparableReloadListener());
-                    if (event.getServerResources()!=null) {
-                        for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()) {
-                            ModifierHandle.sendModifierEntryToAllClient(modifierEntry);
-                        }
-                    }
+
                 }
             });
 
@@ -659,8 +732,10 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         public static void playJoinServer(PlayerEvent.PlayerLoggedInEvent event) {
             Player entity = event.getEntity();
             if (!entity.level().isClientSide()) {
+                ModifierHandle.sendClearModifierEntryToClient( (ServerPlayer) entity);
                 for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values())
                     ModifierHandle.sendModifierEntryToClient(modifierEntry, (ServerPlayer) entity);
+
             }
         }
     }

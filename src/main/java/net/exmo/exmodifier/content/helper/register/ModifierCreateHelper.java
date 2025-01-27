@@ -1,6 +1,6 @@
 package net.exmo.exmodifier.content.helper.register;
 
-import net.exmo.exmodifier.content.SpecialEffects.SpecialEffect;
+import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 

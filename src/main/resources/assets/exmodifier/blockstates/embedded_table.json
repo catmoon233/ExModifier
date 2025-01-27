@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "exmodifier:block/embedded_table"
+    }
+  }
+}

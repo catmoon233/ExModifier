@@ -13,6 +13,7 @@ import net.exmo.exmodifier.util.CuriosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -136,6 +137,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
     public void createResult() {
         ItemStack WashItem = this.inputSlots.getItem(1);
         ItemStack item = this.inputSlots.getItem(0);
+        if (item.getTag()==null)return;
         if (item.isEmpty() || WashItem.isEmpty()) {
             this.resultSlots.setItem(0, ItemStack.EMPTY);
             this.cost.set(0);
@@ -227,7 +229,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                         orCreateTag.putBoolean("entry_item_add", true);
                         itemInfo = new ItemInfo(input);
                         modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
-                        modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(WashItem.getOrCreateTag().getString("modifier_id")),1),true,true  );
+                        modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(EntryItem.getModifierID(WashItem)),EntryItem.getModifierLevel(WashItem)),true,true  );
                         this.resultSlots.setItem(0, input);
                         this.repairItemCountCost = 1;
                     }

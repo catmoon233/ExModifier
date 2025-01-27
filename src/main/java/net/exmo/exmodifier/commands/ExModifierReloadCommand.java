@@ -101,7 +101,7 @@ public class ExModifierReloadCommand {
 
         return collection;
     }
-    private static void sendUpdatedModifiersToClients(MinecraftServer server) {
+    public static void sendUpdatedModifiersToClients(MinecraftServer server) {
         if (server != null && server.getPlayerList() != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()) {

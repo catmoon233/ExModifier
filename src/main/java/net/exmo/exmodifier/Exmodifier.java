@@ -7,6 +7,7 @@ import net.exmo.exmodifier.content.event.parameter.EventC;
 import net.exmo.exmodifier.content.event.parameter.EventCI;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.init.RegisterOther;
+import net.exmo.exmodifier.network.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
@@ -112,6 +113,7 @@ public class Exmodifier {
         // Register the setup method for modloading
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         PACKET_HANDLER.registerMessage(messageID++, SyncModifierEntryMessage.class, SyncModifierEntryMessage::encode, SyncModifierEntryMessage::decode, SyncModifierEntryMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, ClearModifierEntryMessage.class, ClearModifierEntryMessage::encode, ClearModifierEntryMessage::decode, ClearModifierEntryMessage::handle);
 
         ITEMS.register(modEventBus);
         try {
@@ -170,6 +172,7 @@ public class Exmodifier {
     public void AddToTab(BuildCreativeModeTabContentsEvent event){
         if (event.getTabKey()== CreativeModeTabs.FUNCTIONAL_BLOCKS){
             event.accept(RegisterOther.ItemAbout.Refresh_Table);
+            event.accept(RegisterOther.ItemAbout.Embedded_Table);
         }
         if (event.getTab() == ExModifierTab.get()) {
             Map<String,WeightedUtil<String>> weights = new HashMap<>();
@@ -189,8 +192,18 @@ public class Exmodifier {
                 stack.getOrCreateTag().putString("modifier_id", entry);
                 stack.getOrCreateTag().putString("modifier_type",modifierEntry.type.toString());
                 stack.getOrCreateTag().putDouble("modifier_possibility",weights.get(modifierEntry.type.toString()).getProbability(entry));
+                if (modifierEntry.maxLevel<=1){
+                    stack.getOrCreateTag().putInt("modifier_level",1);
+                    event.accept(stack);
+                }else {
+                    for (int i = 1; i <= modifierEntry.maxLevel; i++){
+                        ItemStack stack1 = stack.copy();
+                        stack1.getOrCreateTag().putInt("modifier_level",i);
+                        event.accept(stack1);
+                    }
+                }
                 // stack.setHoverName(Component.translatable("modifier.entry." + entry));
-                event.accept(stack);
+
             });
 
 

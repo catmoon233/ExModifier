@@ -17,6 +17,7 @@ public class ItemQuality {
     public boolean cantRemoveEntry = false;
     public String Id;
     public float weight ;
+    private boolean isShowInTooltip = true;
     public List<String> OnlyItemIds = new ArrayList<>();
     public List<String> OnlyItemTags = new ArrayList<>();
     public List<String> OnlyWashItems = new ArrayList<>();
@@ -164,5 +165,13 @@ public class ItemQuality {
 
     public void setWeight(float weight) {
         this.weight = weight;
+    }
+
+    public boolean isShowInTooltip() {
+        return isShowInTooltip;
+    }
+
+    public void setShowInTooltip(boolean showInTooltip) {
+        isShowInTooltip = showInTooltip;
     }
 }
