@@ -363,20 +363,10 @@ public class ModifierHandle {
 
 
             boolean over = false;
-            Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap =new  HashMap<>( Map.of(
-                    ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
-                    ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
-                    ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
-                    ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
-                    ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
-                    ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
-                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
-            ));
 
-            for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeSlotMap.entrySet()) {
+
+            Map<ModifierEntry.Type, EquipmentSlot> typeEquipmentSlotMap = typeSlotMap();
+            for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeEquipmentSlotMap.entrySet()) {
                 ModifierEntry.Type type = entry.getKey();
                 EquipmentSlot slot = entry.getValue();
 
@@ -419,6 +409,23 @@ public class ModifierHandle {
                 }
             }
         }
+
+        public static Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap(){var a = new HashMap<>( Map.of(
+                    ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
+                    ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
+                    ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
+                    ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
+                    ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
+                    ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
+                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
+                    ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
+                    ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
+                    ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
+            ));
+            a.put(ModifierEntry.Type.CROSSBOW, EquipmentSlot.MAINHAND);
+            return a;
+    };
+
 
 
 //            public static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry, ItemStack stack) {

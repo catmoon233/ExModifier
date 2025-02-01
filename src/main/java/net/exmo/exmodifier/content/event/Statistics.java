@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.event;
 
+import net.exmo.exmodifier.config;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -30,6 +31,7 @@ public class Statistics {
     public static final String armorsPath = FMLPaths.CONFIGDIR.get().resolve("exmo/armors.txt").toString();
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!config.Statistics)return;
         if (!event.getEntity().level().isClientSide)return;
         Map<String, String> ingots = new HashMap<>();
         Map<String, List<Component>> armors = new HashMap<>();

@@ -31,7 +31,7 @@ public class weponlevelingCompat {
                     ItemStack stack  = event.getTo();
                     if (stack.getItem() instanceof ArmorItem) return;
                     if (stack.getItem() instanceof BowItem) return;
-                    if (MainEvent.CommonEvent.hasAttr(stack)){
+                    if (MainEvent.CommonEvent.hasAttrOrBow(stack)){
                         if (stack.getTag() ==null)return;
                     if (stack.getTag().contains("level")) {
                         if (stack.getTag().getInt("level") != stack.getTag().getInt("Oldlevel")) {

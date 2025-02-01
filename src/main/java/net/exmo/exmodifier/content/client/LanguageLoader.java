@@ -66,7 +66,7 @@ public final class LanguageLoader {
                 Language.loadFromJson(inputStream, languages::put);
                 putLanguage(languageCode, languages);
             } catch (IOException | JsonSyntaxException | JsonIOException exception) {
-                Exmodifier.LOGGER.warn(MARKER, "Failed to read language file: {}", file);
+           //     Exmodifier.LOGGER.Logger.error(MARKER, "Failed to read language file: {}", file);
                 exception.printStackTrace();
             }
         }

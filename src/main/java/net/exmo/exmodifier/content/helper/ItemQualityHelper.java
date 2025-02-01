@@ -79,14 +79,24 @@ public class ItemQualityHelper extends ExHelper{
        }
         return this;
     }
-    public  List<MutableComponent> getQualityEntriesTooltip()
+    public static class T2a {
+        public MutableComponent mutableComponent;
+        public boolean isShowInHeadTooltip;
+        public T2a(MutableComponent mutableComponent, boolean isShowInHeadTooltip) {
+            this.mutableComponent = mutableComponent;
+            this.isShowInHeadTooltip = isShowInHeadTooltip;
+        }
+    }
+    public  List<T2a> getQualityEntriesTooltip()
     {
-        List<MutableComponent> list = new java.util.ArrayList<>();
+        List<T2a> list = new java.util.ArrayList<>();
         ItemQualityHelper itemQualityHelper = ItemQualityHelper.of(itemStack);
-        for (ItemQuality itemQuality : itemQualityHelper.getQualityEntries()) {
+            for (ItemQuality itemQuality : itemQualityHelper.getQualityEntries()) {
             if (itemQuality ==null)continue;
-            list.add(Component.translatable("exmodifier.quality."+itemQuality.Id));
-            if (!itemQuality.LocalDescription.isEmpty()) list.add(Component.translatable(itemQuality.LocalDescription));
+            {
+                list.add(new T2a(Component.translatable("exmodifier.quality." + itemQuality.Id) , itemQuality.isShowInHeadTooltip()));
+            }
+            if (!itemQuality.LocalDescription.isEmpty()) list.add(new T2a(Component.translatable(itemQuality.LocalDescription),false));
         }
         return list;
     }

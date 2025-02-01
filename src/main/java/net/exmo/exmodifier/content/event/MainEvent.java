@@ -4,10 +4,7 @@ import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.client.LanguageLoader;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
-import net.exmo.exmodifier.content.helper.ItemInfo;
-import net.exmo.exmodifier.content.helper.ItemLevelHelper;
-import net.exmo.exmodifier.content.helper.ItemQualityHelper;
-import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
+import net.exmo.exmodifier.content.helper.*;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
@@ -29,6 +26,7 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -95,17 +93,23 @@ public class MainEvent {
             if (itemStack.getTag()!= null){
            // if (!CuriosUtil.isCuriosItem(event.getItemStack())) {
 
-                List<Component> toolTip = CommonEvent.ItemToolTipsChange(itemStack, event.getToolTip(), event.getEntity());
+                List<Component> toolTip1 = event.getToolTip();
+
+                List<Component> toolTip = CommonEvent.ItemToolTipsChange(itemStack, toolTip1, event.getEntity());
                 if (toolTip.isEmpty())return;
                 List<Component> tooo = new ArrayList<>();
                 tooo.add(toolTip.get(0));
-                tooo.addAll(ItemQualityHelper.of(itemStack).getQualityEntriesTooltip());
+                for (var a : ItemQualityHelper.of(itemStack).getQualityEntriesTooltip()){
+                    if (a.isShowInHeadTooltip){
+                        tooo.set(0,a.mutableComponent.append(Component.literal(" §r")).append(toolTip1.get(0)));
+                    }else tooo.add(a.mutableComponent);
+                }
                 tooo.addAll(ItemLevelHandle.genItemLevelInfo(itemStack));
                 for (int i = 1; i < toolTip.size(); i++){
                     tooo.add(toolTip.get(i));
                 }
-                event.getToolTip().clear();
-                event.getToolTip().addAll(tooo);
+                toolTip1.clear();
+                toolTip1.addAll(tooo);
          //   }
 
                 }
@@ -514,7 +518,8 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
 
         }
 
-        public static boolean hasAttr(ItemStack stack) {
+        public static boolean hasAttrOrBow(ItemStack stack) {
+            if (stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem)return true;
             for (EquipmentSlot slot : EquipmentSlot.values()) {
                 if (!stack.getAttributeModifiers(slot).isEmpty()) {
                     return true;
@@ -574,18 +579,23 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                         }
                     } else {
 
-                        if (hasAttr(stack) || stack.getItem() instanceof ShieldItem || stack.getItem() instanceof BowItem || (stack.getUseAnimation() == UseAnim.BOW && stack.getItem().getMaxStackSize(stack) == 1)) {
+                        if (hasAttrOrBow(stack) &&ModifierEntry.getType(stack)!= ModifierEntry.Type.UNKNOWN&& stack.getItem().getMaxStackSize(stack) == 1) {
                             if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
+                                ModifierSlotHelper modifierSlotHelper = ModifierSlotHelper.of(stack);
+                                if (config.FirstAddSlots&&!modifierSlotHelper.validList()){
+                                    modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:front")));
+                                    modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:centre")));
+                                }
                                 RandomEntry(stack, 0, refresh_time, "none");
-                                if (stack.getTag() != null) {
+//                                if (stack.getTag() != null) {
 //                                    if (stack.getTag().contains("exmodifier_armor_modifier_applied")) {
 //
-//                                        player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-//                                            capability.Sitemstack = stack;
+//                                      player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+//                                           capability.Sitemstack = stack;
 //                                            capability.syncPlayerVariables(player);
 //                                        });
 //                                    }
-                                }
+//                                }
                             }
                             if (stack.getTag() != null) {
                                 if (stack.getTag().contains("modifier_refresh")) {

@@ -28,6 +28,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EnchantmentTableBlock;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.List;
@@ -188,9 +189,16 @@ public class EmbeddedMenu extends AbstractContainerMenu {
                 if (itemstack1.getItem() == Exmodifier.ENTRY_ITEM.get()){
                     String modifierID = EntryItem.getModifierID(itemstack1);
                     ModifierEntry modifierEntry = ModifierHandle.findModifierEntry(modifierID);
+                    String itemId = ForgeRegistries.ITEMS.getKey(input.getItem()).toString();
                     if (modifierEntry==null)return;
+                    if (!modifierEntry.containItem(input))return;
+//                    if (!modifierEntry.OnlyItems.isEmpty() && modifierEntry.OnlyItems.contains(itemId) )return;
+//                    if (!modifierEntry.containTag(input))return;
+//                    if (!modifierEntry.UnlessItemIds)return;
+
                     ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(input);
-                    if (modifierEntryHelper.getModifierEntries().stream().map(e->e.getModifierEntry().getId()).toList().contains(modifierID)){
+
+                if (modifierEntryHelper.getModifierEntries().stream().map(e->e.getModifierEntry().getId()).toList().contains(modifierID)){
 
                         if(modifierEntryHelper.getModifierEntryLevel(modifierID)>=EntryItem.getModifierLevel(itemstack1)){
                             for (int i = 0; i < 3; i++)
@@ -277,9 +285,16 @@ public class EmbeddedMenu extends AbstractContainerMenu {
                     }else {
                         ModifierEntry a = ModifierHandle.findModifierEntry(EntryItem.getModifierID(itemstack1));
                         if (a==null)return;
+                        ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(itemstack);
+                        List<ModifierInstant> list = modifierEntryHelper.getModifierEntries().stream().filter(e -> e.getSlot().isPresent()&& a.Slots.contains(e.getSlot().get())).toList();
+                        if (!list.isEmpty()) {
+                            for (var a1 : list){
+                                modifierEntryHelper.removeModifierEntry(a1,true);
+                            }
+                        }
                         itemstack1.shrink(1);
                         var slot = (ModifierSlot)BaseItemSelected.getValue(this.ClueId[index]);
-                            ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(itemstack);
+
                             if (modifierEntryHelper.getModifierEntryLevel(a.getId())>0){
                                 modifierEntryHelper.removeModifierEntry(modifierEntryHelper.getModifierEntries().
                                         stream().filter(e->e.getModifierEntry().getId().equals(a.getId()))

@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.helper;
 
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.isValidForType;
+import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.typeSlotMap;
 
 public class ExHelper {
     private CompoundTag nbt;
@@ -38,21 +40,10 @@ public class ExHelper {
         if (itemStack.getItem() instanceof ArmorItem armorItem){
             return armorItem.getEquipmentSlot();
         }
-        Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap =new HashMap<>( Map.of(
-                ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
-                ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
-                ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
-                ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
-                ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
-                ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
-                ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
-                ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
-                ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
-                ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
-        ));
-        typeSlotMap.put(ModifierEntry.Type.CROSSBOW, EquipmentSlot.MAINHAND);
-        typeSlotMap.put(ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND);
-        for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeSlotMap.entrySet()) {
+        Map<ModifierEntry.Type, EquipmentSlot> typeEquipmentSlotMap = typeSlotMap();
+
+
+        for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeEquipmentSlotMap.entrySet()) {
             ModifierEntry.Type type = entry.getKey();
             EquipmentSlot slot = entry.getValue();
            if ( isValidForType(itemStack, type))return slot;

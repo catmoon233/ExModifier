@@ -21,6 +21,8 @@ public class config {
     public static int canAddEntry = 1;
     public static boolean Debug = false;
     public static boolean DebugInInfo = false;
+    public static boolean FirstAddSlots = false;
+    public static boolean Statistics = false;
 @SubscribeEvent
     public static void ConfigConfig(AddReloadListenerEvent event) throws FileNotFoundException {
     ExConfigHandle exConfigHandle = new ExConfigHandle();
@@ -37,6 +39,12 @@ public class config {
     }
     if (MainConfig.AlljsonObject.has("Debug")){
         Debug = MainConfig.readSetting("Debug").getAsBoolean();
+    }
+    if (MainConfig.AlljsonObject.has("FirstAddSlots")){
+        FirstAddSlots = MainConfig.readSetting("FirstAddSlots").getAsBoolean();
+    }
+    if (MainConfig.AlljsonObject.has("Statistics")){
+        Statistics = MainConfig.readSetting("Statistics").getAsBoolean();
     }
     if (MainConfig.AlljsonObject.has("DebugInInfo")){
         DebugInInfo = MainConfig.readSetting("DebugInInfo").getAsBoolean();

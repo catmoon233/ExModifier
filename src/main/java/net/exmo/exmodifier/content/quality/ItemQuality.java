@@ -17,7 +17,9 @@ public class ItemQuality {
     public boolean cantRemoveEntry = false;
     public String Id;
     public float weight ;
-    private boolean isShowInTooltip = true;
+    public float growValue ;
+    public float addRefreshValue ;
+    private boolean isShowInHeadTooltip = true;
     public List<String> OnlyItemIds = new ArrayList<>();
     public List<String> OnlyItemTags = new ArrayList<>();
     public List<String> OnlyWashItems = new ArrayList<>();
@@ -167,11 +169,11 @@ public class ItemQuality {
         this.weight = weight;
     }
 
-    public boolean isShowInTooltip() {
-        return isShowInTooltip;
+    public boolean isShowInHeadTooltip() {
+        return isShowInHeadTooltip;
     }
 
-    public void setShowInTooltip(boolean showInTooltip) {
-        isShowInTooltip = showInTooltip;
+    public void setShowInHeadTooltip(boolean showInHeadTooltip) {
+        isShowInHeadTooltip = showInHeadTooltip;
     }
 }

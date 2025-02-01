@@ -117,6 +117,8 @@ public class ItemQualityHandle {
         try {
             JsonObject jsonObject = entry.getValue().getAsJsonObject();
             int rarity = jsonObject.has("rarity") ? jsonObject.get("rarity").getAsInt() : 0;
+            float growValue = jsonObject.has("growValue") ? jsonObject.get("growValue").getAsFloat() : 0F;
+            float addRefreshValue = jsonObject.has("addRefreshValue") ? jsonObject.get("addRefreshValue").getAsFloat() : 0F;
             String id = entry.getKey();
             String LocalDescription = jsonObject.has("LocalDescription") ? jsonObject.get("LocalDescription").getAsString() : "";
             List<String> items = new ArrayList<>();
@@ -140,6 +142,8 @@ public class ItemQualityHandle {
             ItemQuality itemQuality = new ItemQuality(rarity,id);
             itemQuality.items = items;
             itemQuality.entries = modifierEntries;
+            itemQuality.growValue = growValue;
+            itemQuality.addRefreshValue = addRefreshValue;
             itemQuality.cantRemoveEntry = jsonObject.has("cantRemoveEntry") && jsonObject.get("cantRemoveEntry").getAsBoolean();
             itemQuality.LocalDescription = LocalDescription;
             itemQuality.autoRefresh = jsonObject.has("autoRefresh") && jsonObject.get("autoRefresh").getAsBoolean();

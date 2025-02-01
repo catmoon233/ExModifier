@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -27,6 +28,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -54,6 +56,8 @@ public class ExAttribute {
     public static final RegistryObject<Attribute> BEHIND_DAMAGE ;
     public static final RegistryObject<Attribute> FIREWORK_DAMAGE ;
     public static final RegistryObject<Attribute> DEFENSE ;
+    public static final RegistryObject<Attribute> DIRECT_PROTECTION ;
+    public static final RegistryObject<Attribute> MAGIC_PROTECTION ;
 
 
     static {
@@ -92,6 +96,12 @@ public class ExAttribute {
 
         // 防御
         DEFENSE = registerAttribute("defense", 0, -100000, 10000000);
+
+        // 直接防护
+        DIRECT_PROTECTION = registerAttribute("direct_protection", 0, -100000, 10000000);
+
+        // 魔法保护
+        MAGIC_PROTECTION = registerAttribute("magic_protection", 0, -100000, 10000000);
     }
 
 
@@ -119,6 +129,8 @@ public class ExAttribute {
             event.add(e, ARROW_BASE_DAMAGE.get());
             event.add(e, DURABILITY.get());
             event.add(e, DEFENSE.get());
+            event.add(e, DIRECT_PROTECTION.get());
+            event.add(e, MAGIC_PROTECTION.get());
             if (e.equals(EntityType.PLAYER)) {
                 event.add(e, MAX_DODGE.get());
                 event.add(e, FIREWORK_DAMAGE.get());
@@ -187,7 +199,7 @@ public class ExAttribute {
         }
         @SubscribeEvent
         public static void DamageModifier(LivingHurtEvent event) {
-            LivingEntity entity = ((LivingEntity) event.getEntity());
+            LivingEntity entity = event.getEntity();
             float FinallyDanage = event.getAmount();
             LivingEntity attacker = event.getSource().getEntity() instanceof LivingEntity ? (LivingEntity) event.getSource().getEntity() : null;
             if (event.getSource().getEntity() instanceof LivingEntity) {
@@ -210,7 +222,8 @@ public class ExAttribute {
 
             if (entity.getAttributes().hasAttribute(ExAttribute.DEFENSE.get())){
                 double v = entity.getAttributeValue(ExAttribute.DEFENSE.get());
-                FinallyDanage = (float) (FinallyDanage * Math.round(100 * (100 / (((LivingEntity) entity).getAttribute(ExAttribute.DEFENSE.get()).getValue() - 1 + 100))) * 0.01);
+                FinallyDanage = (float) (FinallyDanage * Math.round(100 * (100 / (v - 1 + 100))) * 0.01);
+
 
             }
             if (entity.getAttributes().hasAttribute(ExAttribute.INJURY_FREE.get())){
@@ -223,6 +236,13 @@ public class ExAttribute {
                     entity1.heal((float) (entity1.getAttributeValue(Attributes.MAX_HEALTH) * (v - 1)));
                 }
             }
+            if (entity.getAttributes().hasAttribute(ExAttribute.DIRECT_PROTECTION.get())){
+                       double v = entity.getAttributeValue(ExAttribute.DIRECT_PROTECTION.get());
+                FinallyDanage = (float) Math.max(0, FinallyDanage -  v);
+            }
+            if (event.getSource().is(DamageTypes.MAGIC)||(ModList.get().isLoaded(Iron))){
+
+            }
             event.setAmount(FinallyDanage);
         }
         @SubscribeEvent
@@ -234,6 +254,8 @@ public class ExAttribute {
             newP.getAttribute(PERCENT_HEAL.get()).setBaseValue(oldP.getAttribute(PERCENT_HEAL.get()).getBaseValue());
             newP.getAttribute(HIT_RATE.get()).setBaseValue(oldP.getAttribute(HIT_RATE.get()).getBaseValue());
             newP.getAttribute(DEFENSE.get()).setBaseValue(oldP.getAttribute(DEFENSE.get()).getBaseValue());
+            newP.getAttribute(DIRECT_PROTECTION.get()).setBaseValue(oldP.getAttribute(DIRECT_PROTECTION.get()).getBaseValue());
+            newP.getAttribute(MAGIC_PROTECTION.get()).setBaseValue(oldP.getAttribute(DIRECT_PROTECTION.get()).getBaseValue());
         }
     }
 }

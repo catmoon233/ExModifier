@@ -134,7 +134,12 @@ mixin {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-
+    maven {
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+    }
+    maven {
+        url = 'https://maven.kosmx.dev/'
+    }
     maven { // CurseForge
         url "https://www.cursemaven.com"
     }
@@ -169,6 +174,10 @@ dependencies {
     implementation fg.deobf("curse.maven:attributefix-280510:4911084")
     implementation fg.deobf("dev.xkmc.l2serial:l2serial:1.2.2")
     implementation fg.deobf("curse.maven:tetra-289712:5544287")
+    implementation fg.deobf('curse.maven:irons-spells-n-spellbooks-855414:5238451')
+    implementation fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:1.0.2-rc1+1.20")
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.4.2')
+
     implementation fg.deobf("curse.maven:mutil-351914:4824501")
     implementation(jarJar(fg.deobf("dev.xkmc.l2damagetracker:l2damagetracker:0.3.7"))) {
         transitive = false

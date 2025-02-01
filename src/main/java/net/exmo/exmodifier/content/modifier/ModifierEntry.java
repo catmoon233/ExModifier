@@ -61,7 +61,36 @@ public class ModifierEntry {
         return UnlessItemTags;
     }
 
-
+    public boolean containItem(ItemStack stack){
+        boolean re = true;
+        String itemId = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+        if (!OnlyItems.isEmpty()){
+            re =false;
+            for (String item : OnlyItems){
+                if (item.equals(itemId)){
+                    re = true;
+                    break;
+                }
+            }
+        }
+        if (!UnlessItemIds.isEmpty()){
+            for (String item : UnlessItemIds){
+                if (item.equals(itemId)){
+                    return false;
+                }
+            }
+        }
+        if (!OnlyTags.isEmpty()){
+            if(!containTag(stack))return false;
+        }
+        if (!UnlessItemTags.isEmpty()){
+            if (!unContainTag(stack))return false;
+        }
+        if (!containItemType(stack, type)){
+            return  false;
+        }
+        return re;
+    }
 
 
 
@@ -372,7 +401,14 @@ public class ModifierEntry {
         }
 
         if (stack.getItem() instanceof AxeItem ){
+
             return Type.AXE;
+        }
+        if (stack.getItem() instanceof BowItem ){
+            return Type.BOW;
+        }
+        if (stack.getItem() instanceof CrossbowItem ){
+            return Type.CROSSBOW;
         }
         if (stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream()
                 .mapToDouble(attributeModifier -> attributeModifier.getAmount()).sum() >0){
@@ -396,12 +432,14 @@ public class ModifierEntry {
         return Type.UNKNOWN;
     }
     public  boolean containTag(ItemStack stack){
+        if (OnlyTags.isEmpty())return true;
         for (String tag : OnlyTags ){
             if (stack.is(ItemTags.create(new ResourceLocation(tag))))return true;
         }
         return false;
     }
     public boolean unContainTag(ItemStack stack){
+        if (OnlyTags.isEmpty())return false;
         for (String tag : getUnlessItemTags() ){
             if (stack.is(ItemTags.create(new ResourceLocation(tag))))return false;
         }
