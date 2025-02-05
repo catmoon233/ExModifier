@@ -1,8 +1,12 @@
 package net.exmo.exmodifier.commands;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.exmo.exmodifier.content.event.MainEvent;
+import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -19,10 +23,11 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.Ad
 
 @Mod.EventBusSubscriber
 public class GiveEntryItemStack {
+    public static final SuggestionProvider<CommandSourceStack> Suggestion_Entries = (ctx, builder) -> SharedSuggestionProvider.suggest(ModifierHandle.modifierEntryMap.keySet(), builder);
 
     @SubscribeEvent
     public static void registerCommand(RegisterCommandsEvent event) {
-        event.getDispatcher().register(Commands.literal("giveEntryItem").requires(s -> s.hasPermission(4)).then(Commands.argument("name1", EntityArgument.player()).then(Commands.argument("name", StringArgumentType.word()).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("giveEntryItem").requires(s -> s.hasPermission(4)).then(Commands.argument("name1", EntityArgument.player()).then(Commands.argument("name", StringArgumentType.word()).suggests(Suggestion_Entries).executes(arguments -> {
             Level world = arguments.getSource().getUnsidedLevel();
             double x = arguments.getSource().getPosition().x();
             double y = arguments.getSource().getPosition().y();
