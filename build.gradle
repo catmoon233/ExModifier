@@ -159,6 +159,7 @@ dependencies {
     implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.2.0")) {
         jarJar.ranged(it, "[0.2.0,)")
     }
+    implementation fg.deobf("curse.maven:caelus-308989:5281700")
 
     //implementation fg.deobf("curse.maven:curios-309927:5680164")
     //runtimeOnly fg.deobf("curse.maven:architectury-api-419699:5137938")
@@ -219,8 +220,8 @@ repositories {
 }
 
 dependencies {
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.10.0+1.20.1")
-    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.10.0+1.20.1:api")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.11.1+1.20.1")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.11.1+1.20.1:api")
 }
 minecraft {
     runs {

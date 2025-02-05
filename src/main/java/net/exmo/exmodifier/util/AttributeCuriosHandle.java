@@ -4,7 +4,6 @@ package net.exmo.exmodifier.util;
 
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.events.ExCuriosAttributeTooltipEvent;
-import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -68,7 +67,7 @@ public class AttributeCuriosHandle {
         public static void RenderTooltips(ItemTooltipEvent event) {
             ItemStack itemStack = event.getItemStack();
             if (itemStack.getItem() instanceof AttributeCurios a ) {
-                if (a.extraTooltip(new ArrayList<>(), itemStack)!=null){
+                if (!a.extraTooltip(new ArrayList<>(), itemStack).isEmpty()){
                     event.getToolTip().add(Component.literal(""));
                     if (!Screen.hasShiftDown()){
                         event.getToolTip().add(Component.translatable("attribute.curios.tooltip.shift").withStyle(ChatFormatting.GOLD));

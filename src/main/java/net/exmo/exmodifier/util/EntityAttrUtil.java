@@ -1,6 +1,5 @@
 package net.exmo.exmodifier.util;
 
-import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;

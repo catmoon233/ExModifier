@@ -1,5 +1,5 @@
 
-package net.exmo.exmodifier.util.event;
+package net.exmo.exmodifier.util;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;

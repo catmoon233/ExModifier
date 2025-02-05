@@ -240,8 +240,11 @@ public class ExAttribute {
                        double v = entity.getAttributeValue(ExAttribute.DIRECT_PROTECTION.get());
                 FinallyDanage = (float) Math.max(0, FinallyDanage -  v);
             }
-            if (event.getSource().is(DamageTypes.MAGIC)||(ModList.get().isLoaded(Iron))){
-
+            if (event.getSource().is(DamageTypes.MAGIC)){
+                if (entity.getAttributes().hasAttribute(ExAttribute.MAGIC_PROTECTION.get())){
+                    double v = entity.getAttributeValue(ExAttribute.MAGIC_PROTECTION.get());
+                    FinallyDanage = (float) Math.max(0, FinallyDanage -  v);
+                }
             }
             event.setAmount(FinallyDanage);
         }

@@ -13,7 +13,6 @@
     "ItemCombinerMenuMixin",
     "ItemStackMixin",
     "LivingSwingAction",
-    "PlayerMixin",
     "ToolTipMixin"
   ],
   "client": [

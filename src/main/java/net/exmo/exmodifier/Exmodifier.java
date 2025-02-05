@@ -3,8 +3,6 @@ package net.exmo.exmodifier;
 import com.mojang.logging.LogUtils;
 import net.exmo.exmodifier.compat.compat.apoth.ApothCompat;
 import net.exmo.exmodifier.content.client.EntryItemRender;
-import net.exmo.exmodifier.content.event.parameter.EventC;
-import net.exmo.exmodifier.content.event.parameter.EventCI;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.init.RegisterOther;
 import net.exmo.exmodifier.network.ClearModifierEntryMessage;
@@ -23,18 +21,18 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -44,12 +42,9 @@ import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -72,8 +67,8 @@ public class Exmodifier {
 
         }
         public static void debug(String msg) {
-            if (config.DebugInInfo) Logger.info(msg);
-            if (config.Debug)  Logger.debug(msg);
+            if (Config.DebugInInfo) Logger.info(msg);
+            if (Config.Debug)  Logger.debug(msg);
         }
 
        public static void error(String s, Exception e) {
@@ -144,7 +139,7 @@ public class Exmodifier {
         long time_end = System.currentTimeMillis();
         LOGGER.info("Mod loaded in " + (time_end - time_start) + "ms");
         RegisterOther.EventAbout.init();
-
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC,String.valueOf(FMLPaths.CONFIGDIR.get().resolve("exmo/exmodifier.toml")));
 //    for (EventC<? extends LivingEvent> v : RegisterOther.EventAbout.EVENT_C_LIST.values()){
 //
 //            EventCI<? extends LivingEvent> eventCI = new EventCI<>(v);
@@ -160,8 +155,8 @@ public class Exmodifier {
         DataGenerator generator = event.getGenerator();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
         LOGGER.debug("ExGatherData");
-        APO provider = new APO(generator, existingFileHelper);
-        generator.addProvider(event.includeServer(), provider);
+//        APO provider = new APO(generator, existingFileHelper);
+//        generator.addProvider(event.includeServer(), provider);
     }
     private void setup(final FMLCommonSetupEvent event) {
         // Some preinit code

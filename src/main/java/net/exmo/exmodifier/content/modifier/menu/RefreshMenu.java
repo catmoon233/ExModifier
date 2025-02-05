@@ -1,6 +1,6 @@
 package net.exmo.exmodifier.content.modifier.menu;
 
-import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ItemLevelHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
@@ -13,7 +13,6 @@ import net.exmo.exmodifier.util.CuriosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -152,7 +151,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
             if (washingMaterials.item.equals(WashItem.getItem())) {
                 if (WashItem.getCount() >= washingMaterials.NeedCount) {
                     player.getPersistentData().putBoolean("modifier_refresh_not_enough", false);
-                    if (modifierEntryHelper.getModifierEntriesSize()>0 || config.refresh_time == 0 ||config.add_level_system_count==0) {
+                    if (modifierEntryHelper.getModifierEntriesSize()>0 || Config.refresh_time == 0 || Config.add_level_system_count==0) {
                         if (washingMaterials.OnlyTypes.isEmpty() || ModifierEntry.containItemTypes(item, washingMaterials.OnlyTypes)) {
 
                             if (washingMaterials.OnlyItems == null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(item.getItem()).toString())) {
@@ -218,10 +217,10 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                     CompoundTag orCreateTag = input.getOrCreateTag();
                     orCreateTag.putInt("NeedCount", 1);
                     int entryitemAdd = orCreateTag.getInt("entryitem_add");
-                    if (entryitemAdd == config.canAddEntry){
+                    if (entryitemAdd == Config.canAddEntry){
                         orCreateTag.putBoolean("can_add_max", true);
                          this.resultSlots.setItem(0, input);}
-                    if (entryitemAdd < config.canAddEntry) {
+                    if (entryitemAdd < Config.canAddEntry) {
 
 
                         orCreateTag.putInt("entryitem_add", entryitemAdd + 1);
@@ -229,6 +228,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                         orCreateTag.putBoolean("entry_item_add", true);
                         itemInfo = new ItemInfo(input);
                         modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
+                        if (Config.RefreshReplaceOld)modifierEntryHelper.removeAllEntry(true);
                         modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(EntryItem.getModifierID(WashItem)),EntryItem.getModifierLevel(WashItem)),true,true  );
                         this.resultSlots.setItem(0, input);
                         this.repairItemCountCost = 1;

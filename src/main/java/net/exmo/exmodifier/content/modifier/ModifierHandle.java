@@ -1,16 +1,12 @@
 package net.exmo.exmodifier.content.modifier;
 
-import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.content.helper.ItemInfo;
-import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
-import net.exmo.exmodifier.content.level.ItemLevel;
 import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
@@ -19,18 +15,15 @@ import net.exmo.exmodifier.network.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.network.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.*;
-import net.exmo.exmodifier.util.event.AttrGether;
+import net.exmo.exmodifier.util.AttrGether;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.Main;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -38,14 +31,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.server.ServerLifecycleHooks;
-import top.theillusivec4.curios.api.CuriosApi;
 
 
 import java.io.FileNotFoundException;
@@ -142,7 +133,7 @@ public class ModifierHandle {
             List<Component> tooltips = new ArrayList<>();
             if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.contains(modifierEntry))) {
                 ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
-                if (!config.compact_tooltip) tooltips.add(Component.translatable("modifier.entry.suit"));
+                if (!Config.compact_tooltip) tooltips.add(Component.translatable("modifier.entry.suit"));
 
                 for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
                         .toList()) {
@@ -170,7 +161,7 @@ public class ModifierHandle {
             if (id.length() >= 2) {
                 MutableComponent translatable = Component.translatable("modifier.entry." + id.substring(2));
 
-                if (config.compact_tooltip){
+                if (Config.compact_tooltip){
                     if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
                     tooltips.add(translatable);
 

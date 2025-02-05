@@ -1,6 +1,6 @@
 package net.exmo.exmodifier.mixins;
 
-import net.exmo.exmodifier.util.ModifierLivingHurtBaseDamage;
+import net.exmo.exmodifier.events.ModifierLivingHurtBaseDamage;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.MinecraftForge;
 import org.spongepowered.asm.mixin.Mixin;

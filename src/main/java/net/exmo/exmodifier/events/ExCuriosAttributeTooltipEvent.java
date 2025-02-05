@@ -1,6 +1,6 @@
 package net.exmo.exmodifier.events;
 
-import net.exmo.exmodifier.util.event.AttrGether;
+import net.exmo.exmodifier.util.AttrGether;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;

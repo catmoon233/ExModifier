@@ -1,16 +1,16 @@
 package net.exmo.exmodifier.util;
 
-import com.google.common.collect.Multimap;
-import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.registries.ForgeRegistries;
 import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,9 +123,7 @@ CuriosUtil {
         }
         return slotInfos;
     }
-    public static Multimap<Attribute, AttributeModifier> getAttributeModifiers(ItemStack itemStack, String slot) {
-      return   CuriosApi.getCuriosHelper().getAttributeModifiers(slot, itemStack);
-    }
+
     public static void removeAttributeModifierAffix(ItemStack itemStack, String attributeName,String name)
     {
         CompoundTag tag = itemStack.getOrCreateTag();
@@ -228,5 +226,17 @@ CuriosUtil {
 
         itemTag.put("CurioAttributeModifiers", modifiersList);
         itemStack.setTag(itemTag);
+    }
+    public static  boolean isLivingWear(Item item, LivingEntity entity){
+        LazyOptional<ICuriosItemHandler> curiosInventory = CuriosApi.getCuriosInventory(entity);
+        boolean present = curiosInventory.isPresent();
+        if (!present) return false;
+        return curiosInventory.orElse(null).isEquipped(item);
+    }
+    public static  boolean isLivingWear(ItemStack itemStack, LivingEntity entity){
+        LazyOptional<ICuriosItemHandler> curiosInventory = CuriosApi.getCuriosInventory(entity);
+        boolean present = curiosInventory.isPresent();
+        if (!present) return false;
+        return curiosInventory.orElse(null).isEquipped(itemStack.getItem());
     }
 }

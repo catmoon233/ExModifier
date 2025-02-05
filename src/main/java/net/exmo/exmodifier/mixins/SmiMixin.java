@@ -1,20 +1,16 @@
 package net.exmo.exmodifier.mixins;
 
-import com.google.gson.internal.bind.JsonTreeReader;
-import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.events.ExRefreshEvent;
 import net.exmo.exmodifier.util.CuriosUtil;
-import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +23,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.RandomEntryCurios;
@@ -146,7 +141,7 @@ public abstract class SmiMixin extends ItemCombinerMenu {
             if (washingMaterials.item.equals(WashItem.getItem())) {
                 if (WashItem.getCount() >= washingMaterials.NeedCount) {
                     player.getPersistentData().putBoolean("modifier_refresh_not_enough", false);
-                    if (modifierEntryHelper.getModifierEntriesSize()>0 || config.refresh_time == 0) {
+                    if (modifierEntryHelper.getModifierEntriesSize()>0 || Config.refresh_time == 0) {
                         if (washingMaterials.OnlyTypes.isEmpty() || ModifierEntry.containItemTypes(item, washingMaterials.OnlyTypes)) {
 
                             if (washingMaterials.OnlyItems == null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(item.getItem()).toString())) {
@@ -197,9 +192,9 @@ public abstract class SmiMixin extends ItemCombinerMenu {
                     //  Exmodifier.LOGGER.debug("WashItem is EntryItem");
                     CompoundTag orCreateTag = input.getOrCreateTag();
                     int entryitemAdd = orCreateTag.getInt("entryitem_add");
-                    if (entryitemAdd < config.canAddEntry) {
+                    if (entryitemAdd < Config.canAddEntry) {
                         ci.cancel();
-                        if (entryitemAdd + 1 == config.canAddEntry)
+                        if (entryitemAdd + 1 == Config.canAddEntry)
                             orCreateTag.putBoolean("can_add_max", true);
                         orCreateTag.putInt("entryitem_add", entryitemAdd + 1);
                         orCreateTag.putInt("NeedCount", 1);

@@ -1,6 +1,5 @@
 package net.exmo.exmodifier.util;
 
-import net.exmo.exmodifier.util.event.AttrGether;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -21,7 +20,7 @@ AttributeCurios extends Item {
 	public int CoolDown = 0;
 	public boolean isp = false;
 	public static boolean isWear(Item curios,Player player){
-		return   (CuriosApi.getCuriosHelper().findEquippedCurio(curios, player).isPresent());
+		return   CuriosUtil.isLivingWear(curios,player);
 
 	}
 	public List<Component> customTooltips = new ArrayList<>();

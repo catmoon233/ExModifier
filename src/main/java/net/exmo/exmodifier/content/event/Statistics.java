@@ -1,6 +1,6 @@
 package net.exmo.exmodifier.content.event;
 
-import net.exmo.exmodifier.config;
+import net.exmo.exmodifier.Config;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -10,7 +10,6 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -31,7 +30,7 @@ public class Statistics {
     public static final String armorsPath = FMLPaths.CONFIGDIR.get().resolve("exmo/armors.txt").toString();
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!config.Statistics)return;
+        if (!Config.Statistics)return;
         if (!event.getEntity().level().isClientSide)return;
         Map<String, String> ingots = new HashMap<>();
         Map<String, List<Component>> armors = new HashMap<>();

@@ -1,7 +1,7 @@
 package net.exmo.exmodifier.content.event;
 
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.config;
 import net.exmo.exmodifier.content.client.LanguageLoader;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
 import net.exmo.exmodifier.content.helper.*;
@@ -62,7 +62,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static net.exmo.exmodifier.config.refresh_time;
+import static net.exmo.exmodifier.Config.refresh_time;
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.ItemLevelRefresh;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEntry;
@@ -205,7 +205,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                         for (ModifierInstant modifierEntry : new ItemInfo(stack).getModifierEntryHelper().getModifierEntries()) {
                             if (modifierEntry.getSlot().isPresent())continue;
                             // Exmodifier.LOGGER.debug("modifier Id:" + modifierEntry.Id);
-                            if (!config.compact_tooltip) tooltip.add(Component.translatable("null"));
+                            if (!Config.compact_tooltip) tooltip.add(Component.translatable("null"));
                             tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack));
 
                         }
@@ -582,7 +582,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                         if (hasAttrOrBow(stack) &&ModifierEntry.getType(stack)!= ModifierEntry.Type.UNKNOWN&& stack.getItem().getMaxStackSize(stack) == 1) {
                             if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
                                 ModifierSlotHelper modifierSlotHelper = ModifierSlotHelper.of(stack);
-                                if (config.FirstAddSlots&&!modifierSlotHelper.validList()){
+                                if (Config.FirstAddSlots&&!modifierSlotHelper.validList()){
                                     modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:front")));
                                     modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:centre")));
                                 }
@@ -611,8 +611,8 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                         }
                     }
 
-                    int addLevelSystemCount = config.add_level_system_count;
-                    if (config.add_level_system_count!=0) {
+                    int addLevelSystemCount = Config.add_level_system_count;
+                    if (Config.add_level_system_count!=0) {
                         ItemLevelRefresh(stack, 0, addLevelSystemCount, "none");
                     }
                 }
