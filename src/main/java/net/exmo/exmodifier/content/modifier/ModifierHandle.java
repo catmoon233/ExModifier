@@ -574,9 +574,10 @@ public class ModifierHandle {
                 attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName()+stack).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
-                    CuriosUtil.addAttributeModifierAffix(stack, new AttrGether(attriGether.attribute, attriGether.modifier));
                     ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attriGether.attribute,attriGether.modifier), true, null);
                     MinecraftForge.EVENT_BUS.post(event);
+                    CuriosUtil.addAttributeModifierAffix(stack, new AttrGether(event.attriGether.attribute, event.attriGether.modifier));
+
 //                    for (String CuriosSlot : CuriosSlots) CuriosUtil.addAttributeModifierApi(stack,attriGether,CuriosSlot);
                     //   ItemAttrUtil.addItemAttributeModifier(stack, attriGether.attribute, attriGether.modifier, applicableSlot);
                 } else {
@@ -1076,7 +1077,7 @@ public class ModifierHandle {
         }
         attrGether.Expression = attrGetherObj.has("ValueExpression") ? attrGetherObj.get("ValueExpression").getAsString() : "";
         attrGether.maxValue = attrGetherObj.has("maxValue") ? attrGetherObj.get("maxValue").getAsDouble() : attrGether.minValue;
-        attrGether.reserveDouble = attrGetherObj.has("reserveDouble") ? attrGetherObj.get("reserveDouble").getAsInt() : 0;
+        attrGether.reserveDouble = attrGetherObj.has("reserveDouble") ? attrGetherObj.get("reserveDouble").getAsInt() : 3;
         Map<Double, Float> simpleWeight = new HashMap<>();
         List<Double> mayValues = new ArrayList<>();
         List<Float>  mayValuesKey = new ArrayList<>();

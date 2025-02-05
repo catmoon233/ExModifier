@@ -28,7 +28,7 @@ public class ModifierAttriGether extends AttriGether {
 
     public float weight = 0;
     public boolean isRandom = false;
-    public int reserveDouble = 1;
+    public int reserveDouble = 3;
     public boolean hasUUID =false;
     public double minValue = 0;
     public double maxValue = 0;
