@@ -2,6 +2,7 @@ package net.exmo.exmodifier.content.event;
 
 import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.modifier.RefreshContainTagHandle;
 import net.exmo.exmodifier.content.client.LanguageLoader;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
 import net.exmo.exmodifier.content.helper.*;
@@ -63,6 +64,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Config.refresh_time;
+
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.ItemLevelRefresh;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEntry;
@@ -390,6 +392,8 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         ItemLevelHandle.ItemAddXpAuto(player, eventParameters, name);
 
     }
+    @Mod.EventBusSubscriber
+    public static class cheekEvent{
         @SubscribeEvent
         public static void PlayerHurtAndAttack(LivingHurtEvent event){
             if ((event.getEntity() instanceof Player player)){
@@ -518,6 +522,8 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
 
         }
 
+
+    }
         public static boolean hasAttrOrBow(ItemStack stack) {
             if (stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem)return true;
             for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -528,7 +534,6 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             }
             return false;
         }
-
         @SubscribeEvent
         public static void armorChange(LivingEquipmentChangeEvent event) throws ScriptException {
             if (event.getEntity() instanceof Player player) {
@@ -579,7 +584,8 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                         }
                     } else {
 
-                        if (hasAttrOrBow(stack) &&ModifierEntry.getType(stack)!= ModifierEntry.Type.UNKNOWN&& stack.getItem().getMaxStackSize(stack) == 1) {
+                        if (!stack.getTags().filter(e -> RefreshContainTagHandle.refreshContainTag.contains(e.toString())).toList().isEmpty() || RefreshContainItemHandle.refreshContainItem.contains(string) ||
+                        hasAttrOrBow(stack) &&ModifierEntry.getType(stack)!= ModifierEntry.Type.UNKNOWN&& stack.getItem().getMaxStackSize(stack) == 1) {
                             if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
                                 ModifierSlotHelper modifierSlotHelper = ModifierSlotHelper.of(stack);
                                 if (Config.FirstAddSlots&&!modifierSlotHelper.validList()){
@@ -713,8 +719,11 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         }
         public static void init(Runnable runnable) throws IOException {
             BaseItemSelected.IDS = new HashMap<>();
+            RefreshContainTagHandle.readConfig();
+            RefreshContainItemHandle.readConfig();
             ModifierHandle.sendClearModifierEntryToAllClient();
             ModifierHandle.readConfig();
+
             ExSuitHandle.readConfig();
             ModifierSlotHandle.reload();
             ItemQualityHandle.init();

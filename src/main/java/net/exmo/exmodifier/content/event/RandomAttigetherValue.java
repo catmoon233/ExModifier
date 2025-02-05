@@ -14,12 +14,13 @@ import java.util.Random;
 public class RandomAttigetherValue {
     @SubscribeEvent
     public static void apply(ExApplyEntryAttrigetherEvent event){
-        ModifierAttriGether attriGether = event.attriGether;
+        ModifierAttriGether attriGether = event.attriGether.copy();
         if (attriGether.maxValue!= attriGether.minValue){
             double randomValue = new Random().nextDouble(attriGether.minValue, attriGether.maxValue);
             DecimalFormat df = new DecimalFormat("0." + "0".repeat(attriGether.reserveDouble));
             double formattedRandomValue = Double.parseDouble(df.format(randomValue));
             attriGether.modifier = new AttributeModifier(attriGether.modifier.getId(), attriGether.modifier.getName(),formattedRandomValue, attriGether.modifier.getOperation());
+            event.attriGether = attriGether;
         }else {
             if (attriGether.simpleWeight.isEmpty())return;
             WeightedUtil<Double> weightedUtil = new WeightedUtil<Double>(attriGether.simpleWeight);

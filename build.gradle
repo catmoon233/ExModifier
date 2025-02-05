@@ -160,6 +160,7 @@ dependencies {
         jarJar.ranged(it, "[0.2.0,)")
     }
     implementation fg.deobf("curse.maven:caelus-308989:5281700")
+    runtimeOnly fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6069384")
 
     //implementation fg.deobf("curse.maven:curios-309927:5680164")
     //runtimeOnly fg.deobf("curse.maven:architectury-api-419699:5137938")

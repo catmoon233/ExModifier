@@ -190,13 +190,12 @@ public class ModifierHandle {
 //                    if (modifierAttriGether.IsAutoEquipmentSlot){
 //                        slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
 //                    }
-                    AttributeModifier finalAttributemodifier = attributemodifier;
-                    if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot) && CuriosUtil.getAttributeModifiersAffix(itemStack).stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(finalAttributemodifier.getName())))continue;
+                    if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot) && CuriosUtil.getAttributeModifiersAffix(itemStack).stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(attributemodifier.getName())))continue;
                     //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
                     //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
 //                    attributemodifier = ItemAttrUtil.getAttributeModifierFromNamed(attributemodifier.getName(),itemStack);
 //                    if (attributemodifier==null)continue;
-                    double d0 = attributemodifier.getAmount();
+                    double d0 = ItemAttrUtil.getAmountFromAttributeName(itemStack, attribute, attributemodifier.getName());
                     if (modifierAttriGether.Expression!=null&& !modifierAttriGether.Expression.isEmpty()){
                        DynamicExpressionEvaluator evaluator = new DynamicExpressionEvaluator();
                        evaluator.setVariable("level", level);
@@ -414,6 +413,7 @@ public class ModifierHandle {
                     ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
             ));
             a.put(ModifierEntry.Type.CROSSBOW, EquipmentSlot.MAINHAND);
+            a.put(ModifierEntry.Type.UNKNOWN, EquipmentSlot.MAINHAND);
             return a;
     };
 
@@ -661,6 +661,7 @@ public class ModifierHandle {
             if (type == ModifierEntry.Type.SWORD) return hasSwordConfig && stack.getItem() instanceof SwordItem;
             if (type == ModifierEntry.Type.ATTACKABLE) return stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream().mapToDouble(AttributeModifier::getAmount).sum() > 0;
             if (type == ModifierEntry.Type.AXE) return stack.getItem() instanceof AxeItem;
+            if (type == ModifierEntry.Type.UNKNOWN) return !stack.getTags().filter(e -> RefreshContainTagHandle.refreshContainTag.contains(e.toString())).toList().isEmpty() || RefreshContainItemHandle.refreshContainItem.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()) ;
 
             return false;
         }

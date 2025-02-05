@@ -41,6 +41,20 @@ public class ModifierAttriGether extends AttriGether {
         this.Expression = expression;
         return this;
     }
+    public ModifierAttriGether copy() {
+        ModifierAttriGether attriGether = new ModifierAttriGether(this.attribute, this.modifier, this.slot);
+        attriGether.weight = this.weight;
+        attriGether.isRandom = this.isRandom;
+        attriGether.reserveDouble = this.reserveDouble;
+        attriGether.hasUUID = this.hasUUID;
+        attriGether.minValue = this.minValue;
+        attriGether.maxValue = this.maxValue;
+        attriGether.simpleWeight = this.simpleWeight;
+        attriGether.Expression = this.Expression;
+        attriGether.OnlyItems = this.OnlyItems;
+        attriGether.OnlySlots = this.OnlySlots;
+        return attriGether;
+    }
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putFloat("weight", weight);

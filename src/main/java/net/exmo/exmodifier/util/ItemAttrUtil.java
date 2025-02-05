@@ -104,6 +104,21 @@ public  class ItemAttrUtil {
         String finalstring = disattrname[0] + ":" + (finalamount+1);
         return finalstring;
     }
+    public static double getAmountFromAttributeName(ItemStack stack, Attribute attribute,String name){
+        if (attribute==null)return 0;
+        ListTag listtag = stack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
+        for (int i = 0; i < listtag.size(); i++) {
+            CompoundTag compoundTag = listtag.getCompound(i);
+                             if (compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+                    if (compoundTag.getString("Name").equals(name)) {
+                        return compoundTag.getDouble("Amount");
+                    }
+
+                }
+            }
+
+        return 0;
+    }
 
     public static List<AttributeModifier> getAttributeModifiers(ItemStack stack,Attribute attribute) {
         ArrayList<AttributeModifier> list = new ArrayList<>();
