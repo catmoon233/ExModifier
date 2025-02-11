@@ -2,7 +2,6 @@ package net.exmo.exmodifier.content.modifier;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,11 +9,11 @@ import java.util.List;
 import static net.exmo.exmodifier.content.helper.ModifierEntryHelper.MEID;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.modifierEntryMap;
 
-public class ModifierEntryContianer {
+public class ModifierEntryContainer {
     public List<ModifierInstant> entries;
     public static final String tagName = "MEC";
 
-    public ModifierEntryContianer(List<ModifierInstant> entries) {
+    public ModifierEntryContainer(List<ModifierInstant> entries) {
         this.entries = entries;
     }
 
@@ -26,7 +25,7 @@ public class ModifierEntryContianer {
         }
         return tag;
     }
-    public static ModifierEntryContianer deserializeNBT(CompoundTag tag ) {
+    public static ModifierEntryContainer deserializeNBT(CompoundTag tag ) {
         List<ModifierInstant> modifierEntries = new ArrayList<>();
         if (tag.contains(tagName)) {
             ListTag listTag = tag.getList(tagName, 10);
@@ -47,6 +46,6 @@ public class ModifierEntryContianer {
 
             }
         }
-        return new ModifierEntryContianer(modifierEntries);
+        return new ModifierEntryContainer(modifierEntries);
     }
 }

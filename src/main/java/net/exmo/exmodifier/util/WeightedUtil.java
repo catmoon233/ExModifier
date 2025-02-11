@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+//by canyuesama
 public class WeightedUtil<T> {
 
     public Map<T, Float> weights = new HashMap<>();
