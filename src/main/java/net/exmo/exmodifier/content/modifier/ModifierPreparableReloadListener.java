@@ -52,7 +52,7 @@ public class ModifierPreparableReloadListener extends SimplePreparableReloadList
                 Resource packResources = pResourceManager.getResource(key).orElseThrow(() -> new IOException("Resource not found: " + key));
                 String jsonString = IOUtils.toString(packResources.open(), StandardCharsets.UTF_8);
                 JsonObject jsonObject = GSON.fromJson(jsonString, JsonObject.class);
-                ArrayList<ModifierEntry> jsonList = new ArrayList();
+                ArrayList<ModifierEntry> jsonList = new ArrayList<>();
                 ModifierHandle.processModifierEntry(jsonObject.toString(),jsonList );
                 for (ModifierEntry entry : jsonList){
                     loader.put(key,  entry);
