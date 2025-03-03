@@ -3,6 +3,7 @@ package net.exmo.exmodifier.util;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.type.ExType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -134,7 +135,7 @@ public class ExConfigHandle {
                 if (moconfig.readSetting("type")!=null){
                     moconfig.type = ModifierEntry.StringToType(moconfig.readSetting("type").getAsString());
                 }
-                if (moconfig.type == ModifierEntry.Type.CURIOS &&moconfig.readSetting("type").getAsString().length()>6)moconfig.CuriosType=moconfig.readSetting("type").getAsString().substring(7);
+                if (moconfig.type == ExType.CURIOS.get() &&moconfig.readSetting("type").getAsString().length()>6)moconfig.CuriosType=moconfig.readSetting("type").getAsString().substring(7);
                 moconfigs.add(moconfig);
                 Exmodifier.LOGGER.debug("Found Config: Type:" + moconfig.type + " Path:" + moconfig.configFile+" "  +moconfig.type +" CuriosType:"+moconfig.CuriosType);
             }

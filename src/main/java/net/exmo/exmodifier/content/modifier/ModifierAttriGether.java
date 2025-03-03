@@ -3,6 +3,7 @@ package net.exmo.exmodifier.content.modifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.util.AttrGether;
 import net.exmo.exmodifier.util.AttriGether;
 import net.exmo.exmodifier.util.ExConfigHandle;
 import net.minecraft.nbt.CompoundTag;
@@ -36,6 +37,9 @@ public class ModifierAttriGether extends AttriGether {
     public String Expression ="";
     public List<String> OnlyItems = new java.util.ArrayList<>();
     public  List<String> OnlySlots = new java.util.ArrayList<>();
+    public AttrGether toAttriGether(){
+        return new AttrGether(this.attribute, this.modifier);
+    }
 
     public ModifierAttriGether setExpression(String expression) {
         this.Expression = expression;

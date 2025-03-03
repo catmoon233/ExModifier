@@ -11,9 +11,9 @@ public class ExApplyEntryAttrigetherEvent extends Event {
     public ModifierAttriGether attriGether;
     public boolean isCurios;
     public String curiosSlot;
-    public EquipmentSlot slot;
+    public EquipmentSlot[] slot;
     public ModifierInstant modifierInstant;
-    public ExApplyEntryAttrigetherEvent(ItemStack stack, ModifierAttriGether attriGether, EquipmentSlot slot, ModifierInstant modifierInstant){
+    public ExApplyEntryAttrigetherEvent(ItemStack stack, ModifierAttriGether attriGether, EquipmentSlot[] slot, ModifierInstant modifierInstant){
         this.stack = stack;
         this.attriGether = attriGether;
         this.slot = slot;
@@ -60,11 +60,11 @@ public class ExApplyEntryAttrigetherEvent extends Event {
         this.curiosSlot = curiosSlot;
     }
 
-    public EquipmentSlot getSlot() {
+    public EquipmentSlot[] getSlot() {
         return slot;
     }
 
-    public void setSlot(EquipmentSlot slot) {
+    public void setSlot(EquipmentSlot[] slot) {
         this.slot = slot;
     }
 }

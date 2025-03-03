@@ -12,13 +12,13 @@ import java.util.List;
 public class ExAddEntryAttrigethersEvent extends Event {
     public ItemStack stack;
     public List<ModifierAttriGether> attriGether;
-    public EquipmentSlot slot;
+    public EquipmentSlot[] slot;
     public WeightedUtil<String> weightedUtil;
     public int refreshments;
     public ModifierEntry TargetModifierEntry;
     public List<ModifierEntry> modifierEntries;
     public boolean isCurios;
-    public ExAddEntryAttrigethersEvent(ItemStack stack, WeightedUtil<String> weightedUtil, EquipmentSlot slot, int refreshments, List<ModifierAttriGether> attriGether, ModifierEntry modifierEntry, List<ModifierEntry> modifierEntries){
+    public ExAddEntryAttrigethersEvent(ItemStack stack, WeightedUtil<String> weightedUtil, EquipmentSlot[] slot, int refreshments, List<ModifierAttriGether> attriGether, ModifierEntry modifierEntry, List<ModifierEntry> modifierEntries){
         this.stack = stack;
         this.weightedUtil = weightedUtil;
         this.slot = slot;
@@ -54,11 +54,11 @@ public class ExAddEntryAttrigethersEvent extends Event {
         this.attriGether = attriGether;
     }
 
-    public EquipmentSlot getSlot() {
+    public EquipmentSlot[] getSlot() {
         return slot;
     }
 
-    public void setSlot(EquipmentSlot slot) {
+    public void setSlot(EquipmentSlot[] slot) {
         this.slot = slot;
     }
 

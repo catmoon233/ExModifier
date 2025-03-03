@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.quality;
 
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
@@ -23,7 +24,7 @@ public class ItemQuality {
     public List<String> OnlyItemIds = new ArrayList<>();
     public List<String> OnlyItemTags = new ArrayList<>();
     public List<String> OnlyWashItems = new ArrayList<>();
-    public ModifierEntry.Type type;
+    public ItemType type;
     public String LocalDescription; //描述
     public List<String> items = new ArrayList<>();
     public Map<Attribute,Double> attributeLowerLimit = new HashMap<>();
@@ -97,11 +98,11 @@ public class ItemQuality {
         OnlyWashItems = onlyWashItems;
     }
 
-    public ModifierEntry.Type getType() {
+    public ItemType getType() {
         return type;
     }
 
-    public void setType(ModifierEntry.Type type) {
+    public void setType(ItemType type) {
         this.type = type;
     }
 

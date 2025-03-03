@@ -4,6 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.content.type.ExTypeHandle;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -45,6 +48,10 @@ public class ModifierEntryDataBuilder {
         entry.isRandom = isRandom;
         return this;
     }
+    public ModifierEntryDataBuilder setIcon(String icon) {
+        entry.icon = icon;
+        return this;
+    }
 
     public ModifierEntryDataBuilder setOnlyHasThisEntry(boolean OnlyHasThisEntry) {
         entry.OnlyHasThisEntry = OnlyHasThisEntry;
@@ -61,8 +68,8 @@ public class ModifierEntryDataBuilder {
         return this;
     }
 
-    public ModifierEntryDataBuilder setType(ModifierEntry.Type type) {
-        entry.type = type;
+    public ModifierEntryDataBuilder setType(List<ItemType> type) {
+        entry.types = type;
         return this;
     }
     public ModifierEntryDataBuilder setSlots(List<String> slots) {
@@ -143,7 +150,6 @@ public class ModifierEntryDataBuilder {
         if (entry.OnlyHasThisEntry) json.addProperty("OnlyHasThisEntry", true);
         if (entry.localDescription != null && !entry.localDescription.isEmpty()) json.addProperty("localDescription", entry.localDescription);
         if (entry.maxLevel != 1) json.addProperty("maxLevel", entry.maxLevel);
-        if (entry.type != ModifierEntry.Type.UNKNOWN) json.addProperty("type", entry.type.name());
         if (entry.curiosType != null && !entry.curiosType.isEmpty()) json.addProperty("curiosType", entry.curiosType);
         if (entry.isCuriosEntry) json.addProperty("isCuriosEntry", entry.isCuriosEntry);
         if (entry.needFreshValue != 0.0f) json.addProperty("needFreshValue", entry.needFreshValue);
@@ -154,6 +160,14 @@ public class ModifierEntryDataBuilder {
                 specialTagsArray.add(new JsonPrimitive(tag));
             }
             json.add("specialTags", specialTagsArray);
+        }
+        if (!entry.types.contains(ExType.UNKNOWN.get())){
+            JsonArray typesArray = new JsonArray();
+            for (var tag : entry.types) {
+                typesArray.add(new JsonPrimitive(tag.name()));
+            }
+            json.add("types", typesArray);
+          //  json.addProperty("type", entry.type.name());
         }
 
         if (!entry.OnlyTags.isEmpty()) {
@@ -190,6 +204,7 @@ public class ModifierEntryDataBuilder {
 
         if (entry.id != null && !entry.id.isEmpty()) json.addProperty("id", entry.id.substring(2));
         if (entry.Expression != null && !entry.Expression.isEmpty()) json.addProperty("Expression", entry.Expression);
+        if (entry.icon != null && !entry.icon.isEmpty()) json.addProperty("icon", entry.icon);
         if (entry.RandomNum != 0) json.addProperty("RandomNum", entry.RandomNum);
 
         if (!entry.attriGether.isEmpty()) {
@@ -245,8 +260,9 @@ public class ModifierEntryDataBuilder {
         tag.putBoolean("isRandom", entry.isRandom);
         tag.putBoolean("OnlyHasThisEntry", entry.OnlyHasThisEntry);
         tag.putString("localDescription", entry.localDescription);
+        tag.putString("icon", entry.icon);
         tag.putInt("maxLevel", entry.maxLevel);
-        tag.putString("type", entry.type.name());
+        //tag.putString("type", entry.type.name());
         tag.putString("curiosType", entry.curiosType);
         tag.putBoolean("isCuriosEntry", entry.isCuriosEntry);
         tag.putFloat("needFreshValue", entry.needFreshValue);
@@ -267,6 +283,12 @@ public class ModifierEntryDataBuilder {
             onlyTagsTag.add(StringTag.valueOf(tagStr));
         }
         tag.put("OnlyTags", onlyTagsTag);
+
+        ListTag typesTag = new ListTag();
+        for (var tagStr : entry.types) {
+            typesTag.add(StringTag.valueOf(tagStr.name()));
+        }
+        tag.put("types", typesTag);
 
         ListTag onlyItemsTag = new ListTag();
         for (String itemStr : entry.OnlyItems) {
@@ -307,10 +329,11 @@ public class ModifierEntryDataBuilder {
         builder.setOnlyHasThisEntry(tag.getBoolean("OnlyHasThisEntry"));
         builder.setLocalDescription(tag.getString("localDescription"));
         builder.setMaxLevel(tag.getInt("maxLevel"));
-        builder.setType(ModifierEntry.StringToType(tag.getString("type")));
+       // builder.setType(ModifierEntry.StringToType(tag.getString("type")));
         builder.setCuriosType(tag.getString("curiosType"));
         builder.setIsCuriosEntry(tag.getBoolean("isCuriosEntry"));
         builder.setNeedFreshValue(tag.getFloat("needFreshValue"));
+        builder.setIcon(tag.getString("icon"));
 
         ListTag specialTagsTag = tag.getList("specialTags", 8);
         List<String> specialTags = new ArrayList<>();
@@ -318,6 +341,12 @@ public class ModifierEntryDataBuilder {
             specialTags.add(specialTagsTag.getString(i));
         }
         builder.setSpecialTags(specialTags);
+        ListTag typesTag = tag.getList("types", 8);
+        List<ItemType> types = new ArrayList<>();
+        for (int i = 0; i < typesTag.size(); i++) {
+            types.add(ExTypeHandle.values.get(typesTag.getString(i)));
+        }
+        builder.setType(types);
 
         ListTag onlyTagsTag = tag.getList("OnlyTags", 8);
         List<String> onlyTags = new ArrayList<>();

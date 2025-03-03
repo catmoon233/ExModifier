@@ -78,7 +78,7 @@ public abstract class BaseItemSelected<T> {
     public  boolean containType(ItemStack stack){
         if (getOnlyTypes().isEmpty())return true;
         return ModifierEntry.containItemTypes(stack, getOnlyTypes().get().stream()
-                .map(ModifierEntry.Type::valueOf)
+                .map(ModifierEntry::StringToType)
                 .toList()
         );
     }

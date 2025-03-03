@@ -16,6 +16,11 @@ public class WeightedUtil<T> {
         this.totalWeight = calculateTotalWeight();
         this.cumulativeWeights = calculateCumulativeWeights();
     }
+    public void merge(WeightedUtil<T> other) {
+        other.weights.forEach((key, value) -> {
+            this.weights.merge(key, value, Float::sum); // 累加权重
+        });
+    }
 
     public void removeKey(T key) {
         weights.remove(key);

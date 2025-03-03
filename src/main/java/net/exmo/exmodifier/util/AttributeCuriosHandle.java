@@ -3,6 +3,7 @@ package net.exmo.exmodifier.util;
 
 
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.events.ExCuriosAttributeTooltipEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -62,6 +63,15 @@ public class AttributeCuriosHandle {
             }
         }
 
+        @SubscribeEvent
+        public static void OnCurioChange2(ExCuriosAttributeTooltipEvent event) {
+//            ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(event.itemStack);
+//            for (var entry : modifierEntryHelper.getModifierEntriesB()) {
+//                for (var attrGether : entry.attriGether) {
+//
+//                }
+//            }
+        }
 
         @SubscribeEvent
         public static void RenderTooltips(ItemTooltipEvent event) {
@@ -142,7 +152,7 @@ public class AttributeCuriosHandle {
                 RenderCustomCuriosAttributes(event);
 
 
-        }
+        }else RenderCustomCuriosAttributes(event);
             }
 
 

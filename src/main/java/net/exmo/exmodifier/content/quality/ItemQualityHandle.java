@@ -10,6 +10,9 @@ import net.exmo.exmodifier.content.level.ItemLevelInstant;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.content.type.ExTypeHandle;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -42,7 +45,7 @@ public class ItemQualityHandle {
     public static class CommonEvent {
 
     }
-    public static void contaiff(ItemStack stack, int rarity , int refreshnumber, ModifierEntry.Type type)  {
+    public static void contaiff(ItemStack stack, int rarity , int refreshnumber, ItemType type)  {
         Exmodifier.LOGGER.debug("itemQualityRefresh: " + stack.getDescriptionId() + " " + type);
         WeightedUtil<String> weightedUtil = new WeightedUtil<>(
                 itemQualityMap.entrySet().stream()
@@ -97,16 +100,16 @@ public class ItemQualityHandle {
         if (  ItemQualityHelper.of(stack).of(stack).getQualityEntriesSize()>0) return;
         // List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
         boolean find = false;
-        for (ModifierEntry.Type type : Arrays.stream(ModifierEntry.Type.values()).filter(e -> e != ModifierEntry.Type.UNKNOWN).filter(e -> e != ModifierEntry.Type.ALL).toList()) {
-            if (ModifierEntry.containItemType(stack, type)) {
-                contaiff(stack,rarity,refreshnumber,type);
+        for (ItemType a : ExTypeHandle.values.values().stream().filter(e -> e != ExType.UNKNOWN.get()).filter(e -> e != ExType.ALL.get()).toList()) {
+            if (ModifierEntry.containItemType(stack, a)) {
+                contaiff(stack,rarity,refreshnumber,a);
                 find = true;
                 break;
             }
 
         }
         if (!find) {
-            contaiff(stack,rarity,refreshnumber, ModifierEntry.Type.ALL);
+            contaiff(stack,rarity,refreshnumber, ExType.ALL.get());
             Exmodifier.LOGGER.debug("ItemQualityRefresh: No Type And refresh ALL TYPE");
         }
     }

@@ -13,6 +13,7 @@ import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.slot.ModifierSlotHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.AttributeCuriosHandle;
@@ -277,6 +278,8 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                 g.pose().pushPose();
                 TooltipRenderUtil.renderTooltipBackground(g, tooltipX, tooltipY, extraWidth, extraHeight, 400);
                 g.pose().translate(0.0F, 0.0F, 400.0F);
+
+
                 extraComponents.forEach(component -> {
                     ClientTooltipComponent clientTooltipComponent = ClientTooltipComponent.create(component.getVisualOrderText());
                     clientTooltipComponent.renderText(font, finalTooltipX, tooltipY + line.get() * font.lineHeight, g.pose().last().pose(), g.bufferSource());
@@ -585,7 +588,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                     } else {
 
                         if (!stack.getTags().filter(e -> RefreshContainTagHandle.refreshContainTag.contains(e.toString())).toList().isEmpty() || RefreshContainItemHandle.refreshContainItem.contains(string) ||
-                        hasAttrOrBow(stack) &&ModifierEntry.getType(stack)!= ModifierEntry.Type.UNKNOWN&& stack.getItem().getMaxStackSize(stack) == 1) {
+                        hasAttrOrBow(stack) && !ModifierEntry.getType(stack).stream().filter(e -> e != ExType.UNKNOWN.get()).toList().isEmpty() && stack.getItem().getMaxStackSize(stack) == 1) {
                             if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
                                 ModifierSlotHelper modifierSlotHelper = ModifierSlotHelper.of(stack);
                                 if (Config.FirstAddSlots&&!modifierSlotHelper.validList()){

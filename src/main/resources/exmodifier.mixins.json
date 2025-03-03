@@ -16,7 +16,8 @@
     "ToolTipMixin"
   ],
   "client": [
-    "LanguageMixin"
+    "LanguageMixin",
+    "RenderItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1

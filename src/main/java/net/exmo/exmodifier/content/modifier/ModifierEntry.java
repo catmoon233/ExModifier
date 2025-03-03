@@ -3,6 +3,9 @@ package net.exmo.exmodifier.content.modifier;
 import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.content.type.ExTypeHandle;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.exmo.exmodifier.util.WeightedUtil;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 import static net.exmo.exmodifier.content.modifier.EntryItem.CommonEvent.df;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
+import static net.exmo.exmodifier.content.type.ExType.*;
 //@SerialClass
 public class ModifierEntry {
 
@@ -34,11 +38,12 @@ public class ModifierEntry {
     public float weight;
     public boolean cantSelect = false;
     public boolean isRandom = true;
+    public String icon ="";
     public boolean OnlyHasThisEntry = false;
     public String localDescription="";
     public int maxLevel=1;
     public List<String> Slots = new ArrayList<>();
-    public Type type=Type.UNKNOWN;
+    public  List<ItemType> types = new ArrayList<>();
     public List<String> specialTags = new ArrayList<>();
     public boolean isCuriosEntry =false;
     public float needFreshValue = 0;
@@ -86,7 +91,7 @@ public class ModifierEntry {
         if (!UnlessItemTags.isEmpty()){
             if (!unContainTag(stack))return false;
         }
-        if (!containItemType(stack, type)){
+        if (!containItemTypes(stack, types)){
             return  false;
         }
         return re;
@@ -111,12 +116,12 @@ public class ModifierEntry {
 
     public List<String> UnlessItemTags = new ArrayList<>();
     public List<String> UnlessItemIds = new ArrayList<>();
-    public static boolean containItemTypes(ItemStack item, List<Type> onlyTypes) {
-        for (Type type : onlyTypes){
-            if (containItemType(item, type)) return true;
-        }
-        return false;
-    }
+//    public static boolean containItemTypes(ItemStack item, List<ItemType> onlyTypes) {
+//        for (ItemType type : onlyTypes){
+//            if (containItemType(item, type)) return true;
+//        }
+//        return false;
+//    }
 
     @Override
     public String toString() {
@@ -124,11 +129,14 @@ public class ModifierEntry {
                 "setting=" + setting +
                 ", weight=" + weight +
                 ", cantSelect=" + cantSelect +
-                ", UnlessItemTags=" + UnlessItemTags +
-                ", UnlessItemIds=" + UnlessItemIds +
                 ", isRandom=" + isRandom +
+                ", icon='" + icon + '\'' +
                 ", OnlyHasThisEntry=" + OnlyHasThisEntry +
-                ", type=" + type +
+                ", localDescription='" + localDescription + '\'' +
+                ", maxLevel=" + maxLevel +
+                ", Slots=" + Slots +
+                ", type=" + types +
+                ", specialTags=" + specialTags +
                 ", isCuriosEntry=" + isCuriosEntry +
                 ", needFreshValue=" + needFreshValue +
                 ", curiosType='" + curiosType + '\'' +
@@ -136,76 +144,24 @@ public class ModifierEntry {
                 ", OnlyItems=" + OnlyItems +
                 ", OnlyWashItems=" + OnlyWashItems +
                 ", Commands=" + Commands +
-                ", Id='" + id + '\'' +
+                ", id='" + id + '\'' +
+                ", Expression='" + Expression + '\'' +
                 ", RandomNum=" + RandomNum +
                 ", attriGether=" + attriGether +
+                ", UnlessItemTags=" + UnlessItemTags +
+                ", UnlessItemIds=" + UnlessItemIds +
                 '}';
     }
 
-    // public double level;
-    public static enum Type {
-        CURIOS,
-        ALL,
-        UNKNOWN,
-        ATTACKABLE,
-        ARMOR,
-        WEAPON,
-        HELMET,
-        CHESTPLATE,
-        LEGGINGS,
-        BOOTS,
-        RANGED,
-        MISC,
-        FISHING_ROD,
-        TRIDENT,
-        CROSSBOW,
-        BOW,
-        SHIELD,
-        PICKAXE,
-        AXE,
-        SHOVEL,
-        HOE,
-        SWORD,
-        TRINKET,
-        HAND,
-        OFFHAND,
-        MAINHAND,
-       OFFHAND_HAND,
-        ;
 
-
-        public record values() {
-            public static final List<Type> values = List.of(Type.values());
+    public static boolean containItemTypes(ItemStack stack, List<ItemType> types) {
+        for (ItemType type : types) {
+            if (type.itemSelector().compare(stack))return true;
         }
-    }
-    public static boolean containItemType(ItemStack stack, Type type){
-        if (type == Type.ALL)return true;
-        if (type == Type.SHIELD) {
-            return stack.getUseAnimation() == UseAnim.BLOCK;
-        }
-        if (type == Type.BOW) return stack.getItem() instanceof BowItem || stack.getUseAnimation() == UseAnim.BOW;
-
-        if (type==Type.CROSSBOW) return stack.getItem() instanceof CrossbowItem;
-        if (type == Type.ARMOR){
-            return stack.getItem() instanceof ArmorItem;
-        }
-        if (type == Type.WEAPON){
-            return stack.getItem() instanceof SwordItem || stack.getItem() instanceof AxeItem;
-        }
-        if (type == Type.AXE    ){
-            return stack.getItem() instanceof AxeItem ;
-        }
-        if (type == Type.SWORD    ){
-            return stack.getItem() instanceof SwordItem ;
-        }
-        if (type== Type.ATTACKABLE){
-           if ( stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream()
-                    .mapToDouble(AttributeModifier::getAmount).sum() >0)
-               return true;
-        }
-        if (type ==Type.CURIOS)
-            return CuriosUtil.isCuriosItem2(stack);
         return false;
+    }
+    public static boolean containItemType(ItemStack stack, ItemType type) {
+        return type.itemSelector().compare(stack);
     }
     public static List<Component> GenerateTooltip(List<ModifierAttriGether> attriGethers, ItemStack itemStack) {
         List<Component> tooltips = new java.util.ArrayList<>();
@@ -215,10 +171,10 @@ public class ModifierEntry {
             if (attribute == null)continue;
             if (attributemodifier ==null)continue;
             //    if (modifierAttriGether.slot==null)continue;
-            EquipmentSlot slot = modifierAttriGether.slot;
-            if (modifierAttriGether.IsAutoEquipmentSlot){
-                slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
-            }
+//            EquipmentSlot slot = modifierAttriGether.slot;
+//            if (modifierAttriGether.IsAutoEquipmentSlot){
+//                slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
+//            }
             if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot))continue;
             //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
             //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
@@ -260,176 +216,150 @@ public class ModifierEntry {
         }
         return tooltips;
     }
-    public static EquipmentSlot TypeToEquipmentSlot(Type type) {
-        switch (type) {
-            case HAND, MAINHAND ,BOW,ATTACKABLE,AXE-> {
-                return EquipmentSlot.MAINHAND;
-            }
-            case OFFHAND, OFFHAND_HAND,SHIELD -> {
-                return EquipmentSlot.OFFHAND;
-            }
-            case CHESTPLATE -> {
-                return EquipmentSlot.CHEST;
-            }
-            case LEGGINGS -> {
-                return EquipmentSlot.LEGS;
-            }
-            case HELMET -> {
-                return EquipmentSlot.HEAD;
-            }
-            case BOOTS -> {
-                return EquipmentSlot.FEET;
-            }
-
+    public static EquipmentSlot TypeToEquipmentSlot(ItemType type) {
+        if (type.equals(HAND.get()) || type.equals(MAINHAND.get()) || type.equals(BOW.get()) || type.equals(ATTACKABLE.get()) || type.equals(AXE.get())) {
+            return EquipmentSlot.MAINHAND;
+        } else if (type.equals(OFFHAND.get()) || type.equals(SHIELD.get())) {
+            return EquipmentSlot.OFFHAND;
+        } else if (type.equals(CHESTPLATE.get())) {
+            return EquipmentSlot.CHEST;
+        } else if (type.equals(LEGGINGS.get())) {
+            return EquipmentSlot.LEGS;
+        } else if (type.equals(HELMET.get())) {
+            return EquipmentSlot.HEAD;
+        } else if (type.equals(BOOTS.get())) {
+            return EquipmentSlot.FEET;
         }
         return null;
     }
-    public static Type StringToType(String type) {
-        if (type.toLowerCase().startsWith("curios")) return Type.CURIOS;
-        for(var v : Type.values()){
-            if(v.toString().equalsIgnoreCase(type))return v;
+    public static ItemType StringToType(String type) {
+        if (type.toLowerCase().startsWith("curios")) return ExType.CURIOS.get();
+        for(var v : ExTypeHandle.values.values()){
+            if(v.name().equalsIgnoreCase(type))return v;
         }
         /*switch (type) {
             case "ALL" -> {
-                return Type.ALL;
+                return ExType.ALL;
             }
             case "ATTACKABLE" -> {
-                return Type.ATTACKABLE;
+                return ExType.ATTACKABLE;
             }
             case "ARMOR" -> {
-                return Type.ARMOR;
+                return ExType.ARMOR;
             }
             case "WEAPON" -> {
-                return Type.WEAPON;
+                return ExType.WEAPON;
             }
             case "HELMET" -> {
-                return Type.HELMET;
+                return ExType.HELMET;
             }
             case "CHESTPLATE" -> {
-                return Type.CHESTPLATE;
+                return ExType.CHESTPLATE;
             }
             case "LEGGINGS" -> {
-                return Type.LEGGINGS;
+                return ExType.LEGGINGS;
             }
             case "BOOTS" -> {
-                return Type.BOOTS;
+                return ExType.BOOTS;
             }
             case "RANGED" -> {
-                return Type.RANGED;
+                return ExType.RANGED;
             }
             case "MISC" -> {
-                return Type.MISC;
+                return ExType.MISC;
             }
             case "FISHING_ROD" -> {
-                return Type.FISHING_ROD;
+                return ExType.FISHING_ROD;
             }
             case "TRIDENT" -> {
-                return Type.TRIDENT;
+                return ExType.TRIDENT;
             }
             case "CROSSBOW" -> {
-                return Type.CROSSBOW;
+                return ExType.CROSSBOW;
             }
             case "BOW" -> {
-                return Type.BOW;
+                return ExType.BOW;
             }
             case "SHIELD" -> {
-                return Type.SHIELD;
+                return ExType.SHIELD;
             }
             case "PICKAXE" -> {
-                return Type.PICKAXE;
+                return ExType.PICKAXE;
             }
             case "AXE" -> {
-                return Type.AXE;
+                return ExType.AXE;
             }
             case "SHOVEL" -> {
-                return Type.SHOVEL;
+                return ExType.SHOVEL;
             }
             case "HOE" -> {
-                return Type.HOE;
+                return ExType.HOE;
             }
             case "SWORD" -> {
-                return Type.SWORD;
+                return ExType.SWORD;
             }
             case "TRINKET" -> {
-                return Type.TRINKET;
+                return ExType.TRINKET;
             }
             case "HAND" -> {
-                return Type.HAND;
+                return ExType.HAND;
             }
             case "OFFHAND" -> {
-                return Type.OFFHAND;
+                return ExType.OFFHAND;
             }
             case "MAINHAND" -> {
-                return Type.MAINHAND;
+                return ExType.MAINHAND;
             }
             case "OFFHAND_HAND" -> {
-                return Type.OFFHAND_HAND;
+                return ExType.OFFHAND_HAND;
             }
             default -> {
-                return Type.UNKNOWN;
+                return ExType.UNKNOWN;
             }
         }
         */
-        return Type.UNKNOWN;
+        return ExType.UNKNOWN.get();
     }
-    public static Type getType(ItemStack stack) {
-        if (ModifierHandle.hasChestConfig) {
-
-
-            if (stack.getItem() instanceof ArmorItem armorItem) {
-                if (armorItem.getEquipmentSlot() == EquipmentSlot.CHEST)
-                    return Type.CHESTPLATE;
+    public static List<ItemType> getType(ItemStack stack) {
+        List<ItemType> types = new ArrayList<>();
+        for (var v : ExTypeHandle.values.values()){
+            if (v.itemSelector().compare(stack)){
+                types.add(v);
             }
         }
-        if (ModifierHandle.hasLeggingsConfig) {
-            if (stack.getItem() instanceof ArmorItem armorItem) {
-                if (armorItem.getEquipmentSlot() == EquipmentSlot.LEGS)
-                    return Type.LEGGINGS;
-            }
-        }
-        if (ModifierHandle.hasBootsConfig) {
-            if (stack.getItem() instanceof ArmorItem armorItem) {
-                if (armorItem.getEquipmentSlot() == EquipmentSlot.FEET)
-                    return Type.BOOTS;
-            }
-        }
-        if (ModifierHandle.hasHelmetConfig) {
-            if (stack.getItem() instanceof ArmorItem armorItem) {
-                if (armorItem.getEquipmentSlot() == EquipmentSlot.HEAD)
-                    return Type.HELMET;
-            }
-        }
-
-        if (stack.getItem() instanceof AxeItem ){
-
-            return Type.AXE;
-        }
-        if (stack.getItem() instanceof BowItem ){
-            return Type.BOW;
-        }
-        if (stack.getItem() instanceof CrossbowItem ){
-            return Type.CROSSBOW;
-        }
-        if (stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream()
-                .mapToDouble(attributeModifier -> attributeModifier.getAmount()).sum() >0){
-            return Type.ATTACKABLE;
-        }
-        if (stack.getItem() instanceof SwordItem item){
-            return Type.SWORD;
-        }
-        if (stack.getItem().isEdible())
-            return Type.FISHING_ROD;
-        if (stack.getItem() instanceof ArmorItem)
-            return Type.ARMOR;
-        return Type.UNKNOWN;
+        return types;
+//        if (stack.getItem() instanceof ArmorItem armorItem) {
+//            switch (armorItem.getEquipmentSlot()) {
+//                case CHEST -> {
+//                    if (ModifierHandle.hasChestConfig) return CHESTPLATE.get();
+//                }
+//                case LEGS -> {
+//                    if (ModifierHandle.hasLeggingsConfig) return LEGGINGS.get();
+//                }
+//                case FEET -> {
+//                    if (ModifierHandle.hasBootsConfig) return BOOTS.get();
+//                }
+//                case HEAD -> {
+//                    if (ModifierHandle.hasHelmetConfig) return HELMET.get();
+//                }
+//            }
+//        }
+//        if (stack.getItem() instanceof AxeItem) return AXE.get();
+//        if (stack.getItem() instanceof BowItem) return BOW.get();
+//        if (stack.getItem() instanceof CrossbowItem) return ExType.CROSSBOW;
+//        if (stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream().mapToDouble(attributeModifier -> attributeModifier.getAmount()).sum() > 0) return ExType.ATTACKABLE;
+//        if (stack.getItem() instanceof SwordItem) return ExType.SWORD;
+//        if (stack.getItem().isEdible()) return ExType.FISHING_ROD;
+//        if (stack.getItem() instanceof ArmorItem) return ExType.ARMOR;
+//        return ExType.UNKNOWN;
     }
-    public static Type findTypeFormEntry(ModifierEntry modifierEntry)
+    public static ItemType findTypeFormEntry(ModifierEntry modifierEntry)
     {
-        for (Type type1 : Type.values())
+        for (ItemType type1 : ExTypeHandle.values.values())
         {
             if (type1.toString().substring(0,2).equals(modifierEntry.id.substring(0,2)))return type1;
         }
-        return Type.UNKNOWN;
+        return ExType.UNKNOWN.get();
     }
     public  boolean containTag(ItemStack stack){
         if (OnlyTags.isEmpty())return true;
@@ -458,20 +388,23 @@ public class ModifierEntry {
         return specialTags.contains(specialEffect.id());
     }
 
-    public List<Component> GenerateItemTooltip()
-    {
+    public List<Component> GenerateItemTooltip() {
         List<Component> list = new ArrayList<>();
         list.add(Component.translatable("modifier.entry.id").append(id));
         list.add(Component.translatable("modifier.entry.weight").append(String.valueOf(weight)));
         if (cantSelect) list.add(Component.translatable("modifier.entry.cant_select"));
         if (OnlyHasThisEntry) list.add(Component.translatable("modifier.entry.only_has_this_entry"));
-        if (needFreshValue!=0) list.add(Component.translatable("modifier.entry.need_fresh_value").append(String.valueOf(needFreshValue)));
-        if (!OnlyTags.isEmpty()) list.add(Component.translatable("modifier.entry.only_tags").append(String.join(",",OnlyTags)));
-        if (!OnlyItems.isEmpty()) list.add(Component.translatable("modifier.entry.only_items").append(String.join(",",OnlyItems)));
-        if (isRandom&&RandomNum!=0) list.add(Component.translatable("modifier.entry.is_random").append(String.valueOf(RandomNum)));
-        list.add(Component.translatable("modifier.entry.type").append(type.toString()));
+        if (needFreshValue != 0)
+            list.add(Component.translatable("modifier.entry.need_fresh_value").append(String.valueOf(needFreshValue)));
+        if (!OnlyTags.isEmpty())
+            list.add(Component.translatable("modifier.entry.only_tags").append(String.join(",", OnlyTags)));
+        if (!OnlyItems.isEmpty())
+            list.add(Component.translatable("modifier.entry.only_items").append(String.join(",", OnlyItems)));
+        if (isRandom && RandomNum != 0)
+            list.add(Component.translatable("modifier.entry.is_random").append(String.valueOf(RandomNum)));
+
+
         list.add(Component.translatable("modifier.entry.attribute_gather"));
-        //list.add(Component.literal("§7["));
         WeightedUtil<String> weightUtil = new WeightedUtil<>(
                 attriGether.stream()
                         .collect(Collectors.toMap(
@@ -480,26 +413,40 @@ public class ModifierEntry {
                                 (oldValue, newValue) -> newValue // 这里定义如何处理键冲突，例如这里选择保留旧值
                         ))
         );
-        for (ModifierAttriGether attriGether1 : attriGether){
-            list.add(Component.literal(" §7¦ §r").append(attriGether1.GenerateTooltip(isRandom)).append(isRandom ? " §9("+df.format(weightUtil.getProbability(attriGether1.getModifier().getName())*100)+"%)" : ""));
+        for (ModifierAttriGether attriGether1 : attriGether) {
+            list.add(Component.literal(" §7¦ §r").append(attriGether1.GenerateTooltip(isRandom)).append(isRandom ? " §9(" + df.format(weightUtil.getProbability(attriGether1.getModifier().getName()) * 100) + "%)" : ""));
         }
-        //list.add(Component.literal("§7]"));
         boolean hasSuit = false;
 
         for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(this))
                 .toList()) {
             if (suit.visible) {
-                if (!hasSuit){
+                if (!hasSuit) {
                     list.add(Component.translatable("modifier.entry.suit"));
-                 //   list.add(Component.literal("§7["));
-                    hasSuit=true;
+                    hasSuit = true;
                 }
                 list.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.entry.suit." + suit.id)));
             }
         }
-       // if (hasSuit)list.add(Component.literal("§7]"));
+        boolean hasTyoe = false;
 
+        if (types.size() > 1) {
 
+            for (
+                    ItemType type : types
+            ) {
+                if (!hasTyoe) {
+                    list.add(Component.translatable("modifier.entry.type"));
+                    hasTyoe = true;
+                }
+                list.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.entry.type").append(type.name())));
+
+            }
+
+        }else {
+            if (!types.isEmpty()) list.add(Component.translatable("modifier.entry.type").append(types.get(0).name()));
+
+        }
         return list;
     }
 }

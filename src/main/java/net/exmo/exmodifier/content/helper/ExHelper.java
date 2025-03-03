@@ -2,6 +2,7 @@ package net.exmo.exmodifier.content.helper;
 
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -36,18 +37,18 @@ public class ExHelper {
     public CompoundTag getMainNbt(){
         return nbt.getCompound(EXMO_NBT);
     }
-    public EquipmentSlot getEquipmentSlot(ItemStack itemStack){
+    public EquipmentSlot[] getEquipmentSlot(ItemStack itemStack){
         if (itemStack.getItem() instanceof ArmorItem armorItem){
-            return armorItem.getEquipmentSlot();
+            return new EquipmentSlot[]{armorItem.getEquipmentSlot()};
         }
-        Map<ModifierEntry.Type, EquipmentSlot> typeEquipmentSlotMap = typeSlotMap();
+        Map<ItemType, EquipmentSlot[]> typeEquipmentSlotMap = typeSlotMap();
 
 
-        for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeEquipmentSlotMap.entrySet()) {
-            ModifierEntry.Type type = entry.getKey();
-            EquipmentSlot slot = entry.getValue();
+        for (Map.Entry<ItemType, EquipmentSlot[]> entry : typeEquipmentSlotMap.entrySet()) {
+            ItemType type = entry.getKey();
+            EquipmentSlot[] slot = entry.getValue();
            if ( isValidForType(itemStack, type))return slot;
     }
-        return itemStack.getItem().getEquipmentSlot(itemStack);
+        return new EquipmentSlot[]{itemStack.getItem().getEquipmentSlot(itemStack)};
     }
 }

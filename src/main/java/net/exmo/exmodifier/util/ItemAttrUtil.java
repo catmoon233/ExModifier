@@ -153,7 +153,7 @@ public  class ItemAttrUtil {
         }
         return null;
     }
-    public static void addItemAttributeModifier(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
+    public static void addItemAttributeModifier(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot[] pSlot) {
         if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute)){
             Exmodifier.LOGGER.Logger.error("Attribute " + pAttribute + " does not exist");
             return;
@@ -315,7 +315,7 @@ public  class ItemAttrUtil {
     public static void addItemAttributeModifier2(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
         try {
             if (hasDifferentAttributeValue(itemStack, pAttribute, pModifier, pSlot)) {
-                AttributeModifier currentModifier = getAttributeModifierFromCompoundTag(getAttributeModifierCompoundTag(pAttribute, pModifier, pSlot));
+                AttributeModifier currentModifier = getAttributeModifierFromCompoundTag(getAttributeModifierCompoundTag(pAttribute, pModifier, new EquipmentSlot[]{pSlot}));
 
                 if (currentModifier != null) {
                     double oldAmount = currentModifier.getAmount();
@@ -324,13 +324,13 @@ public  class ItemAttrUtil {
 
                     AttributeModifier updatedModifier = new AttributeModifier(pModifier.getName(), updatedAmount, pModifier.getOperation());
                     removeAttributeModifier(itemStack, pAttribute, currentModifier, pSlot);
-                    addItemAttributeModifier(itemStack, pAttribute, updatedModifier, pSlot);
+                    addItemAttributeModifier(itemStack, pAttribute, updatedModifier,new EquipmentSlot[]{pSlot});
                 } else {
                     // 如果getAttributeModifierFromCompoundTag返回null，这里可以记录日志或处理异常
                     System.err.println("Failed to retrieve the current attribute modifier.");
                 }
             } else {
-                addItemAttributeModifier(itemStack, pAttribute, pModifier, pSlot);
+                addItemAttributeModifier(itemStack, pAttribute, pModifier, new EquipmentSlot[]{pSlot});
             }
         } catch (Exception e) {
             // 添加了基本的异常处理，但在实际应用中，应更详细地处理不同类型的异常并恢复到安全状态
@@ -344,13 +344,15 @@ public  class ItemAttrUtil {
     {
         attmap.put(name,attgroup);
     }
-    public static CompoundTag getAttributeModifierCompoundTag(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
+    public static CompoundTag getAttributeModifierCompoundTag(Attribute attribute, AttributeModifier modifier, EquipmentSlot[] slot) {
         if (modifier==null)return null;
         if (attribute==null)return null;
         CompoundTag compoundtag = modifier.save();
-        compoundtag.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
-        if (slot != null) {
-            compoundtag.putString("Slot", slot.getName());
+        for (EquipmentSlot equipmentSlot : slot) {
+            compoundtag.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
+            if (slot != null) {
+                compoundtag.putString("Slot", equipmentSlot.getName());
+            }
         }
         return compoundtag;
     }

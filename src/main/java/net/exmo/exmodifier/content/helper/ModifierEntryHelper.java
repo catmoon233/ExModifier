@@ -6,6 +6,7 @@ import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.ModifierInstant;
 
+import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.minecraft.nbt.CompoundTag;
@@ -319,7 +320,7 @@ public class ModifierEntryHelper extends ExHelper {
         public static void clearEntry_old(ItemStack stack){
             if (stack.getTag()==null)return;
             if (stack.getTag().getInt("exmodifier_armor_modifier_applied")==0)return;
-            ModifierEntry.Type type = ModifierEntry.getType(stack);
+          //  List<ItemType> types = ModifierEntry.getType(stack);
             List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
             List<ModifierEntry> hasAttriGether = getEntrysFromItemStack_old(stack);
             for (int i = 0; i < hasAttriGether.size(); i++)
@@ -328,7 +329,8 @@ public class ModifierEntryHelper extends ExHelper {
                 for (ModifierAttriGether modifierAttriGether1 : modifierAttriGether.attriGether) {
                     EquipmentSlot slot = modifierAttriGether1.slot;
                     if (modifierAttriGether1.IsAutoEquipmentSlot){
-                        slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(stack));
+                        List<ItemType> type = ModifierEntry.getType(stack);
+                        if (!type.isEmpty()) slot = ModifierEntry.TypeToEquipmentSlot(type.get(0));
                     }
                     if (curiosType.isEmpty()) ItemAttrUtil.removeAttributeModifierNoAmout(stack, modifierAttriGether1.getAttribute(), modifierAttriGether1.getModifier(), slot);
                     else {

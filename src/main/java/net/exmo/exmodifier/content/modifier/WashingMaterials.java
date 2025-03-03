@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.modifier;
 
+import net.exmo.exmodifier.content.type.ItemType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
@@ -13,7 +14,7 @@ public class WashingMaterials {
     public Item item;
     public int randomLevelSystemCount = 0;
     public int rarity;
-    public List<ModifierEntry.Type> OnlyTypes = new ArrayList<>();
+    public List<ItemType> OnlyTypes = new ArrayList<>();
     public double CostExp =0;
     public int NeedCount =1;
     public  boolean containTag(ItemStack stack){

@@ -8,6 +8,9 @@ import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.content.type.ExTypeHandle;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.events.ExAddSuitAttrigetherEvent;
 import net.exmo.exmodifier.events.ExAddSuitAttrigethersEvent;
 import net.exmo.exmodifier.network.ExModifiervaV;
@@ -49,7 +52,7 @@ public class ExSuitHandle {
     public static List<ExSuit> FindExSuit(String id){
         List<ExSuit> exSuits = new ArrayList<>();
         for (ExSuit exSuit : LoadExSuit.values()){
-            if (exSuit.type == ModifierEntry.Type.ALL) {
+            if (exSuit.type == ExType.ALL.get()) {
                 if (exSuit.entry.stream().anyMatch(entry -> entry.id.substring(2).equals(id.substring(2)))) {
                     Exmodifier.LOGGER.debug("Found About ExSuit: " + exSuit.id);
                     exSuits.add(exSuit);
@@ -146,9 +149,8 @@ public class ExSuitHandle {
         }
         JsonObject itemObject = itemElement.getAsJsonObject();
         ExSuit exSuit = new ExSuit();
-        if (moconfig.type== ModifierEntry.Type.ALL){
-            List<ModifierEntry.Type> types = List.of(ModifierEntry.Type.values());
-            for (ModifierEntry.Type type : types){
+        if (moconfig.type== ExType.ALL.get()){
+            for (ItemType type : ExTypeHandle.values.values()){
                 String key = type.toString().substring(0, 2) + entry.getKey();
                 // Exmodifier.LOGGER.debug("匹配中: "+key);
                 ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(key);
@@ -167,7 +169,7 @@ public class ExSuitHandle {
 
         }
         if (exSuit.entry.isEmpty()) {
-            if (moconfig.type!= ModifierEntry.Type.ALL) {
+            if (moconfig.type!= ExType.ALL.get()) {
                 Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0, 2) + entry.getKey());
             }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found any one about: " + entry.getKey());
             return;

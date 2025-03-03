@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.level;
 
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
@@ -11,7 +12,7 @@ import java.util.List;
 public class ItemLevel
 {
     public String id ;
-    public ModifierEntry.Type type;
+    public ItemType type;
     public boolean isCuriosEntry;
 
     public List<String> getUnlessItemTags() {
@@ -144,11 +145,11 @@ public class ItemLevel
         this.id = id;
     }
 
-    public ModifierEntry.Type getType() {
+    public ItemType getType() {
         return type;
     }
 
-    public void setType(ModifierEntry.Type type) {
+    public void setType(ItemType type) {
         this.type = type;
     }
 

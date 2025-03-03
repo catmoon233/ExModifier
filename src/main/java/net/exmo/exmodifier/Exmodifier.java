@@ -4,12 +4,17 @@ import com.mojang.logging.LogUtils;
 import net.exmo.exmodifier.compat.compat.apoth.ApothCompat;
 import net.exmo.exmodifier.content.client.EntryItemRender;
 import net.exmo.exmodifier.content.modifier.*;
+import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.content.type.ExTypeHandle;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.init.RegisterOther;
 import net.exmo.exmodifier.network.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -42,7 +47,9 @@ import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -164,46 +171,54 @@ public class Exmodifier {
 //        LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
     }
 
-    public void AddToTab(BuildCreativeModeTabContentsEvent event){
+    private void AddToTab(BuildCreativeModeTabContentsEvent event){
         if (event.getTabKey()== CreativeModeTabs.FUNCTIONAL_BLOCKS){
             event.accept(RegisterOther.ItemAbout.Refresh_Table);
             event.accept(RegisterOther.ItemAbout.Embedded_Table);
         }
         if (event.getTab() == ExModifierTab.get()) {
-            Map<String,WeightedUtil<String>> weights = new HashMap<>();
-
-            for (ModifierEntry.Type type : ModifierEntry.Type.values()){
-                weights.put(type.toString(),new WeightedUtil<String>(modifierEntryMap.entrySet().stream().filter(e -> {
-                    if (e.getValue().type == type){
-                     //   modifierEntryMap1.remove(e.getKey());
-                        return true;
-                    }
-                    return  false;
-                }).collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))));
-
-            }
-            modifierEntryMap.forEach((entry, modifierEntry) -> {
-                ItemStack stack = ENTRY_ITEM.get().getDefaultInstance();
-                stack.getOrCreateTag().putString("modifier_id", entry);
-                stack.getOrCreateTag().putString("modifier_type",modifierEntry.type.toString());
-                stack.getOrCreateTag().putDouble("modifier_possibility",weights.get(modifierEntry.type.toString()).getProbability(entry));
-                if (modifierEntry.maxLevel<=1){
-                    stack.getOrCreateTag().putInt("modifier_level",1);
-                    event.accept(stack);
-                }else {
-                    for (int i = 1; i <= modifierEntry.maxLevel; i++){
-                        ItemStack stack1 = stack.copy();
-                        stack1.getOrCreateTag().putInt("modifier_level",i);
-                        event.accept(stack1);
-                    }
-                }
-                // stack.setHoverName(Component.translatable("modifier.entry." + entry));
-
-            });
-
-
-            }
+            List<ItemStack> modifierItemStacks = generateModifierItemStacks();
+            modifierItemStacks.forEach(event::accept);
         }
+    }
+
+    // 新增方法：生成 Modifier 的 ItemStack 列表
+    public static List<ItemStack> generateModifierItemStacks() {
+        List<ItemStack> itemStacks = new ArrayList<>();
+        Map<String, WeightedUtil<String>> weights = new HashMap<>();
+
+        for (ItemType type : ExTypeHandle.values.values()) {
+            weights.put(type.toString(), new WeightedUtil<>(modifierEntryMap.entrySet().stream().filter(e -> {
+                return e.getValue().types.contains(type);
+            }).collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))));
+        }
+
+        modifierEntryMap.forEach((entry, modifierEntry) -> {
+            ItemStack stack = ENTRY_ITEM.get().getDefaultInstance();
+            stack.getOrCreateTag().putString("modifier_id", entry);
+            ListTag listTag = new ListTag();
+            for (ItemType type : modifierEntry.types){
+                listTag.add(StringTag.valueOf(type.name()));
+            }
+            stack.getOrCreateTag().put("modifier_types", listTag);
+
+            double totalWeight = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.toString()).getProbability(entry)).sum();
+            double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.toString()).getProbability(entry) / totalWeight).sum();
+            stack.getOrCreateTag().putDouble("modifier_possibility", probability);
+            if (modifierEntry.maxLevel <= 1) {
+                stack.getOrCreateTag().putInt("modifier_level", 1);
+                itemStacks.add(stack);
+            } else {
+                for (int i = 1; i <= modifierEntry.maxLevel; i++) {
+                    ItemStack stack1 = stack.copy();
+                    stack1.getOrCreateTag().putInt("modifier_level", i);
+                    itemStacks.add(stack1);
+                }
+            }
+        });
+
+        return itemStacks;
+    }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
         // Some example code to dispatch IMC to another mod

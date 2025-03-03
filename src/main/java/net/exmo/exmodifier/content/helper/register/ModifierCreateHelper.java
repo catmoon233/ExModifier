@@ -3,18 +3,20 @@ package net.exmo.exmodifier.content.helper.register;
 import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.type.ItemType;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class ModifierCreateHelper {
     public ModifierEntry modifierEntry;
     private int index=0;
-  public static ModifierCreateHelper CreateNew(String id,ModifierEntry.Type type){
+  public static ModifierCreateHelper CreateNew(String id,ItemType... type){
     return new ModifierCreateHelper(id, type);
   }
-  public  ModifierCreateHelper (String id,ModifierEntry.Type type){
-    this.modifierEntry = new ModifierEntry(type.toString().substring(0,2)+ id);
-    this.modifierEntry.type = type;
+  public  ModifierCreateHelper (String id, ItemType... type){
+    this.modifierEntry = new ModifierEntry(Arrays.toString(type).substring(0,2)+ id);
+    this.modifierEntry.types.addAll(List.of(type));
 
   }
   public ModifierCreateHelper IsAutoEquipment(boolean isAutoEquipment){
@@ -29,8 +31,8 @@ public class ModifierCreateHelper {
     modifierEntry.specialTags.add(effect);
     return this;
   }
-  public ModifierCreateHelper type(ModifierEntry.Type type){
-    modifierEntry.type = type;
+  public ModifierCreateHelper type(List<ItemType> type){
+    modifierEntry.types = type;
     this.modifierEntry.id = type.toString().substring(0,2)+ modifierEntry.id;
     return this;
   }
@@ -47,7 +49,10 @@ public class ModifierCreateHelper {
     return this;
   }
 
-
+public ModifierCreateHelper setTypes(List<ItemType> type){
+    modifierEntry.types = type;
+    return this;
+}
 
   public void clear(){
     this.modifierEntry = null;

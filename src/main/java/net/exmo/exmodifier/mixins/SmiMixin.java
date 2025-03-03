@@ -187,7 +187,7 @@ public abstract class SmiMixin extends ItemCombinerMenu {
         if (!isFound) {
             if (WashItem.getItem() instanceof EntryItem) {
                 ItemStack input = item.copy();
-                if ( ModifierEntry.containItemType(item, ModifierEntry.StringToType(WashItem.getOrCreateTag().getString("modifier_type")))) {
+                if ( ModifierEntry.containItemType(item,(ModifierEntry.StringToType(WashItem.getOrCreateTag().getString("modifier_type"))))) {
 
                     //  Exmodifier.LOGGER.debug("WashItem is EntryItem");
                     CompoundTag orCreateTag = input.getOrCreateTag();

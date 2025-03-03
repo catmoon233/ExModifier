@@ -10,6 +10,9 @@ import net.exmo.exmodifier.content.helper.ItemLevelHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.content.type.ExTypeHandle;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.events.ExItemUpEvent;
 import net.exmo.exmodifier.events.ExLevelRegistryEvent;
 import net.exmo.exmodifier.util.*;
@@ -58,7 +61,11 @@ public class ItemLevelHandle {
                     if (stack.getItem() instanceof ArmorItem armorItem){
                         slot = armorItem.getEquipmentSlot();
                     }
-                    else slot =ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(stack));
+                    else {
+                        List<ItemType> type = ModifierEntry.getType(stack);
+                        if (!type.isEmpty())
+                        slot =ModifierEntry.TypeToEquipmentSlot(type.get(0));
+                    }
                 }
                 ItemAttrUtil.removeAttributeModifierNoAmout(stack, attriGether.getAttribute(), attriGether.getModifier(), slot);
                 dynamicExpressionEvaluator.setVariable("level", event.nowLevel);
@@ -85,7 +92,7 @@ public class ItemLevelHandle {
         ItemLevels.put(itemLevel.getId(), itemLevel);
         Exmodifier.LOGGER.debug("Registry ItemLevel: " + itemLevel.id);
     }
-    public static void contaiff(ItemStack stack, int rarity , int refreshnumber, ModifierEntry.Type type)  {
+    public static void contaiff(ItemStack stack, int rarity , int refreshnumber, ItemType type)  {
         Exmodifier.LOGGER.debug("ItemLevelRefresh: " + stack.getDescriptionId() + " " + type);
         WeightedUtil<String> weightedUtil = new WeightedUtil<>(
                 ItemLevels.entrySet().stream()
@@ -126,8 +133,8 @@ public class ItemLevelHandle {
         if (  ItemLevelHelper.of(stack).getItemLevelsSize()>0) return;
         // List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
         boolean find = false;
-        for (ModifierEntry.Type type : Arrays.stream(ModifierEntry.Type.values()).filter(e -> e != ModifierEntry.Type.UNKNOWN).filter(e -> e != ModifierEntry.Type.ALL).toList()) {
-            if (ModifierEntry.containItemType(stack, type)) {
+        for (ItemType type : ExTypeHandle.values.values().stream().filter(e -> e != ExType.UNKNOWN.get()).filter(e -> e != ExType.ALL.get()).toList()) {
+            if (ModifierEntry.containItemType(stack,type)) {
                 contaiff(stack,rarity,refreshnumber,type);
                 find = true;
                 break;
@@ -135,7 +142,7 @@ public class ItemLevelHandle {
 
         }
         if (!find) {
-            contaiff(stack,rarity,refreshnumber, ModifierEntry.Type.ALL);
+            contaiff(stack,rarity,refreshnumber, ExType.ALL.get());
             Exmodifier.LOGGER.debug("ItemLevelRefresh: No Type And refresh ALL TYPE");
         }
     }
@@ -328,7 +335,7 @@ public class ItemLevelHandle {
 
 
         itemLevel.setType(itemObject.has("type") ? ModifierEntry.StringToType(itemObject.get("type").getAsString()) : moconfig.type);
-        itemLevel.setId(itemLevel.getType().toString().substring(0,2)+entry.getKey());
+        itemLevel.setId(itemLevel.getType().name().substring(0,2)+entry.getKey());
         if (!moconfig.CuriosType.isEmpty())itemLevel.curiosType = moconfig.CuriosType;
         if (itemLevel.type.toString().toUpperCase().startsWith("CURIOS")){
             itemLevel.isCuriosEntry = true;

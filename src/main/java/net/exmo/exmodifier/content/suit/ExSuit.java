@@ -3,6 +3,8 @@ package net.exmo.exmodifier.content.suit;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.util.AttriGetherPlus;
 import net.minecraft.world.effect.MobEffectInstance;
 
@@ -11,7 +13,7 @@ import java.util.*;
 public class ExSuit {
     public Map<String,String> setting = new java.util.HashMap<>();
     public boolean hasMobEffect = false;
-    public ModifierEntry.Type type;
+    public ItemType type;
     public String id;
     public String LocalDescription ="";
 	public Map<Integer,List<String>> commands = new HashMap<>();

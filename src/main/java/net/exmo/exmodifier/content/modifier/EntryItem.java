@@ -2,7 +2,9 @@ package net.exmo.exmodifier.content.modifier;
 
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -32,10 +34,14 @@ public class EntryItem extends Item {
         if (stack.getTag() == null) return 1;
         return stack.getTag().getInt("modifier_level");
     }
+    public static double getModifierChance(ItemStack stack) {
+        if (stack.getTag() == null) return 0;
+        return stack.getTag().getDouble("modifier_possibility")* 100;
+    }
 
     @Mod.EventBusSubscriber
     public static class CommonEvent {
-        public static final DecimalFormat df = new DecimalFormat("#.###");
+        public static final DecimalFormat df = new DecimalFormat("#.####");
 
 
         @SubscribeEvent
@@ -54,7 +60,7 @@ public class EntryItem extends Item {
                     if (modifierId.length() <= 2) return;
                     lc.add(Component.translatable("modifier.entry." + modifierId.substring(2)));
                     if (!Screen.hasShiftDown()) {
-                        String modifierType = stack.getTag().getString("modifier_type");
+                        ListTag types = stack.getTag().getList("modifier_types",8);
                         double possibility = stack.getTag().getDouble("modifier_possibility") * 100;
                         lc.add(Component.translatable("modifier.entry.possibility").append(df.format(possibility)).append("%"));
                         lc.add(Component.translatable("modifier.entry.level").append(String.valueOf(getModifierLevel(stack))));
@@ -73,8 +79,24 @@ public class EntryItem extends Item {
                                 }
                             }
                         }
-                            if (!modifierType.isEmpty())
-                                lc.add(Component.translatable("modifier.entry.type").append(Component.translatable(modifierType)));
+                        boolean hasTyoe = false;
+                        if (types.size() > 1) {
+
+                            for (
+                                    var type : types
+                            ) {
+                                if (!hasTyoe) {
+                                    lc.add(Component.translatable("modifier.entry.type"));
+                                    hasTyoe = true;
+                                }
+                                lc.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.entry.type").append(type.getAsString())));
+
+                            }
+
+                        }else {
+                            if (!types.isEmpty()) lc.add(Component.translatable("modifier.entry.type").append(types.get(0).getAsString()));
+
+                        }
                             lc.add(Component.literal(" "));
                             lc.add(Component.translatable("modifier.entry.look_more_shift"));
                         } else {

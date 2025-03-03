@@ -10,12 +10,15 @@ import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.content.type.ExTypeHandle;
+import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.network.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.AttrGether;
+import net.exmo.exmodifier.content.type.ExType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -190,7 +193,9 @@ public class ModifierHandle {
 //                    if (modifierAttriGether.IsAutoEquipmentSlot){
 //                        slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
 //                    }
-                    if (!ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot) && CuriosUtil.getAttributeModifiersAffix(itemStack).stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(attributemodifier.getName())))continue;
+                    if (
+                        //    (CuriosUtil.isCuriosItem(itemStack)&&CuriosUtil.getAttributeModifiersAffix(itemStack).contains(modifierAttriGether.toAttriGether()))||
+                            !ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot) && CuriosUtil.getAttributeModifiersAffix(itemStack).stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(attributemodifier.getName())))continue;
                     //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
                     //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
 //                    attributemodifier = ItemAttrUtil.getAttributeModifierFromNamed(attributemodifier.getName(),itemStack);
@@ -296,7 +301,7 @@ public class ModifierHandle {
 
         //    applyModifiersCurios(stack, finalAttriGethers, slots);
         }
-        public static void RandomEntry(ItemStack stack, WeightedUtil<String> weightedUtil, EquipmentSlot slot, int refreshments) {
+        public static void RandomEntry(ItemStack stack, WeightedUtil<String> weightedUtil, EquipmentSlot[] slot, int refreshments) {
             int numAddedModifiers = 0;
 
             List<ModifierAttriGether> finalAttriGethers = new ArrayList<>();
@@ -355,10 +360,10 @@ public class ModifierHandle {
             boolean over = false;
 
 
-            Map<ModifierEntry.Type, EquipmentSlot> typeEquipmentSlotMap = typeSlotMap();
-            for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeEquipmentSlotMap.entrySet()) {
-                ModifierEntry.Type type = entry.getKey();
-                EquipmentSlot slot = entry.getValue();
+            Map<ItemType, EquipmentSlot[]> typeEquipmentSlotMap = typeSlotMap();
+            for (Map.Entry<ItemType, EquipmentSlot[]> entry : typeEquipmentSlotMap.entrySet()) {
+                ItemType type = entry.getKey();
+                EquipmentSlot[] slot = entry.getValue();
 
                 if (!over && isValidForType(stack, type)) {
                     WeightedUtil<String> weightedUtil = new WeightedUtil<>(
@@ -368,7 +373,7 @@ public class ModifierHandle {
                                         boolean hasWashItem = materialsList.stream()
                                                 .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
 
-                                        return modifier.type == type &&
+                                        return modifier.types.contains(type) &&
                                                 (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
                                                 (modifier.getUnlessItemIds().isEmpty() || !modifier.getUnlessItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
                                                 !modifier.cantSelect &&
@@ -387,8 +392,8 @@ public class ModifierHandle {
 
                     if (!weightedUtil.weights.isEmpty()) {
                         weightedUtil.increaseWeightsByRarity(rarity);
-                        if (entry.getKey() == ModifierEntry.Type.ARMOR) {  // ARMOR type, set the slot based on the item
-                            slot = ((ArmorItem) stack.getItem()).getEquipmentSlot();
+                        if (entry.getKey() == ExType.ARMOR.get()) {  // ARMOR type, set the slot based on the item
+                            slot = new EquipmentSlot[]{((ArmorItem) stack.getItem()).getEquipmentSlot()};
                         }
                         LOGGER.debug("RandomEntry: " + type + " " + slot);
                         RandomEntry(stack, weightedUtil, slot, refreshnumber);
@@ -400,22 +405,29 @@ public class ModifierHandle {
             }
         }
 
-        public static Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap(){var a = new HashMap<>( Map.of(
-                    ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
-                    ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
-                    ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
-                    ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
-                    ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
-                    ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
-                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
-                    ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
+        public static Map<ItemType, EquipmentSlot[]> typeSlotMap() {
+            var a = new HashMap<ItemType, EquipmentSlot[]>(Map.of(
+                    ExType.HELMET.get(), new EquipmentSlot[] { EquipmentSlot.HEAD },
+                    ExType.CHESTPLATE.get(), new EquipmentSlot[] { EquipmentSlot.CHEST },
+                    ExType.BOOTS.get(), new EquipmentSlot[] { EquipmentSlot.FEET },
+                    ExType.LEGGINGS.get(), new EquipmentSlot[] { EquipmentSlot.LEGS },
+                    ExType.ARMOR.get(), new EquipmentSlot[] { EquipmentSlot.CHEST }, // For ARMOR type, dynamically set the slot based on the item
+                    ExType.SHIELD.get(), new EquipmentSlot[] { EquipmentSlot.OFFHAND },
+                    ExType.BOW.get(), new EquipmentSlot[] { EquipmentSlot.MAINHAND },
+                    ExType.SWORD.get(), new EquipmentSlot[] { EquipmentSlot.MAINHAND },
+                    ExType.ATTACKABLE.get(), new EquipmentSlot[] { EquipmentSlot.MAINHAND },
+                    ExType.AXE.get(), new EquipmentSlot[] { EquipmentSlot.MAINHAND }
             ));
-            a.put(ModifierEntry.Type.CROSSBOW, EquipmentSlot.MAINHAND);
-            a.put(ModifierEntry.Type.UNKNOWN, EquipmentSlot.MAINHAND);
+            a.put(ExType.CROSSBOW.get(), new EquipmentSlot[] { EquipmentSlot.MAINHAND });
+            a.put(ExType.PICKAXE.get(), new EquipmentSlot[] { EquipmentSlot.MAINHAND });
+            a.put(ExType.UNKNOWN.get(), new EquipmentSlot[] { EquipmentSlot.MAINHAND });
+
+            for (var itemType : ExTypeHandle.values.values()) {
+                a.put(itemType, itemType.getEquipmentSlot()); // 包装为数组
+            }
             return a;
-    };
+        }
+
 
 
 
@@ -534,26 +546,26 @@ public class ModifierHandle {
 //                weightedUtilmap.put(modifierEntry.getId(), 1.0f);
 //            }
 //
-//            Map<ModifierEntry.Type, EquipmentSlot> typeSlotMap =new  HashMap<>( Map.of(
-//                    ModifierEntry.Type.HELMET, EquipmentSlot.HEAD,
-//                    ModifierEntry.Type.CHESTPLATE, EquipmentSlot.CHEST,
-//                    ModifierEntry.Type.BOOTS, EquipmentSlot.FEET,
-//                    ModifierEntry.Type.LEGGINGS, EquipmentSlot.LEGS,
-//                    ModifierEntry.Type.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
-//                    ModifierEntry.Type.SHIELD, EquipmentSlot.OFFHAND,
-//                    ModifierEntry.Type.BOW, EquipmentSlot.MAINHAND,
-//                    ModifierEntry.Type.SWORD, EquipmentSlot.MAINHAND,
-//                    ModifierEntry.Type.ATTACKABLE, EquipmentSlot.MAINHAND,
-//                    ModifierEntry.Type.AXE, EquipmentSlot.MAINHAND
+//            Map<ExType, EquipmentSlot> typeSlotMap =new  HashMap<>( Map.of(
+//                    ExType.HELMET, EquipmentSlot.HEAD,
+//                    ExType.CHESTPLATE, EquipmentSlot.CHEST,
+//                    ExType.BOOTS, EquipmentSlot.FEET,
+//                    ExType.LEGGINGS, EquipmentSlot.LEGS,
+//                    ExType.ARMOR, EquipmentSlot.CHEST,  // For ARMOR type, we'll dynamically set the slot based on the item
+//                    ExType.SHIELD, EquipmentSlot.OFFHAND,
+//                    ExType.BOW, EquipmentSlot.MAINHAND,
+//                    ExType.SWORD, EquipmentSlot.MAINHAND,
+//                    ExType.ATTACKABLE, EquipmentSlot.MAINHAND,
+//                    ExType.AXE, EquipmentSlot.MAINHAND
 //            ));
 //
-//            for (Map.Entry<ModifierEntry.Type, EquipmentSlot> entry : typeSlotMap.entrySet()) {
-//                ModifierEntry.Type type = entry.getKey();
+//            for (Map.Entry<ExType, EquipmentSlot> entry : typeSlotMap.entrySet()) {
+//                ExType type = entry.getKey();
 //                EquipmentSlot slot = entry.getValue();
 //                if (!over && isValidForType(itemStack, type)) {
 //
 //
-//                    if (entry.getKey() == ModifierEntry.Type.ARMOR) {  // ARMOR type, set the slot based on the item
+//                    if (entry.getKey() == ExType.ARMOR) {  // ARMOR type, set the slot based on the item
 //                        slot = ((ArmorItem) itemStack.getItem()).getEquipmentSlot();
 //                    }
 //                    LOGGER.debug("RandomEntry: " + type + " " + slot);
@@ -596,9 +608,9 @@ public class ModifierHandle {
 //                CuriosApi.getCuriosHelper().addSlotModifier(stack,slotInfo.identifie,slotInfo.name,slotInfo.uuid,slotInfo.amount,slotInfo.operation,slotInfo.slot);
 //            }
         }
-        public static void applyModifiers(ItemStack stack, List<ModifierAttriGether> attriGethers, EquipmentSlot slot,ModifierInstant modifierInstant) {
+        public static void applyModifiers(ItemStack stack, List<ModifierAttriGether> attriGethers, EquipmentSlot[] slot,ModifierInstant modifierInstant) {
             for (ModifierAttriGether attriGether : attriGethers) {
-                EquipmentSlot applicableSlot = attriGether.IsAutoEquipmentSlot ? slot : attriGether.slot;
+                EquipmentSlot[] applicableSlot = attriGether.IsAutoEquipmentSlot ? slot : new EquipmentSlot[]{attriGether.slot};
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
                     attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName()+stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
@@ -624,7 +636,7 @@ public class ModifierHandle {
                     modifierEntryMap.entrySet().stream()
                             .filter(e -> {
                                 var modifier = e.getValue();
-                                return ModifierEntry.Type.CURIOS == modifier.type &&
+                                return modifier.types.contains(ExType.CURIOS.get()) &&
                                         (curiosType.contains(modifier.curiosType) || "ALL".equals(modifier.curiosType)) &&
                                         (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
                                         !modifier.cantSelect &&
@@ -647,23 +659,24 @@ public class ModifierHandle {
 
 
 
-        public static boolean isValidForType(ItemStack stack, ModifierEntry.Type type) {
+        public static boolean isValidForType(ItemStack stack, ItemType type) {
 
-            if (type == ModifierEntry.Type.HELMET) return hasHelmetConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.HEAD;
-            if (type == ModifierEntry.Type.CHESTPLATE) return hasChestConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.CHEST;
-            if (type == ModifierEntry.Type.BOOTS) return hasBootsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.FEET;
-            if (type == ModifierEntry.Type.LEGGINGS) return hasLeggingsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.LEGS;
-            if (type == ModifierEntry.Type.ARMOR) return stack.getItem() instanceof ArmorItem;
-            if (type == ModifierEntry.Type.BOW) return stack.getItem() instanceof BowItem || stack.getUseAnimation() == UseAnim.BOW;
-            if (type == ModifierEntry.Type.CROSSBOW) return stack.getItem() instanceof CrossbowItem;
-
-            if (type == ModifierEntry.Type.SHIELD) return stack.getUseAnimation() == UseAnim.BLOCK;
-            if (type == ModifierEntry.Type.SWORD) return hasSwordConfig && stack.getItem() instanceof SwordItem;
-            if (type == ModifierEntry.Type.ATTACKABLE) return stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream().mapToDouble(AttributeModifier::getAmount).sum() > 0;
-            if (type == ModifierEntry.Type.AXE) return stack.getItem() instanceof AxeItem;
-            if (type == ModifierEntry.Type.UNKNOWN) return !stack.getTags().filter(e -> RefreshContainTagHandle.refreshContainTag.contains(e.toString())).toList().isEmpty() || RefreshContainItemHandle.refreshContainItem.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()) ;
-
-            return false;
+                    return type.itemSelector().compare(stack);
+//            if (type == ExType.HELMET) return hasHelmetConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.HEAD;
+//            if (type == ExType.CHESTPLATE) return hasChestConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.CHEST;
+//            if (type == ExType.BOOTS) return hasBootsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.FEET;
+//            if (type == ExType.LEGGINGS) return hasLeggingsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.LEGS;
+//            if (type == ExType.ARMOR) return stack.getItem() instanceof ArmorItem;
+//            if (type == ExType.BOW) return stack.getItem() instanceof BowItem || stack.getUseAnimation() == UseAnim.BOW;
+//            if (type == ExType.CROSSBOW) return stack.getItem() instanceof CrossbowItem;
+//
+//            if (type == ExType.SHIELD) return stack.getUseAnimation() == UseAnim.BLOCK;
+//            if (type == ExType.SWORD) return hasSwordConfig && stack.getItem() instanceof SwordItem;
+//            if (type == ExType.ATTACKABLE) return stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream().mapToDouble(AttributeModifier::getAmount).sum() > 0;
+//            if (type == ExType.AXE) return stack.getItem() instanceof AxeItem;
+//            if (type == ExType.UNKNOWN) return !stack.getTags().filter(e -> RefreshContainTagHandle.refreshContainTag.contains(e.toString())).toList().isEmpty() || RefreshContainItemHandle.refreshContainItem.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()) ;
+//
+//            return false;
         }
 
 
@@ -691,12 +704,12 @@ public class ModifierHandle {
     public static Map<String,List<ModifierEntry>> itemsDefaultEntry = new HashMap<>();
     public static List<String> onlyCanRefreshPointEntryItemIds = new ArrayList<>();
     public static void RegisterModifierEntry(ModifierEntry modifierEntry){
-        ModifierEntry.Type type = modifierEntry.type;
-        if (!hasBootsConfig)if (type == ModifierEntry.Type.BOOTS)hasBootsConfig=true;
-        if (!hasLeggingsConfig)if (type == ModifierEntry.Type.LEGGINGS)hasLeggingsConfig=true;
-        if (!hasChestConfig)if (type == ModifierEntry.Type.CHESTPLATE)hasChestConfig=true;
-        if (!hasHelmetConfig)if (type == ModifierEntry.Type.HELMET)hasHelmetConfig=true;
-        if (!hasSwordConfig)if (type == ModifierEntry.Type.SWORD)hasSwordConfig=true;
+        var  type = modifierEntry.types;
+        if (!hasBootsConfig)if (type.contains(ExType.BOOTS.get()))hasBootsConfig=true;
+        if (!hasLeggingsConfig)if (type.contains(ExType.LEGGINGS.get()))hasLeggingsConfig=true;
+        if (!hasChestConfig)if (type.contains(ExType.CHESTPLATE.get()))hasChestConfig=true;
+        if (!hasHelmetConfig)if (type.contains(ExType.HELMET.get()))hasHelmetConfig=true;
+        if (!hasSwordConfig)if (type.contains(ExType.SWORD.get()))hasSwordConfig=true;
         String id = modifierEntry.id;
         modifierEntryMap.put(id,modifierEntry);
         BaseItemSelected.IDS.put(StringToIntConverter.stringToInt(id),modifierEntry);
@@ -839,7 +852,7 @@ public class ModifierHandle {
             if (jsonObject.has("OnlyTypes")){
                 JsonArray OnlyItems = jsonObject.get("OnlyTypes").getAsJsonArray();
                 OnlyItems.forEach(item -> {
-                    materials.OnlyTypes.add(ModifierEntry.StringToType(item.getAsString()));
+                    materials.OnlyTypes.add(ExTypeHandle.values.get(item.getAsString()));
                 });
             }
             if (jsonObject.has("OnlyTags")){
@@ -909,9 +922,26 @@ public class ModifierHandle {
 
         JsonObject itemObject = itemElement.getAsJsonObject();
         ModifierEntry modifierEntry = new ModifierEntry();
-        modifierEntry.type = itemObject.has("type") ? ModifierEntry.StringToType(itemObject.get("type").getAsString()) : moconfig.type;
+        //modifierEntry.type = itemObject.has("type") ? ModifierEntry.StringToType(itemObject.get("type").getAsString()) : moconfig.type;
         if (!moconfig.CuriosType.isEmpty())modifierEntry.curiosType = moconfig.CuriosType;
-        if (modifierEntry.type.toString().toUpperCase().startsWith("CURIOS")){
+
+        List<ItemType> types = new ArrayList<>();
+
+        if (itemObject.has("types")) {
+            JsonArray typesArray = itemObject.get("types").getAsJsonArray();
+            for (JsonElement typeElement : typesArray) {
+
+                types.add(ModifierEntry.StringToType(typeElement.getAsString()));
+            }
+        }else {
+            if (itemObject.has("type")){
+                types.add(ModifierEntry.StringToType(itemObject.get("type").getAsString()));
+            }else {
+                types.add(moconfig.type);
+
+            }
+        }
+        if (types.contains(ExType.CURIOS.get())){
             modifierEntry.isCuriosEntry = true;
             if (itemObject.has("curiosType"))
             {
@@ -920,7 +950,13 @@ public class ModifierHandle {
                 if (moconfig.CuriosType.isEmpty()) modifierEntry.curiosType = "ALL";
             }
         }
-        modifierEntry.id = modifierEntry.type.toString().substring(0, 2) + key;
+        StringBuilder affString = new StringBuilder();
+        for (ItemType type : types){
+            affString.append(type.name(), 0, 2);
+
+        }
+        modifierEntry.types = types;
+        modifierEntry.id = affString.toString() + key;
         modifierEntry.isRandom = itemObject.has("isRandom") && itemObject.get("isRandom").getAsBoolean();
         modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry") && itemObject.get("OnlyHasThisEntry").getAsBoolean();
 
@@ -930,6 +966,7 @@ public class ModifierHandle {
         modifierEntry.needFreshValue = itemObject.has("needFreshValue") ? itemObject.get("needFreshValue").getAsFloat() : 0.0F;
         modifierEntry.cantSelect = itemObject.has("cantSelect") && itemObject.get("cantSelect").getAsBoolean();
         modifierEntry.localDescription = itemObject.has("localDescription") ? itemObject.get("localDescription").getAsString() : "";
+        modifierEntry.icon = itemObject.has("icon") ? itemObject.get("icon").getAsString() : "";
 
         if (itemObject.has("exsuit")){
             List<String> exss = new ArrayList<>();
