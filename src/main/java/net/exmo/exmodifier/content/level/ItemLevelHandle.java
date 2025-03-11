@@ -56,21 +56,30 @@ public class ItemLevelHandle {
                 DynamicExpressionEvaluator dynamicExpressionEvaluator = new DynamicExpressionEvaluator();
                 LevelAttriGether attriGether = attriGethers.get(i);
                 UUID uuid = UUID.nameUUIDFromBytes((attriGether.getModifier().getName()+i+ stack).getBytes());
-                EquipmentSlot slot = attriGether.slot;
+               List< EquipmentSlot> slot = Collections.singletonList(attriGether.slot);
                 if (attriGether.IsAutoEquipmentSlot) {
                     if (stack.getItem() instanceof ArmorItem armorItem){
-                        slot = armorItem.getEquipmentSlot();
+                        slot = Collections.singletonList(armorItem.getEquipmentSlot());
                     }
                     else {
                         List<ItemType> type = ModifierEntry.getType(stack);
-                        if (!type.isEmpty())
-                        slot =ModifierEntry.TypeToEquipmentSlot(type.get(0));
+                        if (!type.isEmpty()){
+                            List< EquipmentSlot> slot1 = new ArrayList<>();
+                            for (ItemType itemType : type){
+                                slot1.addAll(Arrays.stream(itemType.getEquipmentSlot()).toList());
+                            }
+                            slot = slot1;
+                        }
                     }
                 }
-                ItemAttrUtil.removeAttributeModifierNoAmout(stack, attriGether.getAttribute(), attriGether.getModifier(), slot);
-                dynamicExpressionEvaluator.setVariable("level", event.nowLevel);
-                double amout =  dynamicExpressionEvaluator.evaluate(attriGether.Expression);
-                ItemAttrUtil.addItemAttributeModifier2(stack,attriGether.attribute,new AttributeModifier(uuid,attriGether.getModifier().getName(), amout, attriGether.modifier.getOperation()), slot);
+                for (EquipmentSlot equipmentSlot : slot) {
+                    ItemAttrUtil.removeAttributeModifierNoAmout(stack, attriGether.getAttribute(), attriGether.getModifier(), equipmentSlot);
+                    dynamicExpressionEvaluator.setVariable("level", event.nowLevel);
+                    double amout =  dynamicExpressionEvaluator.evaluate(attriGether.Expression);
+                    ItemAttrUtil.addItemAttributeModifier2(stack,attriGether.attribute,new AttributeModifier(uuid,attriGether.getModifier().getName(), amout, attriGether.modifier.getOperation()), equipmentSlot);
+
+                }
+
 
             }
             if (event.entity instanceof  Player player){
@@ -92,17 +101,21 @@ public class ItemLevelHandle {
         ItemLevels.put(itemLevel.getId(), itemLevel);
         Exmodifier.LOGGER.debug("Registry ItemLevel: " + itemLevel.id);
     }
-    public static void contaiff(ItemStack stack, int rarity , int refreshnumber, ItemType type)  {
+    public static void contaiff(ItemStack stack, int rarity , int refreshnumber, List<ItemType> type)  {
         Exmodifier.LOGGER.debug("ItemLevelRefresh: " + stack.getDescriptionId() + " " + type);
-        WeightedUtil<String> weightedUtil = new WeightedUtil<>(
-                ItemLevels.entrySet().stream()
-                        .filter(e -> e.getValue().type == type )
-                                .filter(e -> (e.getValue().getOnlyItemIds().isEmpty() ||e.getValue().getOnlyItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
+
+        WeightedUtil<String> weightedUtil = new WeightedUtil<>(Map.of());
+        for (ItemType type1 : type) {
+            weightedUtil.merge(new WeightedUtil<>(
+                    ItemLevels.entrySet().stream()
+                            .filter(e -> Objects.equals(e.getValue().type.name(), type1.name()))
+                            .filter(e -> (e.getValue().getOnlyItemIds().isEmpty()
+                                    || e.getValue().getOnlyItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())))
 //                                .filter(e -> !e.getValue().cantSelect)
 //                                .filter(e -> e.getValue().needFreshValue ==0 || e.getValue().needFreshValue <= refreshnumber)
-                                .filter(e -> e.getValue().getOnlyItemTags().isEmpty() ||e.getValue().containTag(stack))
-                                .filter(e -> e.getValue().UnlessItemTags.isEmpty() ||e.getValue().unContainTag(stack))
-                                .filter(e -> e.getValue().getOnlyWashItems().isEmpty() ||e.getValue().getOnlyWashItems().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()))
+                            .filter(e -> e.getValue().getOnlyItemTags().isEmpty() || e.getValue().containTag(stack))
+                            .filter(e -> e.getValue().UnlessItemTags.isEmpty() || e.getValue().unContainTag(stack))
+                            .filter(e -> e.getValue().getOnlyWashItems().isEmpty() || e.getValue().getOnlyWashItems().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()))
 //                                .filter(e -> e.getValue().OnlyWashItems.isEmpty() ||e.getValue().OnlyWashItems.contains(washItem))
 //                                .filter(e -> {
 //                                    boolean hasWashItem = materialsList.stream()
@@ -113,8 +126,9 @@ public class ItemLevelHandle {
 //
 //                                    return hasWashItem || e.getValue().OnlyWashItems.contains(washItem);
 //                                })
-                        .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getWeight()))
-        );
+                            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getWeight()))
+            ));
+        }
         //RandomEntryCurios(stack, weightedUtil, curiosType, refreshnumber);
         if (!weightedUtil.weights.isEmpty()) {
             Exmodifier.LOGGER.debug("RandomLevelEntry: " + type);
@@ -133,16 +147,17 @@ public class ItemLevelHandle {
         if (  ItemLevelHelper.of(stack).getItemLevelsSize()>0) return;
         // List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
         boolean find = false;
+        List<ItemType> typeList = new ArrayList<>();
         for (ItemType type : ExTypeHandle.values.values().stream().filter(e -> e != ExType.UNKNOWN.get()).filter(e -> e != ExType.ALL.get()).toList()) {
             if (ModifierEntry.containItemType(stack,type)) {
-                contaiff(stack,rarity,refreshnumber,type);
+                typeList.add(type);
                 find = true;
-                break;
             }
 
         }
+         contaiff(stack,rarity,refreshnumber,typeList);
         if (!find) {
-            contaiff(stack,rarity,refreshnumber, ExType.ALL.get());
+            contaiff(stack,rarity,refreshnumber,Collections.singletonList(ExType.ALL.get()));
             Exmodifier.LOGGER.debug("ItemLevelRefresh: No Type And refresh ALL TYPE");
         }
     }
@@ -371,9 +386,9 @@ public class ItemLevelHandle {
                 itemLevel.OnlyWashItems.add(item.getAsString());
             });
         }
-        if (itemObject.has("OnlyItemIds")){
+        if (itemObject.has("OnlyItems")){
             itemLevel.setOnlyItemIds(new ArrayList<>());
-            for (JsonElement itemId : itemObject.get("OnlyItemIds").getAsJsonArray()){
+            for (JsonElement itemId : itemObject.get("OnlyItems").getAsJsonArray()){
                 itemLevel.getOnlyItemIds().add(itemId.getAsString());
             }
         }

@@ -156,12 +156,12 @@ public class ModifierEntry {
 
     public static boolean containItemTypes(ItemStack stack, List<ItemType> types) {
         for (ItemType type : types) {
-            if (type.itemSelector().compare(stack))return true;
+            if (type.compare(stack))return true;
         }
         return false;
     }
     public static boolean containItemType(ItemStack stack, ItemType type) {
-        return type.itemSelector().compare(stack);
+        return type.compare(stack);
     }
     public static List<Component> GenerateTooltip(List<ModifierAttriGether> attriGethers, ItemStack itemStack) {
         List<Component> tooltips = new java.util.ArrayList<>();
@@ -323,7 +323,7 @@ public class ModifierEntry {
     public static List<ItemType> getType(ItemStack stack) {
         List<ItemType> types = new ArrayList<>();
         for (var v : ExTypeHandle.values.values()){
-            if (v.itemSelector().compare(stack)){
+            if (v.compare(stack)){
                 types.add(v);
             }
         }

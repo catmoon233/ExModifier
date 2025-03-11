@@ -178,7 +178,10 @@ public  class ItemAttrUtil {
                 }
             }
         }
-        listtag.add(getAttributeModifierCompoundTag(pAttribute, pModifier, pSlot));
+        for (EquipmentSlot slot : pSlot){
+            listtag.add(getAttributeModifierCompoundTag(pAttribute, pModifier, slot));
+        }
+
     }
     public static boolean hasDifferentAttributeValue(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
         if (itemStack.getTag() != null && itemStack.getTag().contains("ExAttributeModifiers", 9)) {
@@ -315,7 +318,7 @@ public  class ItemAttrUtil {
     public static void addItemAttributeModifier2(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
         try {
             if (hasDifferentAttributeValue(itemStack, pAttribute, pModifier, pSlot)) {
-                AttributeModifier currentModifier = getAttributeModifierFromCompoundTag(getAttributeModifierCompoundTag(pAttribute, pModifier, new EquipmentSlot[]{pSlot}));
+                AttributeModifier currentModifier = getAttributeModifierFromCompoundTag(getAttributeModifierCompoundTag(pAttribute, pModifier, pSlot));
 
                 if (currentModifier != null) {
                     double oldAmount = currentModifier.getAmount();
@@ -344,16 +347,15 @@ public  class ItemAttrUtil {
     {
         attmap.put(name,attgroup);
     }
-    public static CompoundTag getAttributeModifierCompoundTag(Attribute attribute, AttributeModifier modifier, EquipmentSlot[] slot) {
+    public static CompoundTag getAttributeModifierCompoundTag(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
         if (modifier==null)return null;
         if (attribute==null)return null;
         CompoundTag compoundtag = modifier.save();
-        for (EquipmentSlot equipmentSlot : slot) {
             compoundtag.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
             if (slot != null) {
-                compoundtag.putString("Slot", equipmentSlot.getName());
+                compoundtag.putString("Slot", slot.getName());
             }
-        }
+
         return compoundtag;
     }
     public static AttributeModifier getAttributeModifierFromCompoundTag(CompoundTag compoundTag) {

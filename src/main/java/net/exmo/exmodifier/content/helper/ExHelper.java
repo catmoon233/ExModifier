@@ -35,6 +35,7 @@ public class ExHelper {
         return nbt.contains(EXMO_NBT);
     }
     public CompoundTag getMainNbt(){
+        if (nbt==null)return new CompoundTag();
         return nbt.getCompound(EXMO_NBT);
     }
     public EquipmentSlot[] getEquipmentSlot(ItemStack itemStack){

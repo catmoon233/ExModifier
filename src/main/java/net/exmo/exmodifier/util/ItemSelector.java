@@ -10,13 +10,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public record ItemSelector(Item item, String itemId, List<CompoundTag> containNBT,
+public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> containNBT,
                            CompareType type, List<TagKey<Item>> containTag,BiConsumer<ItemStack, AtomicBoolean> customCompare ){
 
 
@@ -41,6 +42,10 @@ public record ItemSelector(Item item, String itemId, List<CompoundTag> containNB
      * @param containTag 包含的标签列表（如果适用）
      */
     public ItemSelector(Item item, String itemId, List<CompoundTag> containNBT, CompareType type, List<TagKey<Item>> containTag, BiConsumer<ItemStack, AtomicBoolean> customCompare) {
+
+        this(item,Collections.singletonList(itemId), containNBT, type, containTag,customCompare);
+    }
+    public ItemSelector(Item item, List<String> itemId, List<CompoundTag> containNBT, CompareType type, List<TagKey<Item>> containTag, BiConsumer<ItemStack, AtomicBoolean> customCompare) {
         this.item = item;
         this.itemId = itemId;
         this.containNBT = containNBT != null ? containNBT : List.of();
@@ -62,7 +67,7 @@ public record ItemSelector(Item item, String itemId, List<CompoundTag> containNB
 
     }
     public ItemSelector( BiConsumer<ItemStack, AtomicBoolean> customCompare) {
-        this(null, null, List.of(), CompareType.CUSTOM, List.of(),customCompare);
+        this(null, List.of(), List.of(), CompareType.CUSTOM, List.of(),customCompare);
 
     }
 
@@ -94,12 +99,12 @@ public record ItemSelector(Item item, String itemId, List<CompoundTag> containNB
                  customCompare.accept(stack, u);
                  yield u.get();
             }
-            case ID -> Objects.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString(), itemId);
+            case ID -> itemId.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString());
             case ITEM -> Objects.equals(stack.getItem(), item);
             case NBT -> checkNBT(stack);
             case NBT_AND_ITEM -> Objects.equals(stack.getItem(), item) && checkNBT(stack);
             case NBT_AND_ID ->
-                    Objects.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString(), itemId) && checkNBT(stack);
+                    itemId.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()) && checkNBT(stack);
             default -> false;
         };
     }
@@ -137,42 +142,42 @@ public record ItemSelector(Item item, String itemId, List<CompoundTag> containNB
         return false;
     }
 
-    /**
-     * 将ItemSelector对象序列化为NBT数据。
-     *
-     * @return 表示ItemSelector的CompoundTag。
-     */
-    public CompoundTag toNBT() {
-        CompoundTag tag = new CompoundTag();
-
-        // 序列化Item或ItemId
-        if (item != null) {
-            tag.putString("ItemId", ForgeRegistries.ITEMS.getKey(item).toString());
-        } else if (itemId != null && !itemId.isEmpty()) {
-            tag.putString("ItemId", itemId);
-        }
-
-        // 序列化CompareType
-        tag.putString("CompareType", type.name());
-
-        // 序列化ContainNBT
-        ListTag nbtList = new ListTag();
-        nbtList.addAll(containNBT);
-        tag.put("ContainNBT", nbtList);
-
-        // 序列化ContainTag
-        ListTag tagList = new ListTag();
-        for (TagKey<Item> tagKey : containTag) {
-            tagList.add(StringTag.valueOf(tagKey.location().toString()));
-        }
-        tag.put("ContainTag", tagList);
-
-        if (customCompare != null) {
-
-        }
-
-        return tag;
-    }
+//    /**
+//     * 将ItemSelector对象序列化为NBT数据。
+//     *
+//     * @return 表示ItemSelector的CompoundTag。
+//     */
+//    public CompoundTag toNBT() {
+//        CompoundTag tag = new CompoundTag();
+//
+//        // 序列化Item或ItemId
+//        if (item != null) {
+//            tag.putString("ItemId", ForgeRegistries.ITEMS.getKey(item).toString());
+//        } else if (itemId != null && !itemId.isEmpty()) {
+//            tag.putString("ItemId", itemId);
+//        }
+//
+//        // 序列化CompareType
+//        tag.putString("CompareType", type.name());
+//
+//        // 序列化ContainNBT
+//        ListTag nbtList = new ListTag();
+//        nbtList.addAll(containNBT);
+//        tag.put("ContainNBT", nbtList);
+//
+//        // 序列化ContainTag
+//        ListTag tagList = new ListTag();
+//        for (TagKey<Item> tagKey : containTag) {
+//            tagList.add(StringTag.valueOf(tagKey.location().toString()));
+//        }
+//        tag.put("ContainTag", tagList);
+//
+//        if (customCompare != null) {
+//
+//        }
+//
+//        return tag;
+//    }
 
     /**
      * 从NBT数据反序列化出ItemSelector对象。

@@ -11,6 +11,7 @@
     "ChangeDurabilityBar",
     "DigSpeedMixin",
     "ItemCombinerMenuMixin",
+    "ItemMixin",
     "ItemStackMixin",
     "LivingSwingAction",
     "ToolTipMixin"

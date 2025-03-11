@@ -14,6 +14,7 @@ import net.exmo.exmodifier.content.slot.ModifierSlotHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.AttributeCuriosHandle;
@@ -34,6 +35,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 //import net.minecraftforge.client.eventC.MovementInputUpdateEvent;
@@ -42,6 +44,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.GrindstoneEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.*;
@@ -104,7 +107,7 @@ public class MainEvent {
                 tooo.add(toolTip.get(0));
                 for (var a : ItemQualityHelper.of(itemStack).getQualityEntriesTooltip()){
                     if (a.isShowInHeadTooltip){
-                        tooo.set(0,a.mutableComponent.append(Component.literal(" §r")).append(toolTip1.get(0)));
+                     //   tooo.set(0,a.mutableComponent.append(Component.literal(" §r")).append(toolTip1.get(0)));
                     }else tooo.add(a.mutableComponent);
                 }
                 tooo.addAll(ItemLevelHandle.genItemLevelInfo(itemStack));
@@ -402,12 +405,14 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             if ((event.getEntity() instanceof Player player)){
                     List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
                     eventParameters.add(new EventParameter<>("amount", event.getAmount()));
+                    eventParameters.add(new EventParameter<>("max_health", player.getAttributeValue(Attributes.MAX_HEALTH)));
                     addx(player,eventParameters,"ON_HURT");
                 ApplySuitEffect(player, ExSuit.Trigger.ON_HURT);
             }
             if ((event.getSource().getEntity() instanceof Player player)){
                     List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
                     eventParameters.add(new EventParameter<>("amount", event.getAmount()));
+                eventParameters.add(new EventParameter<>("max_health", player.getAttributeValue(Attributes.MAX_HEALTH)));
                     addx(player,eventParameters,"ATTACK");
                 if (event.getEntity()!=null) player.getPersistentData().putString("hurtentity-uuid",event.getEntity().getUUID().toString());
                 ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
@@ -527,6 +532,12 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
 
 
     }
+
+        @SubscribeEvent
+        public static void grind(GrindstoneEvent.OnPlaceItem event) {
+            handleArmorChangeExpectSuit(event.getOutput(),false);
+        }
+
         public static boolean hasAttrOrBow(ItemStack stack) {
             if (stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem)return true;
             for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -537,108 +548,85 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             }
             return false;
         }
-        @SubscribeEvent
-        public static void armorChange(LivingEquipmentChangeEvent event) throws ScriptException {
-            if (event.getEntity() instanceof Player player) {
-                //   Exmodifier.LOGGER.info(eventC.getTo().getDescriptionId());
-//                if (player.getPersistentData().getBoolean("LoginGamea")) {
-//                    player.getPersistentData().putBoolean("LoginGamea", false);
-//                    return;
-//                }
-                boolean isExSuitOperate = false;
-                if (!event.getEntity().level().isClientSide) {
+        public static boolean handleArmorChange(Player player, ItemStack fromStack, ItemStack toStack, boolean isClientSide) throws ScriptException {
+            if (handleArmorChangeExpectSuit(toStack, isClientSide)) return false;
+            boolean isExSuitOperate;
+            isExSuitOperate = SuitOperate(player, toStack, fromStack);
+            return isExSuitOperate;
 
+        }
 
-                    ItemStack stack = event.getTo();
-                    ItemInfo itemInfo = ItemInfo.of(stack);
-                    ModifierEntryHelper modifierEntryHelper = itemInfo.getModifierEntryHelper();
-                    ModifierEntryHelper.moveOldEntry(stack);
-                    ItemLevelHelper.moveOldLevel(stack);
-                    String string = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
-                    for (String s : UnMatchingModIDs) {
-                        if (string.startsWith(s)) return;
+        private static boolean handleArmorChangeExpectSuit(ItemStack toStack, boolean isClientSide) {
+            boolean isExSuitOperate = false;
+            if (!isClientSide) {
+                ItemStack stack = toStack;
+                ItemInfo itemInfo = ItemInfo.of(stack);
+                ModifierEntryHelper modifierEntryHelper = itemInfo.getModifierEntryHelper();
+                ModifierEntryHelper.moveOldEntry(stack);
+                ItemLevelHelper.moveOldLevel(stack);
+                String string = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+                for (String s : UnMatchingModIDs) {
+                    if (string.startsWith(s)) return true;
+                }
+                if (itemsDefaultEntry.containsKey(string)) {
+                    for (ModifierEntry modifierEntry : itemsDefaultEntry.get(string)) {
+                        new ModifierEntryHelper(stack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)), true, true);
                     }
-                    if (itemsDefaultEntry.containsKey(string)) {
-                        for (ModifierEntry modifierEntry : itemsDefaultEntry.get(string)) {
-                            new ModifierEntryHelper(stack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)), true,true);
+                }
+
+                if (CuriosUtil.isCuriosItem2(stack)) {
+                    if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
+                        RandomEntryCurios(stack, 0, refresh_time, "none");
+                    }
+                    if (stack.getTag() != null) {
+                        if (stack.getTag().contains("modifier_refresh")) {
+                            if (stack.getTag().getBoolean("modifier_refresh")) {
+                                stack.getTag().remove("modifier_refresh");
+                                stack.getTag().remove("UNKNOWN");
+                                RandomEntryCurios(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"));
+                            }
                         }
                     }
-                    // Exmodifier.LOGGER.debug(eventC.getFrom().toString());
-                    List<String> curiosSlots = CuriosUtil.getSlotsFromItemstack(stack);
-                    if (!curiosSlots.isEmpty()) {
-//                        if (player.getPersistentData().getBoolean("LoginGamea")) {
-//                            player.getPersistentData().putBoolean("LoginGamea", false);
-//                            return;
-//                        }
+                } else {
+                    if (!stack.getTags().filter(e -> RefreshContainTagHandle.refreshContainTag.contains(e.toString())).toList().isEmpty() ||
+                            RefreshContainItemHandle.refreshContainItem.contains(string) ||
+                            hasAttrOrBow(stack) && !ModifierEntry.getType(stack).stream().filter(e -> e != ExType.UNKNOWN.get()).toList().isEmpty() && stack.getItem().getMaxStackSize(stack) == 1) {
                         if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
-                            RandomEntryCurios(stack, 0, refresh_time, "none");
+                            ModifierSlotHelper modifierSlotHelper = ModifierSlotHelper.of(stack);
+                            if (Config.FirstAddSlots && !modifierSlotHelper.validList()) {
+                                modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:front")));
+                                modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:centre")));
+                            }
+                            RandomEntry(stack, 0, refresh_time, "none");
                         }
                         if (stack.getTag() != null) {
                             if (stack.getTag().contains("modifier_refresh")) {
                                 if (stack.getTag().getBoolean("modifier_refresh")) {
                                     stack.getTag().remove("modifier_refresh");
                                     stack.getTag().remove("UNKNOWN");
-
-                                    //  stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
-
-                                    RandomEntryCurios(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"));
+                                    RandomEntry(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"));
                                 }
                             }
                         }
-                    } else {
-
-                        if (!stack.getTags().filter(e -> RefreshContainTagHandle.refreshContainTag.contains(e.toString())).toList().isEmpty() || RefreshContainItemHandle.refreshContainItem.contains(string) ||
-                        hasAttrOrBow(stack) && !ModifierEntry.getType(stack).stream().filter(e -> e != ExType.UNKNOWN.get()).toList().isEmpty() && stack.getItem().getMaxStackSize(stack) == 1) {
-                            if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
-                                ModifierSlotHelper modifierSlotHelper = ModifierSlotHelper.of(stack);
-                                if (Config.FirstAddSlots&&!modifierSlotHelper.validList()){
-                                    modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:front")));
-                                    modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:centre")));
-                                }
-                                RandomEntry(stack, 0, refresh_time, "none");
-//                                if (stack.getTag() != null) {
-//                                    if (stack.getTag().contains("exmodifier_armor_modifier_applied")) {
-//
-//                                      player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-//                                           capability.Sitemstack = stack;
-//                                            capability.syncPlayerVariables(player);
-//                                        });
-//                                    }
-//                                }
-                            }
-                            if (stack.getTag() != null) {
-                                if (stack.getTag().contains("modifier_refresh")) {
-                                    if (stack.getTag().getBoolean("modifier_refresh")) {
-                                        stack.getTag().remove("modifier_refresh");
-                                        stack.getTag().remove("UNKNOWN");
-                                        //   stack.getTag().putInt("exmodifier_armor_modifier_applied", 0);
-
-                                        RandomEntry(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"));
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    int addLevelSystemCount = Config.add_level_system_count;
-                    if (Config.add_level_system_count!=0) {
-                        ItemLevelRefresh(stack, 0, addLevelSystemCount, "none");
                     }
                 }
-//                if (eventC.getEntity().level()().isClientSide) {
-//                    player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-//                        if (!capability.Sitemstack.isEmpty()) {
-//                            player.setItemSlot(eventC.getSlot(), capability.Sitemstack);
-//                            capability.Sitemstack = ItemStack.EMPTY;
-//                            capability.syncPlayerVariables(player);
-//                        }
-//                    });
-//                }
-                isExSuitOperate=    SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
-                MinecraftForge.EVENT_BUS.post(new ExAfterArmorChange(event, isExSuitOperate));
-            }
 
+                int addLevelSystemCount = Config.add_level_system_count;
+                if (Config.add_level_system_count != 0) {
+                    ItemLevelRefresh(stack, 0, addLevelSystemCount, "none");
+                }
+            }
+            return false;
         }
+
+        @SubscribeEvent
+        public static void armorChange(LivingEquipmentChangeEvent event) throws ScriptException {
+            if (event.getEntity() instanceof Player player) {
+                boolean b = handleArmorChange(player, event.getFrom(), event.getTo(), event.getEntity().level().isClientSide());
+                MinecraftForge.EVENT_BUS.post(new ExAfterArmorChange(event, b));
+            }
+        }
+
 
         public static boolean SuitOperate(@NotNull Player player, ItemStack stack1, ItemStack stack2) {
 
@@ -650,6 +638,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         }
 
         private static boolean handleStack(Player player, ItemStack stack, EntityAttrUtil.WearOrTake effectType) {
+            if (player==null)return false;
             boolean flag = false;
           //  if (!hasAttr(stack)) return false;
 
@@ -726,7 +715,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             RefreshContainItemHandle.readConfig();
             ModifierHandle.sendClearModifierEntryToAllClient();
             ModifierHandle.readConfig();
-
+            ExTypeHandle.readConfig();
             ExSuitHandle.readConfig();
             ModifierSlotHandle.reload();
             ItemQualityHandle.init();

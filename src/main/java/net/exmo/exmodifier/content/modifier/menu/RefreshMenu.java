@@ -49,6 +49,15 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
     public int repairItemCountCost;
     public int x,y,z;
     public Level world;
+
+    @Override
+    public ItemStack quickMoveStack(Player p_39792_, int p_39793_) {
+        if (p_39793_ ==2) {
+            return ItemStack.EMPTY;
+        }
+        return super.quickMoveStack(p_39792_, p_39793_);
+    }
+
     @Override
     public boolean mayPickup(Player p_39792_, boolean p_39793_) {
 
@@ -77,7 +86,11 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
             p_39790_.giveExperienceLevels(-this.cost.get());
         }
        // this.repairItemCountCost = p_39791_.getOrCreateTag().getInt("NeedCount");
-        if (p_39791_.getOrCreateTag().getBoolean("modifier_refresh")||p_39791_.getOrCreateTag().getBoolean("entry_item_add")){
+        applyItemEffect(p_39790_, p_39791_);
+    }
+
+    private void applyItemEffect(Player p_39790_, ItemStack p_39791_) {
+        if (p_39791_.getOrCreateTag().getBoolean("modifier_refresh")|| p_39791_.getOrCreateTag().getBoolean("entry_item_add")){
             this.inputSlots.setItem(0, ItemStack.EMPTY);
             if (this.repairItemCountCost > 0) {
                 ItemStack itemstack = this.inputSlots.getItem(1);
@@ -107,9 +120,9 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
 
             if (p_39790_.level().isClientSide) return;
             if (orCreateTag.getInt("modifier_refresh_add") != 0) {
-                List<String> curios = CuriosUtil.getSlotsFromItemstack(p_39791_);
+
                 MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getString("wash_item")));
-                if (curios.isEmpty())
+                if (!CuriosUtil.isCuriosItem2(p_39791_))
                     ModifierHandle.CommonEvent.RandomEntry(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
                 else
                     RandomEntryCurios(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));

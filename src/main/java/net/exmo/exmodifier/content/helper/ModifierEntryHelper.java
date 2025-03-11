@@ -243,6 +243,11 @@ public class ModifierEntryHelper extends ExHelper {
             }
         }
         if (removeAttribute) {
+            if (CuriosUtil.isCuriosItem2(itemStack)){
+                for (ModifierAttriGether modifierAttriGether : modifierInstant.getModifierEntry().attriGether) {
+                    if (modifierAttriGether.attribute!=null) CuriosUtil.removeAttributeModifierAffix(itemStack,ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether.attribute).toString(), modifierAttriGether.modifier.getName());
+                }
+            }
             for (ModifierAttriGether modifierAttriGether : modifierInstant.getModifierEntry().attriGether) {
                 for (EquipmentSlot slot : EquipmentSlot.values()) {
                     ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, modifierAttriGether.attribute, modifierAttriGether.modifier, slot);

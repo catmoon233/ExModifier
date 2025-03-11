@@ -8,17 +8,30 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.*;
 import net.minecraftforge.common.Tags;
+import tfar.classicbar.impl.overlays.vanilla.Armor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ExType {
     public ExType(String name,ItemSelector itemSelector,EquipmentSlot... equipmentSlots){
         this.name = name;
-        this.itemSelector = itemSelector;
+        this.itemSelector = new ArrayList<>(Collections.singleton(itemSelector));
         this.slot = equipmentSlots;
-        ExTypeHandle.values.put(name,new ItemType(name, itemSelector,equipmentSlots));
+        ExTypeHandle.values.put(name,new ItemType(name, this.itemSelector,equipmentSlots));
     }
+    public ExType addItemSelector(ItemSelector itemSelector){
+        this.itemSelector.add(itemSelector);
+        return this;
+    }
+    public ExType build(){
+        ExTypeHandle.values.put(name,new ItemType(name, this.itemSelector,this.slot));
+        return this;
+    }
+
     public static ExType CURIOS = new ExType("CURIOS",new ItemSelector(((itemStack, atomicBoolean) -> {
         if (CuriosUtil.isCuriosItem(itemStack)){
             atomicBoolean.set(true);
@@ -42,13 +55,20 @@ public class ExType {
             Tags.Items.ARMORS
     )
 
-    ));
+    )).addItemSelector(
+            new ItemSelector(
+                    (e ,v)->{
+                        if (e.getItem() instanceof ArmorItem) v.set(true);
+                    }
+            )
+    ).build();
     public static ExType WEAPON = new ExType("WEAPON",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(
 
             )
     ),EquipmentSlot.MAINHAND);
-    public static ExType HELMET = new ExType("HELMET",new ItemSelector(null,null,null, ItemSelector.CompareType.TAG, List.of(
+    public static ExType HELMET = new ExType("HELMET",
+            new ItemSelector(null,null,null, ItemSelector.CompareType.TAG, List.of(
             Tags.Items.ARMORS_HELMETS
     )
     ));
@@ -116,31 +136,68 @@ public class ExType {
             ItemTags.create(new ResourceLocation("minecraft", "axes"))
             )
     ),EquipmentSlot.MAINHAND
-    );
+    ).addItemSelector(
+            new ItemSelector(
+                    (e ,v)->{
+                        if (e.getItem() instanceof AxeItem) v.set(true);
+                    }
+            )
+    ).build();
     public static ExType SHOVEL = new ExType("SHOVEL",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(
                     ItemTags.create(new ResourceLocation("minecraft", "shovels"))
             )
     ),EquipmentSlot.MAINHAND
-    );
+    ).addItemSelector(
+            new ItemSelector(
+                    (e ,v)->{
+                        if (e.getItem() instanceof ShovelItem) v.set(true);
+                    }
+            )
+    ).build();
     public static ExType HOE = new ExType("HOE",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(
                     ItemTags.create(new ResourceLocation("minecraft", "hoes"))
             )
     ),EquipmentSlot.MAINHAND
-    );
+    ).addItemSelector(
+            new ItemSelector(
+                    (e ,v)->{
+                        if (e.getItem() instanceof HoeItem) v.set(true);
+                    }
+            )
+    ).build();;
     public static ExType SWORD = new ExType("SWORD",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(
                     ItemTags.create(new ResourceLocation("minecraft", "swords"))
             )
     ),EquipmentSlot.MAINHAND
-    );
+    ).addItemSelector(
+            new ItemSelector(
+                    (e ,v)->{
+                        if (e.getItem() instanceof SwordItem) v.set(true);
+                    }
+            )
+    ).build();;
+
 
     public static ExType HAND = new ExType("HAND",new ItemSelector());
-    public static ExType OFFHAND = new ExType("OFFHAND",new ItemSelector());
-    public static ExType MAINHAND = new ExType("MAINHAND",new ItemSelector());
+    public static ExType OFFHAND = new ExType("OFFHAND",new ItemSelector(
+            (itemStack, atomicBoolean) -> {
+                if (itemStack.getEquipmentSlot() == EquipmentSlot.OFFHAND){
+                    atomicBoolean.set(true);
+                }
+            }
+    ));
+    public static ExType MAINHAND = new ExType("MAINHAND",new ItemSelector(
+            (itemStack, atomicBoolean) -> {
+                if (itemStack.getEquipmentSlot() == EquipmentSlot.MAINHAND){
+                    atomicBoolean.set(true);
+                }
+            }
+    ));
     public final String name;
-    public final ItemSelector itemSelector;
+    public final ArrayList<ItemSelector> itemSelector;
     public final EquipmentSlot[] slot;
 
 

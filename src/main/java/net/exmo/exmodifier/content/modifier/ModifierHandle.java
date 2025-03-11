@@ -324,7 +324,8 @@ public class ModifierHandle {
                   //  appliedModifiers.add(modifierEntry.Id);
                 weightedUtil.removeKey(modifierEntry.id);
                 ItemInfo itemInfo = new ItemInfo(stack);
-                itemInfo.getModifierEntryHelper().addModifierEntry(new ModifierInstant(modifierEntry,1),true,true);
+                ModifierInstant modifierInstant = new ModifierInstant(modifierEntry, 1);
+                itemInfo.getModifierEntryHelper().addModifierEntry(modifierInstant,false,true);
                  //   stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.Id);
                     numAddedModifiers++;
                     LOGGER.debug("add entry ing: " + modifierEntry.id);
@@ -339,71 +340,75 @@ public class ModifierHandle {
                             stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + i, "");
                         }
                         stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", modifierEntry.id);
+                        applyModifiers(stack, finalAttriGethers, slot,modifierInstant);
                         break;
                     }
              //   }
+                applyModifiers(stack, finalAttriGethers, slot,modifierInstant);
             }
 
-            //applyModifiers(stack, finalAttriGethers, slot);
+
         }
-        public static void RandomEntry(ItemStack stack, int rarity, int refreshnumber,String washItem) {
-            if (stack.getTag() ==null||ModifierEntryHelper.of(stack).getModifierEntriesSize()>0)return;
-            if (stack.getTag()!=null) {
+        public static void RandomEntry(ItemStack stack, int rarity, int refreshnumber, String washItem) {
+            if (stack.getTag() == null || ModifierEntryHelper.of(stack).getModifierEntriesSize() > 0) return;
+            if (stack.getTag() != null) {
                 stack.getTag().remove("wash_item");
                 stack.getTag().remove("modifier_refresh_rarity");
                 stack.getTag().remove("modifier_refresh_add");
                 stack.getTag().remove("modifier_refresh");
-
             }
 
-
-            boolean over = false;
-
-
             Map<ItemType, EquipmentSlot[]> typeEquipmentSlotMap = typeSlotMap();
+            WeightedUtil<String> weightedUtil = new WeightedUtil<>(new HashMap<>());
+            Set<EquipmentSlot> slotSet = new HashSet<>(); // 使用Set来自动去重
+            var types = new ArrayList<>();
+
             for (Map.Entry<ItemType, EquipmentSlot[]> entry : typeEquipmentSlotMap.entrySet()) {
                 ItemType type = entry.getKey();
-                EquipmentSlot[] slot = entry.getValue();
 
-                if (!over && isValidForType(stack, type)) {
-                    WeightedUtil<String> weightedUtil = new WeightedUtil<>(
-                            modifierEntryMap.entrySet().stream()
-                                    .filter(e -> {
-                                        var modifier = e.getValue();
-                                        boolean hasWashItem = materialsList.stream()
-                                                .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
+                if (!isValidForType(stack, type)) {
+                    continue;
+                }
+                types.add(type);
+                slotSet.addAll(Arrays.asList(entry.getValue())); // 添加到Set中
 
-                                        return modifier.types.contains(type) &&
-                                                (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
-                                                (modifier.getUnlessItemIds().isEmpty() || !modifier.getUnlessItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
-                                                !modifier.cantSelect &&
-                                                (modifier.Slots.isEmpty())  &&
-                                                (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
-                                                (modifier.OnlyTags.isEmpty() || modifier.containTag(stack)) &&
-                                                (modifier.getUnlessItemIds().isEmpty() || !modifier.unContainTag(stack))&&
-                                                (modifier.OnlyWashItems.isEmpty() || modifier.OnlyWashItems.contains(washItem) || hasWashItem);
-                                    })
-                                    .collect(Collectors.toMap(
-                                            Map.Entry::getKey,
-                                            e -> e.getValue().weight
-                                    ))
-                    );
+                weightedUtil.merge(new WeightedUtil<>(
+                        modifierEntryMap.entrySet().stream()
+                                .filter(e -> {
+                                    var modifier = e.getValue();
+                                    boolean hasWashItem = materialsList.stream()
+                                            .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
 
+                                    return modifier.types.contains(type) &&
+                                            (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
+                                            (modifier.getUnlessItemIds().isEmpty() || !modifier.getUnlessItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
+                                            !modifier.cantSelect &&
+                                            (modifier.Slots.isEmpty()) &&
+                                            (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
+                                            (modifier.OnlyTags.isEmpty() || modifier.containTag(stack)) &&
+                                            (modifier.getUnlessItemIds().isEmpty() || !modifier.unContainTag(stack)) &&
+                                            (modifier.OnlyWashItems.isEmpty() || modifier.OnlyWashItems.contains(washItem) || hasWashItem);
+                                })
+                                .collect(Collectors.toMap(
+                                        Map.Entry::getKey,
+                                        e -> e.getValue().weight
+                                ))
+                ));
+            }
 
-                    if (!weightedUtil.weights.isEmpty()) {
-                        weightedUtil.increaseWeightsByRarity(rarity);
-                        if (entry.getKey() == ExType.ARMOR.get()) {  // ARMOR type, set the slot based on the item
-                            slot = new EquipmentSlot[]{((ArmorItem) stack.getItem()).getEquipmentSlot()};
-                        }
-                        LOGGER.debug("RandomEntry: " + type + " " + slot);
-                        RandomEntry(stack, weightedUtil, slot, refreshnumber);
-//                        stack.getOrCreateTag().putInt("exmodifier_armor_modifier_applied",
-//                                stack.getOrCreateTag().getInt("exmodifier_armor_modifier_applied") + 1);
-                        over = true;
-                    }
+            if (!weightedUtil.weights.isEmpty()) {
+                weightedUtil.increaseWeightsByRarity(rarity);
+                if (types.contains(ExType.ARMOR.get())) {  // ARMOR type, set the slot based on the item
+                    slotSet = new HashSet<>(List.of(((ArmorItem) stack.getItem()).getEquipmentSlot())); // 重新赋值为新的Set
+                }
+                try {
+                    RandomEntry(stack, weightedUtil, slotSet.toArray(new EquipmentSlot[0]), refreshnumber); // 将Set转换为数组
+                } catch (Exception e) {
+                    // 处理异常
                 }
             }
         }
+
 
         public static Map<ItemType, EquipmentSlot[]> typeSlotMap() {
             var a = new HashMap<ItemType, EquipmentSlot[]>(Map.of(
@@ -661,7 +666,7 @@ public class ModifierHandle {
 
         public static boolean isValidForType(ItemStack stack, ItemType type) {
 
-                    return type.itemSelector().compare(stack);
+                    return type.compare(stack);
 //            if (type == ExType.HELMET) return hasHelmetConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.HEAD;
 //            if (type == ExType.CHESTPLATE) return hasChestConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.CHEST;
 //            if (type == ExType.BOOTS) return hasBootsConfig && stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == EquipmentSlot.FEET;

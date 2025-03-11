@@ -3,6 +3,7 @@ package net.exmo.exmodifier.mixins;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -10,16 +11,21 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import static net.exmo.exmodifier.Config.refresh_time;
 
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
+
     @Shadow
     private CompoundTag tag;
     /**
@@ -54,4 +60,11 @@ public abstract class ItemStackMixin {
         multimap.putAll(cir.getReturnValue());
         cir.setReturnValue(multimap);
     }
+//    @Inject(at = @At("TAIL"),method = "<init>(Lnet/minecraft/world/level/ItemLike;ILnet/minecraft/nbt/CompoundTag;)V")
+//    private void nu$init$add(ItemLike p_41604_, int p_41605_, CompoundTag p_41606_, CallbackInfo ci)
+//    {
+//        ItemStack instance = (ItemStack)(Object) this;
+//
+//    }
+
 }

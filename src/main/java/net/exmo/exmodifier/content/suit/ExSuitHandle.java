@@ -149,9 +149,10 @@ public class ExSuitHandle {
         }
         JsonObject itemObject = itemElement.getAsJsonObject();
         ExSuit exSuit = new ExSuit();
+        String string = moconfig.type.name().toString();
         if (moconfig.type== ExType.ALL.get()){
             for (ItemType type : ExTypeHandle.values.values()){
-                String key = type.toString().substring(0, 2) + entry.getKey();
+                String key = type.name().toString().substring(0, 2) + entry.getKey();
                 // Exmodifier.LOGGER.debug("匹配中: "+key);
                 ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(key);
                 if (entry1 != null) {
@@ -161,21 +162,21 @@ public class ExSuitHandle {
             }
         }
         else {
-            ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(moconfig.type.toString().substring(0, 2) + entry.getKey());
+            ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(string.substring(0, 2) + entry.getKey());
             if (entry1 != null) {
                 exSuit.addEntry(entry1);
                 Exmodifier.LOGGER.debug("Found About ModifierEntry: "+entry1.id);
-            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
+            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + string.substring(0,2) + entry.getKey());
 
         }
         if (exSuit.entry.isEmpty()) {
             if (moconfig.type!= ExType.ALL.get()) {
-                Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + moconfig.type.toString().substring(0, 2) + entry.getKey());
+                Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + string.substring(0, 2) + entry.getKey());
             }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found any one about: " + entry.getKey());
             return;
         }
         exSuit.type = moconfig.type;
-        exSuit.id = moconfig.type.toString().substring(0,2) + entry.getKey();
+        exSuit.id = string.substring(0,2) + entry.getKey();
         if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
         if (itemObject.has("LocalDescription"))exSuit.LocalDescription= itemObject.get("LocalDescription").getAsString();
         // if (itemObject.has("trigger")) exSuit.MainTrigger = StringToTrigger(itemObject.get("trigger").getAsString());
@@ -190,7 +191,7 @@ public class ExSuitHandle {
                         exSuit.setLevelEffects(i, processEffects(moconfig, exSuit, suitObj.getAsJsonObject("effect")));
                     }
                 }else {
-                    Exmodifier.LOGGER.debug("No effect Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
+                    Exmodifier.LOGGER.debug("No effect Found: " + string.substring(0,2) + entry.getKey());
                 }
                 if (suitObj.has("commands")) {
                     JsonArray commands = suitObj.getAsJsonArray("commands");
@@ -203,7 +204,7 @@ public class ExSuitHandle {
 
                     }
                 }else {
-                    Exmodifier.LOGGER.debug("No command Found: " + moconfig.type.toString().substring(0,2) + entry.getKey());
+                    Exmodifier.LOGGER.debug("No command Found: " + string.substring(0,2) + entry.getKey());
                 }
                 if (suitObj.has("attrGethers")) {
                     if (suitObj.getAsJsonObject("attrGethers") != null) {

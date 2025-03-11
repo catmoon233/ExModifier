@@ -3,10 +3,24 @@ package net.exmo.exmodifier.content.type;
 import net.exmo.exmodifier.util.ItemSelector;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 
-public record ItemType(String name, ItemSelector itemSelector, EquipmentSlot... equipmentSlot) {
+import java.util.ArrayList;
+import java.util.Collections;
+
+public record ItemType(String name, ArrayList<ItemSelector> itemSelector, EquipmentSlot... equipmentSlot) {
+    public ItemType(String name, ItemSelector itemSelector,EquipmentSlot... equipmentSlot) {
+        this(name, new ArrayList<>(Collections.singletonList(itemSelector)),equipmentSlot);
+    }
+
     public EquipmentSlot[] getEquipmentSlot() {
         return equipmentSlot;
+    }
+    public boolean compare(ItemStack itemStack){
+        for (ItemSelector itemSelector : itemSelector){
+            if(!itemSelector.compare(itemStack))return false;
+        }
+        return true;
     }
 
     //我写handle去了 可
