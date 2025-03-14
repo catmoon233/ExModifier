@@ -20,6 +20,7 @@ import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.AttrGether;
 import net.exmo.exmodifier.content.type.ExType;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
@@ -349,14 +350,16 @@ public class ModifierHandle {
 
 
         }
-        public static void RandomEntry(ItemStack stack, int rarity, int refreshnumber, String washItem) {
-            if (stack.getTag() == null || ModifierEntryHelper.of(stack).getModifierEntriesSize() > 0) return;
-            if (stack.getTag() != null) {
-                stack.getTag().remove("wash_item");
-                stack.getTag().remove("modifier_refresh_rarity");
-                stack.getTag().remove("modifier_refresh_add");
-                stack.getTag().remove("modifier_refresh");
-            }
+        public static void RandomEntry(ItemStack stack, int rarity, int refreshnumber, String washItem,int keepEntries) {
+            CompoundTag tag = stack.getTag();
+            if (tag == null || ModifierEntryHelper.of(stack).getModifierEntriesSize() > 0 &&keepEntries==0) return;
+
+            tag.remove("wash_item");
+            tag.remove("modifier_refresh_rarity");
+            tag.remove("modifier_refresh_add");
+            tag.remove("modifier_refresh");
+            tag.remove("keepEntries");
+
 
             Map<ItemType, EquipmentSlot[]> typeEquipmentSlotMap = typeSlotMap();
             WeightedUtil<String> weightedUtil = new WeightedUtil<>(new HashMap<>());
@@ -835,6 +838,11 @@ public class ModifierHandle {
             if (    jsonObject.has("randomLevelSystemCount")
             ){
                 materials.randomLevelSystemCount = jsonObject.get("randomLevelSystemCount").getAsInt();
+
+            }
+            if (    jsonObject.has("keepEntries")
+            ){
+                materials.setKeepEntries(jsonObject.get("keepEntries").getAsInt());
 
             }
             if (    jsonObject.has("CostExp")

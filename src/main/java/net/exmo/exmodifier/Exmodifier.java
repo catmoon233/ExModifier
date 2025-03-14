@@ -188,7 +188,7 @@ public class Exmodifier {
         Map<String, WeightedUtil<String>> weights = new HashMap<>();
 
         for (ItemType type : ExTypeHandle.values.values()) {
-            weights.put(type.toString(), new WeightedUtil<>(modifierEntryMap.entrySet().stream().filter(e -> {
+            weights.put(type.name(), new WeightedUtil<>(modifierEntryMap.entrySet().stream().filter(e -> {
                 return e.getValue().types.contains(type);
             }).collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))));
         }
@@ -202,8 +202,8 @@ public class Exmodifier {
             }
             stack.getOrCreateTag().put("modifier_types", listTag);
 
-            double totalWeight = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.toString()).getProbability(entry)).sum();
-            double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.toString()).getProbability(entry) / totalWeight).sum();
+            double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry)).sum();
+          //  double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry) / totalWeight).sum();
             stack.getOrCreateTag().putDouble("modifier_possibility", probability);
             if (modifierEntry.maxLevel <= 1) {
                 stack.getOrCreateTag().putInt("modifier_level", 1);

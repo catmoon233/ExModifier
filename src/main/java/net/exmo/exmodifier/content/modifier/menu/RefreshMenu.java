@@ -7,11 +7,13 @@ import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.level.ItemLevelInstant;
 import net.exmo.exmodifier.content.modifier.*;
+import net.exmo.exmodifier.events.ExOnTableRefreshEntriesEvent;
 import net.exmo.exmodifier.events.ExRefreshEvent;
 import net.exmo.exmodifier.init.RegisterOther;
 import net.exmo.exmodifier.util.CuriosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -123,7 +125,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
 
                 MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getString("wash_item")));
                 if (!CuriosUtil.isCuriosItem2(p_39791_))
-                    ModifierHandle.CommonEvent.RandomEntry(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
+                    ModifierHandle.CommonEvent.RandomEntry(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"),orCreateTag.getInt("keepEntries"));
                 else
                     RandomEntryCurios(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
             }
@@ -133,7 +135,9 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
             }
             orCreateTag.remove("modifier_refresh_rarity");
             orCreateTag.remove("random_level_system_count");
+            orCreateTag.remove("NeedCount");
             orCreateTag.remove("wash_item");
+            orCreateTag.remove("keepEntries");
             orCreateTag.remove("modifier_refresh_add");
         }
         }
@@ -170,26 +174,41 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                             if (washingMaterials.OnlyItems == null || washingMaterials.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(item.getItem()).toString())) {
                                 if (washingMaterials.OnlyTags == null || washingMaterials.containTag(item)) {
 
-                                    ItemStack input = item.copy();
-                                    itemInfo = new ItemInfo(input);
+                                    ItemStack output = item.copy();
+                                    itemInfo = new ItemInfo(output);
+                                    CompoundTag orCreateTag = output.getOrCreateTag();
+
                                     modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
-                                    if (washingMaterials.additionEntry!=0) modifierEntryHelper.removeAllEntry(true);
-                                    //ModifierHandle.CommonEvent.clearEntry(input);
-//                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
-//                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
-                                    CompoundTag orCreateTag = input.getOrCreateTag();
-                                    orCreateTag.putInt("entryitem_add", 0);
+                                    if (washingMaterials.additionEntry!=0){
+                                        if (washingMaterials.getKeepEntries()==0) {
+                                            modifierEntryHelper.removeAllEntry(true);
+                                        }else {
+                                            List<ModifierInstant> modifierEntries = modifierEntryHelper.getModifierEntries();
+                                            for (int i = 1; i <= modifierEntries.size(); i++){
+                                                if (i>washingMaterials.getKeepEntries()){
+                                                    modifierEntryHelper.removeModifierEntry(modifierEntries.get(i-1), true);
+
+
+                                                }
+                                            }
+                                        }
+                                        }
+                                    //ModifierHandle.CommonEvent.clearEntry(output);
+//                    output.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
+//                    output.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");
+                                    orCreateTag.putInt("keepEntries", washingMaterials.getKeepEntries());
+                                    if (orCreateTag.contains("entryitem_add")) orCreateTag.putInt("entryitem_add", 0);
                                     orCreateTag.putBoolean("UNKNOWN",true);
                                 //    orCreateTag.putInt("NeedCount", washingMaterials.NeedCount);
                                     this.repairItemCountCost = washingMaterials.NeedCount;
                                     if (this.repairItemCountCost<=0)   this.repairItemCountCost = 1;
                                     orCreateTag.putInt("NeedCount", this.repairItemCountCost);
-                                    //input.getOrCreateTag().putDouble("CostExp", washingMaterials.CostExp);
+                                    //output.getOrCreateTag().putDouble("CostExp", washingMaterials.CostExp);
                                     this.cost.set((int) washingMaterials.CostExp + this.cost.get());
                                     if (this.cost.get()<=0)this.cost.set(1);
 
                                     orCreateTag.putBoolean("modifier_refresh", true);
-                                    orCreateTag.putBoolean("can_add_max", false);
+                                    if (orCreateTag.contains("can_add_max"))  orCreateTag.putBoolean("can_add_max", false);
                                     if (washingMaterials.MinRandomTime * washingMaterials.MaxRandomTime == 0) {
                                         orCreateTag.putInt("modifier_refresh_rarity", washingMaterials.rarity);
                                     } else {
@@ -205,7 +224,10 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                                         }
                                         orCreateTag.putInt("random_level_system_count", washingMaterials.randomLevelSystemCount);
                                     }
-                                    this.resultSlots.setItem(0, input);
+
+                                    ExOnTableRefreshEntriesEvent event = new ExOnTableRefreshEntriesEvent(washingMaterials, item, WashItem, output);
+                                    MinecraftForge.EVENT_BUS.post(event);
+                                    if (!event.isCanceled()) this.resultSlots.setItem(0, event.output);
                                     isFound = true;
 
                                 }
@@ -222,7 +244,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
         if (!isFound) {
             if (WashItem.getItem() instanceof EntryItem entryItem) {
                 ItemStack input = item.copy();
-                if ( ModifierEntry.containItemType(item,(ModifierEntry.StringToType(WashItem.getOrCreateTag().getString("modifier_type"))))) {
+                if (compareItemType(item, WashItem)) {
                     ModifierEntryHelper modifierEntryHelper1 = ModifierEntryHelper.of(item);
                     ModifierEntry modifierEntry = entryItem.getModifierEntry(this.inputSlots.getItem(1));
                     if (modifierEntryHelper1.getModifierEntryLevel(modifierEntry.id)== modifierEntry.maxLevel)return;
@@ -251,6 +273,15 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
         }
 
     }
+
+    private static boolean compareItemType(ItemStack item, ItemStack WashItem) {
+        ListTag types = WashItem.getTag().getList("modifier_types",8);
+        for (var a : types){
+            if (ModifierEntry.containItemType(item, (ModifierEntry.StringToType(a.getAsString()))))return true;
+        }
+        return false;
+    }
+
     @Override
     protected ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
         return ItemCombinerMenuSlotDefinition.create().withSlot(0, 27, 47, (p_266635_) -> {

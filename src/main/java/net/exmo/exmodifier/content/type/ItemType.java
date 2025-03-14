@@ -18,9 +18,9 @@ public record ItemType(String name, ArrayList<ItemSelector> itemSelector, Equipm
     }
     public boolean compare(ItemStack itemStack){
         for (ItemSelector itemSelector : itemSelector){
-            if(!itemSelector.compare(itemStack))return false;
+            if(itemSelector.compare(itemStack))return true;
         }
-        return true;
+        return false;
     }
 
     //我写handle去了 可

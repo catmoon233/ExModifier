@@ -52,7 +52,11 @@ public class ExType {
     ),EquipmentSlot.MAINHAND);
     public static ExType ARMOR = new ExType("ARMOR",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(
-            Tags.Items.ARMORS
+            Tags.Items.ARMORS,
+            Tags.Items.ARMORS_LEGGINGS,
+            Tags.Items.ARMORS_CHESTPLATES,
+            Tags.Items.ARMORS_BOOTS,
+            Tags.Items.ARMORS_HELMETS
     )
 
     )).addItemSelector(

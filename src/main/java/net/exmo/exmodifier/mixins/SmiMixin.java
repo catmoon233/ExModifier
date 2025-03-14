@@ -119,7 +119,7 @@ public abstract class SmiMixin extends ItemCombinerMenu {
             if (p_39790_.level().isClientSide)return;
             List<String> curios = CuriosUtil.getSlotsFromItemstack(p_39791_);
             MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getString("wash_item")));
-            if (curios.isEmpty()) ModifierHandle.CommonEvent.RandomEntry(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
+            if (curios.isEmpty()) ModifierHandle.CommonEvent.RandomEntry(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"),0);
             else   RandomEntryCurios(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));
             orCreateTag.remove("modifier_refresh_rarity");
             orCreateTag.remove("wash_item");

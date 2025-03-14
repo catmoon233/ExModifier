@@ -46,7 +46,7 @@ public class ExJeiPlugin implements IModPlugin {
 
 
         for (ItemType type : ExTypeHandle.values.values()) {
-            weights.put(type.toString(), new WeightedUtil<>(modifierEntryMap.entrySet().stream().filter(e -> {
+            weights.put(type.name(), new WeightedUtil<>(modifierEntryMap.entrySet().stream().filter(e -> {
                 return e.getValue().types.contains(type);
             }).collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))));
         }
@@ -56,11 +56,11 @@ public class ExJeiPlugin implements IModPlugin {
             stack.getOrCreateTag().putString("modifier_id", entry);
             ListTag listTag = new ListTag();
             for (ItemType type : modifierEntry.types){
-                listTag.add(StringTag.valueOf(type.toString()));
+                listTag.add(StringTag.valueOf(type.name()));
             }
             stack.getOrCreateTag().put("modifier_types", listTag);
-            double totalWeight = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.toString()).getProbability(entry)).sum();
-            double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.toString()).getProbability(entry) / totalWeight).sum();
+            double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry)).sum();
+          //  double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry) / totalWeight).sum();
             stack.getOrCreateTag().putDouble("modifier_possibility", probability);
             if (modifierEntry.maxLevel <= 1) {
                 stack.getOrCreateTag().putInt("modifier_level", 1);

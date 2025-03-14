@@ -14,6 +14,12 @@ public class WashingMaterials {
     public Item item;
     public int randomLevelSystemCount = 0;
     public int rarity;
+
+    public void setKeepEntries(int keepEntries) {
+        this.keepEntries = keepEntries;
+    }
+
+    private int keepEntries = 0;
     public List<ItemType> OnlyTypes = new ArrayList<>();
     public double CostExp =0;
     public int NeedCount =1;
@@ -43,5 +49,9 @@ public class WashingMaterials {
         this.rarity = rarity;
         MinRandomTime = minRandomTime;
         MaxRandomTime = maxRandomTime;
+    }
+
+    public int getKeepEntries() {
+        return keepEntries;
     }
 }

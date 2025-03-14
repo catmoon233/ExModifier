@@ -24,7 +24,7 @@ import static net.exmo.exmodifier.Exmodifier.MODID;
 import static se.mickelus.mutil.data.deserializer.ResourceLocationDeserializer.deserialize;
 
 public abstract class ModifierEntryDataProvider implements DataProvider {
-    private String MODID = null;
+    private String MODID = "exmodifier";
 
     private final DataGenerator generator;
     private final ExistingFileHelper existingFileHelper;
@@ -70,7 +70,7 @@ public abstract class ModifierEntryDataProvider implements DataProvider {
     public  Path   path ;
     @Override
     public CompletableFuture<?> run(CachedOutput cache) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+       // Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         Path folder = this.generator.getPackOutput().getOutputFolder().resolve( path);
         //Path outputPath = outputFolder.resolve("data/modid/modifier_entries.json");

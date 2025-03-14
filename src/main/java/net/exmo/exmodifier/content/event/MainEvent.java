@@ -597,14 +597,14 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                                 modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:front")));
                                 modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:centre")));
                             }
-                            RandomEntry(stack, 0, refresh_time, "none");
+                            RandomEntry(stack, 0, refresh_time, "none",0);
                         }
                         if (stack.getTag() != null) {
                             if (stack.getTag().contains("modifier_refresh")) {
                                 if (stack.getTag().getBoolean("modifier_refresh")) {
                                     stack.getTag().remove("modifier_refresh");
                                     stack.getTag().remove("UNKNOWN");
-                                    RandomEntry(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"));
+                                    RandomEntry(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"),0);
                                 }
                             }
                         }
