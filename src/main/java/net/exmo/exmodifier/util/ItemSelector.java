@@ -109,10 +109,10 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
         };
     }
     public boolean compareItemSelector(ItemSelector itemSelector){
-        if (itemSelector.item != null && itemSelector.item != item) return false;
-        if (itemSelector.itemId !=null && !itemSelector.itemId.equals(itemId)) return false;
-        if (itemSelector.containNBT !=null && !itemSelector.containNBT.equals(containNBT)) return false;
-        if (itemSelector.containTag !=null && !itemSelector.containTag.equals(containTag)) return false;
+        if (itemSelector.item != null && item!=null&& itemSelector.item != item) return false;
+        if (itemSelector.itemId !=null&&itemId!=null && !itemSelector.itemId.equals(itemId)) return false;
+        if (itemSelector.containNBT !=null&&containNBT !=null && !itemSelector.containNBT.equals(containNBT)) return false;
+        if (itemSelector.containTag !=null && containTag !=null &&!itemSelector.containTag.equals(containTag)) return false;
 
         return true;
     }

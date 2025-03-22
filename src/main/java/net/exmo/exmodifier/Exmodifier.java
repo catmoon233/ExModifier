@@ -221,16 +221,11 @@ public class Exmodifier {
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
-        // Some example code to dispatch IMC to another mod
-//        InterModComms.sendTo("exmodifier", "helloworld", () -> {
-//            LOGGER.info("Hello world from the MDK");
-//            return "Hello world";
-//        });
+
     }
 
     private void processIMC(final InterModProcessEvent event) {
-        // Some example code to receive and process InterModComms from other mods
-//        LOGGER.info("Got IMC {}", eventC.getIMCStream().map(m -> m.messageSupplier().get()).collect(Collectors.toList()));
+
     }
     @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ClientEvents {
@@ -239,19 +234,7 @@ public class Exmodifier {
             event.register(ENTRY_ITEM.get(), new EntryItemRender());
         }
     }
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        // Do something when the server starts
-//        LOGGER.info("HELLO from server starting");
-    }
 
-    // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
-    // Event bus for receiving Registry Events)
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class RegistryEvents {
-
-    }
     public static <T> void addNetworkMessage(Class<T> messageType, BiConsumer<T, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
         PACKET_HANDLER.registerMessage(messageID, messageType, encoder, decoder, messageConsumer);
         messageID++;
