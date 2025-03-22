@@ -17,11 +17,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class ExConfigHandle {
     public static int autoUUID = 0;
@@ -144,6 +143,23 @@ public class ExConfigHandle {
             Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
         }
         return new ArrayList<>();
+    }
+    public static List<MoConfig> listFilesFromZipFile(ZipFile zipFile) throws IOException {
+        List<MoConfig> moconfigs = new ArrayList<>();
+        Enumeration<? extends ZipEntry> files = zipFile.entries();
+        while (files.hasMoreElements()){
+            ZipEntry file = files.nextElement();
+            if(file.isDirectory())continue;
+            MoConfig moconfig = new MoConfig(Path.of(zipFile.getName(),file.getName()));
+            moconfig.readFromZipFile(zipFile.getInputStream(file));
+            if (moconfig.readSetting("type")!=null){
+                moconfig.type = ModifierEntry.StringToType(moconfig.readSetting("type").getAsString());
+            }
+            if (moconfig.type == ExType.CURIOS.get() &&moconfig.readSetting("type").getAsString().length()>6)moconfig.CuriosType=moconfig.readSetting("type").getAsString().substring(7);
+            moconfigs.add(moconfig);
+            Exmodifier.LOGGER.debug("Found Config: Type:" + moconfig.type + " Path:" + moconfig.configFile+" "  +moconfig.type +" CuriosType:"+moconfig.CuriosType);
+        }
+        return moconfigs;
     }
     public static UUID autoUUid(int number) {
         // 将整数转换为十六进制字符串

@@ -724,7 +724,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                 ModifierHandle.sendModifierEntryToAllClient(modifierEntry);
             }
             ModifierHandle.EEMatchQueueHandle();
-            LanguageLoader.load(FMLPaths.GAMEDIR.get().toFile().toPath().resolve(LanguageLoader.LANGUAGES_FILE_PATH));
+            LanguageLoader.load(FMLPaths.GAMEDIR.get().resolve(LanguageLoader.LANGUAGES_FILE_PATH));
         }
 
         @SubscribeEvent

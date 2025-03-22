@@ -50,6 +50,8 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static net.exmo.exmodifier.Exmodifier.*;
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.*;
@@ -760,6 +762,60 @@ public class ModifierHandle {
             if (Files.exists(ItemsDefaultEntryConfigPath)) {
                 itemsDefaultEntry = new HashMap<>();
                 MoConfig washingMaterialsConfig = new MoConfig(ItemsDefaultEntryConfigPath);
+
+                for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
+                    processItemsDefaultEntryEntry(entry);
+                }
+
+            }
+            MinecraftForge.EVENT_BUS.post(new ExItemDefaultEntry());
+            // 读取其余配置文件
+            Foundmoconfigs =  listFiles(ConfigPath);
+            for (MoConfig moconfig : Foundmoconfigs) {
+                processEntryMoConfigEntries(moconfig);
+            }
+
+            // 读取升级配置
+            Foundlvconfigs =  listFiles(LEVEL_CONFIG_PATH);
+            for (MoConfig moconfig : Foundlvconfigs) {
+                processLevelMoConfigEntries(moconfig);
+            }
+            long endTime = System.nanoTime(); // 记录结束时间
+            long duration = endTime - startTime; // 计算持续时间
+            LOGGER.debug("ReadConfig Over Modifier time: " + duration / 1000000 + " ms");
+            LOGGER.debug("ReadConfig Over Modifier config count: " + Foundmoconfigs.size());
+            LOGGER.debug("ReadConfig Over Modifier modifier count: " + modifierEntryMap.size());
+        } catch (IOException e) {
+            LOGGER.error("Error reading configuration files", e);
+        } catch (Exception e) {
+            LOGGER.error("Unexpected error during configuration reading", e);
+        }
+    }
+    public static void readConfigFromZipFile(ZipFile zipFile) {
+        modifierEntryMap = new HashMap<>();
+        Foundmoconfigs = new ArrayList<>();
+
+        long startTime = System.nanoTime(); // 记录开始时间
+
+        try {
+
+            // 读取洗涤材料配置
+            String WashingConfigFilePath = WashingMaterialsConfigPath.getFileName().toString();
+            ZipEntry wash = zipFile.getEntry(WashingConfigFilePath);
+            if (wash != null) {
+                materialsList = new ArrayList<>();
+                MoConfig washingMaterialsConfig = new MoConfig(Path.of(zipFile.getName(),WashingConfigFilePath), zipFile.getInputStream(wash));
+
+                for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
+                    processWashingMaterialEntry(entry);
+                }
+            }
+            // 读取物品默认条目配置
+            String ItemsDefaultEntryFilePath = ItemsDefaultEntryConfigPath.getFileName().toString();
+            ZipEntry item = zipFile.getEntry(ItemsDefaultEntryFilePath);
+            if (item != null) {
+                itemsDefaultEntry = new HashMap<>();
+                MoConfig washingMaterialsConfig = new MoConfig(Path.of(zipFile.getName(),ItemsDefaultEntryFilePath), zipFile.getInputStream(item));
 
                 for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
                     processItemsDefaultEntryEntry(entry);
