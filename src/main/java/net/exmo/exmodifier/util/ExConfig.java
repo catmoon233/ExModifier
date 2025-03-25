@@ -4,10 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
+import org.apache.commons.io.IOUtils;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -38,8 +41,19 @@ public class ExConfig {
                 }
             }
         }catch (Exception e){
-            Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
+
             return null;
+        }
+        return null;
+    }
+    public JsonObject readFromZipFile(InputStream stream){
+        try {
+            Gson gson = new Gson();
+            String json = IOUtils.toString(stream, StandardCharsets.UTF_8);
+            JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+            return jsonObject;
+        } catch (IOException e) {
+            Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
         }
         return null;
     }
@@ -64,6 +78,10 @@ public class ExConfig {
     public ExConfig(Path configFile) throws FileNotFoundException {
         this.configFile = configFile;
         this.AlljsonObject = read();
+    }
+    public ExConfig(Path configFile, InputStream stream) throws FileNotFoundException {
+        this.configFile = configFile;
+        this.AlljsonObject = readFromZipFile(stream);
     }
     public com.google.gson.JsonObject getAllJsonObject() {
         return AlljsonObject;
