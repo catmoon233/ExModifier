@@ -55,7 +55,7 @@ import java.util.zip.ZipFile;
 
 import static net.exmo.exmodifier.Exmodifier.*;
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.*;
-import static net.exmo.exmodifier.util.ExConfigHandle.listFiles;
+import static net.exmo.exmodifier.util.ExConfigHandle.*;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -824,13 +824,13 @@ public class ModifierHandle {
             }
             MinecraftForge.EVENT_BUS.post(new ExItemDefaultEntry());
             // 读取其余配置文件
-            Foundmoconfigs =  listFiles(ConfigPath);
+            Foundmoconfigs =  listFilesFromZipFile(zipFile,ConfigPath.getFileName());
             for (MoConfig moconfig : Foundmoconfigs) {
                 processEntryMoConfigEntries(moconfig);
             }
 
             // 读取升级配置
-            Foundlvconfigs =  listFiles(LEVEL_CONFIG_PATH);
+            Foundlvconfigs =  listFilesFromZipFile(zipFile,LEVEL_CONFIG_PATH.getFileName());
             for (MoConfig moconfig : Foundlvconfigs) {
                 processLevelMoConfigEntries(moconfig);
             }

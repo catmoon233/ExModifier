@@ -15,7 +15,7 @@ public class ZipHandle {
         Files.newDirectoryStream(ZIP_FILE_DIR).forEach((path -> {
             if(path.endsWith(".zip"))
                 try (ZipFile zipFile = new ZipFile(path.toFile())){
-
+                    readConfigFromZipFile(zipFile);
                 } catch (IOException e){
                     Exmodifier.LOGGER.error("IOException:",e);
                 }

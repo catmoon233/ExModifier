@@ -15,6 +15,7 @@ import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
+import net.exmo.exmodifier.content.resources.ZipHandle;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.AttributeCuriosHandle;
@@ -68,7 +69,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Config.refresh_time;
-
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.ItemLevelRefresh;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEntry;
@@ -710,6 +710,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             return flag;
         }
         public static void init(Runnable runnable) throws IOException {
+            ZipHandle.init()
             BaseItemSelected.IDS = new HashMap<>();
             RefreshContainTagHandle.readConfig();
             RefreshContainItemHandle.readConfig();

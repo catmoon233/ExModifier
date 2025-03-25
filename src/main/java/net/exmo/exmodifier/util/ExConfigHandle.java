@@ -144,12 +144,13 @@ public class ExConfigHandle {
         }
         return new ArrayList<>();
     }
-    public static List<MoConfig> listFilesFromZipFile(ZipFile zipFile) throws IOException {
+    public static List<MoConfig> listFilesFromZipFile(ZipFile zipFile, String directory) throws IOException {
         List<MoConfig> moconfigs = new ArrayList<>();
         Enumeration<? extends ZipEntry> files = zipFile.entries();
         while (files.hasMoreElements()){
             ZipEntry file = files.nextElement();
             if(file.isDirectory())continue;
+            if(!file.getName().startsWith(directory))continue;
             MoConfig moconfig = new MoConfig(Path.of(zipFile.getName(),file.getName()));
             moconfig.readFromZipFile(zipFile.getInputStream(file));
             if (moconfig.readSetting("type")!=null){
