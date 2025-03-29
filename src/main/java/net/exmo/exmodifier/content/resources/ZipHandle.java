@@ -16,9 +16,7 @@ public class ZipHandle {
             Files.createDirectories(ZIP_FILE_DIR);
             return;
         }
-        if (Files.list(ZIP_FILE_DIR).count() == 0) {
-            return;
-        }
+
         Files.list(ZIP_FILE_DIR).forEach(path -> {
             if (path.toString().endsWith(".zip")) {
                 try (ZipFile zipFile = new ZipFile(path.toFile())) {
