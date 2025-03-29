@@ -227,16 +227,14 @@ CuriosUtil {
         itemTag.put("CurioAttributeModifiers", modifiersList);
         itemStack.setTag(itemTag);
     }
-    public static  boolean isLivingWear(Item item, LivingEntity entity){
-        LazyOptional<ICuriosItemHandler> curiosInventory = CuriosApi.getCuriosInventory(entity);
-        boolean present = curiosInventory.isPresent();
-        if (!present) return false;
-        return curiosInventory.orElse(null).isEquipped(item);
+    public static boolean isLivingWear(Item item, LivingEntity entity) {
+        final LazyOptional<ICuriosItemHandler> curiosInventory = CuriosApi.getCuriosInventory(entity);
+        if (!curiosInventory.isPresent()) return false;
+        return curiosInventory.resolve().get().isEquipped(item);
     }
-    public static  boolean isLivingWear(ItemStack itemStack, LivingEntity entity){
-        LazyOptional<ICuriosItemHandler> curiosInventory = CuriosApi.getCuriosInventory(entity);
-        boolean present = curiosInventory.isPresent();
-        if (!present) return false;
-        return curiosInventory.orElse(null).isEquipped(itemStack.getItem());
+
+    public static boolean isLivingWear(ItemStack itemStack, LivingEntity entity) {
+        return isLivingWear(itemStack.getItem(), entity); // 复用前一个方法
     }
+
 }

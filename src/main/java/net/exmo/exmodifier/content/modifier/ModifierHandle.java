@@ -824,13 +824,13 @@ public class ModifierHandle {
             }
             MinecraftForge.EVENT_BUS.post(new ExItemDefaultEntry());
             // 读取其余配置文件
-            Foundmoconfigs =  listFilesFromZipFile(zipFile,ConfigPath.getFileName());
+            Foundmoconfigs =  listFilesFromZipFile(zipFile,ConfigPath.getFileName().toString());
             for (MoConfig moconfig : Foundmoconfigs) {
                 processEntryMoConfigEntries(moconfig);
             }
 
             // 读取升级配置
-            Foundlvconfigs =  listFilesFromZipFile(zipFile,LEVEL_CONFIG_PATH.getFileName());
+            Foundlvconfigs =  listFilesFromZipFile(zipFile,LEVEL_CONFIG_PATH.getFileName().toString());
             for (MoConfig moconfig : Foundlvconfigs) {
                 processLevelMoConfigEntries(moconfig);
             }

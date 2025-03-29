@@ -710,7 +710,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             return flag;
         }
         public static void init(Runnable runnable) throws IOException {
-            ZipHandle.init()
+            ZipHandle.init();
             BaseItemSelected.IDS = new HashMap<>();
             RefreshContainTagHandle.readConfig();
             RefreshContainItemHandle.readConfig();

@@ -11,7 +11,8 @@ import java.util.zip.ZipFile;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.*;
 public class ZipHandle {
     public static final Path ZIP_FILE_DIR = FMLPaths.CONFIGDIR.get().resolve("exmo/packs");
-    public void init() throws IOException {
+    public static void init() throws IOException {
+        if (!Files.exists(ZIP_FILE_DIR))return;
         Files.newDirectoryStream(ZIP_FILE_DIR).forEach((path -> {
             if(path.endsWith(".zip"))
                 try (ZipFile zipFile = new ZipFile(path.toFile())){
