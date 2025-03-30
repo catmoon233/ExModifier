@@ -14,6 +14,10 @@ public class MoConfig extends ExConfig {
     public MoConfig(Path configFile) throws FileNotFoundException {
         super(configFile);
     }
+    public MoConfig(Path configFile,boolean skin) throws FileNotFoundException {
+        super(configFile,skin);
+    }
+
     public MoConfig(Path configFile, InputStream stream) throws FileNotFoundException {
         super(configFile, stream);
     }

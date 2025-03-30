@@ -6,7 +6,6 @@ import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
-import net.exmo.exmodifier.util.CuriosUtil;
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.ChatFormatting;
@@ -234,7 +233,7 @@ public class ModifierEntry {
     }
     public static ItemType StringToType(String type) {
         if (type.toLowerCase().startsWith("curios")) return ExType.CURIOS.get();
-        for(var v : ExTypeHandle.values.values()){
+        for(var v : ExTypeHandle.itemTypes.values()){
             if(v.name().equalsIgnoreCase(type))return v;
         }
         /*switch (type) {
@@ -322,7 +321,7 @@ public class ModifierEntry {
     }
     public static List<ItemType> getType(ItemStack stack) {
         List<ItemType> types = new ArrayList<>();
-        for (var v : ExTypeHandle.values.values()){
+        for (var v : ExTypeHandle.itemTypes.values()){
             if (v.compare(stack)){
                 types.add(v);
             }
@@ -355,7 +354,7 @@ public class ModifierEntry {
     }
     public static ItemType findTypeFormEntry(ModifierEntry modifierEntry)
     {
-        for (ItemType type1 : ExTypeHandle.values.values())
+        for (ItemType type1 : ExTypeHandle.itemTypes.values())
         {
             if (type1.toString().substring(0,2).equals(modifierEntry.id.substring(0,2)))return type1;
         }
@@ -439,7 +438,7 @@ public class ModifierEntry {
                     list.add(Component.translatable("modifier.entry.type"));
                     hasTyoe = true;
                 }
-                list.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.entry.type").append(type.name())));
+                list.add(Component.literal(" §7¦ §r").append(type.name()));
 
             }
 

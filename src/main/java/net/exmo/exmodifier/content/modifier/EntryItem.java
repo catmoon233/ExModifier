@@ -39,6 +39,11 @@ public class EntryItem extends Item {
         return stack.getTag().getDouble("modifier_possibility")* 100;
     }
 
+    @Override
+    public Component getName(ItemStack stack) {
+        return Component.translatable("modifier.entry." + getModifierID(stack).substring(2));
+    }
+
     @Mod.EventBusSubscriber
     public static class CommonEvent {
         public static final DecimalFormat df = new DecimalFormat("#.####");
@@ -73,7 +78,7 @@ public class EntryItem extends Item {
                             if (modifierEntry.Slots.size()==1){
                                 lc.add(Component.translatable("modifier.entry.slot").append(Component.translatable("modifier.slot." + modifierEntry.Slots.get(0))));
                             }else {
-                                lc.add(Component.translatable("modifier.entry.slot"));
+                              //  lc.add(Component.translatable("modifier.entry.slot"));
                                 for (var slot : modifierEntry.Slots) {
                                     lc.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.slot." + slot)));
                                 }

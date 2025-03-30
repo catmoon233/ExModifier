@@ -11,7 +11,9 @@ import net.exmo.exmodifier.content.event.parameter.EventC;
 import net.exmo.exmodifier.content.modifier.block.RefreshTable;
 import net.exmo.exmodifier.content.modifier.block.enitty.RefreshTableEntity;
 import net.exmo.exmodifier.content.modifier.menu.RefreshMenu;
+import net.exmo.exmodifier.content.modifier.menu.RefreshMenuPlus;
 import net.exmo.exmodifier.content.modifier.menu.RefreshMenuScreen;
+import net.exmo.exmodifier.content.modifier.menu.RefreshMenuScreenPlus;
 import net.exmo.exmodifier.content.slot.block.EmbeddedTable;
 import net.exmo.exmodifier.content.slot.block.enitty.EmbeddedEntity;
 import net.exmo.exmodifier.content.slot.menu.EmbeddedMenu;
@@ -56,6 +58,7 @@ public class RegisterOther {
     public static class MenuAbout{
         public static final DeferredRegister<MenuType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.MENU_TYPES, Exmodifier.MODID);
         public static final RegistryObject<MenuType<RefreshMenu>> REFRESH_MENU = REGISTRY.register("refresh_menu",() -> IForgeMenuType.create(RefreshMenu::new));
+        public static final RegistryObject<MenuType<RefreshMenuPlus>> REFRESH_MENU_PLUS = REGISTRY.register("refresh_menu_plus",() -> IForgeMenuType.create(RefreshMenuPlus::new));
         public static final RegistryObject<MenuType<EmbeddedMenu>> EMBEDDED_MENU = REGISTRY.register("embedded_menu",() -> IForgeMenuType.create(EmbeddedMenu::new));
 
     }
@@ -82,6 +85,7 @@ public class RegisterOther {
         @SubscribeEvent
         public static void clientLoad(FMLClientSetupEvent event) {
             event.enqueueWork(() -> {
+                MenuScreens.register(MenuAbout.REFRESH_MENU_PLUS.get(), RefreshMenuScreenPlus::new);
                 MenuScreens.register(MenuAbout.REFRESH_MENU.get(), RefreshMenuScreen::new);
                 MenuScreens.register(MenuAbout.EMBEDDED_MENU.get(), EmbeddedMenuScreen::new);
             });

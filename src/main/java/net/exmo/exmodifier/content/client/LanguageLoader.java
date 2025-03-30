@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.locale.Language;
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
@@ -22,7 +23,7 @@ import java.util.zip.ZipFile;
 public final class LanguageLoader {
     public static final Map<String, Map<String, String>> LANGUAGES = Maps.newHashMap();
     private static final Marker MARKER = MarkerManager.getMarker("LanguageLoader");
-    public static final String LANGUAGES_FILE_PATH = "config/exmo/lang";
+    public static final Path LANGUAGES_FILE_PATH = FMLPaths.GAMEDIR.get().resolve("exmo/lang");
     public static void load(Path filePath) {
         if (!Files.isDirectory(filePath)) {
             return;
@@ -42,8 +43,8 @@ public final class LanguageLoader {
                 Language.loadFromJson(inputStream, languages::put);
                 putLanguage(languageCode, languages);
             } catch (IOException | JsonSyntaxException | JsonIOException exception) {
-           //     Exmodifier.LOGGER.Logger.error(MARKER, "Failed to read language file: {}", file);
-                exception.printStackTrace();
+                Exmodifier.LOGGER.Logger.error( "Failed to read language file: {}", file);
+              //  exception.printStackTrace();
             }
         }
     }

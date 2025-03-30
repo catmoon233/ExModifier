@@ -152,8 +152,8 @@ public class ExConfigHandle {
             ZipEntry file = files.nextElement();
             if(file.isDirectory())continue;
             if(!file.getName().startsWith(parentDir))continue;
-            MoConfig moconfig = new MoConfig(Path.of(zipFile.getName(),file.getName()));
-            moconfig.readFromZipFile(zipFile.getInputStream(file));
+            MoConfig moconfig = new MoConfig(Path.of(zipFile.getName(),file.getName()),true);
+          moconfig.jsonObject =   moconfig.readFromZipFile(zipFile.getInputStream(file));
             if (moconfig.readSetting("type")!=null){
                 moconfig.type = ModifierEntry.StringToType(moconfig.readSetting("type").getAsString());
             }

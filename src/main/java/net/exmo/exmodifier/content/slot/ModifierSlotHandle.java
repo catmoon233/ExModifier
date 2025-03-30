@@ -25,8 +25,8 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.ge
 @Mod.EventBusSubscriber
 public class ModifierSlotHandle
 {
-    public static Map<ResourceLocation, ModifierSlot> registerSlots ;
-    public static List<UnLockSlotItem> unLockSlotItems ;
+    public static Map<ResourceLocation, ModifierSlot> registerSlots = new HashMap<>() ;
+    public static List<UnLockSlotItem> unLockSlotItems = new ArrayList<>();
 
 
     public static void registerUnLockSlotItem(UnLockSlotItem unLockSlotItem)
@@ -95,8 +95,7 @@ public class ModifierSlotHandle
     }
 
     public static void reload() {
-        registerSlots = new HashMap<>();
-        unLockSlotItems = new ArrayList<>();
+
         ExampleSlotRegister();
         ExRegisterUnLockSlotEvent event = new ExRegisterUnLockSlotEvent();
         ExampleUnLockItemRegister(event);

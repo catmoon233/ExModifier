@@ -2,6 +2,7 @@ package net.exmo.exmodifier.content.modifier.block.enitty;
 
 import io.netty.buffer.Unpooled;
 import net.exmo.exmodifier.content.modifier.menu.RefreshMenu;
+import net.exmo.exmodifier.content.modifier.menu.RefreshMenuPlus;
 import net.exmo.exmodifier.init.RegisterOther;
 
 import net.minecraft.core.BlockPos;
@@ -156,7 +157,7 @@ public class RefreshTableEntity extends RandomizableContainerBlockEntity impleme
 
 	@Override
 	public AbstractContainerMenu createMenu(int id, Inventory inventory) {
-		return new RefreshMenu(id, inventory, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(this.worldPosition));
+		return new RefreshMenuPlus(id, inventory, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(this.worldPosition));
 	}
 
 	@Override

@@ -5,8 +5,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.exmo.exmodifier.Config;
+import net.exmo.exmodifier.content.client.LanguageLoader;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
+import net.exmo.exmodifier.content.quality.ItemQualityHandle;
 import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
@@ -54,6 +56,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static net.exmo.exmodifier.Exmodifier.*;
+import static net.exmo.exmodifier.content.client.LanguageLoader.putLanguage;
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.*;
 import static net.exmo.exmodifier.util.ExConfigHandle.*;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
@@ -384,7 +387,7 @@ public class ModifierHandle {
                                     boolean hasWashItem = materialsList.stream()
                                             .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
 
-                                    return modifier.types.contains(type) &&
+                                    return modifier.types.stream().map(ItemType::name).toList().contains(type.name()) &&
                                             (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
                                             (modifier.getUnlessItemIds().isEmpty() || !modifier.getUnlessItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
                                             !modifier.cantSelect &&
@@ -432,7 +435,7 @@ public class ModifierHandle {
             a.put(ExType.PICKAXE.get(), new EquipmentSlot[] { EquipmentSlot.MAINHAND });
             a.put(ExType.UNKNOWN.get(), new EquipmentSlot[] { EquipmentSlot.MAINHAND });
 
-            for (var itemType : ExTypeHandle.values.values()) {
+            for (var itemType : ExTypeHandle.itemTypes.values()) {
                 a.put(itemType, itemType.getEquipmentSlot()); // 包装为数组
             }
             return a;
@@ -738,8 +741,8 @@ public class ModifierHandle {
         EEMatchQueue = new HashMap<>();
     }
     public static void readConfig() {
-        modifierEntryMap = new HashMap<>();
-        Foundmoconfigs = new ArrayList<>();
+
+
 
         long startTime = System.nanoTime(); // 记录开始时间
 
@@ -751,7 +754,7 @@ public class ModifierHandle {
 
             // 读取洗涤材料配置
             if (Files.exists(WashingMaterialsConfigPath)) {
-                materialsList = new ArrayList<>();
+
                 MoConfig washingMaterialsConfig = new MoConfig(WashingMaterialsConfigPath);
 
                 for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
@@ -760,7 +763,7 @@ public class ModifierHandle {
             }
             // 读取物品默认条目配置
             if (Files.exists(ItemsDefaultEntryConfigPath)) {
-                itemsDefaultEntry = new HashMap<>();
+
                 MoConfig washingMaterialsConfig = new MoConfig(ItemsDefaultEntryConfigPath);
 
                 for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
@@ -792,18 +795,13 @@ public class ModifierHandle {
         }
     }
     public static void readConfigFromZipFile(ZipFile zipFile) {
-        modifierEntryMap = new HashMap<>();
-        Foundmoconfigs = new ArrayList<>();
-
         long startTime = System.nanoTime(); // 记录开始时间
-
         try {
 
             // 读取洗涤材料配置
             String WashingConfigFilePath = WashingMaterialsConfigPath.getFileName().toString();
             ZipEntry wash = zipFile.getEntry(WashingConfigFilePath);
             if (wash != null) {
-                materialsList = new ArrayList<>();
                 MoConfig washingMaterialsConfig = new MoConfig(Path.of(zipFile.getName(),WashingConfigFilePath), zipFile.getInputStream(wash));
 
                 for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
@@ -814,7 +812,7 @@ public class ModifierHandle {
             String ItemsDefaultEntryFilePath = ItemsDefaultEntryConfigPath.getFileName().toString();
             ZipEntry item = zipFile.getEntry(ItemsDefaultEntryFilePath);
             if (item != null) {
-                itemsDefaultEntry = new HashMap<>();
+
                 MoConfig washingMaterialsConfig = new MoConfig(Path.of(zipFile.getName(),ItemsDefaultEntryFilePath), zipFile.getInputStream(item));
 
                 for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
@@ -822,18 +820,48 @@ public class ModifierHandle {
                 }
 
             }
+            // 读取自定义类型配置
+            ExTypeHandle.FoundTypeConfigs = listFilesFromZipFile(zipFile,ExTypeHandle.ConfigPath.getFileName());
+            for (MoConfig moconfig : ExTypeHandle.FoundTypeConfigs)
+            {
+                ExTypeHandle.processItemTypes(moconfig);
+
+            }
             MinecraftForge.EVENT_BUS.post(new ExItemDefaultEntry());
             // 读取其余配置文件
-            Foundmoconfigs =  listFilesFromZipFile(zipFile,ConfigPath.getFileName().toString());
+            Foundmoconfigs =  listFilesFromZipFile(zipFile,ConfigPath.getFileName());
             for (MoConfig moconfig : Foundmoconfigs) {
                 processEntryMoConfigEntries(moconfig);
             }
 
             // 读取升级配置
-            Foundlvconfigs =  listFilesFromZipFile(zipFile,LEVEL_CONFIG_PATH.getFileName().toString());
+            Foundlvconfigs =  listFilesFromZipFile(zipFile,LEVEL_CONFIG_PATH.getFileName());
             for (MoConfig moconfig : Foundlvconfigs) {
                 processLevelMoConfigEntries(moconfig);
             }
+
+            // 读取套装配置
+           ExSuitHandle.FoundSuitConfigs =  listFilesFromZipFile(zipFile,ExSuitHandle.ConfigPath.getFileName());
+            for (MoConfig moconfig : ExSuitHandle.FoundSuitConfigs) {
+                ExSuitHandle.processMoConfigEntries(moconfig);
+            }
+
+            // 读取物品品质配置
+            ItemQualityHandle.FoundQualityConfigs =  listFilesFromZipFile(zipFile,ItemQualityHandle.ItemsQualityConfigPath.getFileName());
+            for (MoConfig moconfig : ItemQualityHandle.FoundQualityConfigs)
+            {
+                ItemQualityHandle.processMoConfigEntries(moconfig);
+            }
+            for (MoConfig moconfig : listFilesFromZipFile(zipFile, LanguageLoader.LANGUAGES_FILE_PATH.getFileName()))
+            {
+                String string = moconfig.configFile.getFileName().toString();
+                String languageCode = string.substring(0, string.length() - 5);
+                Map<String, String> collect = moconfig.jsonObject.asMap().entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getAsString()));
+                putLanguage(languageCode, collect);
+            }
+
+
             long endTime = System.nanoTime(); // 记录结束时间
             long duration = endTime - startTime; // 计算持续时间
             LOGGER.debug("ReadConfig Over Modifier time: " + duration / 1000000 + " ms");
@@ -921,7 +949,7 @@ public class ModifierHandle {
             if (jsonObject.has("OnlyTypes")){
                 JsonArray OnlyItems = jsonObject.get("OnlyTypes").getAsJsonArray();
                 OnlyItems.forEach(item -> {
-                    materials.OnlyTypes.add(ExTypeHandle.values.get(item.getAsString()));
+                    materials.OnlyTypes.add(ExTypeHandle.itemTypes.get(item.getAsString()));
                 });
             }
             if (jsonObject.has("OnlyTags")){

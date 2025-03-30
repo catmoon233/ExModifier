@@ -118,7 +118,7 @@ public class EntryBookForgeRecipeCategory implements IRecipeCategory<EntryBookFo
                 int y = (getHeight() / 2)-1;
                 int x = (getWidth() - font.width(inputText)) * 3 / 4;
                 guiGraphics.drawString(font, inputText, x, y, Color.green.getRGB());
-                guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.chance",EntryItem.CommonEvent.df.format(EntryItem.getModifierChance(right.get()))), x, y-8, Color.CYAN.getRGB());
+               // guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.chance",EntryItem.CommonEvent.df.format(EntryItem.getModifierChance(right.get()))), x, y-8, Color.CYAN.getRGB());
                 guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.rarity",washingMaterials1.rarity), x, y+8, Color.magenta.getRGB());
                 guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.needCount",washingMaterials1.NeedCount), x, y+16, Color.yellow.getRGB());
 

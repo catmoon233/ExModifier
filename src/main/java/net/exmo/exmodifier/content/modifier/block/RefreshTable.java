@@ -1,9 +1,13 @@
 package net.exmo.exmodifier.content.modifier.block;
 
 import io.netty.buffer.Unpooled;
+import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.block.enitty.RefreshTableEntity;
 import net.exmo.exmodifier.content.modifier.menu.RefreshMenu;
+import net.exmo.exmodifier.content.modifier.menu.RefreshMenuPlus;
+import net.exmo.exmodifier.content.modifier.menu.RefreshMenuScreenPlus;
 import net.exmo.exmodifier.init.RegisterOther;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -75,19 +79,26 @@ public class RefreshTable extends BaseEntityBlock implements EntityBlock{
     public InteractionResult use(BlockState blockstate, Level world, BlockPos pos, Player entity, InteractionHand hand, BlockHitResult hit) {
         super.use(blockstate, world, pos, entity, hand, hit);
         if (entity instanceof ServerPlayer player) {
-            NetworkHooks.openScreen(player, new MenuProvider() {
-                @Override
-                public Component getDisplayName() {
-                    return Component.translatable("exmodifier.block.refresh_table");
-                }
+            try {
 
-                @Override
-                public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-                    return new RefreshMenu(id, inventory, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(pos));
-                }
-            }, pos);
+
+                NetworkHooks.openScreen(player, new MenuProvider() {
+                    @Override
+                    public Component getDisplayName() {
+                        return Component.translatable("exmodifier.block.refresh_table");
+                    }
+
+                    @Override
+                    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+
+                        return new RefreshMenuPlus(id, inventory, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(pos));
+                    }
+                }, pos);
+
+            }catch (Exception e){
+                Exmodifier.LOGGER.error("Error while opening menu",e);
+            }
         }
-
         return InteractionResult.SUCCESS;
     }
 

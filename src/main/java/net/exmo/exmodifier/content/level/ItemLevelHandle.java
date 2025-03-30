@@ -7,7 +7,6 @@ import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ItemLevelHelper;
-import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.type.ExType;
@@ -30,8 +29,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -148,7 +145,7 @@ public class ItemLevelHandle {
         // List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
         boolean find = false;
         List<ItemType> typeList = new ArrayList<>();
-        for (ItemType type : ExTypeHandle.values.values().stream().filter(e -> e != ExType.UNKNOWN.get()).filter(e -> e != ExType.ALL.get()).toList()) {
+        for (ItemType type : ExTypeHandle.itemTypes.values().stream().filter(e -> e != ExType.UNKNOWN.get()).filter(e -> e != ExType.ALL.get()).toList()) {
             if (ModifierEntry.containItemType(stack,type)) {
                 typeList.add(type);
                 find = true;
@@ -330,7 +327,7 @@ public class ItemLevelHandle {
         while (numAddedModifiers < refreshnumber) {
             ItemLevel itemLevel = ItemLevels.get(weightedUtil.selectRandomKeyBasedOnWeights());
             if (foundItemLevels.contains(itemLevel))continue;
-            Exmodifier.LOGGER.debug("add leelentry: " + itemLevel.id);
+            Exmodifier.LOGGER.debug("add level entry: " + itemLevel.id);
             foundItemLevels.add(itemLevel);
            ItemLevelHelper.of(stack).addItemLevelHelper(ItemLevelInstant.of(itemLevel));
 

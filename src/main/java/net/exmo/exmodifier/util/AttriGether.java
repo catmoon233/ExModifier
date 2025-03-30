@@ -48,7 +48,7 @@ public class AttriGether {
         if (modifier.getId()!=null)tag.putString("modifierId", modifier.getId().toString());
         tag.putString("modifierName", modifier.getName());
         tag.putDouble("modifierAmount", modifier.getAmount());
-        tag.putInt("modifierOperation", modifier.getOperation().toValue());
+        if (modifier.getOperation()!=null)tag.putInt("modifierOperation", modifier.getOperation().toValue());
 
         return tag;
     }

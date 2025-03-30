@@ -129,7 +129,7 @@ public class ExSuitHandle {
     public static Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/suit");
     public static List<MoConfig> FoundSuitConfigs = new ArrayList<>();
     public static void readConfig() throws IOException {
-        LoadExSuit = new java.util.HashMap<>();
+
         long startTime = System.nanoTime(); // 记录开始时间
 
         FoundSuitConfigs = ExConfigHandle.listFiles(ConfigPath);
@@ -142,16 +142,16 @@ public class ExSuitHandle {
         long duration = endTime - startTime; // 计算持续时间
         Exmodifier.LOGGER.debug("ReadConfig Suit Over time: " + duration / 1000000 + " ms");
     }
-    public static void processModifierEntry(MoConfig moconfig, Map.Entry<String, JsonElement> entry, List<ExSuit> entries) throws FileNotFoundException {
+    public static void processSuitEntry(MoConfig moconfig, Map.Entry<String, JsonElement> entry, List<ExSuit> entries) throws FileNotFoundException {
         JsonElement itemElement = entry.getValue();
         if (!itemElement.isJsonObject()) {
             return;
         }
         JsonObject itemObject = itemElement.getAsJsonObject();
         ExSuit exSuit = new ExSuit();
-        String string = moconfig.type.name().toString();
+        String string = moconfig.type.name();
         if (moconfig.type== ExType.ALL.get()){
-            for (ItemType type : ExTypeHandle.values.values()){
+            for (ItemType type : ExTypeHandle.itemTypes.values()){
                 String key = type.name().toString().substring(0, 2) + entry.getKey();
                 // Exmodifier.LOGGER.debug("匹配中: "+key);
                 ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(key);
@@ -328,7 +328,7 @@ public class ExSuitHandle {
         for (Map.Entry<String, JsonElement> entry : moconfig.readEntrys()) {
             try {
                 Exmodifier.LOGGER.debug("Reading Suit Config: " + entry.getKey());
-                processModifierEntry(moconfig, entry, entries);
+                processSuitEntry(moconfig, entry, entries);
                 Exmodifier.LOGGER.debug("Reading Suit Config Over: " + entry.getKey());
             } catch (Exception e) {
                 Exmodifier.LOGGER.Logger.error("Error processing modifier entry: " + entry.getKey(), e);

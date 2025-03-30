@@ -147,7 +147,7 @@ public class MainEvent {
                     }
                 }
             }
-            SuitOperate((Player) event.getEntity(), event.getTo(), event.getFrom());
+            SuitOperate(player, event.getTo(), event.getFrom());
 
         }
 //@SubscribeEvent
@@ -165,7 +165,7 @@ public class MainEvent {
 //                            addf = true;
 //                            event.getTooltipElements().add(Either.left(Component.translatable("null")));
 //                            event.getTooltipElements().add(Either.left(Component.translatable("modifier.entry")));
-//                            for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
+//                            for (ExSuit suit : ExSuitHandle.LoadExSuit.itemTypes().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
 //                                    .toList()) {
 //                                if (suit.visible) {
 //
@@ -249,8 +249,8 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                 }
                 int extraHeight = extraComponents.size() * font.lineHeight;
                 Vector2ic vector2ic = event.getTooltipPositioner().positionTooltip(g.guiWidth(), g.guiHeight(), event.getX(), event.getY(), extraWidth, extraHeight);
-                int screenW = mc.screen.width;
-                int screenH = mc.screen.height;
+           //     int screenW = mc.screen.width;
+           //     int screenH = mc.screen.height;
                 int tooltipX = vector2ic.x();
                 int tooltipY = vector2ic.y() ; // Start at the same Y as the original tooltip
 
@@ -557,7 +557,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         }
 
         private static boolean handleArmorChangeExpectSuit(ItemStack toStack, boolean isClientSide) {
-            boolean isExSuitOperate = false;
+           // boolean isExSuitOperate = false;
             if (!isClientSide) {
                 ItemStack stack = toStack;
                 ItemInfo itemInfo = ItemInfo.of(stack);
@@ -646,7 +646,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(stack);
             if (tag == null || modifierEntryHelper.getModifierEntriesSize()<=0) return false;
 
-            int effectMultiplier = effectType == WEAR ? 1 : -1;
+            //int effectMultiplier = effectType == WEAR ? 1 : -1;
             List<ModifierEntry> modifierEntries = modifierEntryHelper.getModifierEntriesB();
             if (modifierEntries.isEmpty()) return false;
             for (int i = 0; i< modifierEntries.size(); i++) {
@@ -710,11 +710,12 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             return flag;
         }
         public static void init(Runnable runnable) throws IOException {
-            ZipHandle.init();
+            clearOldData();
             BaseItemSelected.IDS = new HashMap<>();
             RefreshContainTagHandle.readConfig();
             RefreshContainItemHandle.readConfig();
             ModifierHandle.sendClearModifierEntryToAllClient();
+            ZipHandle.init();
             ModifierHandle.readConfig();
             ExTypeHandle.readConfig();
             ExSuitHandle.readConfig();
@@ -725,7 +726,8 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                 ModifierHandle.sendModifierEntryToAllClient(modifierEntry);
             }
             ModifierHandle.EEMatchQueueHandle();
-            LanguageLoader.load(FMLPaths.GAMEDIR.get().resolve(LanguageLoader.LANGUAGES_FILE_PATH));
+            LanguageLoader.load(LanguageLoader.LANGUAGES_FILE_PATH);
+            clearReadTempData();
         }
 
         @SubscribeEvent
@@ -750,6 +752,32 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
 
             }
         }
+    }
+
+    public static void clearOldData() {
+        ExSuitHandle.LoadExSuit.clear();
+        LanguageLoader.LANGUAGES.clear();
+        ModifierHandle.modifierEntryMap.clear();
+        ExTypeHandle.itemTypes.values().removeIf(e -> !ExType.defaultTypes.contains(e.name()));
+        ItemLevelHandle.ItemLevels.clear();
+        ModifierHandle.onlyCanRefreshPointEntryItemIds.clear();
+        ModifierHandle.cantWashItemIds.clear();
+        ModifierHandle.itemsDefaultEntry.clear();
+        ModifierHandle.materialsList.clear();
+        ModifierSlotHandle.registerSlots.clear();
+        ModifierSlotHandle.unLockSlotItems.clear();;
+        ItemQualityHandle.itemQualityMap.clear();
+
+        clearReadTempData();
+
+    }
+
+    public static void clearReadTempData() {
+        ModifierHandle.Foundmoconfigs.clear();
+        ItemLevelHandle.Foundlvconfigs.clear();
+        ExSuitHandle.FoundSuitConfigs.clear();
+        ItemQualityHandle.FoundQualityConfigs.clear();
+        ExTypeHandle.FoundTypeConfigs.clear();
     }
 }
 

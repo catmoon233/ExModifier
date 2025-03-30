@@ -3,9 +3,11 @@ package net.exmo.exmodifier.mixins;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -66,5 +68,17 @@ public abstract class ItemStackMixin {
 //        ItemStack instance = (ItemStack)(Object) this;
 //
 //    }
+@Inject(method = "getHoverName", at = @At("RETURN"), cancellable = true)
+private void onGetDisplayName(CallbackInfoReturnable<Component> cir) {
+        ItemStack stack = (ItemStack) (Object) this;
+    for (var q : ItemQualityHelper.of(stack).getQualityEntriesTooltip()) {
+        Component component = cir.getReturnValue();
+        if (q.isShowInHeadTooltip) {
+            component = Component.translatable(q.mutableComponent.getString()).append(" ").append(component).setStyle(q.mutableComponent.getStyle());
 
+        }
+        cir.setReturnValue(component);
+    }
+
+}
 }

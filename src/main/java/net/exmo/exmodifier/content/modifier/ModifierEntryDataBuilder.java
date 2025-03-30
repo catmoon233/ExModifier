@@ -10,15 +10,12 @@ import net.exmo.exmodifier.content.type.ItemType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.IntTag;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -143,7 +140,7 @@ public class ModifierEntryDataBuilder {
     public JsonElement toJson() {
         JsonObject json = new JsonObject();
 
-        // Check and add non-default values
+        // Check and add non-default itemTypes
         if (entry.weight != 1.0f) json.addProperty("weight", entry.weight);
         if (entry.cantSelect) json.addProperty("cantSelect", entry.cantSelect);
         if (entry.isRandom != true) json.addProperty("isRandom", entry.isRandom);
@@ -344,7 +341,7 @@ public class ModifierEntryDataBuilder {
         ListTag typesTag = tag.getList("types", 8);
         List<ItemType> types = new ArrayList<>();
         for (int i = 0; i < typesTag.size(); i++) {
-            types.add(ExTypeHandle.values.get(typesTag.getString(i)));
+            types.add(ExTypeHandle.itemTypes.get(typesTag.getString(i)));
         }
         builder.setType(types);
 

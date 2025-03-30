@@ -21,16 +21,5 @@ public abstract class ItemMixin {
 //        ModifierHandle.CommonEvent.RandomEntry(original,0, refresh_time, "none");
 //        return original;
 //    }
-    @Inject(method = "getName(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/network/chat/Component;", at = @At("RETURN"), cancellable = true)
-    private void onGetDisplayName(ItemStack stack, CallbackInfoReturnable<Component> cir) {
-        for (var q : ItemQualityHelper.of(stack).getQualityEntriesTooltip()) {
-            Component component = cir.getReturnValue();
-            if (q.isShowInHeadTooltip) {
-                component = Component.translatable(q.mutableComponent.getString()).append(" ").append(component).setStyle(q.mutableComponent.getStyle());
 
-            }
-            cir.setReturnValue(component);
-        }
-
-    }
 }

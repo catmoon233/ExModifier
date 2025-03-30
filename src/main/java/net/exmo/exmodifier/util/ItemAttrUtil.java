@@ -164,20 +164,20 @@ public  class ItemAttrUtil {
             itemStack.getTag().put("ExAttributeModifiers", new ListTag());
         }
         ListTag listtag = itemStack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
-        if (!listtag.isEmpty()) {
-            for (int i = 0; i < listtag.size(); i++) {
-                CompoundTag compoundTag = listtag.getCompound(i);
-                if (
-                        compoundTag.getUUID("UUID").equals(pModifier.getId())&&
-                        compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
-                                compoundTag.getString("Name").equals(pModifier.getName()) &&
-                                compoundTag.getInt("Operation") == pModifier.getOperation().toValue()
-                ) {
-                    double amount = compoundTag.getDouble("Amount");
-
-                }
-            }
-        }
+//        if (!listtag.isEmpty()) {
+//            for (int i = 0; i < listtag.size(); i++) {
+//                CompoundTag compoundTag = listtag.getCompound(i);
+//                if (
+//                        compoundTag.getUUID("UUID").equals(pModifier.getId())&&
+//                        compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+//                                compoundTag.getString("Name").equals(pModifier.getName()) &&
+//                                compoundTag.getInt("Operation") == pModifier.getOperation().toValue()
+//                ) {
+//                    double amount = compoundTag.getDouble("Amount");
+//
+//                }
+//            }
+//        }
         for (EquipmentSlot slot : pSlot){
             listtag.add(getAttributeModifierCompoundTag(pAttribute, pModifier, slot));
         }
@@ -352,6 +352,10 @@ public  class ItemAttrUtil {
         if (attribute==null)return null;
         CompoundTag compoundtag = modifier.save();
             compoundtag.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
+            compoundtag.putInt("Operation", modifier.getOperation().toValue());
+            compoundtag.putUUID("UUID", modifier.getId());
+            compoundtag.putDouble("Amount", modifier.getAmount());
+            compoundtag.putString("Name", modifier.getName());
             if (slot != null) {
                 compoundtag.putString("Slot", slot.getName());
             }

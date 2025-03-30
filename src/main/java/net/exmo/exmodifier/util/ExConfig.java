@@ -19,8 +19,8 @@ import java.util.Set;
 
 public class ExConfig {
    public Path configFile;
-    public JsonObject AlljsonObject;
-    public Set<Map.Entry<String, JsonElement>> entrys = new HashSet<>();
+    public JsonObject jsonObject;
+    //public Set<Map.Entry<String, JsonElement>> entrys = new HashSet<>();
 
     public Path getConfigFile() {
         return configFile;
@@ -59,7 +59,7 @@ public class ExConfig {
     }
     public Set<Map.Entry<String, JsonElement>> readEntrys() throws FileNotFoundException {
         try {
-                return AlljsonObject.entrySet();
+                return jsonObject.entrySet();
         }catch (Exception e){
             Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
         }
@@ -69,7 +69,7 @@ public class ExConfig {
         try {
 
 
-            return AlljsonObject.get(key);
+            return jsonObject.get(key);
         }catch (Exception e){
             Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
         }
@@ -77,14 +77,18 @@ public class ExConfig {
     }
     public ExConfig(Path configFile) throws FileNotFoundException {
         this.configFile = configFile;
-        this.AlljsonObject = read();
+        this.jsonObject = read();
+    }
+    public ExConfig(Path configFile,boolean skin) throws FileNotFoundException {
+        this.configFile = configFile;
+
     }
     public ExConfig(Path configFile, InputStream stream) throws FileNotFoundException {
         this.configFile = configFile;
-        this.AlljsonObject = readFromZipFile(stream);
+        this.jsonObject = readFromZipFile(stream);
     }
     public com.google.gson.JsonObject getAllJsonObject() {
-        return AlljsonObject;
+        return jsonObject;
     }
     public  JsonObject getJsonObjectInJson(String key,JsonObject obj) {
         try {

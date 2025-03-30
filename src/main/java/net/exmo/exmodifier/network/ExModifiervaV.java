@@ -314,7 +314,12 @@ public class ExModifiervaV {
 
             CompoundTag SuitsNuma = new CompoundTag();
             for (Map.Entry<ExSuit, Integer> entry : SuitsNum.entrySet()) {
-                if (entry==null)continue;
+                if (entry==null){
+                    continue;
+                }
+                if (entry.getKey()==null){
+                    continue;
+                }
                 SuitsNuma.putString(entry.getKey().id, entry.getValue().toString());
             }
             nbt.put("SuitsNum", SuitsNuma);

@@ -4,21 +4,22 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 
-import net.exmo.exmodifier.content.helper.ItemLevelHelper;
 import net.exmo.exmodifier.content.helper.ItemQualityHelper;
-import net.exmo.exmodifier.content.level.ItemLevelInstant;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
+import net.exmo.exmodifier.util.ExConfigHandle;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -31,16 +32,43 @@ public class ItemQualityHandle {
 
     public static Map<String, ItemQuality> itemQualityMap = new java.util.HashMap<>();
 
-    public static final Path ItemsQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/ItemsQualityConfig.json");
-    public static void init() throws FileNotFoundException {
-        if (Files.exists(ItemsQualityConfigPath)) {
-            itemQualityMap = new HashMap<>();
-            MoConfig washingMaterialsConfig = new MoConfig(ItemsQualityConfigPath);
+    public static final Path ItemsQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/quality/");
+    public static List<MoConfig> FoundQualityConfigs = new ArrayList<>();
 
-            for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
-                processItemsQualityConfigEntry(entry);
+    public static void register(String id, ItemQuality itemQuality){
+        itemQualityMap.put(id, itemQuality);
+        Exmodifier.LOGGER.debug("Register ItemQuality: " + id);
+    }
+    public static void init() throws IOException {
+        if (Files.exists(ItemsQualityConfigPath)) {
+            long startTime = System.nanoTime(); // 记录开始时间
+
+            FoundQualityConfigs = ExConfigHandle.listFiles(ItemsQualityConfigPath);
+            for (MoConfig moconfig : FoundQualityConfigs)
+            {
+                processMoConfigEntries(moconfig);
             }
+
+            long endTime = System.nanoTime(); // 记录结束时间
+            long duration = endTime - startTime; // 计算持续时间
+            Exmodifier.LOGGER.debug("ReadConfig Quality Over time: " + duration / 1000000 + " ms");
+
+//            MoConfig washingMaterialsConfig = new MoConfig(ItemsQualityConfigPath);
+//
+//            for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
+//                processItemsQualityConfigEntry(entry);
+//            }
         }
+    }
+    public static void processMoConfigEntries(MoConfig moconfig) throws FileNotFoundException {
+        if(moconfig.readEntrys().isEmpty()){
+            Exmodifier.LOGGER.info("No Suit Config Found");
+            return;
+        }
+        for (Map.Entry<String, JsonElement> entry : moconfig.readEntrys()) {
+            processItemsQualityConfigEntry(entry);
+        }
+
     }
     public static class CommonEvent {
 
@@ -87,7 +115,7 @@ public class ItemQualityHandle {
         while (numAddedModifiers < refreshnumber) {
             ItemQuality itemQuality = itemQualityMap.get(weightedUtil.selectRandomKeyBasedOnWeights());
             if (foundItemLevels.contains(itemQuality))continue;
-            Exmodifier.LOGGER.debug("add leelentry: " + itemQuality.Id);
+            Exmodifier.LOGGER.debug("add QualityEntry: " + itemQuality.Id);
             foundItemLevels.add(itemQuality);
             ItemQualityHelper.of(stack).addQualityEntry(itemQuality,true,true);
 
@@ -100,7 +128,7 @@ public class ItemQualityHandle {
         if (  ItemQualityHelper.of(stack).of(stack).getQualityEntriesSize()>0) return;
         // List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
         boolean find = false;
-        for (ItemType a : ExTypeHandle.values.values().stream().filter(e -> e != ExType.UNKNOWN.get()).filter(e -> e != ExType.ALL.get()).toList()) {
+        for (ItemType a : ExTypeHandle.itemTypes.values().stream().filter(e -> e != ExType.UNKNOWN.get()).filter(e -> e != ExType.ALL.get()).toList()) {
             if (ModifierEntry.containItemType(stack, a)) {
                 contaiff(stack,rarity,refreshnumber,a);
                 find = true;
@@ -152,7 +180,7 @@ public class ItemQualityHandle {
             itemQuality.autoRefresh = jsonObject.has("autoRefresh") && jsonObject.get("autoRefresh").getAsBoolean();
             itemQuality.isRandom = !jsonObject.has("isRandom") || jsonObject.get("isRandom").getAsBoolean();
             itemQuality.materials = materials;
-            itemQualityMap.put(id,itemQuality);
+            register(id,itemQuality);
             LOGGER.debug("Add ItemsQuality: "+id );
 
         }catch (Exception e){

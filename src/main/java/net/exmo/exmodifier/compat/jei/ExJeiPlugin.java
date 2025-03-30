@@ -1,9 +1,5 @@
 package net.exmo.exmodifier.compat.jei;
 
-import io.redspace.ironsspellbooks.jei.ArcaneAnvilRecipeCategory;
-import io.redspace.ironsspellbooks.jei.ArcaneAnvilRecipeMaker;
-import io.redspace.ironsspellbooks.jei.ScrollForgeRecipeCategory;
-import io.redspace.ironsspellbooks.registries.BlockRegistry;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -23,7 +19,6 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
-import org.intellij.lang.annotations.Identifier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +32,7 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.modifierEntryM
 @JeiPlugin
 public class ExJeiPlugin implements IModPlugin {
 
+
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         IIngredientManager ingredientManager = registration.getIngredientManager();
@@ -45,7 +41,7 @@ public class ExJeiPlugin implements IModPlugin {
         Map<String, WeightedUtil<String>> weights = new HashMap<>();
 
 
-        for (ItemType type : ExTypeHandle.values.values()) {
+        for (ItemType type : ExTypeHandle.itemTypes.values()) {
             weights.put(type.name(), new WeightedUtil<>(modifierEntryMap.entrySet().stream().filter(e -> {
                 return e.getValue().types.contains(type);
             }).collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))));

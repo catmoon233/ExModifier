@@ -25,13 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 public class ExTypeHandle {
-    public static final Codec<ExTypeHandle> CODEC = Codec.unit(ExTypeHandle::new);
-    public final static Map<String, ItemType> values = new HashMap<>();
+    //public static final Codec<ExTypeHandle> CODEC = Codec.unit(ExTypeHandle::new);
+    public  static Map<String, ItemType> itemTypes = new HashMap<>();
     public static Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/type");
     public static List<MoConfig> FoundTypeConfigs = new ArrayList<>();
 
     public static void registerItemType(ItemType itemType) {
-        values.put(itemType.name(), itemType);
+        itemTypes.put(itemType.name(), itemType);
         Exmodifier.LOGGER.debug("Registered Item Type: " + itemType);
     }
     public static void readConfig() throws IOException {

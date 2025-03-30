@@ -10,25 +10,26 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 import net.minecraftforge.common.Tags;
-import tfar.classicbar.impl.overlays.vanilla.Armor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class ExType {
+    public static List<String> defaultTypes = new ArrayList<>();
     public ExType(String name,ItemSelector itemSelector,EquipmentSlot... equipmentSlots){
         this.name = name;
         this.itemSelector = new ArrayList<>(Collections.singleton(itemSelector));
         this.slot = equipmentSlots;
-        ExTypeHandle.values.put(name,new ItemType(name, this.itemSelector,equipmentSlots));
+        ExTypeHandle.itemTypes.put(name,new ItemType(name, this.itemSelector,equipmentSlots));
+        defaultTypes.add(name);
     }
     public ExType addItemSelector(ItemSelector itemSelector){
         this.itemSelector.add(itemSelector);
         return this;
     }
     public ExType build(){
-        ExTypeHandle.values.put(name,new ItemType(name, this.itemSelector,this.slot));
+        ExTypeHandle.itemTypes.put(name,new ItemType(name, this.itemSelector,this.slot));
         return this;
     }
 
@@ -206,7 +207,7 @@ public class ExType {
 
 
     public ItemType get(){
-        return ExTypeHandle.values.get(name);
+        return ExTypeHandle.itemTypes.get(name);
     }
     @Override 
     public String toString() {

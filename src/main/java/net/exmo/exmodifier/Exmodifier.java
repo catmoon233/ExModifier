@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import net.exmo.exmodifier.compat.compat.apoth.ApothCompat;
 import net.exmo.exmodifier.content.client.EntryItemRender;
 import net.exmo.exmodifier.content.modifier.*;
-import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.init.RegisterOther;
@@ -26,7 +25,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -147,7 +145,7 @@ public class Exmodifier {
         LOGGER.info("Mod loaded in " + (time_end - time_start) + "ms");
         RegisterOther.EventAbout.init();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC,String.valueOf(FMLPaths.CONFIGDIR.get().resolve("exmo/exmodifier.toml")));
-//    for (EventC<? extends LivingEvent> v : RegisterOther.EventAbout.EVENT_C_LIST.values()){
+//    for (EventC<? extends LivingEvent> v : RegisterOther.EventAbout.EVENT_C_LIST.itemTypes()){
 //
 //            EventCI<? extends LivingEvent> eventCI = new EventCI<>(v);
 //
@@ -187,7 +185,7 @@ public class Exmodifier {
         List<ItemStack> itemStacks = new ArrayList<>();
         Map<String, WeightedUtil<String>> weights = new HashMap<>();
 
-        for (ItemType type : ExTypeHandle.values.values()) {
+        for (ItemType type : ExTypeHandle.itemTypes.values()) {
             weights.put(type.name(), new WeightedUtil<>(modifierEntryMap.entrySet().stream().filter(e -> {
                 return e.getValue().types.contains(type);
             }).collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))));
