@@ -47,6 +47,24 @@ public class Config {
             .comment("Replace old entries on refresh")
             .define("RefreshReplaceOld", false);
 
+    public static final ForgeConfigSpec.BooleanValue ExMoTooltipRenderInRight = BUILDER
+            .comment("Enable ExMoTooltipRenderInRight")
+            .define("ExMoTooltipRenderInRight", false);
+    public static final ForgeConfigSpec.BooleanValue ALWAYS_DISPLAY_MODIFIER_NAME_UNDER_ITEM_NAME = BUILDER
+            .comment("Enable ALWAYS_DISPLAY_MODIFIER_NAME_UNDER_ITEM_NAME")
+            .define("ALWAYS_DISPLAY_MODIFIER_NAME_UNDER_ITEM_NAME", false);
+    public static final ForgeConfigSpec.BooleanValue ENTRY_COLOR = BUILDER
+            .comment("Enable ENTRY COLOR")
+            .define("ENTRY_COLOR", true);
+    public static final ForgeConfigSpec.BooleanValue ENTRY_FOLD = BUILDER
+            .comment("Enable ENTRY FOLD")
+            .define("ENTRY_FOLD", true);
+    public static final ForgeConfigSpec.BooleanValue ENTRY_UNDER_LINE = BUILDER
+            .comment("Enable ENTRY LINE")
+            .define("ENTRY_LINE", true);
+    public static final ForgeConfigSpec.BooleanValue ENTRY_SHOW_UNDER_LEVEL = BUILDER
+            .comment("Enable ENTRY_SHOW_UNDER_LEVEL(need open ENTRY_FOLD)")
+            .define("ENTRY_SHOW_UNDER_LEVEL", true);
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // 配置值缓存
@@ -59,6 +77,14 @@ public class Config {
     public static boolean FirstAddSlots;
     public static boolean Statistics;
     public static boolean RefreshReplaceOld;
+    public static boolean ExMoTooltipRenderInRightValue;
+    public static boolean ADMNUIN;
+    public static boolean entryColor;
+    public static boolean entryFold;
+    public static boolean entryUnderLine;
+    public static boolean entryShowUnderLevel;
+
+
 
     @SubscribeEvent
     public static void onLoad(final ModConfigEvent event) {
@@ -72,5 +98,11 @@ public class Config {
         FirstAddSlots = FIRST_ADD_SLOTS.get();
         Statistics = STATISTICS.get();
         RefreshReplaceOld = REFRESH_REPLACE_OLD.get();
+        entryColor = ENTRY_COLOR.get();
+        ExMoTooltipRenderInRightValue = ExMoTooltipRenderInRight.get();
+        ADMNUIN = ALWAYS_DISPLAY_MODIFIER_NAME_UNDER_ITEM_NAME.get();
+        entryFold = ENTRY_FOLD.get();
+        entryUnderLine = ENTRY_UNDER_LINE.get();
+        entryShowUnderLevel = ENTRY_SHOW_UNDER_LEVEL.get();
     }
 }

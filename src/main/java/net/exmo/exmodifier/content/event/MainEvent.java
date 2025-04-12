@@ -24,6 +24,7 @@ import net.exmo.exmodifier.util.DynamicExpressionEvaluator;
 import net.exmo.exmodifier.util.EntityAttrUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.commands.CommandSource;
@@ -56,10 +57,10 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2ic;
+import oshi.util.tuples.Pair;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
 
 import javax.script.ScriptException;
@@ -100,20 +101,54 @@ public class MainEvent {
            // if (!CuriosUtil.isCuriosItem(event.getItemStack())) {
 
                 List<Component> toolTip1 = event.getToolTip();
+                List<Component> toolTip = new ArrayList<>();
+                boolean b = Config.entryFold && !Screen.hasShiftDown();
+                Pair<List<Component>, Integer> listIntegerPair =null;
+              if (!b) {
+                  listIntegerPair  = CommonEvent.EntryInfoTooltip(itemStack, toolTip1, event.getEntity());
+                  if (!Config.ExMoTooltipRenderInRightValue) {
+                      toolTip = listIntegerPair.getA();
+                  }
+              }
 
-                List<Component> toolTip = CommonEvent.ItemToolTipsChange(itemStack, toolTip1, event.getEntity());
-                if (toolTip.isEmpty())return;
+
                 List<Component> tooo = new ArrayList<>();
-                tooo.add(toolTip.get(0));
+                tooo.add(toolTip1.get(0));
                 for (var a : ItemQualityHelper.of(itemStack).getQualityEntriesTooltip()){
                     if (a.isShowInHeadTooltip){
                      //   tooo.set(0,a.mutableComponent.append(Component.literal(" §r")).append(toolTip1.get(0)));
                     }else tooo.add(a.mutableComponent);
                 }
-                tooo.addAll(ItemLevelHandle.genItemLevelInfo(itemStack));
-                for (int i = 1; i < toolTip.size(); i++){
-                    tooo.add(toolTip.get(i));
+                if (b){
+                    if (!Config.entryShowUnderLevel) {
+                        for (var aa : ModifierEntryHelper.of(itemStack).getModifierEntriesB()) {
+                            if (aa.displayNameInItemName) continue;
+                            tooo.add(Component.translatable(aa.getDescriptionId()));
+                        }
+                        tooo.add(Component.empty());
+                    }
                 }
+                tooo.addAll(ItemLevelHandle.genItemLevelInfo(itemStack));
+                if (b) {
+                    if (Config.entryShowUnderLevel) {
+                        for (var aa : ModifierEntryHelper.of(itemStack).getModifierEntriesB()) {
+                            if (aa.displayNameInItemName) continue;
+                            tooo.add(Component.translatable(aa.getDescriptionId()));
+                        }
+
+                    }
+                }
+                for (int i = 1; i < toolTip1.size(); i++){
+                    tooo.add(toolTip1.get(i));
+                }
+                if (!b){
+                    if (Config.ExMoTooltipRenderInRightValue) {
+                        for (int i = 0; i < listIntegerPair.getB(); i++) {
+                            tooo.add(Component.empty());
+                        }
+                    }
+                }
+                if (tooo.size()<=1)return;
                 toolTip1.clear();
                 toolTip1.addAll(tooo);
          //   }
@@ -197,7 +232,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         event.attriGether.modifier = new AttributeModifier(modifier.getId(), modifier.getName(), amout, modifier.getOperation());
     }
 }
-        public static List<Component> ItemToolTipsChange(ItemStack stack, List<Component> tooltip, Player player) {
+        public static Pair<List<Component>,Integer> EntryInfoTooltip(ItemStack stack, List<Component> tooltip, Player player) {
             if (stack.getTag()!=null){
                 ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(stack);
                 if (stack.getTag().getBoolean("UNKNOWN")) {
@@ -221,80 +256,13 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                 }
             }
 
-            return tooltip;
+            return new Pair<>(tooltip,tooltip.size());
         }
-        @OnlyIn(Dist.CLIENT)
         @SubscribeEvent
-        public static void RenderExtraTooltip(RenderTooltipEvent.Pre event) {
-            var g = event.getGraphics();
-            var mc = Minecraft.getInstance();
-            if (mc.screen != null) {
-                List<Component> extraComponents = ModifierSlotHandle.getTooltip(event.getItemStack(), mc.player);
-                if (extraComponents.isEmpty())return;
-                @NotNull List<ClientTooltipComponent> originalComponents = event.getComponents();
+        public static void RenderTooltipAffix(RenderTooltipEvent.Color gatherComponents){
 
-                Font font = mc.font;
-
-                // Calculate the width and height of the original tooltip
-                int originalWidth = 30;
-                for (ClientTooltipComponent component : originalComponents) {
-                    originalWidth = Math.max(originalWidth, (component.getWidth(font)));
-                }
-               // int originalHeight = originalComponents.size() * font.lineHeight;
-
-                // Calculate the width and height of the extra tooltip
-                int extraWidth = 0;
-                for (Component component : extraComponents) {
-                    extraWidth = Math.max(extraWidth, font.width(component));
-                }
-                int extraHeight = extraComponents.size() * font.lineHeight;
-                Vector2ic vector2ic = event.getTooltipPositioner().positionTooltip(g.guiWidth(), g.guiHeight(), event.getX(), event.getY(), extraWidth, extraHeight);
-           //     int screenW = mc.screen.width;
-           //     int screenH = mc.screen.height;
-                int tooltipX = vector2ic.x();
-                int tooltipY = vector2ic.y() ; // Start at the same Y as the original tooltip
-
-                // Determine the position for the extra tooltip
-//                if (tooltipX + originalWidth + extraWidth > screenW) {
-//                    // Not enough space on the right, try the left
-//                    if (tooltipX - extraWidth < 0) {
-//                        // Not enough space on the left, render on the right
-//                        tooltipX = event.getX() + originalWidth+5;
-//                    } else {
-//                        // Render on the left
-                        tooltipX = event.getX() - extraWidth  ;
-//                   }
-//                }
-
-                // Adjust X position based on longest line in respective tooltips
-           //     if (tooltipX == event.getX()) {
-                    // Rendering on the right, adjust by longest line in original tooltip
-            //        tooltipX += originalWidth -10;
-            //    } else {
-                    // Rendering on the left, adjust by longest line in extra tooltip
-            //        tooltipX -= extraWidth -50;
-            //    }
-
-                // Render the extra tooltip text first with a darker color
-                AtomicInteger line = new AtomicInteger();
-                int finalTooltipX = tooltipX;
-                g.pose().pushPose();
-                TooltipRenderUtil.renderTooltipBackground(g, tooltipX, tooltipY, extraWidth, extraHeight, 400);
-                g.pose().translate(0.0F, 0.0F, 400.0F);
-
-
-                extraComponents.forEach(component -> {
-                    ClientTooltipComponent clientTooltipComponent = ClientTooltipComponent.create(component.getVisualOrderText());
-                    clientTooltipComponent.renderText(font, finalTooltipX, tooltipY + line.get() * font.lineHeight, g.pose().last().pose(), g.bufferSource());
-                    line.getAndIncrement();
-                });
-                g.pose().popPose();
-                // Render the extra tooltip background above the text
-
-                // Update the event's Y position to account for the extra tooltip
-            //    event.setY(tooltipY + extraHeight);
-            }
         }
+
 
 
 
@@ -403,14 +371,14 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         @SubscribeEvent
         public static void PlayerHurtAndAttack(LivingHurtEvent event){
             if ((event.getEntity() instanceof Player player)){
-                    List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                    List<EventParameter<?>> eventParameters = new ArrayList<>();
                     eventParameters.add(new EventParameter<>("amount", event.getAmount()));
                     eventParameters.add(new EventParameter<>("max_health", player.getAttributeValue(Attributes.MAX_HEALTH)));
                     addx(player,eventParameters,"ON_HURT");
                 ApplySuitEffect(player, ExSuit.Trigger.ON_HURT);
             }
             if ((event.getSource().getEntity() instanceof Player player)){
-                    List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                    List<EventParameter<?>> eventParameters = new ArrayList<>();
                     eventParameters.add(new EventParameter<>("amount", event.getAmount()));
                 eventParameters.add(new EventParameter<>("max_health", player.getAttributeValue(Attributes.MAX_HEALTH)));
                     addx(player,eventParameters,"ATTACK");
@@ -422,7 +390,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         @SubscribeEvent
         public static void PlayerJump(LivingEvent.LivingJumpEvent event){
             if ((event.getEntity() instanceof Player player)){
-                    List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                    List<EventParameter<?>> eventParameters = new ArrayList<>();
                     addx(player,eventParameters,"JUMP");
                 ApplySuitEffect(player, ExSuit.Trigger.JUMP);
             }
@@ -430,7 +398,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         @SubscribeEvent
         public static void Digger(BlockEvent.BreakEvent event){
                  Player player = event.getPlayer();
-                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                List<EventParameter<?>> eventParameters = new ArrayList<>();
                 addx(player,eventParameters,"DIG");
                 ApplySuitEffect(player, ExSuit.Trigger.DIG);
 
@@ -438,12 +406,12 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         @SubscribeEvent
         public static void PlayerDeathAndKill(LivingDeathEvent event){
             if ((event.getEntity() instanceof Player player)){
-                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                List<EventParameter<?>> eventParameters = new ArrayList<>();
                 addx(player,eventParameters,"DIE");
                 ApplySuitEffect(player, ExSuit.Trigger.DIE);
             }
             if ((event.getSource().getEntity() instanceof Player player)){
-                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                List<EventParameter<?>> eventParameters = new ArrayList<>();
                 addx(player,eventParameters,"KILL");
                 ApplySuitEffect(player, ExSuit.Trigger.KILL);
             }
@@ -451,7 +419,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         @SubscribeEvent
         public static void PlayerProjectile(ProjectileImpactEvent event){
             if ((event.getProjectile().getOwner() instanceof Player player)){
-                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                List<EventParameter<?>> eventParameters = new ArrayList<>();
                 if (event.getEntity()!=null) player.getPersistentData().putString("hurtentity-uuid",event.getEntity().getUUID().toString());
                 addx(player,eventParameters,"PROJECTILE_HIT");
                 ApplySuitEffect(player, ExSuit.Trigger.PROJECTILE_HIT);
@@ -459,7 +427,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         }
         @SubscribeEvent
         public static void PlayerShoot(ArrowLooseEvent event){
-            List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+            List<EventParameter<?>> eventParameters = new ArrayList<>();
             addx(event.getEntity(),eventParameters,"SHOOT");
            ApplySuitEffect(event.getEntity(), ExSuit.Trigger.SHOOT);
         }
@@ -471,14 +439,14 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         @SubscribeEvent
         public static void PlayerSwing(LivingSwingEvent event){
             if ((event.getEntity() instanceof Player player))   {
-                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                List<EventParameter<?>> eventParameters = new ArrayList<>();
                 addx(player,eventParameters,"SWING");
                 ApplySuitEffect(player, ExSuit.Trigger.SWING);
             }
         }
         @SubscribeEvent
         public static void PlayerCrit(CriticalHitEvent event){
-            List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+            List<EventParameter<?>> eventParameters = new ArrayList<>();
             eventParameters.add(new EventParameter<>("amount", event.getDamageModifier()));
             Player player = event.getEntity();
             addx(player,eventParameters,"CRIT");
@@ -488,7 +456,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         public static void PlayerDodge(ExDodgeEvent event){
             if ((event.getEntity() instanceof Player player))
                 if (event.result == ExDodgeEvent.resultType.MISS) {
-                    List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                    List<EventParameter<?>> eventParameters = new ArrayList<>();
                     addx(player,eventParameters,"DODGE");
                     ApplySuitEffect(player, ExSuit.Trigger.DODGE);
                 }
@@ -497,14 +465,14 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         @SubscribeEvent
         public static void PlayerUseItem(LivingEntityUseItemEvent event){
             if(event.getEntity() instanceof Player player){
-                List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+                List<EventParameter<?>> eventParameters = new ArrayList<>();
                 addx(player,eventParameters,"ON_USE");
                 ApplySuitEffect(player,ExSuit.Trigger.ON_USE);
             }
         }
         @SubscribeEvent
         public static void PlayerSwim(LivingPlayerSwimEvent event){
-            List<EventParameter<?>> eventParameters = new java.util.ArrayList<>();
+            List<EventParameter<?>> eventParameters = new ArrayList<>();
             Player player = event.player;
             addx(player,eventParameters,"SWIM");
             ApplySuitEffect(player, ExSuit.Trigger.SWIM);
@@ -632,8 +600,8 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
 
             if (player.level().isClientSide) return false;
             boolean flag = false;
-            flag =  handleStack(player, stack1, EntityAttrUtil.WearOrTake.WEAR);
-            if (handleStack(player, stack2, EntityAttrUtil.WearOrTake.TAKE))flag = true;
+            flag =  handleStack(player, stack1, WEAR);
+            if (handleStack(player, stack2, TAKE))flag = true;
             return flag;
         }
 
@@ -732,13 +700,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
 
         @SubscribeEvent
         public static void atReload(AddReloadListenerEvent event) throws IOException {
-            init(new Runnable() {
-                @Override
-                public void run() {
-                    event.addListener(new ModifierPreparableReloadListener());
-
-                }
-            });
+            init(() -> event.addListener(new ModifierPreparableReloadListener()));
 
 
         }
@@ -762,7 +724,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
         ItemLevelHandle.ItemLevels.clear();
         ModifierHandle.onlyCanRefreshPointEntryItemIds.clear();
         ModifierHandle.cantWashItemIds.clear();
-        ModifierHandle.itemsDefaultEntry.clear();
+        itemsDefaultEntry.clear();
         ModifierHandle.materialsList.clear();
         ModifierSlotHandle.registerSlots.clear();
         ModifierSlotHandle.unLockSlotItems.clear();;

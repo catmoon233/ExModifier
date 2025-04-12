@@ -38,7 +38,7 @@ public class WeightedUtil<T> {
 
     private float[] calculateCumulativeWeights() {
         int size = 0;
-        for (Float weight : weights.values()) {
+        for (Float ignored : weights.values()) {
              size++;
         }
         float[] cumulativeWeights = new float[size];
@@ -131,5 +131,12 @@ public class WeightedUtil<T> {
 
     public boolean isEmpty() {
         return weights.isEmpty();
+    }
+
+    public WeightedUtil<T> copy() {
+        WeightedUtil<T> copy = new WeightedUtil<>(new HashMap<>(weights));
+        copy.totalWeight = totalWeight;
+        copy.cumulativeWeights = cumulativeWeights.clone();
+        return copy;
     }
 }

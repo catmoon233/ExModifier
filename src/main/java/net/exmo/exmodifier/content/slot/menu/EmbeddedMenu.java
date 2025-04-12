@@ -133,7 +133,7 @@ public class EmbeddedMenu extends AbstractContainerMenu {
                         .orElse(null); // 使用 orElse(null) 避免 NoSuchElementException
 
                 if (unLockSlotItem != null) {
-                    if (unLockSlotItem.contain(input)){
+                    if (unLockSlotItem.getModifierItemSelector().containItem(input)){
                         this.access.execute((p_39485_, p_39486_) -> {
                             float j = 0;
 
@@ -146,7 +146,7 @@ public class EmbeddedMenu extends AbstractContainerMenu {
                             this.random.setSeed((long)this.enchantmentSeed.get());
 
                             WeightedUtil<ModifierSlot> list = new WeightedUtil<>((ModifierSlotHandle.registerSlots.entrySet().stream().filter(
-                                    e -> e.getValue().contain(input)
+                                    e -> e.getValue().getModifierItemSelector().containItem(input)
                                             &&!ModifierSlotHelper.of(input).getModifierSlotList().stream().map(a -> a.getId()).toList().contains(e.getValue().getId())
                                             &&unLockSlotItem.getSlots().contains(e.getKey().toString())))
                                     .collect(Collectors.toMap(Map.Entry::getValue, e -> e.getValue().getWeight())));
@@ -212,7 +212,7 @@ public class EmbeddedMenu extends AbstractContainerMenu {
                     }
                     this.access.execute((p_39481_, p_39482_) -> {
                         WeightedUtil<ModifierSlot> list = new WeightedUtil<>((ModifierSlotHandle.registerSlots.entrySet().stream().filter(
-                                         e -> e.getValue().contain(input)
+                                         e -> e.getValue().getModifierItemSelector().containItem(input)
                                         &&ModifierSlotHelper.of(input).getModifierSlotList().contains(e.getValue())
                                         &&modifierEntry.Slots.contains(e.getKey().toString())
                                         )

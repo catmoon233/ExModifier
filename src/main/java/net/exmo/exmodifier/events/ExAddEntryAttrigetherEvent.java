@@ -9,11 +9,11 @@ import net.minecraftforge.eventbus.api.Event;
 public class ExAddEntryAttrigetherEvent extends Event {
 
     public ModifierEntry modifierEntry;
-    public ItemStack stack;
+
     public ModifierAttriGether selectedAttriGether;
-    public ExAddEntryAttrigetherEvent(ModifierEntry modifierEntry,ModifierAttriGether selectedAttriGether,ItemStack stack){
+    public ExAddEntryAttrigetherEvent(ModifierEntry modifierEntry,ModifierAttriGether selectedAttriGether){
         this.modifierEntry = modifierEntry;
-        this.stack = stack;
+
         this.selectedAttriGether = selectedAttriGether;
 
 
@@ -28,13 +28,7 @@ public class ExAddEntryAttrigetherEvent extends Event {
         this.modifierEntry = modifierEntry;
     }
 
-    public ItemStack getStack() {
-        return stack;
-    }
 
-    public void setStack(ItemStack stack) {
-        this.stack = stack;
-    }
 
     public ModifierAttriGether getSelectedAttriGether() {
         return selectedAttriGether;

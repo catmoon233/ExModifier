@@ -50,6 +50,18 @@ CuriosUtil {
         tag1.putInt("Operation", attriGether.attributeModifier.getOperation().toValue());
         modifiersList.add(tag1);
     }
+    public static void addSimpleAttributeModifierAffix(ItemStack itemStack, SimpleAttrGather attrGather,double amount){
+        CompoundTag tag = itemStack.getOrCreateTag();
+        if (!tag.contains("ExCurioAttributeModifiers")) tag.put("ExCurioAttributeModifiers", new ListTag());
+        ListTag modifiersList = tag.getList("ExCurioAttributeModifiers", 10);
+        CompoundTag tag1 = new CompoundTag();
+        tag1.putString("AttributeName", attrGather.attribute());
+        tag1.putString("Name", attrGather.name());
+        tag1.putString("UUID", String.valueOf(UUID.randomUUID()));
+        tag1.putDouble("Amount", amount);
+        tag1.putInt("Operation", attrGather.operation().toValue());
+        modifiersList.add(tag1);
+    }
     public static List<AttrGether> getAttributeModifiersAffix(ItemStack itemStack)
     {
         CompoundTag tag = itemStack.getTag();

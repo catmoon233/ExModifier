@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.modifier.menu;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.xkmc.l2damagetracker.contents.curios.TotemUseToClient;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.type.ExType;
 import net.minecraft.client.Minecraft;
@@ -19,11 +20,13 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -427,7 +430,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             }
 
             guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(0, 0, 200);
+            guiGraphics.pose().translate(0, 0, 600);
             // 绘制上下文菜单
             if (contextMenu != null) {
                 contextMenu.render(guiGraphics, mouseX, mouseY, partialTick);

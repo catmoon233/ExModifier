@@ -1,14 +1,15 @@
 package net.exmo.exmodifier.content.helper;
 
 import com.google.common.collect.Multimap;
+import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.ModifierInstant;
 
+import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ItemType;
-import net.exmo.exmodifier.util.CuriosUtil;
-import net.exmo.exmodifier.util.ItemAttrUtil;
+import net.exmo.exmodifier.util.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -16,11 +17,13 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 
@@ -96,6 +99,65 @@ public class ModifierEntryHelper extends ExHelper {
             }
         }
         return level;
+    }
+    public List<ModifierEntry> randomEntry(int rarity,String material,int refreshTime){
+
+
+        Map<ItemType, EquipmentSlot[]> typeEquipmentSlotMap = typeSlotMap();
+        WeightedUtil<String> weightedUtil = new WeightedUtil<>(new HashMap<>());
+
+
+        for (Map.Entry<ItemType, EquipmentSlot[]> entry : typeEquipmentSlotMap.entrySet()) {
+            ItemType type = entry.getKey();
+
+            if (!isValidForType(itemStack, type)) {
+                continue;
+            }
+
+
+
+            weightedUtil.merge(new WeightedUtil<>(
+                    modifierEntryMap.entrySet().stream()
+                            .filter(e -> {
+                                if (e.getValue().weight==0)return false;
+                                var modifier = e.getValue();
+                                boolean hasWashItem =ModifierHandle.materialsList.stream()
+                                        .anyMatch(m -> m.ItemId.equals(material) && !m.OnlyHasWashEntry);
+
+
+                                List<String> onlyWashItems = modifier.getModifierItemSelector().getOnlyWashItems();
+                                return modifier.types.stream().map(ItemType::name).toList().contains(type.name()) &&
+                                        modifier.getModifierItemSelector().containItem(itemStack) &&
+                                        !modifier.cantSelect &&
+                                        (modifier.Slots.isEmpty()) &&
+                                        (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
+                                        (onlyWashItems.isEmpty() || onlyWashItems.contains(material) || hasWashItem);
+                            })
+                            .collect(Collectors.toMap(
+                                    Map.Entry::getKey,
+                                    e -> e.getValue().weight
+                            ))
+            ));
+        }
+
+        if (!weightedUtil.weights.isEmpty()) {
+            weightedUtil.increaseWeightsByRarity(rarity);
+            try {
+                return ModifierSelector.selectEntriesOnly(
+                        weightedUtil,refreshTime,
+                        key -> modifierEntryMap.get(key)
+                ).entries;
+            } catch (Exception e) {
+                // 处理异常
+            }
+        }
+        return new ArrayList<>();
+    }
+    public  ModifierEntryHelper setModifierEntry(int index,ModifierInstant instant){
+            ListTag modifierEntriesNbt = getModifierEntriesNbt();
+            modifierEntriesNbt.set(index, instant.serializeNBT());
+            getMainNbt().put(MES,modifierEntriesNbt);
+            return this;
     }
     public ModifierEntryHelper setModifierEntryLevel(String entryID, int level){
         for (ModifierInstant modifierInstant : getModifierEntries()){
@@ -216,7 +278,7 @@ public class ModifierEntryHelper extends ExHelper {
         modifiersList.add(tag1);
         if (addAttribute){
 
-            List<ModifierAttriGether> addTo = selectModifierAttributes(modifierInstant.getModifierEntry(),itemStack);
+            List<ModifierAttriGether> addTo = selectModifierAttributes(modifierInstant.getModifierEntry());
 
             if (CuriosUtil.isCuriosItem2(this.itemStack))applyModifiersCurios(itemStack, addTo, CuriosUtil.getSlotsFromItemstack(itemStack));
             else applyModifiers(itemStack,addTo,getEquipmentSlot(itemStack),modifierInstant);

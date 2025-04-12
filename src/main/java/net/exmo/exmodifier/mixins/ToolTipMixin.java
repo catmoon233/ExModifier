@@ -2,6 +2,7 @@ package net.exmo.exmodifier.mixins;
 
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.content.event.MainEvent;
 import net.exmo.exmodifier.content.helper.ItemLevelHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
@@ -10,6 +11,7 @@ import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.util.CuriosUtil;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -30,6 +32,7 @@ public abstract class ToolTipMixin {
     @ModifyVariable(at =@At("STORE"), method = "getTooltipLines", ordinal = 0)
     private Multimap<Attribute, AttributeModifier> changev(Multimap<Attribute, AttributeModifier> multimap) {
         ItemStack stack = (ItemStack) (Object) this;
+        if (Config.entryFold && !Screen.hasShiftDown())return multimap;
         if (stack.getTag()==null)return multimap;
         List<ModifierEntry> entrys = new ModifierEntryHelper(stack).getModifierEntriesB();
         List<ModifierAttriGether> attriGethers = new ArrayList<>();

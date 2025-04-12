@@ -22,6 +22,11 @@ import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.AttrGether;
 import net.exmo.exmodifier.content.type.ExType;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.entity.DisplayRenderer;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -37,12 +42,16 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.armortrim.ArmorTrim;
+import net.minecraft.world.item.armortrim.TrimMaterial;
+import net.minecraft.world.item.armortrim.TrimMaterials;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.server.ServerLifecycleHooks;
+import org.jetbrains.annotations.Nullable;
 
 
 import java.io.FileNotFoundException;
@@ -167,8 +176,10 @@ public class ModifierHandle {
             int level = modifierEntryInstant.getLevel();
             String id = modifierEntry.getId();
             if (player ==null)return tooltips;
+            boolean foldFlag = !Config.entryFold || Screen.hasShiftDown();
             if (id.length() >= 2) {
-                MutableComponent translatable = Component.translatable("modifier.entry." + id.substring(2));
+                MutableComponent translatable = Component.translatable(modifierEntry.getDescriptionId());
+                if (Config.entryUnderLine && foldFlag)translatable.withStyle(ChatFormatting.UNDERLINE);
 
                 if (Config.compact_tooltip){
                     if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
@@ -178,7 +189,7 @@ public class ModifierHandle {
 
                 else{
                     if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
-                    tooltips.add(translatable.append(" : "));
+                    tooltips.add(translatable.append(":"));
                 }
                 if (!modifierEntry.localDescription.isEmpty())
                 //        if (Screen.hasShiftDown())
@@ -186,9 +197,9 @@ public class ModifierHandle {
                     tooltips.add(Component.translatable(modifierEntry.localDescription));
 
                 }
+
+                if (foldFlag){
                 tooltips.addAll(GenSuitInfo(player,modifierEntry));
-
-
                 for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
                     AttributeModifier attributemodifier = modifierAttriGether.getModifier();
                     Attribute attribute = modifierAttriGether.getAttribute();
@@ -215,7 +226,8 @@ public class ModifierHandle {
                     boolean flag = false;
                     String percent = "";
                     double d1;
-                    if (attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL  &&!percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+                    String attributeID = ExUtil.getAttributeID(attribute);
+                    if (attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL  &&!percentAtr.contains(attributeID)) {
                         if ((attribute).equals(Attributes.KNOCKBACK_RESISTANCE)) {
                             d1 = d0 * 10.0;
                         } else {
@@ -225,12 +237,12 @@ public class ModifierHandle {
                         d1 = d0 * 100.0;
                     }
                     String amouta2 = "";
-                    if (percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())){
+                    if (percentAtr.contains(attributeID)){
                         percent = "%";
                         DecimalFormat df = new DecimalFormat("#.####");
                         amouta2 = df.format(attributemodifier.getAmount() * 100);
                         if (modifierAttriGether.attribute.getDescriptionId().length() >=4){
-                            if (ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("twtp") ||ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("isfix") ) {
+                            if (attributeID.startsWith("twtp") ||ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("isfix") ) {
                                 amouta2 = df.format(attributemodifier.getAmount()) ;
                             }
                         }
@@ -240,14 +252,53 @@ public class ModifierHandle {
                         tooltips.add((Component.literal(" ")).append(Component.translatable("attribute.modifier.equals." + attributemodifier.getOperation().toValue(), new Object[]{ATTRIBUTE_MODIFIER_FORMAT.format(d1), Component.translatable(attribute.getDescriptionId())})).withStyle(ChatFormatting.DARK_GREEN));
                     } else if (d0 > 0.0) {
                         if (percent.equals("%")) tooltips.add(Component.translatable("add").append(amouta2).append(percent).append(" ").append(Component.translatable(attribute.getDescriptionId())).withStyle(ChatFormatting.BLUE));
-                        else tooltips.add((Component.translatable("attribute.modifier.plus." + attributemodifier.getOperation().toValue(), new Object[]{ATTRIBUTE_MODIFIER_FORMAT.format(d1), Component.translatable(attribute.getDescriptionId())})).withStyle(ChatFormatting.BLUE));
-                    } else if (d0 < 0.0) {
+                        else {
+                            var component = Component.translatable(
+                                    "attribute.modifier.plus." + attributemodifier.getOperation().toValue(),
+                                    new Object[]{ATTRIBUTE_MODIFIER_FORMAT.format(d1), Component.translatable(attribute.getDescriptionId())}
+                            );
+
+                            if (Config.entryColor) {
+                                MutableComponent translatable1 = Component.translatable(modifierEntry.getDescriptionId());
+                                String string = translatable1.getString();
+
+                                // 新增颜色代码解析逻辑
+                                ChatFormatting byCode = getChatFormattingFromString(string);
+                                if (byCode != null && byCode.isColor()) {
+                                    component.withStyle(byCode);
+                                }
+                                if (byCode ==null){
+                                    component.withStyle(ChatFormatting.WHITE);
+                                }
+                            }
+                            tooltips.add(component);
+                        }
+                        } else if (d0 < 0.0) {
                         d1 *= -1.0;
-                        if (percent.equals("%")) tooltips.add(Component.translatable("subtract").append(amouta2).append(percent).append(" ").append(Component.translatable(attribute.getDescriptionId())).withStyle(ChatFormatting.RED));
-                        else  tooltips.add((Component.translatable("attribute.modifier.take." + attributemodifier.getOperation().toValue(), new Object[]{ATTRIBUTE_MODIFIER_FORMAT.format(d1), Component.translatable(attribute.getDescriptionId())})).withStyle(ChatFormatting.RED));
+                        if (percent.equals("%"))
+                            tooltips.add(Component.translatable("subtract").append(amouta2).append(percent).append(" ").append(Component.translatable(attribute.getDescriptionId())).withStyle(ChatFormatting.RED));
+                        else {
+                            MutableComponent component = (Component.translatable("attribute.modifier.take." + attributemodifier.getOperation().toValue(), new Object[]{ATTRIBUTE_MODIFIER_FORMAT.format(d1), Component.translatable(attribute.getDescriptionId())})).withStyle(ChatFormatting.RED);
+                            if (Config.entryColor) {
+                                MutableComponent translatable1 = Component.translatable(modifierEntry.getDescriptionId());
+                                String string = translatable1.getString();
+
+                                // 新增颜色代码解析逻辑
+                                ChatFormatting byCode = getChatFormattingFromString(string);
+                                if (byCode != null && byCode.isColor()) {
+                                    component.withStyle(byCode);
+                                }
+                                if (byCode ==null){
+                                    component.withStyle(ChatFormatting.WHITE);
+                                }
+                            }
+                            tooltips.add(component);
+                        }
                     }
                 }
             }
+            }
+
             ExEntryTooltipEvent event = new ExEntryTooltipEvent(modifierEntry, player, itemStack, tooltips);
             MinecraftForge.EVENT_BUS.post(event);
             return event.getTooltip();
@@ -322,7 +373,7 @@ public class ModifierHandle {
                 modifierEntries.add(modifierEntry);
                 if (modifierEntry == null) {
                     LOGGER.debug("modifierEntry is null");
-                    return;
+                    continue;
                 }
 
                // if (!appliedModifiers.contains(modifierEntry.Id)) {
@@ -336,7 +387,7 @@ public class ModifierHandle {
                     numAddedModifiers++;
                     LOGGER.debug("add entry ing: " + modifierEntry.id);
 
-                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
+                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry);
                     ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, slot, refreshments, attriGethers,modifierEntry,modifierEntries);
                     MinecraftForge.EVENT_BUS.post(event);
                     finalAttriGethers.addAll(event.attriGether);
@@ -380,22 +431,21 @@ public class ModifierHandle {
                 types.add(type);
                 slotSet.addAll(Arrays.asList(entry.getValue())); // 添加到Set中
 
+
                 weightedUtil.merge(new WeightedUtil<>(
                         modifierEntryMap.entrySet().stream()
                                 .filter(e -> {
+                                    if (e.getValue().weight==0)return false;
                                     var modifier = e.getValue();
                                     boolean hasWashItem = materialsList.stream()
                                             .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
 
-                                    return modifier.types.stream().map(ItemType::name).toList().contains(type.name()) &&
-                                            (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
-                                            (modifier.getUnlessItemIds().isEmpty() || !modifier.getUnlessItemIds().contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
+                                    return modifier.containItemType(type) &&
+                                            modifier.modifierItemSelector.containItem(stack) &&
                                             !modifier.cantSelect &&
                                             (modifier.Slots.isEmpty()) &&
                                             (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
-                                            (modifier.OnlyTags.isEmpty() || modifier.containTag(stack)) &&
-                                            (modifier.getUnlessItemIds().isEmpty() || !modifier.unContainTag(stack)) &&
-                                            (modifier.OnlyWashItems.isEmpty() || modifier.OnlyWashItems.contains(washItem) || hasWashItem);
+                                            (modifier.modifierItemSelector.getOnlyWashItems().isEmpty() || modifier.modifierItemSelector.getOnlyWashItems().contains(washItem) || hasWashItem);
                                 })
                                 .collect(Collectors.toMap(
                                         Map.Entry::getKey,
@@ -407,7 +457,9 @@ public class ModifierHandle {
             if (!weightedUtil.weights.isEmpty()) {
                 weightedUtil.increaseWeightsByRarity(rarity);
                 if (types.contains(ExType.ARMOR.get())) {  // ARMOR type, set the slot based on the item
-                    slotSet = new HashSet<>(List.of(((ArmorItem) stack.getItem()).getEquipmentSlot())); // 重新赋值为新的Set
+                    Item item = stack.getItem();
+                    if (item instanceof ArmorItem) slotSet = new HashSet<>(List.of(((ArmorItem) item).getEquipmentSlot())); // 重新赋值为新的Set
+                    else stack.getEquipmentSlot();
                 }
                 try {
                     RandomEntry(stack, weightedUtil, slotSet.toArray(new EquipmentSlot[0]), refreshnumber); // 将Set转换为数组
@@ -494,7 +546,7 @@ public class ModifierHandle {
 
 
 
-                public static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry, ItemStack stack) {
+                public static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry) {
             List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
             if (modifierEntry.RandomNum > 0) {
@@ -524,7 +576,7 @@ public class ModifierHandle {
                     if (!attriGethers.contains(selectedAttriGether)) {
                         if (selectedAttriGether != null)    {
                             if (selectedAttriGether.getAttribute()!=null){
-                                ExAddEntryAttrigetherEvent event = new ExAddEntryAttrigetherEvent(modifierEntry, selectedAttriGether, stack);
+                                ExAddEntryAttrigetherEvent event = new ExAddEntryAttrigetherEvent(modifierEntry, selectedAttriGether);
                                 MinecraftForge.EVENT_BUS.post(event);
                                 attriGethers.add(event.selectedAttriGether);
                                 LOGGER.debug("add Random entry: " + event.selectedAttriGether.getAttribute().getDescriptionId());
@@ -649,14 +701,16 @@ public class ModifierHandle {
                     modifierEntryMap.entrySet().stream()
                             .filter(e -> {
                                 var modifier = e.getValue();
+                                boolean hasWashItem = materialsList.stream()
+                                        .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
+
                                 return modifier.types.contains(ExType.CURIOS.get()) &&
                                         (curiosType.contains(modifier.curiosType) || "ALL".equals(modifier.curiosType)) &&
-                                        (modifier.OnlyItems.isEmpty() || modifier.OnlyItems.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString())) &&
+                                        modifier.modifierItemSelector.containItem(stack) &&
                                         !modifier.cantSelect &&
-                                        (modifier.Slots.isEmpty())&&
+                                        (modifier.Slots.isEmpty()) &&
                                         (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
-                                        (modifier.OnlyTags.isEmpty() || modifier.containTag(stack)) &&
-                                        (modifier.OnlyWashItems.isEmpty() || modifier.OnlyWashItems.contains(washItem));
+                                        (modifier.modifierItemSelector.getOnlyWashItems().isEmpty() || modifier.modifierItemSelector.getOnlyWashItems().contains(washItem) || hasWashItem);
                             })
                             .collect(Collectors.toMap(
                                     Map.Entry::getKey,
@@ -700,6 +754,32 @@ public class ModifierHandle {
 //        }
 // 已移至MainEvent
     }
+
+    public static @Nullable ChatFormatting getChatFormattingFromString(String string) {
+        char colorCode = '-';
+        Set<Character> excludedFormats = new HashSet<>(Arrays.asList('k', 'l', 'm', 'n', 'o', 'r'));
+
+        for (int i = 0; i < string.length() - 1; i++) {
+            if (string.charAt(i) == '§') {
+                char codeChar = Character.toLowerCase(string.charAt(i + 1));
+
+                // 检查是否是有效颜色且不在排除列表中
+                if (!excludedFormats.contains(codeChar)) {
+                    boolean isColor = (codeChar >= '0' && codeChar <= '9')
+                            || (codeChar >= 'a' && codeChar <= 'f');
+
+                    if (isColor) {
+                        colorCode = codeChar;
+                        break; // 找到第一个有效颜色后立即停止搜索
+                    }
+                }
+            }
+        }
+
+        ChatFormatting byCode = ChatFormatting.getByCode(colorCode);
+        return byCode;
+    }
+
     public static boolean hasHelmetConfig =false;
     public static boolean hasChestConfig = false;
     public static boolean hasLeggingsConfig = false;
@@ -1038,6 +1118,9 @@ public class ModifierHandle {
 
             }
         }
+        if (itemObject.has("displayNameInItemName")) {
+            modifierEntry.displayNameInItemName = itemObject.get("displayNameInItemName").getAsBoolean();
+        }
         if (types.contains(ExType.CURIOS.get())){
             modifierEntry.isCuriosEntry = true;
             if (itemObject.has("curiosType"))
@@ -1053,7 +1136,7 @@ public class ModifierHandle {
 
         }
         modifierEntry.types = types;
-        modifierEntry.id = affString.toString() + key;
+        modifierEntry.id = affString + key;
         modifierEntry.isRandom = itemObject.has("isRandom") && itemObject.get("isRandom").getAsBoolean();
         modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry") && itemObject.get("OnlyHasThisEntry").getAsBoolean();
 
@@ -1077,7 +1160,7 @@ public class ModifierHandle {
         if (itemObject.has("OnlyItems")){
             JsonArray OnlyItems = itemObject.get("OnlyItems").getAsJsonArray();
             OnlyItems.forEach(item -> {
-                modifierEntry.OnlyItems.add(item.getAsString());
+                modifierEntry.modifierItemSelector.addOnlyWashItem(item.getAsString());
             });
         }
         modifierEntry.Slots = new ArrayList<>();
@@ -1096,32 +1179,24 @@ public class ModifierHandle {
         if (itemObject.has("OnlyTags")){
             JsonArray OnlyItems = itemObject.get("OnlyTags").getAsJsonArray();
             OnlyItems.forEach(item -> {
-                modifierEntry.OnlyTags.add(item.getAsString());
+                modifierEntry.modifierItemSelector.addOnlyTag(item.getAsString());
             });
         }
         if (itemObject.has("OnlyWashItems")){
             JsonArray OnlyItems = itemObject.get("OnlyWashItems").getAsJsonArray();
             OnlyItems.forEach(item -> {
-                modifierEntry.OnlyWashItems.add(item.getAsString());
+                modifierEntry.modifierItemSelector.addOnlyWashItem(item.getAsString());
             });
         }
         if (itemObject.has("UnlessItemIds")){
-            modifierEntry.setUnlessItemIds(new ArrayList<>());
             for (JsonElement itemId : itemObject.get("UnlessItemIds").getAsJsonArray()){
-                modifierEntry.getUnlessItemIds().add(itemId.getAsString());
+                modifierEntry.modifierItemSelector.addUnlessItemId(itemId.getAsString());
             }
         }
         if (itemObject.has("UnlessItemTags")){
-            modifierEntry.setUnlessItemTags(new ArrayList<>());
             for (JsonElement itemId : itemObject.get("UnlessItemTags").getAsJsonArray()){
-                modifierEntry.getUnlessItemTags().add(itemId.getAsString());
+                modifierEntry.modifierItemSelector.addUnlessItemTag(itemId.getAsString());
             }
-        }
-        if (itemObject.has("Commands")){
-            JsonArray Commands = itemObject.get("Commands").getAsJsonArray();
-            Commands.forEach(command -> {
-                modifierEntry.Commands.add(command.getAsString());
-            });
         }
         if (itemObject.has("attrGethers")) {
             processAttrGethers(moconfig, modifierEntry, itemObject.get("attrGethers"));

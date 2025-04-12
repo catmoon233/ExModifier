@@ -52,8 +52,8 @@ public class RegisterOther {
     public static class BlockAbout{
 
         public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, Exmodifier.MODID);
-        public static final RegistryObject<Block> REFRESH_TABLE = REGISTRY.register("refresh_table", () -> new RefreshTable());
-        public static final RegistryObject<Block> EMBEDDED_TABLE = REGISTRY.register("embedded_table", () -> new EmbeddedTable());
+        public static final RegistryObject<Block> REFRESH_TABLE = REGISTRY.register("refresh_table", RefreshTable::new);
+        public static final RegistryObject<Block> EMBEDDED_TABLE = REGISTRY.register("embedded_table", EmbeddedTable::new);
     }
     public static class MenuAbout{
         public static final DeferredRegister<MenuType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.MENU_TYPES, Exmodifier.MODID);

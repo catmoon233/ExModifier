@@ -108,6 +108,8 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
             default -> false;
         };
     }
+
+
     public boolean compareItemSelector(ItemSelector itemSelector){
         if (itemSelector.item != null && item!=null&& itemSelector.item != item) return false;
         if (itemSelector.itemId !=null&&itemId!=null && !itemSelector.itemId.equals(itemId)) return false;

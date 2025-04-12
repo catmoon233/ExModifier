@@ -58,7 +58,7 @@ public final class EntryBookForgeRecipeMaker {
 
                     material.forEach(material1 -> {
                         var string = material1.ItemId;
-                        if (modifierEntry.OnlyWashItems.contains(string) || modifierEntry.OnlyWashItems.isEmpty()) {
+                        if (modifierEntry.getModifierItemSelector().getOnlyWashItems().contains(string) || modifierEntry.getModifierItemSelector().getOnlyWashItems().isEmpty()) {
                             inputs.add(ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(string)).getDefaultInstance());
                             outputs.add(item);
 //                            inputs1.add(material1);

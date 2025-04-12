@@ -63,7 +63,7 @@ public class EntryItem extends Item {
                         return;
                     }
                     if (modifierId.length() <= 2) return;
-                    lc.add(Component.translatable("modifier.entry." + modifierId.substring(2)));
+                    lc.add(Component.translatable(ModifierEntry.getDescriptionId(modifierId)));
                     if (!Screen.hasShiftDown()) {
                         ListTag types = stack.getTag().getList("modifier_types",8);
                         double possibility = stack.getTag().getDouble("modifier_possibility") * 100;

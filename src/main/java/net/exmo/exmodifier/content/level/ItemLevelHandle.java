@@ -259,11 +259,12 @@ public class ItemLevelHandle {
         if (itemLevelInstant.itemLevel==null)return components;
 
         int levelItemLevel = itemLevelInstant.level;
+        MutableComponent translatable = Component.translatable("modifier.level." + itemLevelInstant.itemLevel.id);
         if (Screen.hasShiftDown()) {
             // 添加物品等级信息
-            components.add(Component.translatable("modifier.level." + itemLevelInstant.itemLevel.id)
-                    .withStyle(ChatFormatting.GOLD)
-                    .withStyle(ChatFormatting.UNDERLINE)
+            translatable.setStyle(Style.EMPTY.applyFormat(ChatFormatting.UNDERLINE));
+            components.add(
+                    translatable
             ); // 使用颜色增强视觉效果
 
             // 显示当前等级与最大等级
@@ -305,7 +306,7 @@ public class ItemLevelHandle {
             }
 
         }else{
-            components.add(Component.translatable("modifier.level." + itemLevelInstant.itemLevel.id)
+            components.add(translatable
                     .withStyle(ChatFormatting.GOLD).append(" ").append(levelItemLevel+""));
         }
         return components;

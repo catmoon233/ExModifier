@@ -83,6 +83,10 @@ public class ModifierEntryDataBuilder {
         entry.isCuriosEntry = isCuriosEntry;
         return this;
     }
+    public ModifierEntryDataBuilder setDisplayNameInItemName(boolean displayNameInItemName) {
+        entry.displayNameInItemName = displayNameInItemName;
+        return this;
+    }
 
     public ModifierEntryDataBuilder setNeedFreshValue(float needFreshValue) {
         entry.needFreshValue = needFreshValue;
@@ -95,24 +99,21 @@ public class ModifierEntryDataBuilder {
     }
 
     public ModifierEntryDataBuilder setOnlyTags(List<String> onlyTags) {
-        entry.OnlyTags.addAll(onlyTags);
+        entry.getModifierItemSelector().setOnlyTags(onlyTags);
         return this;
     }
 
     public ModifierEntryDataBuilder setOnlyItems(List<String> onlyItems) {
-        entry.OnlyItems.addAll(onlyItems);
+        entry.getModifierItemSelector().setOnlyItems(onlyItems);
         return this;
     }
 
     public ModifierEntryDataBuilder setOnlyWashItems(List<String> onlyWashItems) {
-        entry.OnlyWashItems.addAll(onlyWashItems);
+        entry.getModifierItemSelector().setOnlyItems(onlyWashItems);
         return this;
     }
 
-    public ModifierEntryDataBuilder setCommands(List<String> commands) {
-        entry.Commands.addAll(commands);
-        return this;
-    }
+
 
     public ModifierEntryDataBuilder setId(String id) {
         entry.id = id;
@@ -142,13 +143,14 @@ public class ModifierEntryDataBuilder {
 
         // Check and add non-default itemTypes
         if (entry.weight != 1.0f) json.addProperty("weight", entry.weight);
-        if (entry.cantSelect) json.addProperty("cantSelect", entry.cantSelect);
-        if (entry.isRandom != true) json.addProperty("isRandom", entry.isRandom);
+        if (entry.cantSelect) json.addProperty("cantSelect", true);
+        if (!entry.isRandom) json.addProperty("isRandom", false);
         if (entry.OnlyHasThisEntry) json.addProperty("OnlyHasThisEntry", true);
         if (entry.localDescription != null && !entry.localDescription.isEmpty()) json.addProperty("localDescription", entry.localDescription);
         if (entry.maxLevel != 1) json.addProperty("maxLevel", entry.maxLevel);
         if (entry.curiosType != null && !entry.curiosType.isEmpty()) json.addProperty("curiosType", entry.curiosType);
-        if (entry.isCuriosEntry) json.addProperty("isCuriosEntry", entry.isCuriosEntry);
+        if (entry.isCuriosEntry) json.addProperty("isCuriosEntry", true);
+        if (entry.displayNameInItemName) json.addProperty("displayNameInItemName", true);
         if (entry.needFreshValue != 0.0f) json.addProperty("needFreshValue", entry.needFreshValue);
 
         if (!entry.specialTags.isEmpty()) {
@@ -167,37 +169,33 @@ public class ModifierEntryDataBuilder {
           //  json.addProperty("type", entry.type.name());
         }
 
-        if (!entry.OnlyTags.isEmpty()) {
+        List<String> onlyTags = entry.getModifierItemSelector().getOnlyTags();
+        if (!onlyTags.isEmpty()) {
             JsonArray onlyTagsArray = new JsonArray();
-            for (String tag : entry.OnlyTags) {
+            for (String tag : onlyTags) {
                 onlyTagsArray.add(new JsonPrimitive(tag));
             }
             json.add("OnlyTags", onlyTagsArray);
         }
 
-        if (!entry.OnlyItems.isEmpty()) {
+        List<String> onlyItems = entry.getModifierItemSelector().getOnlyItems();
+        if (!onlyItems.isEmpty()) {
             JsonArray onlyItemsArray = new JsonArray();
-            for (String item : entry.OnlyItems) {
+            for (String item : onlyItems) {
                 onlyItemsArray.add(new JsonPrimitive(item));
             }
             json.add("OnlyItems", onlyItemsArray);
         }
 
-        if (!entry.OnlyWashItems.isEmpty()) {
+        List<String> onlyWashItems = entry.getModifierItemSelector().getOnlyWashItems();
+        if (!onlyWashItems.isEmpty()) {
             JsonArray onlyWashItemsArray = new JsonArray();
-            for (String item : entry.OnlyWashItems) {
+            for (String item : onlyWashItems) {
                 onlyWashItemsArray.add(new JsonPrimitive(item));
             }
             json.add("OnlyWashItems", onlyWashItemsArray);
         }
 
-        if (!entry.Commands.isEmpty()) {
-            JsonArray commandsArray = new JsonArray();
-            for (String command : entry.Commands) {
-                commandsArray.add(new JsonPrimitive(command));
-            }
-            json.add("Commands", commandsArray);
-        }
 
         if (entry.id != null && !entry.id.isEmpty()) json.addProperty("id", entry.id.substring(2));
         if (entry.Expression != null && !entry.Expression.isEmpty()) json.addProperty("Expression", entry.Expression);
@@ -262,6 +260,7 @@ public class ModifierEntryDataBuilder {
         //tag.putString("type", entry.type.name());
         tag.putString("curiosType", entry.curiosType);
         tag.putBoolean("isCuriosEntry", entry.isCuriosEntry);
+        tag.putBoolean("displayNameInItemName", entry.displayNameInItemName);
         tag.putFloat("needFreshValue", entry.needFreshValue);
 
         ListTag specialTagsTag = new ListTag();
@@ -276,7 +275,7 @@ public class ModifierEntryDataBuilder {
         tag.put("slotsTags", slotsTags);
 
         ListTag onlyTagsTag = new ListTag();
-        for (String tagStr : entry.OnlyTags) {
+        for (String tagStr : entry.getModifierItemSelector().getOnlyTags()) {
             onlyTagsTag.add(StringTag.valueOf(tagStr));
         }
         tag.put("OnlyTags", onlyTagsTag);
@@ -288,22 +287,17 @@ public class ModifierEntryDataBuilder {
         tag.put("types", typesTag);
 
         ListTag onlyItemsTag = new ListTag();
-        for (String itemStr : entry.OnlyItems) {
+        for (String itemStr : entry.getModifierItemSelector().getOnlyItems()) {
             onlyItemsTag.add(StringTag.valueOf(itemStr));
         }
         tag.put("OnlyItems", onlyItemsTag);
 
         ListTag onlyWashItemsTag = new ListTag();
-        for (String itemStr : entry.OnlyWashItems) {
+        for (String itemStr : entry.getModifierItemSelector().getOnlyWashItems()) {
             onlyWashItemsTag.add(StringTag.valueOf(itemStr));
         }
         tag.put("OnlyWashItems", onlyWashItemsTag);
 
-        ListTag commandsTag = new ListTag();
-        for (String commandStr : entry.Commands) {
-            commandsTag.add(StringTag.valueOf(commandStr));
-        }
-        tag.put("Commands", commandsTag);
 
         tag.putString("id", entry.id);
         tag.putString("Expression", entry.Expression);
@@ -330,6 +324,7 @@ public class ModifierEntryDataBuilder {
         builder.setCuriosType(tag.getString("curiosType"));
         builder.setIsCuriosEntry(tag.getBoolean("isCuriosEntry"));
         builder.setNeedFreshValue(tag.getFloat("needFreshValue"));
+        builder.setDisplayNameInItemName(tag.getBoolean("displayNameInItemName"));
         builder.setIcon(tag.getString("icon"));
 
         ListTag specialTagsTag = tag.getList("specialTags", 8);
@@ -373,12 +368,7 @@ public class ModifierEntryDataBuilder {
         }
         builder.setOnlyWashItems(onlyWashItems);
 
-        ListTag commandsTag = tag.getList("Commands", 8);
-        List<String> commands = new ArrayList<>();
-        for (int i = 0; i < commandsTag.size(); i++) {
-            commands.add(commandsTag.getString(i));
-        }
-        builder.setCommands(commands);
+
 
         builder.setId(tag.getString("id"));
         builder.setExpression(tag.getString("Expression"));
