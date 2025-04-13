@@ -2,14 +2,18 @@
 package net.exmo.exmodifier.util;
 
 
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
+import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
+import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.events.ExCuriosAttributeTooltipEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -47,13 +51,14 @@ public class AttributeCuriosHandle {
              //   if (attributeCurios.HideAttribute)return;
             }
             List<AttrGether> attributeModifiers = CuriosUtil.getAttributeModifiersAffix(event.getItemStack());
-            if (!attributeModifiers.isEmpty()){
-                List<Component> adds = new ArrayList<>();
+            List<Component> adds = new ArrayList<>();
+            ExCuriosAttributeTooltipEvent event1 = new ExCuriosAttributeTooltipEvent(event.getEntity(), event.getItemStack(), event.getToolTip(), adds,attributeModifiers);
+            MinecraftForge.EVENT_BUS.post(event1);
+            if (!event1.attributeModifiers.isEmpty()){
                 adds.add(Component.literal(""));
                 adds.add(Component.translatable("attribute.curios.tooltip").withStyle(ChatFormatting.GOLD));
 
-                ExCuriosAttributeTooltipEvent event1 = new ExCuriosAttributeTooltipEvent(event.getEntity(), event.getItemStack(), event.getToolTip(), adds,attributeModifiers);
-                MinecraftForge.EVENT_BUS.post(event1);
+
                 for (AttrGether attrGether : event1.attributeModifiers) {
                     adds.add(attrGether.generateTooltipBase());
                 }
@@ -62,6 +67,19 @@ public class AttributeCuriosHandle {
 
             }
         }
+
+        @SubscribeEvent
+        public static void exceptModifierAttributeDisplay(ExCuriosAttributeTooltipEvent event){
+            boolean foldFlag = Config.entryFold && Screen.hasShiftDown();
+            if (foldFlag ||!Config.entryFold) {
+                List<ModifierEntry> modifierEntriesB = ModifierEntryHelper.of(event.itemStack).getModifierEntriesB();
+                for (ModifierEntry modifierEntry : modifierEntriesB) {
+                    for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
+                        event.attributeModifiers.removeIf(e -> e.attributeModifier.getName().equals(modifierAttriGether.modifier.getName()));
+                    }
+                }
+            }
+            }
 
         @SubscribeEvent
         public static void OnCurioChange2(ExCuriosAttributeTooltipEvent event) {

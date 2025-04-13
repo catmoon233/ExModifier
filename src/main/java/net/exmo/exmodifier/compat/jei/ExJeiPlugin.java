@@ -117,7 +117,7 @@ public class ExJeiPlugin implements IModPlugin {
             return;
         }
         if (modifierId.length() <= 2) return;
-        lc.add(Component.translatable("modifier.entry." + modifierId.substring(2)));
+        lc.add(Component.translatable(modifierEntry.getDescriptionId()));
         lc.add(Component.translatable("modifier.entry.possibility").append(EntryItem.CommonEvent.df.format(stack.getTag().getDouble("modifier_possibility") * 100)).append("%"));
         lc.add(Component.translatable("modifier.entry.level").append(String.valueOf(EntryItem.getModifierLevel(stack))));
         lc.add(Component.translatable("modifier.entry.maxlevel").append(String.valueOf(modifierEntry.maxLevel)));

@@ -17,9 +17,9 @@
     "ToolTipMixin"
   ],
   "client": [
+    "ItemStackClientMixin",
     "LanguageMixin",
     "ModScreenMixin",
-    "ItemStackClientMixin",
     "RenderItemMixin"
   ],
   "injectors": {

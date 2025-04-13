@@ -61,6 +61,7 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -179,8 +180,10 @@ public class ModifierHandle {
             boolean foldFlag = !Config.entryFold || Screen.hasShiftDown();
             if (id.length() >= 2) {
                 MutableComponent translatable = Component.translatable(modifierEntry.getDescriptionId());
-                if (Config.entryUnderLine && foldFlag)translatable.withStyle(ChatFormatting.UNDERLINE);
-
+                if (Config.entryUnderLine && foldFlag) {
+                    translatable = Component.literal("§n").append(translatable);
+                    //translatable.withStyle(ChatFormatting.UNDERLINE);
+                }
                 if (Config.compact_tooltip){
                     if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
                     tooltips.add(translatable);
@@ -189,7 +192,7 @@ public class ModifierHandle {
 
                 else{
                     if (level>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level)).withStyle(ChatFormatting.GOLD);
-                    tooltips.add(translatable.append(":"));
+                    tooltips.add(translatable.append("§r:"));
                 }
                 if (!modifierEntry.localDescription.isEmpty())
                 //        if (Screen.hasShiftDown())
@@ -210,14 +213,17 @@ public class ModifierHandle {
 //                    if (modifierAttriGether.IsAutoEquipmentSlot){
 //                        slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
 //                    }
+                    boolean isCurios = CuriosUtil.isCuriosItem2(itemStack);
+                    List<AttrGether> attributeModifiersAffix = CuriosUtil.getAttributeModifiersAffix(itemStack);
+                    boolean b = isCurios && attributeModifiersAffix.stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(attributemodifier.getName()));
                     if (
-                        //    (CuriosUtil.isCuriosItem(itemStack)&&CuriosUtil.getAttributeModifiersAffix(itemStack).contains(modifierAttriGether.toAttriGether()))||
-                            !ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot) && CuriosUtil.getAttributeModifiersAffix(itemStack).stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(attributemodifier.getName())))continue;
+                            b &&
+                            !ItemAttrUtil.hasAttributeModifierCompoundTagNoAmount(itemStack, attribute, attributemodifier, modifierAttriGether.slot) )continue;
                     //  Exmodifier.LOGGER.info(modifierAttriGether.getAttribute().getDescriptionId());
                     //   if (!itemStack.getAttributeModifiers(modifierAttriGether.slot).containsEntry(attribute, attributemodifier))continue;
 //                    attributemodifier = ItemAttrUtil.getAttributeModifierFromNamed(attributemodifier.getName(),itemStack);
 //                    if (attributemodifier==null)continue;
-                    double d0 = ItemAttrUtil.getAmountFromAttributeName(itemStack, attribute, attributemodifier.getName());
+                    double d0 = isCurios ? attributeModifiersAffix.stream().filter(attrGether -> attrGether.attributeModifier.getName().equals(attributemodifier.getName())).findFirst().get().attributeModifier.getAmount(): ItemAttrUtil.getAmountFromAttributeName(itemStack, attribute, attributemodifier.getName());
                     if (modifierAttriGether.Expression!=null&& !modifierAttriGether.Expression.isEmpty()){
                        DynamicExpressionEvaluator evaluator = new DynamicExpressionEvaluator();
                        evaluator.setVariable("level", level);

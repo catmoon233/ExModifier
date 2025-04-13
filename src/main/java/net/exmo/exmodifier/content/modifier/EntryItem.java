@@ -41,7 +41,7 @@ public class EntryItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        return Component.translatable("modifier.entry." + getModifierID(stack).substring(2));
+        return Component.translatable(ModifierEntry.getDescriptionId(getModifierID(stack)));
     }
 
     @Mod.EventBusSubscriber

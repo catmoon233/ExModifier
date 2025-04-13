@@ -35,7 +35,7 @@ public class EntryItemRender implements IItemDecorator {
 
 
                 if (id.length() <= 2) return false;
-                Component c = Component.translatable("modifier.entry." + id.substring(2));
+                Component c = Component.translatable(modifierEntry.getDescriptionId());
                 TextColor color = c.getStyle().getColor();
                 int value;
                 if (color == null) value = 0xFFFFFF;

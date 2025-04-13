@@ -14,12 +14,23 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Mod.EventBusSubscriber
 public class ApothCompat {
+    @SubscribeEvent
+    public static void onItemAttributeColorFix(ItemTooltipEvent event){
+//        event.getToolTip().forEach(
+//                component -> {
+//                    if (component.)
+//                }
+//        );
+    }
     public void SkinAttr(GatherSkippedAttributeTooltipsEvent e) {
         if (Config.entryFold && !Screen.hasShiftDown())return ;
 

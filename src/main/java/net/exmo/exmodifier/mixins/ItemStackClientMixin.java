@@ -67,4 +67,13 @@ public abstract class ItemStackClientMixin {
             return translatableText.withStyle(formatting);
         }
     }
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/network/chat/MutableComponent;withStyle(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;", ordinal = 6), method = "getTooltipLines")
+    private MutableComponent getTextFormatting2(MutableComponent translatableText, ChatFormatting formatting) {
+        if(this.hasTag() && exmodifier$chatFormatting !=null) {
+
+            return translatableText.withStyle(exmodifier$chatFormatting);
+        } else {
+            return translatableText.withStyle(formatting);
+        }
+    }
 }
