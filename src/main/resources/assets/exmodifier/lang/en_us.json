@@ -9,6 +9,7 @@
   "name.exmodifier.modmenu": "ExModifier Config Pack Import: ",
   "modifier.entry.can_add_max": "§7The maximum number of entries added has been reached",
   "modifier.entry.type": "§7Type: ",
+  "modifier.entry.tag": "§7Tag: ",
   "item.modifier.entry_item": "§7Entry item",
   "modifier.entry.possibility": "§7possibility:",
   "null": "",

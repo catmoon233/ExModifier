@@ -131,9 +131,9 @@ public class MainEvent {
                 tooo.addAll(ItemLevelHandle.genItemLevelInfo(itemStack));
                 if (b) {
                     if (Config.entryShowUnderLevel) {
-                        for (var aa : ModifierEntryHelper.of(itemStack).getModifierEntriesB()) {
-                            if (aa.displayNameInItemName) continue;
-                            tooo.add(Component.translatable(aa.getDescriptionId()));
+                        for (var aa : ModifierEntryHelper.of(itemStack).getModifierEntries()) {
+                            if (aa.getModifierEntry().displayNameInItemName ||aa.getSlot().isPresent()) continue;
+                            tooo.add(Component.translatable(aa.getModifierEntry().getDescriptionId()));
                         }
 
                     }
@@ -247,7 +247,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
                             if (modifierEntry.getSlot().isPresent())continue;
                             // Exmodifier.LOGGER.debug("modifier Id:" + modifierEntry.Id);
                             if (!Config.compact_tooltip) tooltip.add(Component.translatable("null"));
-                            tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack));
+                            tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack,false));
 
                         }
                     }
@@ -688,6 +688,7 @@ public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event)
             ExTypeHandle.readConfig();
             ExSuitHandle.readConfig();
             ModifierSlotHandle.reload();
+
             ItemQualityHandle.init();
             if (runnable!=null) runnable.run();
             for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()) {

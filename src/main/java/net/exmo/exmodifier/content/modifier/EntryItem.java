@@ -84,16 +84,11 @@ public class EntryItem extends Item {
                                 }
                             }
                         }
-                        boolean hasTyoe = false;
                         if (types.size() > 1) {
-
+                            lc.add(Component.translatable("modifier.entry.type"));
                             for (
                                     var type : types
                             ) {
-                                if (!hasTyoe) {
-                                    lc.add(Component.translatable("modifier.entry.type"));
-                                    hasTyoe = true;
-                                }
                                 lc.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.entry.type").append(type.getAsString())));
 
                             }

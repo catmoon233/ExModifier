@@ -75,7 +75,7 @@ public class ModifierSlotHandle
                     slots.remove(id);
                     if (slotHelper.containSlot(id)){
                         tooltip.add(Component.translatable("modifier.slot."+id));
-                        tooltip.addAll(generateEntryTooltip(entry, player, stack));
+                        tooltip.addAll(generateEntryTooltip(entry, player, stack,true));
                   tooltip.add(Component.translatable("null"));
                     }
                 }

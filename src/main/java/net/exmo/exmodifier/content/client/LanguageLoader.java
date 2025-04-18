@@ -23,7 +23,7 @@ import java.util.zip.ZipFile;
 public final class LanguageLoader {
     public static final Map<String, Map<String, String>> LANGUAGES = Maps.newHashMap();
     private static final Marker MARKER = MarkerManager.getMarker("LanguageLoader");
-    public static final Path LANGUAGES_FILE_PATH = FMLPaths.GAMEDIR.get().resolve("exmo/lang");
+    public static final Path LANGUAGES_FILE_PATH = FMLPaths.CONFIGDIR.get().resolve("exmo/lang");
     public static void load(Path filePath) {
         if (!Files.isDirectory(filePath)) {
             return;

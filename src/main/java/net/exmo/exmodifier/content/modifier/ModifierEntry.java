@@ -9,7 +9,9 @@ import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.util.*;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -36,6 +38,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public boolean cantSelect = false;
     public boolean isRandom = true;
     public String icon = "";
+    public List<TagKey<ModifierEntry>> tags = new ArrayList<>();
     public boolean OnlyHasThisEntry = false;
     public String localDescription = "";
     public int maxLevel = 1;
@@ -91,6 +94,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
                 ", cantSelect=" + cantSelect +
                 ", isRandom=" + isRandom +
                 ", icon='" + icon + '\'' +
+                ", tags=" + tags +
                 ", OnlyHasThisEntry=" + OnlyHasThisEntry +
                 ", localDescription='" + localDescription + '\'' +
                 ", maxLevel=" + maxLevel +
@@ -393,17 +397,12 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
                     list.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.entry.suit." + suit.id)));
                 }
             }
-            boolean hasTyoe = false;
 
             if (this.types.size() > 1) {
-
+                list.add(Component.translatable("modifier.entry.type"));
                 for (
                         ItemType type : types
                 ) {
-                    if (!hasTyoe) {
-                        list.add(Component.translatable("modifier.entry.type"));
-                        hasTyoe = true;
-                    }
                     list.add(Component.literal(" §7¦ §r").append(type.name()));
 
                 }
@@ -411,6 +410,20 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
             } else {
                 if (!types.isEmpty())
                     list.add(Component.translatable("modifier.entry.type").append(types.get(0).name()));
+
+            }
+            if (this.tags.size() > 1) {
+                list.add(Component.translatable("modifier.entry.tag"));
+                for (
+                        var tag : tags
+                ) {
+                    list.add(Component.literal(" §7¦ §r").append(tag.toString()));
+
+                }
+
+            } else {
+                if (!tags.isEmpty())
+                    list.add(Component.translatable("modifier.entry.tag").append(tags.get(0).toString()));
 
             }
             return list;

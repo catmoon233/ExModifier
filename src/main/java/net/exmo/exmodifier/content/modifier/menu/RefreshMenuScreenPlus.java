@@ -1,8 +1,6 @@
 package net.exmo.exmodifier.content.modifier.menu;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.xkmc.l2damagetracker.contents.curios.TotemUseToClient;
-import net.exmo.exmodifier.content.event.MainEvent;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
@@ -19,6 +17,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderType;
@@ -26,14 +25,11 @@ import net.minecraft.network.chat.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -55,8 +51,18 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     private ItemListViewer itemListViewer;
     private float scrollOffset;
     private boolean isScrolling;
+    private static final ResourceLocation SLOT_ICON =
+            new ResourceLocation("exmodifier", "textures/gui/slot_icon_0.png");
+    private static final ResourceLocation SLOT_ICON_1 =
+            new ResourceLocation("exmodifier", "textures/gui/slot_icon_1.png");
     private static final ResourceLocation WIDGETS_TEXTURE =
             new ResourceLocation("exmodifier", "textures/gui/backround.png");
+    private static final ResourceLocation WIDGETS_TEXTURE_2 =
+            new ResourceLocation("exmodifier", "textures/gui/backround_2.png");
+    private static final ResourceLocation WIDGETS_TEXTURE_W =
+            new ResourceLocation("exmodifier", "textures/gui/backround_w.png");
+    private static final ResourceLocation WIDGETS_TEXTURE_W2 =
+            new ResourceLocation("exmodifier", "textures/gui/backround_w2.png");
     private static final ResourceLocation SIMPLE_BUTTON_TEXTURE =
             new ResourceLocation("exmodifier", "textures/gui/simple_button.png");
     private static final ResourceLocation SIMPLE_BUTTON_TEXTURE_OVER =
@@ -78,9 +84,17 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 //                    .build());
 //            screen.addRenderableWidget(new StringWidget(100, 80, 100, 20,
 //                    Component.literal("欢迎使用！"), screen.font));
-            this.itemListViewer = new ItemListViewer(filterItems(player.getInventory().items),
+            this.itemListViewer = new ItemListViewer(manageSlot == 0 ? filterItems(player.getInventory().items) : filterItems2(player.getInventory().items),
                     120 + this.width/3, topPos + 20,
                     this.width-160 -this.width /3-40 -20, imageHeight - 60);
+         // 启用搜索功能
+            itemListViewer.setShowSearchBox(false);
+
+            // 自定义搜索框外观
+            itemListViewer.setSearchBackground(
+                  WIDGETS_TEXTURE_W,
+                    0x80000000 // 半透明橙色背景
+            );
 
                 textList = new TextListWidget(
                         List.of(),
@@ -121,7 +135,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 .map(entry -> {
                     MutableComponent translatable = Component.translatable(entry.getModifierEntry().getDescriptionId());
                     if (entry.getLevel()>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + entry.getLevel())).withStyle(ChatFormatting.GOLD);
-                    return new TextListWidget.Entry(translatable,ModifierHandle.CommonEvent.generateEntryTooltip(entry, player, selectedItemStack) );
+                    return new TextListWidget.Entry(translatable,ModifierHandle.CommonEvent.generateEntryTooltip(entry, player, selectedItemStack,true) );
                 })
                 .collect(Collectors.toList());
         return textEntries;
@@ -377,13 +391,85 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     // 页面数据结构
     private record Page(Component title, Consumer<RefreshMenuScreenPlus> contentInitializer) {}
     private  TextListWidget textList = new TextListWidget(List.of(),0,0,0,0);
+
+    // 自定义按钮类
+    private class ExSlotButton extends AbstractButton {
+        private final ResourceLocation normalTexture;
+        private final ResourceLocation pressTexture;
+        private final int textureWidth;
+        private final int textureHeight;
+        private final int slotIndex;
+
+        public ExSlotButton(int x, int y, int width, int height,
+                            ResourceLocation normalTexture, ResourceLocation pressTexture, int textureWidth, int textureHeight,
+                            int slotIndex, Runnable onPress) {
+            super(x, y, width, height, Component.empty());
+            this.normalTexture = normalTexture;
+            this.pressTexture = pressTexture;
+            this.textureWidth = textureWidth;
+            this.textureHeight = textureHeight;
+            this.slotIndex = slotIndex;
+            this.onPress = onPress;
+
+        }
+
+        private  ExSlotButton setComponent(Component component){
+            this.setMessage(component);
+            return this;
+        }
+        private final Runnable onPress;
+        @Override
+        public void onPress() {
+            onPress.run();
+        }
+
+        @Override
+        public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+
+            // 绘制背景纹理
+            guiGraphics.blit(manageSlot == slotIndex ? pressTexture : normalTexture,
+                    getX(), getY(),
+                    0, 0,
+                    width, height,
+                    textureWidth, textureHeight);
+
+            // 绘制文本
+            int textX = getX() + (width - font.width(getMessage())) / 2;
+            int textY = getY() + (height - 8) / 2;
+            guiGraphics.drawString(font, getMessage(), textX, textY, 0xFFFFFF);
+            // 选中效果（半透明覆盖层）
+//            if (manageSlot == slotIndex) {
+//                guiGraphics.fill(getX(), getY(),
+//                        getX() + width, getY() + height,
+//                        0x80808080);
+//            }
+
+            // 悬停效果（可选）
+            if (isHovered()) {
+                guiGraphics.fill(getX(), getY(),
+                        getX() + width, getY() + height,
+                        0x20FFFFFF);
+            }
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput output) {
+            output.add(NarratedElementType.TITLE, Component.translatable("narration.exmodifier.button.slot_" + slotIndex));
+        }
+    }
+
     //重铸组件
-    private class RefreshWidget extends AbstractContainerEventHandler implements Renderable , NarratableEntry{
-        private int x;
-        private int y;
-        private int width;
-        private int height;
-        private ResourceLocation menuTexture;
+    private class RefreshWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+        private final int x;
+        private final int y;
+        private final int width;
+        private final int height;
+        private final ResourceLocation menuTexture;
+
+        private final ExSlotButton itemButton;
+        private final ExSlotButton refreshButton;
+        private final ExSlotButton infoButton;
+        private final ExSlotButton materialButton;
 
         public RefreshWidget(int x, int y, int w, int h, ResourceLocation menuTexture) {
             this.x = x;
@@ -391,119 +477,169 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             this.width = w;
             this.height = h;
             this.menuTexture = menuTexture;
+
+            // 初始化按钮（带4x缩放）
+            int baseButtonSize = 16;
+            int scaledSize = baseButtonSize * 4;
+            this.itemButton = new ExSlotButton(
+                    x + 2, y + 2,
+                    scaledSize, scaledSize,
+                    WIDGETS_TEXTURE, WIDGETS_TEXTURE_2, scaledSize, scaledSize,
+                    0,
+                    () -> {
+                        manageSlot = 0;
+                        RefreshMenuScreenPlus.this.itemListViewer.items =
+                                filterItems(getMinecraft().player.getInventory().items);
+                    }
+            );
+            int baseButtonSize2Y = 24;
+            int baseButtonSize2X = (w-45)/2;
+
+            this.refreshButton = new ExSlotButton(
+                    x + 20, y + h- baseButtonSize2Y-16,
+                    baseButtonSize2X, baseButtonSize2Y,
+                    WIDGETS_TEXTURE_W, WIDGETS_TEXTURE_W2, baseButtonSize2X, baseButtonSize2Y,
+                    -1,
+                    () -> {
+                        //todo 重铸
+                    }
+            ).setComponent(Component.translatable("gui.exmodifier.refresh_0"));
+            this.infoButton = new ExSlotButton(
+                    x + 20+baseButtonSize2X+5, y + h- baseButtonSize2Y-16,
+                    baseButtonSize2X, baseButtonSize2Y,
+                    WIDGETS_TEXTURE_W, WIDGETS_TEXTURE_W2, baseButtonSize2X, baseButtonSize2Y,
+                    -1,
+                    () -> {
+                        //todo 重铸
+                    }
+            ).setComponent(Component.translatable("gui.exmodifier.refresh_1"));
+
+
+            int materialBtnWidth = width - 40;
+            int materialBtnHeight = 40;
+            this.materialButton = new ExSlotButton(
+                    x + 20, y + scaledSize + 24, // 64 + 20 with scaling
+                    materialBtnWidth, materialBtnHeight,
+                    WIDGETS_TEXTURE_W,WIDGETS_TEXTURE_W2, materialBtnWidth, materialBtnHeight,
+                    1,
+                    () -> {
+                        manageSlot = 1;
+                        RefreshMenuScreenPlus.this.itemListViewer.items =
+                                filterItems2(getMinecraft().player.getInventory().items);
+                    }
+            );
         }
 
-
-
         @Override
-        public void render(GuiGraphics guiGraphics, int i, int i1, float v) {
-            guiGraphics.blit(menuTexture, x, y, 0, 0, width, height, width, height);
+        public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            // 渲染主背景
+            guiGraphics.blit(menuTexture,
+                    x, y,
+                    0, 0,
+                    width, height,
+                    width, height);
 
-            int iconSize = 16*4;
-            guiGraphics.blit(WIDGETS_TEXTURE, x + 2, y + 2, 0, 0, iconSize, iconSize, iconSize, iconSize);
-            if (manageSlot ==0){
-                //white full
-                guiGraphics.fill(x+2, y+2, x + iconSize+2, y + iconSize+2, 0x80808080);
-            }
-            int maxWidth = (int) ((width - 64-12)/1.75);
-            // 在页面初始化时创建文本列表
-
-            if (!selectedItemStack.isEmpty()) {
-                Component text = selectedItemStack.getHoverName();
-                // 修复后的文本截断逻辑
-                var trimmed =Component.literal(font.substrByWidth(text, maxWidth).getString());
-                if (font.width(text) > maxWidth) {
-                    trimmed = Component.empty()
-                            .append(trimmed.copy().withStyle(text.getStyle()))
-                            .append(Component.literal("...").withStyle(Style.EMPTY));
-                }
-
-                //int textWidth = font.width(trimmed);
-                int xPos = 100+64+10;//x + 2 + (width - textWidth) / 2;
-                int yPos = y +2;
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().scale(1.75f,1.75f,0);
-                guiGraphics.drawString(font, trimmed, ((int) (xPos / 1.75)), ((int) (yPos / 1.75)), 0xFFFFFF, false); // 添加缺失的分号
-                guiGraphics.pose().popPose();
-
-            }
-
-            int startX = x + 20;
-            int startY = y + 64 + 20;
-            int width1 = width - 40;
-            int height1 = 40;
-            guiGraphics.blit(WIDGETS_TEXTURE, startX, startY, 0, 0, width1, height1, width1, height1);
-            //选择 白色叠层
-            if (manageSlot==1){
-                guiGraphics.fill(startX, startY, startX + width1, startY + height1, 0x80808080);
-            }
-            if (selectedRefreshItem.isEmpty()) {
-                // 渲染“请选择重铸物品”的文本在贴图中间
-                Component text;
-                if (manageSlot == 1) {
-                    text = Component.translatable("gui.exmodifier.refresh.select_0");
-                } else {
-                    text = Component.translatable("gui.exmodifier.refresh.select_1");
-                }
-                int textWidth = font.width(text);
-                int textX = startX + (width1 - textWidth) / 2; // 计算文本的X坐标，使其居中
-                int textY = startY + (height1 - 8) / 2; // 计算文本的Y坐标，使其居中
-                guiGraphics.drawString(font, text, textX, textY, 0xFFFFFF); // 绘制文本
-            } else {
-                // 物品渲染在中间
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().scale(1.5f, 1.5f, 0);
-                int itemX = startX + (width1 - 16) / 2; // 计算物品的X坐标，使其居中
-                int itemY = startY + (height1 - 16) / 2; // 计算物品的Y坐标，使其居中
-                guiGraphics.renderItem(selectedRefreshItem, (int) (itemX / 1.5), (int) (itemY / 1.5)); // 渲染物品
-
-                // 渲染物品数量
-                int count = selectedRefreshItem.getCount();
-                if (count > 1) {
-                    String countText = String.valueOf(count);
-                    int textX = (int) (itemX / 1.5) + 16 - font.width(countText) - 2; // 计算文本的X坐标，使其位于物品右下角
-                    int textY = (int) (itemY / 1.5) + 16 - 8; // 计算文本的Y坐标，使其位于物品右下角
-                    guiGraphics.drawString(font, countText, textX, textY, 0xFFFFFF, false); // 绘制数量文本
-                }
-
-                guiGraphics.pose().popPose();
-            }
+            // 渲染按钮
+            itemButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            materialButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            refreshButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            infoButton.render(guiGraphics, mouseX, mouseY, partialTick);
 
 
+            // 渲染选中物品
+            renderSelectedItem(guiGraphics);
 
+            // 渲染材料槽内容
             guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(2, 2, 2);
-            guiGraphics.pose().scale(4, 4f, 0);
-            guiGraphics.renderItem(selectedItemStack, x / 4, y / 4);
+            guiGraphics.pose().translate(-5,0,0);
+            renderMaterialSlot(guiGraphics);
             guiGraphics.pose().popPose();
         }
 
-        @Override
-        public boolean mouseClicked(double x, double y, int p_94697_) {
-            if (p_94697_ == 0) {
-                //在this.x-this.x+64 this.y-this.y+64 内
-                if (x >= this.x+2 && x <= this.x + 64+2 && y >= this.y+2 && y <= this.y + 64+2) {
-                    manageSlot = 0;
-                    RefreshMenuScreenPlus.this.itemListViewer.items = filterItems(player.getInventory().items);
-                    return true;
+        private void renderSelectedItem(GuiGraphics guiGraphics) {
+            if (!selectedItemStack.isEmpty()) {
+                guiGraphics.pose().pushPose();
+                try {
+                    // 4倍缩放渲染
+                    guiGraphics.pose().translate(2, 2, 2);
+                    guiGraphics.pose().scale(4, 4, 0);
+                    guiGraphics.renderItem(selectedItemStack, x / 4, y / 4);
+                } finally {
+                    guiGraphics.pose().popPose();
                 }
-                int startX = this.x + 20;
-                int startY = this.y + 64 + 20;
-                int width1 = width - 40;
-                int height1 = 40;
-                if (x >= startX && x <= startX + width1 && y >= startY && y <= startY + height1) {
-                    manageSlot = 1;
-                    RefreshMenuScreenPlus.this.itemListViewer.items = filterItems2(player.getInventory().items);
-                    return true;
-                }
+
+                // 渲染物品名称（带自动截断）
+
             }
-            return super.mouseClicked(x, y, p_94697_);
+            renderItemLabel(guiGraphics, selectedItemStack);
+        }
+
+        private void renderItemLabel(GuiGraphics guiGraphics, ItemStack stack) {
+            Component text  = stack.isEmpty() ? Component.translatable("gui.exmodifier.refresh_empty"): stack.getHoverName()  ;
+            int maxWidth = (int) ((width - 64 - 12) / 1.75);
+
+            FormattedText trimmed = font.substrByWidth(text, maxWidth);
+            Component displayText = Component.literal(trimmed.getString())
+                    .withStyle(text.getStyle());
+
+            if (font.width(text) > maxWidth) {
+                displayText = Component.empty()
+                        .append(displayText)
+                        .append(Component.literal("...").withStyle(Style.EMPTY));
+            }
+
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().scale(1.75f, 1.75f, 0);
+            guiGraphics.drawString(
+                    font,
+                    displayText,
+                    (int)((x + 64 + 10) / 1.75),
+                    (int)((y + 2) / 1.75),
+                    0xFFFFFF,
+                    false
+            );
+            guiGraphics.pose().popPose();
+        }
+
+        private void renderMaterialSlot(GuiGraphics guiGraphics) {
+            if (selectedRefreshItem.isEmpty()) {
+
+                Component text = Component.translatable(
+                        "gui.exmodifier.refresh.select_" + (manageSlot == 1 ? 0 : 1));
+                int textWidth = font.width(text);
+                int centerX = materialButton.getX() + (materialButton.getWidth() - textWidth) / 2;
+                int centerY = materialButton.getY() + (materialButton.getHeight() - 8) / 2;
+                guiGraphics.drawString(font, text, centerX, centerY, 0xFFFFFF);
+            } else {
+                renderItemInSlot(guiGraphics, selectedRefreshItem,
+                        materialButton.getX(), materialButton.getY(),
+                        materialButton.getWidth(), materialButton.getHeight());
+            }
+
+        }
+
+        private void renderItemInSlot(GuiGraphics guiGraphics, ItemStack stack,
+                                      int x, int y, int width, int height) {
+            guiGraphics.pose().pushPose();
+            try {
+                float scale = 1.5f;
+                guiGraphics.pose().scale(scale, scale, 0);
+
+                int itemX = (int)((x + (width - 16) / 2) / scale);
+                int itemY = (int)((y + (height - 16) / 2) / scale);
+                // 绘制物品槽
+                guiGraphics.blit(SLOT_ICON_1, itemX-2, itemY-2,
+                        0, 0, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE);
+                guiGraphics.renderItem(stack, itemX, itemY);
+                guiGraphics.renderItemDecorations(font, stack, itemX, itemY);
+            } finally {
+                guiGraphics.pose().popPose();
+            }
         }
 
         @Override
         public List<? extends GuiEventListener> children() {
-            return List.of();
-
+            return List.of(itemButton, materialButton);
         }
 
         @Override
@@ -512,10 +648,13 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         }
 
         @Override
-        public void updateNarration(NarrationElementOutput narrationElementOutput) {
-
+        public void updateNarration(NarrationElementOutput output) {
+            output.add(NarratedElementType.TITLE, Component.translatable("gui.exmodifier.refresh.widget"));
         }
     }
+
+    // 其他必要方法
+
     // 在RefreshMenuScreenPlus类中添加内部类
     public class TextListWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
         public static class Entry {
@@ -657,8 +796,28 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         }
 
         private void renderScrollBar(GuiGraphics guiGraphics) {
-            if (totalContentHeight <= bounds.height) return;
+            if (totalContentHeight <= bounds.height) {
+                // 渲染完整滑块（无需滚动条时）
+                int fullBarHeight = bounds.height;
+                int fullBarY = bounds.y;
 
+                // 轨道背景（完整滑块样式）
+                guiGraphics.fill(
+                        bounds.x + bounds.width - SCROLLBAR_WIDTH, bounds.y,
+                        bounds.x + bounds.width, bounds.y + bounds.height,
+                        0x40000000 // 半透明灰色
+                );
+
+                // 滑块（完整高度）
+                guiGraphics.fill(
+                        bounds.x + bounds.width - SCROLLBAR_WIDTH, fullBarY,
+                        bounds.x + bounds.width, fullBarY + fullBarHeight,
+                        0x80808080 // 半透明浅灰色
+                );
+                return;
+            }
+
+            // 原有滚动条渲染逻辑保持不变
             int scrollHeight = (int) ((float) bounds.height / totalContentHeight * bounds.height);
             scrollHeight = Mth.clamp(scrollHeight, 10, bounds.height);
 
@@ -679,6 +838,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     0x80808080
             );
         }
+
 
         private void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
             if (hoveredIndex != -1 && entries.get(hoveredIndex).tooltips != null) {
@@ -768,107 +928,182 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
     // 物品列表查看器组件
     private class ItemListViewer extends AbstractContainerEventHandler implements Renderable , NarratableEntry {
+
         public  List<ItemStack> items;
         private final int x;
-        private final int y;
+        private int y;
         private final int width;
         private final int totalSlotsPerPage;
         private final int visibleRowsY;
         private final int visibleRowsX;
         private int selected = -1;
         private ContextMenu contextMenu;
-
+        private boolean showSearchBox = false;
+        private EditBox searchBox;
+        private ResourceLocation searchBackground = WIDGETS_TEXTURE;
+        private int searchBgColor = 0xAA000000;
+        private final List<ItemStack> originalItems;
+        private final int originalY;
         public ItemListViewer(List<ItemStack> items, int x, int y, int width, int height) {
-            this.items = items;
+            this.originalItems = new ArrayList<>(items); // 保存原始列表
+            this.items = new ArrayList<>(items);
             this.x = x;
-            this.y = y;
-            this.visibleRowsY = height / ITEM_SLOT_SIZE;
+            this.originalY = this.y = y;
+            this.visibleRowsY = (height - (showSearchBox ? 25 : 0)) / ITEM_SLOT_SIZE;
             this.visibleRowsX = width / ITEM_SLOT_SIZE;
             this.width = width;
             this.totalSlotsPerPage = visibleRowsX * visibleRowsY;
 
+            // 初始化搜索框
+            this.searchBox = new EditBox(
+                    font,
+                    x + width - 125, // 初始位置（会在render中调整）
+                    y + 5,
+                    120,
+                    18,
+                    Component.translatable("gui.exmodifier.search")
+            );
+            this.searchBox.setMaxLength(32);
+            this.searchBox.setBordered(false);
+            this.searchBox.setVisible(false);
+            this.searchBox.setResponder(text -> filterItems());
         }
+        private String removeColorCodes(String text) {
+            // 使用正则表达式匹配并替换掉所有颜色代码
+            return text.replaceAll("§[0-9A-FK-ORa-fk-or]", "");
+        }
+        private void filterItems() {
+            String query = searchBox.getValue().toLowerCase().trim();
+            items = originalItems.stream()
+                    .filter(stack -> !stack.isEmpty())
+                    .filter(stack -> {
+                        // 名称匹配
+                        String name = stack.getHoverName().getString().toLowerCase();
+                        String cleanText = removeColorCodes(name);
+                        if (cleanText.contains(query.toLowerCase())) return true;
 
+                        // 标签匹配（可选）
+                        return stack.getTags()
+                                .anyMatch(tag -> tag.location().toString().toLowerCase().contains(query.toLowerCase()));
+                    })
+                    .collect(Collectors.toList());
+        }
+        // 搜索框可见性控制
+        public void setShowSearchBox(boolean show) {
+            this.showSearchBox = show;
+            this.searchBox.setVisible(show);
+            if (show) {
+                this.searchBox.setFocused(true);
+                this.searchBox.setValue(""); // 清空搜索条件
+            }
+        }
+        // 设置搜索框背景
+        public void setSearchBackground(ResourceLocation texture, int color) {
+            this.searchBackground = texture;
+            this.searchBgColor = color;
+        }
         record TooltipToRender(Font font, ItemStack itemStack, int x, int y){}
         @Override
         public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            // 绘制背景框（调整尺寸参数）
+            // 调整Y坐标（为搜索框留出空间）
+            if (showSearchBox) {
+                renderSearchBox(guiGraphics, mouseX, mouseY, partialTick);
+            }
+
+            // 绘制背景框
             guiGraphics.blit(WIDGETS_TEXTURE, x, y, 0, 0,
                     visibleRowsX * ITEM_SLOT_SIZE + 10,
                     visibleRowsY * ITEM_SLOT_SIZE + 10,
                     visibleRowsX * ITEM_SLOT_SIZE + 10, visibleRowsY * ITEM_SLOT_SIZE + 10);
 
-            // 计算起始索引
+            // 物品渲染逻辑
+            TooltipToRender tooltipToRender = null;
             int startIndex = (int)(scrollOffset * (items.size() - totalSlotsPerPage));
             startIndex = Math.max(0, startIndex);
 
-            TooltipToRender tooltipToRender = null;
-            // 二维布局渲染
-            Optional<GuiEventListener> childAt1 = getChildAt(mouseX, mouseY);
-            boolean isSelectedItem = false;
             for (int i = 0; i < totalSlotsPerPage; i++) {
                 int index = startIndex + i;
                 if (index >= items.size()) break;
 
-                // 计算行列位置
                 int row = i / visibleRowsX;
                 int col = i % visibleRowsX;
-
                 int slotX = x + 5 + col * ITEM_SLOT_SIZE;
                 int slotY = y + 5 + row * ITEM_SLOT_SIZE;
 
                 boolean isHovered = isMouseOverSlot(mouseX, mouseY, slotX, slotY);
 
                 // 绘制物品槽
-                guiGraphics.blit(WIDGETS_TEXTURE, slotX, slotY,
-                        0, 0,
-                        ITEM_SLOT_SIZE, ITEM_SLOT_SIZE,
-                        ITEM_SLOT_SIZE, ITEM_SLOT_SIZE)
-                ;
+                guiGraphics.blit(SLOT_ICON, slotX, slotY,
+                        0, 0, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE);
 
                 // 绘制物品
-                guiGraphics.renderItem(items.get(index), slotX+2 , slotY+2 );
-                int count = items.get(index).getCount();
-                if (count > 1) {
-                    String countText = String.valueOf(count);
-                    int textX = slotX + 2 + 16 - font.width(countText) - 2; // 计算文本的X坐标，使其位于物品右下角
-                    int textY = slotY + 2 + 16 - 8; // 计算文本的Y坐标，使其位于物品右下角
-                    guiGraphics.drawString(font, countText, textX, textY, 0xFFFFFF, false); // 绘制数量文本
-                }
-                if (!isSelectedItem && isHovered &&(contextMenu ==null || contextMenu.buttons.stream().filter(button -> button.isMouseOver(mouseX, mouseY)).toList().isEmpty())){
-                    guiGraphics.fillGradient(RenderType.guiOverlay(), slotX, slotY, slotX + 20, slotY + 20, -2130706433, -2130706433, 20);
-                    tooltipToRender = new TooltipToRender(font,items.get(index),slotX,slotY);
+                ItemStack stack = items.get(index);
+                guiGraphics.renderItem(stack, slotX + 2, slotY + 2);
+                renderItemCount(guiGraphics, stack, slotX, slotY);
 
+                // 悬停效果
+                if (isHovered && (contextMenu == null || contextMenu.buttons.isEmpty())) {
+                    guiGraphics.fillGradient(RenderType.guiOverlay(),
+                            slotX, slotY,
+                            slotX + ITEM_SLOT_SIZE, slotY + ITEM_SLOT_SIZE,
+                            -2130706433, -2130706433, 20);
+                    tooltipToRender = new TooltipToRender(font, stack, slotX, slotY);
                 }
             }
+
+
+            // 渲染提示信息
             if (tooltipToRender != null) {
-                guiGraphics.renderTooltip(tooltipToRender.font(), tooltipToRender.itemStack(), mouseX, mouseY);
+                guiGraphics.renderTooltip(font, tooltipToRender.itemStack(), mouseX, mouseY);
             }
-            if (!selectedItemStack.isEmpty()) {
 
-                textList.entries = getTextEntries();
-                textList.calculateLayout();;
+            // 上下文菜单渲染
+            renderContextMenu(guiGraphics, mouseX, mouseY);
+        }
+
+        private void renderItemCount(GuiGraphics guiGraphics, ItemStack stack, int slotX, int slotY) {
+            int count = stack.getCount();
+            if (count > 1) {
+                String countText = String.valueOf(count);
+                int textX = slotX + 16 - font.width(countText) - 1;
+                int textY = slotY + 16 - 8;
+                guiGraphics.pose().pushPose();
+                guiGraphics.pose().translate(0, 0, 200);
+                guiGraphics.drawString(font, countText, textX, textY, 0xFFFFFF, false);
+                guiGraphics.pose().popPose();
             }
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(0, 0, 600);
-            // 绘制上下文菜单
+        }
+
+        private void renderContextMenu(GuiGraphics guiGraphics, int mouseX, int mouseY) {
             if (contextMenu != null) {
-                contextMenu.render(guiGraphics, mouseX, mouseY, partialTick);
+                guiGraphics.pose().pushPose();
+                guiGraphics.pose().translate(0, 0, 600);
+                contextMenu.render(guiGraphics, mouseX, mouseY, 0);
+                guiGraphics.pose().popPose();
+            }
+        }
 
-            }
-            guiGraphics.pose().popPose();
-            if (childAt1.isPresent()){
-                if (childAt1.get().isMouseOver(mouseX, mouseY)) {
-                    if (childAt1.get() instanceof ActionButton actionButton) {
-                        if (actionButton.getMessage().contains(Component.literal("查看"))) {
-                            guiGraphics.pose().pushPose();
-                            guiGraphics.pose().translate(0, 0, 601);
-                            guiGraphics.renderTooltip(font, items.get(selected), mouseX, mouseY);
-                            guiGraphics.pose().popPose();
-                        }
-                    }
-                }
-            }
+        private void renderSearchBox(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            // 更新搜索框位置
+            searchBox.setX(x + width - 125);
+            searchBox.setY(originalY + 30);
+
+            // 绘制背景
+            guiGraphics.fillGradient(
+                    x + width - 130, originalY + 2,
+                    x + width - 10, originalY + 22,
+                    searchBgColor, searchBgColor
+            );
+            guiGraphics.blit(
+                    searchBackground,
+                    x + width - 130, originalY + 2,
+                    0, 0,
+                    120, 20,
+                    120, 20
+            );
+
+            // 渲染搜索框
+            searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
         }
         private boolean isMouseOverSlot(int mouseX, int mouseY, int slotX, int slotY) {
             return mouseX >= slotX && mouseX <= slotX + ITEM_SLOT_SIZE &&
@@ -882,13 +1117,18 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 //        }
 
         @Override
-        public List<? extends GuiEventListener> children() {
-            if (contextMenu == null) return Collections.emptyList();
-            return contextMenu.buttons;
+        public @NotNull List<? extends GuiEventListener> children() {
+            List<GuiEventListener> children = new ArrayList<>();
+            if (contextMenu != null) children.addAll(contextMenu.buttons);
+            if (showSearchBox) children.add(searchBox);
+            return children;
         }
-
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (showSearchBox && searchBox.isMouseOver(mouseX, mouseY)) {
+                contextMenu = null; // 关闭上下文菜单
+                 searchBox.mouseClicked(mouseX, mouseY, button);
+            }
             int startIndex = (int)(scrollOffset * (items.size() - totalSlotsPerPage));
             startIndex = Math.max(0, startIndex);
 
@@ -925,6 +1165,10 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     new ActionButton("选择", b -> {
                         if (manageSlot==0) {
                             selectedItemStack = items.get(selected);
+                            if (!selectedItemStack.isEmpty()) {
+                                textList.entries = getTextEntries();
+                                textList.calculateLayout();;
+                            };
                         }
                         if (manageSlot==1){
                             selectedRefreshItem = items.get(selected);
@@ -936,13 +1180,13 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     }),
                     new ActionButton("查看", b ->
                             SystemToast.add(new ToastComponent(Minecraft.getInstance()), SystemToast.SystemToastIds.PACK_COPY_FAILURE,Component.literal("使用操作"), Component.literal("使用物品"))
-)
+                    )
             ));
         }
 
 
         @Override
-        public NarrationPriority narrationPriority() {
+        public @NotNull NarrationPriority narrationPriority() {
             return NarrationPriority.HOVERED;
         }
 

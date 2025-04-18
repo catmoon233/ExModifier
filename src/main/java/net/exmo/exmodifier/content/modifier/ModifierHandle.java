@@ -171,7 +171,7 @@ public class ModifierHandle {
             }
             return tooltips;
         }
-        public static List<Component> generateEntryTooltip(ModifierInstant modifierEntryInstant,Player player,ItemStack itemStack) {
+        public static List<Component> generateEntryTooltip(ModifierInstant modifierEntryInstant,Player player,ItemStack itemStack,boolean skinFold) {
             List<Component> tooltips = new ArrayList<>();
             ModifierEntry modifierEntry = modifierEntryInstant.getModifierEntry();
             int level = modifierEntryInstant.getLevel();
@@ -201,7 +201,7 @@ public class ModifierHandle {
 
                 }
 
-                if (foldFlag){
+                if (foldFlag || skinFold){
                 tooltips.addAll(GenSuitInfo(player,modifierEntry));
                 for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
                     AttributeModifier attributemodifier = modifierAttriGether.getModifier();
