@@ -189,9 +189,9 @@ public class EmbeddedMenu extends AbstractContainerMenu {
                 if (itemstack1.getItem() == Exmodifier.ENTRY_ITEM.get()){
                     String modifierID = EntryItem.getModifierID(itemstack1);
                     ModifierEntry modifierEntry = ModifierHandle.findModifierEntry(modifierID);
-                    String itemId = ForgeRegistries.ITEMS.getKey(input.getItem()).toString();
+                   // String itemId = ForgeRegistries.ITEMS.getKey(input.getItem()).toString();
                     if (modifierEntry==null)return;
-                    if (!modifierEntry.containItem(input))return;
+                    if (!modifierEntry.getModifierItemSelector().containItem(input))return;
 //                    if (!modifierEntry.OnlyItems.isEmpty() && modifierEntry.OnlyItems.contains(itemId) )return;
 //                    if (!modifierEntry.containTag(input))return;
 //                    if (!modifierEntry.UnlessItemIds)return;

@@ -1,10 +1,15 @@
 package net.exmo.exmodifier.content.modifier.menu;
 
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
+import net.exmo.exmodifier.content.modifier.EntryItem;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.modifier.WashingMaterials;
 import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.network.RefreshItemMessage;
 import net.exmo.exmodifier.util.ExUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -35,24 +40,30 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPlus> implements ContainerListener {
-    private  final List<Page> pages = new ArrayList<>();
+    private final List<Page> pages = new ArrayList<>();
     private int currentPage = 0;
     private final Player player;
-    private ItemStack selectedItemStack = ItemStack.EMPTY;
-    private ItemStack selectedRefreshItem = ItemStack.EMPTY;
-    private int manageSlot = 0;
+    public ItemStack selectedItemStack = ItemStack.EMPTY;
+    public ItemStack selectedRefreshItem = ItemStack.EMPTY;
+    public int manageSlot = 0;
     //0->selectedItemStack
     //1->selectedRefreshItem
     // 新增成员变量
-    private ItemListViewer itemListViewer;
+    public ItemListViewer itemListViewer;
+    public Map<Integer, InfoWidget> infoWeiget;
     private float scrollOffset;
     private boolean isScrolling;
     private static final ResourceLocation SLOT_ICON =
             new ResourceLocation("exmodifier", "textures/gui/slot_icon_0.png");
+    private static final ResourceLocation SLOT_ICON_2 =
+            new ResourceLocation("exmodifier", "textures/gui/slot_icon_2.png");
+    private static final ResourceLocation SLOT_ICON_2_1 =
+            new ResourceLocation("exmodifier", "textures/gui/slot_icon_2_1.png");
     private static final ResourceLocation SLOT_ICON_1 =
             new ResourceLocation("exmodifier", "textures/gui/slot_icon_1.png");
     private static final ResourceLocation WIDGETS_TEXTURE =
@@ -70,13 +81,14 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     private static final int ITEM_SLOT_SIZE = 20;
     private final Map<GuiEventListener, Float> hoverProgress = new HashMap<>();
     private static final ResourceLocation MENU_TEXTURE = new ResourceLocation("exmodifier", "textures/gui/background3.png");
-    void initPages(){
+
+    void initPages() {
         // 添加默认页面（示例）
         addPage("重铸", screen -> {
-            screen.addRenderableWidget(new ImageWidget(80, this.topPos-20, this.width-160, this.imageHeight, MENU_TEXTURE));
-           // screen.addRenderableWidget(new ImageWidget();
-            screen.addRenderableWidget(new RefreshWidget(100, this.topPos +20, this.width /3, this.imageHeight-60, MENU_TEXTURE));
-           // screen.addRenderableWidget(new Widget(100, this.topPos +20, this.width /3, this.imageHeight-60, MENU_TEXTURE))
+            screen.addRenderableWidget(new ImageWidget(80, this.topPos - 20, this.width - 160, this.imageHeight, MENU_TEXTURE));
+            // screen.addRenderableWidget(new ImageWidget();
+            screen.addRenderableWidget(new RefreshWidget(100, this.topPos + 20, this.width / 3, this.imageHeight - 60, MENU_TEXTURE));
+            // screen.addRenderableWidget(new Widget(100, this.topPos +20, this.width /3, this.imageHeight-60, MENU_TEXTURE))
             //
 //            screen.addRenderableWidget(new Button.Builder(Component.literal("示例按钮"), b -> {})
 //                    .pos(100, 50)
@@ -84,28 +96,33 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 //                    .build());
 //            screen.addRenderableWidget(new StringWidget(100, 80, 100, 20,
 //                    Component.literal("欢迎使用！"), screen.font));
+//            infoWeiget = new infoWeiget(100, 80, 100, 20,
+//                    Component.literal("欢迎使用！"), screen.font);
             this.itemListViewer = new ItemListViewer(manageSlot == 0 ? filterItems(player.getInventory().items) : filterItems2(player.getInventory().items),
-                    120 + this.width/3, topPos + 20,
-                    this.width-160 -this.width /3-40 -20, imageHeight - 60);
-         // 启用搜索功能
+                    120 + this.width / 3, topPos + 20,
+                    this.width - 160 - this.width / 3 - 40 - 20, imageHeight - 60);
+            // 启用搜索功能
             itemListViewer.setShowSearchBox(false);
+
 
             // 自定义搜索框外观
             itemListViewer.setSearchBackground(
-                  WIDGETS_TEXTURE_W,
+                    WIDGETS_TEXTURE_W,
                     0x80000000 // 半透明橙色背景
             );
 
-                textList = new TextListWidget(
-                        List.of(),
-                        100 + 64 + 10, RefreshMenuScreenPlus.this.topPos + 40,
-                        RefreshMenuScreenPlus.this.width / 3 -82, 45
-                );
-                if (!selectedItemStack.isEmpty()) {
-                    textList.entries = getTextEntries();
-                    textList.calculateLayout();;
-                };
-          //  RefreshMenuScreenPlus.this.children().removeIf(widget -> widget instanceof TextListWidget);
+            textList = new TextListWidget(
+                    List.of(),
+                    100 + 64 + 10, RefreshMenuScreenPlus.this.topPos + 40,
+                    RefreshMenuScreenPlus.this.width / 3 - 82, 45
+            );
+            if (!selectedItemStack.isEmpty()) {
+                textList.entries = getTextEntries();
+                textList.calculateLayout();
+                ;
+            }
+            ;
+            //  RefreshMenuScreenPlus.this.children().removeIf(widget -> widget instanceof TextListWidget);
             addRenderableWidget(textList);
             addRenderableWidget(itemListViewer);
 
@@ -113,10 +130,10 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         });
 
         addPage("设置", screen -> {
-            screen.addRenderableWidget(new ImageWidget(80, this.topPos-20, this.width-160, this.imageHeight, MENU_TEXTURE));
+            screen.addRenderableWidget(new ImageWidget(80, this.topPos - 20, this.width - 160, this.imageHeight, MENU_TEXTURE));
 
-            screen.addRenderableWidget(new CycleButton.Builder<Boolean>(b ->{
-                if (b){
+            screen.addRenderableWidget(new CycleButton.Builder<Boolean>(b -> {
+                if (b) {
                     return Component.literal("已开启");
                 } else {
                     return Component.literal("已关闭");
@@ -126,16 +143,18 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     .withValues(true, false)
                     .create(100, 50, 100, 20,
                             Component.literal("选项开关"),
-                            (b, v) -> {}));
+                            (b, v) -> {
+                            }));
         });
     }
 
-    private @NotNull List<TextListWidget.Entry> getTextEntries() {
+    public @NotNull List<TextListWidget.Entry> getTextEntries() {
         List<TextListWidget.Entry> textEntries = ModifierEntryHelper.of(selectedItemStack).getModifierEntries().stream()
                 .map(entry -> {
                     MutableComponent translatable = Component.translatable(entry.getModifierEntry().getDescriptionId());
-                    if (entry.getLevel()>1)translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + entry.getLevel())).withStyle(ChatFormatting.GOLD);
-                    return new TextListWidget.Entry(translatable,ModifierHandle.CommonEvent.generateEntryTooltip(entry, player, selectedItemStack,true) );
+                    if (entry.getLevel() > 1)
+                        translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + entry.getLevel())).withStyle(ChatFormatting.GOLD);
+                    return new TextListWidget.Entry(translatable, ModifierHandle.CommonEvent.generateEntryTooltip(entry, player, selectedItemStack, true));
                 })
                 .collect(Collectors.toList());
         return textEntries;
@@ -146,14 +165,16 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         this.player = p_97875_.player;
         this.imageHeight = 250;
         this.imageWidth = 400;
+        overlayMap.clear();
     }
 
-    public  void addPage(String title, Consumer<RefreshMenuScreenPlus> contentInitializer) {
+    public void addPage(String title, Consumer<RefreshMenuScreenPlus> contentInitializer) {
         pages.add(new Page(Component.literal(title), contentInitializer));
     }
+
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        float newOffset = (float)(scrollOffset - delta * 0.1);
+        float newOffset = (float) (scrollOffset - delta * 0.1);
         scrollOffset = Mth.clamp(newOffset, 0f, 1f);
         textList.mouseScrolled(mouseX, mouseY, delta);
         return true;
@@ -162,25 +183,28 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (isScrolling) {
-            float delta = (float)(dragY / (itemListViewer.visibleRowsY * ITEM_SLOT_SIZE));
+            float delta = (float) (dragY / (itemListViewer.visibleRowsY * ITEM_SLOT_SIZE));
             scrollOffset = Mth.clamp(scrollOffset + delta, 0f, 1f);
             textList.mouseDragged(mouseX, mouseY, button, dragX, dragY);
             return true;
         }
         return false;
     }
-    public static List<ItemStack> filterItems(List<ItemStack> items){
+
+    public static List<ItemStack> filterItems(List<ItemStack> items) {
         return items.stream()
                 .filter(item -> !item.isEmpty() && !ModifierEntry.getType(item).stream().filter(e -> e != ExType.ALL.get()).toList().isEmpty())
                 .toList();
     }
-    public static List<ItemStack> filterItems2(List<ItemStack> items){
+
+    public static List<ItemStack> filterItems2(List<ItemStack> items) {
         return items.stream()
-                .filter(item -> !item.isEmpty() && ModifierHandle.materialsList.stream().anyMatch(entry -> entry.ItemId.equals(ExUtil.getItemID(item))))
+                .filter(item -> !item.isEmpty() && ModifierHandle.materialsList.stream().anyMatch(entry -> entry.ItemId.equals(ExUtil.getItemID(item))) || (item.getItem() instanceof EntryItem && ModifierHandle.modifierEntryMap.containsKey(EntryItem.getModifierID(item))))
                 .toList();
     }
+
     @Override
-    protected void init() {
+    public void init() {
         super.init();
         // 在init方法中添加：
         //List<ItemStack> filteredItems = filterItems(player.getInventory().items);
@@ -189,12 +213,12 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         initPages();
 
         int rightMargin = 80;
-     //   int yStart = this.height / 2 - pages.size() * 15;
+        //   int yStart = this.height / 2 - pages.size() * 15;
         // 添加标签栏
         for (int i = 0; i < pages.size(); i++) {
             final int pageIndex = i;
 
-            Button tabButton = new TabButton( rightMargin, this.topPos +2 + i * 30, 20, 20,
+            Button tabButton = new TabButton(rightMargin, this.topPos + 2 + i * 30, 20, 20,
                     pages.get(i).title(),
                     b -> switchPage(pageIndex));
             addRenderableWidget(tabButton);
@@ -211,6 +235,12 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         init(minecraft, width, height); // 重新初始化界面
     }
 
+    private static final Map<Long, Map.Entry<Component, ItemStack>> overlayMap = new HashMap<>();
+
+    public static void addOverlay(long time, Component content, ItemStack item) {
+        overlayMap.put(time, Map.entry(content, item));
+    }
+
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(guiGraphics);
@@ -220,8 +250,44 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         int j = this.topPos;
         this.renderBg(guiGraphics, partialTick, mouseX, mouseY);
         RenderSystem.disableDepthTest();
-        for(Renderable renderable : this.renderables) {
-            if (renderable ==null)continue;
+        Map<Long, Map.Entry<Component, ItemStack>> toRemove = new HashMap<>();
+        overlayMap.forEach((k, v) -> {
+            if (System.currentTimeMillis() - k > 3200) {
+                toRemove.put(k, v);
+            }
+        });
+        toRemove.forEach((k, v) -> overlayMap.remove(k));
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0.0F, 0.0F, 2000.0F);
+        AtomicInteger line = new AtomicInteger();
+
+        overlayMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey()) // 按时间戳排序
+                .forEach(entry -> {
+                    //long k = entry.getKey();
+                    ItemStack itemStack = entry.getValue().getValue();
+                    Component content = entry.getValue().getKey();
+                    float p281752 = 1 - ((System.currentTimeMillis() - entry.getKey()) / 3200f);
+                    guiGraphics.setColor(1, 1, 1, p281752);
+                    guiGraphics.drawCenteredString(font, content,
+                            this.width / 2,
+                            (int) (this.height / 5 + (font.lineHeight + 2) * line.get()),
+                            0xFFFFFF);
+                    if (!itemStack.isEmpty()) {
+                        guiGraphics.pose().pushPose();
+                        guiGraphics.pose().scale(0.2f, 0.2f, 0.2f);
+                        guiGraphics.renderItem(itemStack,
+                                (this.width / 2 - 10) * 5,
+                                (int) (this.height / 5 + (font.lineHeight + 2) * line.get()) * 5);
+                        guiGraphics.pose().popPose();
+                    }
+                    guiGraphics.setColor(1, 1, 1, 1);
+                    line.getAndIncrement();
+
+                });
+        guiGraphics.pose().popPose();
+        for (Renderable renderable : this.renderables) {
+            if (renderable == null) continue;
 //            if (renderable instanceof TabButton tabButton){
 //                if (pages.get(currentPage).title == tabButton.getMessage())continue;
 //            }
@@ -229,7 +295,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         }
         this.hoveredSlot = null;
         guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate((float)i, (float)j, 0.0F);
+        guiGraphics.pose().translate((float) i, (float) j, 0.0F);
         this.renderLabels(guiGraphics, mouseX, mouseY);
 
 
@@ -278,7 +344,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
     @Override
     public boolean isMouseOver(double x, double y) {
-        textList.isMouseOver(x,y);
+        textList.isMouseOver(x, y);
         return super.isMouseOver(x, y);
     }
 
@@ -291,8 +357,8 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int p_97750_) {
         textList.mouseClicked(mouseX, mouseY, p_97750_);
-        if (itemListViewer!=null && itemListViewer.contextMenu!=null){
-            if (itemListViewer.contextMenu.isMouseOver(mouseX, mouseY)){
+        if (itemListViewer != null && itemListViewer.contextMenu != null) {
+            if (itemListViewer.contextMenu.isMouseOver(mouseX, mouseY)) {
                 itemListViewer.contextMenu.clickContextMenuButton(mouseX, mouseY);
             }
         }
@@ -300,30 +366,30 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         if (itemListViewer != null && itemListViewer.contextMenu != null && !itemListViewer.contextMenu.isMouseOver(mouseX, mouseY)) {
             itemListViewer.contextMenu = null;
         }
-        for (GuiEventListener guiEventListener : this.children()){
-            if (guiEventListener instanceof RefreshWidget refreshWidget){
+        for (GuiEventListener guiEventListener : this.children()) {
+            if (guiEventListener instanceof RefreshWidget refreshWidget) {
                 refreshWidget.mouseClicked(mouseX, mouseY, p_97750_);
             }
         }
-        if (itemListViewer!=null ) {
-        for(GuiEventListener guiEventListener : itemListViewer.children()) {
+        if (itemListViewer != null) {
+            for (GuiEventListener guiEventListener : itemListViewer.children()) {
 
-            if (guiEventListener instanceof ItemListViewer.ActionButton actionButton) {
-                if (guiEventListener.mouseClicked(mouseX, mouseY, p_97750_)) {
-                    actionButton.onPress();
+                if (guiEventListener instanceof ItemListViewer.ActionButton actionButton) {
+                    if (guiEventListener.mouseClicked(mouseX, mouseY, p_97750_)) {
+                        actionButton.onPress();
 
-                    return true;
+                        return true;
+                    }
                 }
             }
-        }
         }
         if (clickActionM(mouseX, mouseY, p_97750_, this.children())) return true;
         return super.mouseClicked(mouseX, mouseY, p_97750_);
     }
 
     private boolean clickActionM(double mouseX, double mouseY, int p_97750_, List<? extends GuiEventListener> children) {
-        for(GuiEventListener guiEventListener : children) {
-            if (guiEventListener instanceof AbstractButton ) {
+        for (GuiEventListener guiEventListener : children) {
+            if (guiEventListener instanceof AbstractButton) {
                 if (guiEventListener.mouseClicked(mouseX, mouseY, p_97750_)) {
                     this.setFocused(guiEventListener);
                     if (p_97750_ == 0) {
@@ -353,11 +419,12 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             this.setWidth((int) Mth.lerp(progress, 20, 80));
             this.setX(baseX - this.getWidth());
         }
-        public int getColor(){
-            if (expandProgress >0){
+
+        public int getColor() {
+            if (expandProgress > 0) {
                 return Color.lightGray.getRGB();
             }
-            if (currentPage == getIndex()+1){
+            if (currentPage == getIndex() + 1) {
                 return Color.gray.getRGB();
             } else {
                 return Color.DARK_GRAY.getRGB();
@@ -368,7 +435,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             // 动态背景
             guiGraphics.fill(getX(), getY(), getX() + getWidth(), getY() + height, getColor());
-                    //0x80000000 | Mth.hsvToRgb(currentPage == getIndex() ? 0.6f : 0.3f, 0.6f, 0.8f));
+            //0x80000000 | Mth.hsvToRgb(currentPage == getIndex() ? 0.6f : 0.3f, 0.6f, 0.8f));
 
             // 文字渲染（带展开动画）
             int textWidth = font.width(getMessage());
@@ -379,7 +446,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
             guiGraphics.drawString(font, getMessage(),
                     textX, textY,
-                    0xFFFFFF | ((int)(textAlpha * 255) << 24),
+                    0xFFFFFF | ((int) (textAlpha * 255) << 24),
                     false);
         }
 
@@ -389,8 +456,10 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     }
 
     // 页面数据结构
-    private record Page(Component title, Consumer<RefreshMenuScreenPlus> contentInitializer) {}
-    private  TextListWidget textList = new TextListWidget(List.of(),0,0,0,0);
+    private record Page(Component title, Consumer<RefreshMenuScreenPlus> contentInitializer) {
+    }
+
+    public TextListWidget textList = new TextListWidget(List.of(), 0, 0, 0, 0);
 
     // 自定义按钮类
     private class ExSlotButton extends AbstractButton {
@@ -413,11 +482,13 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
         }
 
-        private  ExSlotButton setComponent(Component component){
+        private ExSlotButton setComponent(Component component) {
             this.setMessage(component);
             return this;
         }
+
         private final Runnable onPress;
+
         @Override
         public void onPress() {
             onPress.run();
@@ -471,6 +542,17 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         private final ExSlotButton infoButton;
         private final ExSlotButton materialButton;
 
+        public static int findSlotMatchingItem(ItemStack stack, Inventory inventory) {
+            for (int i = 0; i < inventory.items.size(); ++i) {
+                ItemStack itemStack = inventory.items.get(i);
+                if (!itemStack.isEmpty() && itemStack.getCount() == stack.getCount() && ItemStack.isSameItemSameTags(stack, itemStack)) {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
         public RefreshWidget(int x, int y, int w, int h, ResourceLocation menuTexture) {
             this.x = x;
             this.y = y;
@@ -493,24 +575,29 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     }
             );
             int baseButtonSize2Y = 24;
-            int baseButtonSize2X = (w-45)/2;
+            int baseButtonSize2X = (w - 45) / 2;
 
             this.refreshButton = new ExSlotButton(
-                    x + 20, y + h- baseButtonSize2Y-16,
+                    x + 20, y + h - baseButtonSize2Y - 16,
                     baseButtonSize2X, baseButtonSize2Y,
                     WIDGETS_TEXTURE_W, WIDGETS_TEXTURE_W2, baseButtonSize2X, baseButtonSize2Y,
                     -1,
                     () -> {
-                        //todo 重铸
+                        RefreshItemMessage msg = new RefreshItemMessage(
+                                findSlotMatchingItem(selectedRefreshItem, player.getInventory()),
+                                findSlotMatchingItem(selectedItemStack, player.getInventory())
+                        );
+                        Exmodifier.PACKET_HANDLER.sendToServer(msg);
+
                     }
             ).setComponent(Component.translatable("gui.exmodifier.refresh_0"));
             this.infoButton = new ExSlotButton(
-                    x + 20+baseButtonSize2X+5, y + h- baseButtonSize2Y-16,
+                    x + 20 + baseButtonSize2X + 5, y + h - baseButtonSize2Y - 16,
                     baseButtonSize2X, baseButtonSize2Y,
                     WIDGETS_TEXTURE_W, WIDGETS_TEXTURE_W2, baseButtonSize2X, baseButtonSize2Y,
                     -1,
                     () -> {
-                        //todo 重铸
+                        //todo 重铸信息
                     }
             ).setComponent(Component.translatable("gui.exmodifier.refresh_1"));
 
@@ -520,7 +607,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             this.materialButton = new ExSlotButton(
                     x + 20, y + scaledSize + 24, // 64 + 20 with scaling
                     materialBtnWidth, materialBtnHeight,
-                    WIDGETS_TEXTURE_W,WIDGETS_TEXTURE_W2, materialBtnWidth, materialBtnHeight,
+                    WIDGETS_TEXTURE_W, WIDGETS_TEXTURE_W2, materialBtnWidth, materialBtnHeight,
                     1,
                     () -> {
                         manageSlot = 1;
@@ -551,7 +638,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
             // 渲染材料槽内容
             guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(-5,0,0);
+            guiGraphics.pose().translate(-5, 0, 0);
             renderMaterialSlot(guiGraphics);
             guiGraphics.pose().popPose();
         }
@@ -564,6 +651,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     guiGraphics.pose().translate(2, 2, 2);
                     guiGraphics.pose().scale(4, 4, 0);
                     guiGraphics.renderItem(selectedItemStack, x / 4, y / 4);
+                    guiGraphics.renderItemDecorations(font, selectedItemStack, x / 4, y / 4);
                 } finally {
                     guiGraphics.pose().popPose();
                 }
@@ -575,7 +663,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         }
 
         private void renderItemLabel(GuiGraphics guiGraphics, ItemStack stack) {
-            Component text  = stack.isEmpty() ? Component.translatable("gui.exmodifier.refresh_empty"): stack.getHoverName()  ;
+            Component text = stack.isEmpty() ? Component.translatable("gui.exmodifier.refresh_empty") : stack.getHoverName();
             int maxWidth = (int) ((width - 64 - 12) / 1.75);
 
             FormattedText trimmed = font.substrByWidth(text, maxWidth);
@@ -593,8 +681,8 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             guiGraphics.drawString(
                     font,
                     displayText,
-                    (int)((x + 64 + 10) / 1.75),
-                    (int)((y + 2) / 1.75),
+                    (int) ((x + 64 + 10) / 1.75),
+                    (int) ((y + 2) / 1.75),
                     0xFFFFFF,
                     false
             );
@@ -607,7 +695,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 Component text = Component.translatable(
                         "gui.exmodifier.refresh.select_" + (manageSlot == 1 ? 0 : 1));
                 int textWidth = font.width(text);
-                int centerX = materialButton.getX() + (materialButton.getWidth() - textWidth) / 2;
+                int centerX = materialButton.getX() + (materialButton.getWidth() - textWidth) / 2 + 6;
                 int centerY = materialButton.getY() + (materialButton.getHeight() - 8) / 2;
                 guiGraphics.drawString(font, text, centerX, centerY, 0xFFFFFF);
             } else {
@@ -625,21 +713,37 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 float scale = 1.5f;
                 guiGraphics.pose().scale(scale, scale, 0);
 
-                int itemX = (int)((x + (width - 16) / 2) / scale);
-                int itemY = (int)((y + (height - 16) / 2) / scale);
+
+                int itemX = (int) ((x + (width - 16) / 2) / scale);
+                int itemY = (int) ((y + (height - 16) / 2) / scale);
                 // 绘制物品槽
-                guiGraphics.blit(SLOT_ICON_1, itemX-2, itemY-2,
+                guiGraphics.blit(SLOT_ICON_1, itemX - 2, itemY - 2,
                         0, 0, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE);
                 guiGraphics.renderItem(stack, itemX, itemY);
-                guiGraphics.renderItemDecorations(font, stack, itemX, itemY);
+                //guiGraphics.renderItemDecorations(font, stack, itemX, itemY);
+                int count = stack.getCount();
+                if (count != 1) {
+                    Optional<WashingMaterials> first = ModifierHandle.materialsList.stream().filter(m -> m.ItemId.equals(ExUtil.getItemID(stack))).findFirst();
+                    boolean present = first.isPresent();
+                    int needCount = present ? first.get().NeedCount : 1;
+                    String s = "";
+                    if (needCount >= count) {
+                        s = "§4" + count + "/" + needCount;
+                    } else {
+                        s = "§a" + count + "/" + needCount;
+                    }
+                    guiGraphics.pose().translate(0.0F, 0.0F, 200.0F);
+                    guiGraphics.drawString(font, s, itemX + 19 - 2 - font.width(s), itemY + 6 + 3, 16777215, true);
+                }
             } finally {
                 guiGraphics.pose().popPose();
             }
         }
 
+
         @Override
         public List<? extends GuiEventListener> children() {
-            return List.of(itemButton, materialButton);
+            return List.of(itemButton, materialButton, refreshButton, infoButton);
         }
 
         @Override
@@ -689,7 +793,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             calculateLayout();
         }
 
-        private void calculateLayout() {
+        public void calculateLayout() {
             entryHeights.clear();
             totalContentHeight = 0;
 
@@ -717,19 +821,34 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             return Math.max(count, 1);
         }
 
+        private void enableScissor(float x0, float y0, float x1, float y1) {
+            Window window = Minecraft.getInstance().getWindow();
+            int screenHeight = window.getScreenHeight();
+            int scissorX = (int) (x0 * window.getGuiScale());
+            int scissorY = (int) (screenHeight - (y1 * window.getGuiScale()));
+            int scissorWidth = (int) ((x1 - x0) * window.getGuiScale());
+            int scissorHeight = (int) ((y1 - y0) * window.getGuiScale());
+            RenderSystem.enableScissor(scissorX, scissorY, scissorWidth, scissorHeight);
+        }
+
         @Override
         public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             guiGraphics.pose().pushPose();
 
             try {
                 renderBackground(guiGraphics);
+                enableScissor(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height);
                 renderEntries(guiGraphics, mouseX, mouseY);
+                RenderSystem.disableScissor();
                 renderScrollBar(guiGraphics);
             } finally {
                 guiGraphics.pose().popPose();
             }
 
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(0, 0, 500);
             renderTooltip(guiGraphics, mouseX, mouseY);
+            guiGraphics.pose().popPose();
         }
 
         private void setupClipRegion(GuiGraphics guiGraphics) {
@@ -919,17 +1038,26 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         }
 
         // 其他必要实现
-        @Override public List<? extends GuiEventListener> children() { return List.of(); }
-        @Override public NarrationPriority narrationPriority() { return NarrationPriority.HOVERED; }
-        @Override public void updateNarration(NarrationElementOutput output) {}
+        @Override
+        public List<? extends GuiEventListener> children() {
+            return List.of();
+        }
+
+        @Override
+        public NarrationPriority narrationPriority() {
+            return NarrationPriority.HOVERED;
+        }
+
+        @Override
+        public void updateNarration(NarrationElementOutput output) {
+        }
     }
 
 
-
     // 物品列表查看器组件
-    private class ItemListViewer extends AbstractContainerEventHandler implements Renderable , NarratableEntry {
+    public class ItemListViewer extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
 
-        public  List<ItemStack> items;
+        public List<ItemStack> items;
         private final int x;
         private int y;
         private final int width;
@@ -944,6 +1072,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         private int searchBgColor = 0xAA000000;
         private final List<ItemStack> originalItems;
         private final int originalY;
+
         public ItemListViewer(List<ItemStack> items, int x, int y, int width, int height) {
             this.originalItems = new ArrayList<>(items); // 保存原始列表
             this.items = new ArrayList<>(items);
@@ -968,10 +1097,12 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             this.searchBox.setVisible(false);
             this.searchBox.setResponder(text -> filterItems());
         }
+
         private String removeColorCodes(String text) {
             // 使用正则表达式匹配并替换掉所有颜色代码
             return text.replaceAll("§[0-9A-FK-ORa-fk-or]", "");
         }
+
         private void filterItems() {
             String query = searchBox.getValue().toLowerCase().trim();
             items = originalItems.stream()
@@ -988,6 +1119,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     })
                     .collect(Collectors.toList());
         }
+
         // 搜索框可见性控制
         public void setShowSearchBox(boolean show) {
             this.showSearchBox = show;
@@ -997,12 +1129,16 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 this.searchBox.setValue(""); // 清空搜索条件
             }
         }
+
         // 设置搜索框背景
         public void setSearchBackground(ResourceLocation texture, int color) {
             this.searchBackground = texture;
             this.searchBgColor = color;
         }
-        record TooltipToRender(Font font, ItemStack itemStack, int x, int y){}
+
+        record TooltipToRender(Font font, ItemStack itemStack, int x, int y) {
+        }
+
         @Override
         public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             // 调整Y坐标（为搜索框留出空间）
@@ -1018,7 +1154,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
             // 物品渲染逻辑
             TooltipToRender tooltipToRender = null;
-            int startIndex = (int)(scrollOffset * (items.size() - totalSlotsPerPage));
+            int startIndex = (int) (scrollOffset * (items.size() - totalSlotsPerPage));
             startIndex = Math.max(0, startIndex);
 
             for (int i = 0; i < totalSlotsPerPage; i++) {
@@ -1033,13 +1169,18 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 boolean isHovered = isMouseOverSlot(mouseX, mouseY, slotX, slotY);
 
                 // 绘制物品槽
-                guiGraphics.blit(SLOT_ICON, slotX, slotY,
-                        0, 0, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE);
-
+                if (isHovered) {
+                    guiGraphics.blit(SLOT_ICON_2_1, slotX, slotY,
+                            0, 0, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE);
+                } else {
+                    guiGraphics.blit(SLOT_ICON_2, slotX, slotY,
+                            0, 0, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE);
+                }
                 // 绘制物品
                 ItemStack stack = items.get(index);
                 guiGraphics.renderItem(stack, slotX + 2, slotY + 2);
-                renderItemCount(guiGraphics, stack, slotX, slotY);
+                guiGraphics.renderItemDecorations(font, stack, slotX + 2, slotY + 2);
+                // renderItemCount(guiGraphics, stack, slotX, slotY);
 
                 // 悬停效果
                 if (isHovered && (contextMenu == null || contextMenu.buttons.isEmpty())) {
@@ -1105,6 +1246,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             // 渲染搜索框
             searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
         }
+
         private boolean isMouseOverSlot(int mouseX, int mouseY, int slotX, int slotY) {
             return mouseX >= slotX && mouseX <= slotX + ITEM_SLOT_SIZE &&
                     mouseY >= slotY && mouseY <= slotY + ITEM_SLOT_SIZE;
@@ -1123,13 +1265,14 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             if (showSearchBox) children.add(searchBox);
             return children;
         }
+
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             if (showSearchBox && searchBox.isMouseOver(mouseX, mouseY)) {
                 contextMenu = null; // 关闭上下文菜单
-                 searchBox.mouseClicked(mouseX, mouseY, button);
+                searchBox.mouseClicked(mouseX, mouseY, button);
             }
-            int startIndex = (int)(scrollOffset * (items.size() - totalSlotsPerPage));
+            int startIndex = (int) (scrollOffset * (items.size() - totalSlotsPerPage));
             startIndex = Math.max(0, startIndex);
 
 
@@ -1144,9 +1287,9 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 int slotX = x + 5 + col * ITEM_SLOT_SIZE;
                 int slotY = y + 5 + row * ITEM_SLOT_SIZE;
 
-                if (isMouseOverSlot((int)mouseX, (int)mouseY, slotX, slotY)) {
+                if (isMouseOverSlot((int) mouseX, (int) mouseY, slotX, slotY)) {
                     selected = index;
-                    showContextMenu((int)mouseX, (int)mouseY);
+                    showContextMenu((int) mouseX, (int) mouseY);
                     return true;
                 }
 
@@ -1162,24 +1305,26 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
         private void showContextMenu(int x, int y) {
             contextMenu = new ContextMenu(x, y, Arrays.asList(
-                    new ActionButton("选择", b -> {
-                        if (manageSlot==0) {
+                    new ActionButton("gui.exmodifier.refresh_menu.selected", b -> {
+                        if (manageSlot == 0) {
                             selectedItemStack = items.get(selected);
                             if (!selectedItemStack.isEmpty()) {
                                 textList.entries = getTextEntries();
-                                textList.calculateLayout();;
-                            };
+                                textList.calculateLayout();
+                                ;
+                            }
+                            ;
                         }
-                        if (manageSlot==1){
+                        if (manageSlot == 1) {
                             selectedRefreshItem = items.get(selected);
                         }
 
                         SystemToast.add(new ToastComponent(Minecraft.getInstance()),
-                                SystemToast.SystemToastIds.PACK_COPY_FAILURE,Component.literal("使用操作"), Component.literal("选择物品"));
+                                SystemToast.SystemToastIds.PACK_COPY_FAILURE, Component.literal("使用操作"), Component.literal("选择物品"));
                         contextMenu = null;
                     }),
-                    new ActionButton("查看", b ->
-                            SystemToast.add(new ToastComponent(Minecraft.getInstance()), SystemToast.SystemToastIds.PACK_COPY_FAILURE,Component.literal("使用操作"), Component.literal("使用物品"))
+                    new ActionButton("gui.exmodifier.refresh_menu.look", b ->
+                            SystemToast.add(new ToastComponent(Minecraft.getInstance()), SystemToast.SystemToastIds.PACK_COPY_FAILURE, Component.literal("使用操作"), Component.literal("使用物品"))
                     )
             ));
         }
@@ -1211,7 +1356,8 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     buttons.get(i).setPosition(x, y + i * 20);
                 }
             }
-            public  void clickContextMenuButton(double x, double y){
+
+            public void clickContextMenuButton(double x, double y) {
                 for (ActionButton button : this.buttons) {
                     if (button.isMouseOver(x, y)) {
                         button.onPress();
@@ -1219,6 +1365,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     }
                 }
             }
+
             public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
                 // 绘制背景
                 guiGraphics.blit(WIDGETS_TEXTURE, x, y, 0, 0, 80, buttons.size() * 21, 80, buttons.size() * 21);
@@ -1234,7 +1381,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         }
 
         // 操作按钮组件
-        private class ActionButton extends Button {
+        public static class ActionButton extends Button {
             public ActionButton(String text, OnPress onPress) {
                 super(builder(Component.translatable(text), onPress)
                         .size(80, 20)
@@ -1244,14 +1391,62 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             @Override
             public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
                 // 使用自定义按钮贴图
-                if (isHoveredOrFocused()){
+                if (isHoveredOrFocused()) {
                     guiGraphics.blit(SIMPLE_BUTTON_TEXTURE_OVER, getX(), getY(), 0, 0, width, height, width, height);
-                }else guiGraphics.blit(SIMPLE_BUTTON_TEXTURE, getX(), getY(), 0, 0, width, height, width, height);
+                } else guiGraphics.blit(SIMPLE_BUTTON_TEXTURE, getX(), getY(), 0, 0, width, height, width, height);
 
 
-                guiGraphics.drawCenteredString(font, getMessage(),
-                        getX() + width/2, getY() + (height - 8)/2, 0xFFFFFF);
+                guiGraphics.drawCenteredString(Minecraft.getInstance().font, getMessage(),
+                        getX() + width / 2, getY() + (height - 8) / 2, 0xFFFFFF);
             }
+        }
+    }
+
+    public class InfoWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+
+        private List<Component> textList;
+        private int width;
+        private int height;
+        private int x;
+        private int y;
+        private ResourceLocation resourceLocation;
+        private boolean isShowed = false;
+        private ItemListViewer.ActionButton enterButton;
+
+        public InfoWidget(int width, int height, int x, int y, ResourceLocation resourceLocation) {
+            this.width = width;
+            this.height = height;
+            this.x = x;
+            this.y = y;
+            this.resourceLocation = resourceLocation;
+            enterButton = new ItemListViewer.ActionButton("gui.exmodifier.refresh_menu.enter", b -> {
+                if (isShowed) {
+                    this.isShowed = false;
+                }
+            });
+        }
+
+        @Override
+        public void render(GuiGraphics gg, int mx, int my, float pts) {
+            if (isShowed) {
+                gg.blit(resourceLocation, x, y, 0, 0, width, height, width, height);
+
+            }
+        }
+
+        @Override
+        public List<? extends GuiEventListener> children() {
+            return List.of(enterButton);
+        }
+
+        @Override
+        public NarrationPriority narrationPriority() {
+            return NarrationPriority.FOCUSED;
+        }
+
+        @Override
+        public void updateNarration(NarrationElementOutput p_169152_) {
+
         }
     }
 }

@@ -1,4 +1,5 @@
 package net.exmo.exmodifier.content.modifier;
+
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.data.CachedOutput;
@@ -29,16 +30,17 @@ public abstract class ModifierEntryDataProvider implements DataProvider {
     private final DataGenerator generator;
     private final ExistingFileHelper existingFileHelper;
 
-    public ModifierEntryDataProvider(DataGenerator generator, ExistingFileHelper existingFileHelper,String modid) {
+    public ModifierEntryDataProvider(DataGenerator generator, ExistingFileHelper existingFileHelper, String modid) {
         this.generator = generator;
         this.MODID = modid;
         this.existingFileHelper = existingFileHelper;
-        path =  Path.of(PackType.SERVER_DATA.getDirectory() + "/" + MODID + "/modifier_entries");
+        path = Path.of(PackType.SERVER_DATA.getDirectory() + "/" + MODID + "/modifier_entries");
     }
 
     public abstract void add(Map<String, ModifierEntryDataBuilder> map);
 
     private final Map<String, ModifierEntryDataBuilder> map = new HashMap<>();
+
     public CompletableFuture<?> read(CachedOutput cache) {
         Path folder = generator.getPackOutput().getOutputFolder().resolve(path);
         List<CompletableFuture<?>> list = new ArrayList<>();
@@ -67,12 +69,14 @@ public abstract class ModifierEntryDataProvider implements DataProvider {
         read(cache);
         return CompletableFuture.allOf(list.toArray(CompletableFuture[]::new));
     }
-    public  Path   path ;
+
+    public Path path;
+
     @Override
     public CompletableFuture<?> run(CachedOutput cache) {
-       // Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        // Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-        Path folder = this.generator.getPackOutput().getOutputFolder().resolve( path);
+        Path folder = this.generator.getPackOutput().getOutputFolder().resolve(path);
         //Path outputPath = outputFolder.resolve("data/modid/modifier_entries.json");
 
 //        // 示例数据，实际应用中应从配置文件或其他来源读取
@@ -106,7 +110,7 @@ public abstract class ModifierEntryDataProvider implements DataProvider {
         return "Modifier Entry Data Provider";
     }
 
-    public abstract void gatherData(GatherDataEvent event) ;
+    public abstract void gatherData(GatherDataEvent event);
 //        DataGenerator generator = event.getGenerator();
 //        ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
 //        generator.addProvider(true,new ModifierEntryDataProvider(generator, existingFileHelper));

@@ -181,7 +181,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                                     modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
                                     if (washingMaterials.additionEntry!=0){
                                         if (washingMaterials.getKeepEntries()==0) {
-                                            modifierEntryHelper.removeAllEntry(true);
+                                            modifierEntryHelper.removeAllEntry(true,List.of(ModifierEntry.defaultTag));
                                         }else {
                                             List<ModifierInstant> modifierEntries = modifierEntryHelper.getModifierEntries();
                                             for (int i = 1; i <= modifierEntries.size(); i++){
@@ -263,7 +263,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
                         orCreateTag.putBoolean("entry_item_add", true);
                         itemInfo = new ItemInfo(input);
                         modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
-                        if (Config.RefreshReplaceOld)modifierEntryHelper.removeAllEntry(true);
+                        if (Config.RefreshReplaceOld)modifierEntryHelper.removeAllEntry(true,List.of(ModifierEntry.defaultTag));
                         modifierEntryHelper.addModifierEntry(new ModifierInstant(ModifierEntryHelper.getEntry(EntryItem.getModifierID(WashItem)),EntryItem.getModifierLevel(WashItem)),true,true  );
                         this.resultSlots.setItem(0, input);
                         this.repairItemCountCost = 1;
@@ -274,7 +274,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
 
     }
 
-    private static boolean compareItemType(ItemStack item, ItemStack WashItem) {
+    public static boolean compareItemType(ItemStack item, ItemStack WashItem) {
         ListTag types = WashItem.getTag().getList("modifier_types",8);
         for (var a : types){
             if (ModifierEntry.containItemType(item, (ModifierEntry.StringToType(a.getAsString()))))return true;

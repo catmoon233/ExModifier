@@ -1,33 +1,43 @@
 package net.exmo.exmodifier.content.helper;
 
 import com.google.common.collect.Multimap;
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
-import net.exmo.exmodifier.content.modifier.ModifierEntry;
-import net.exmo.exmodifier.content.modifier.ModifierHandle;
-import net.exmo.exmodifier.content.modifier.ModifierInstant;
+import net.exmo.exmodifier.content.level.ItemLevelHandle;
+import net.exmo.exmodifier.content.modifier.*;
 
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ItemType;
+import net.exmo.exmodifier.events.ExOnTableRefreshEntriesEvent;
+import net.exmo.exmodifier.events.ExRefreshEvent;
+import net.exmo.exmodifier.network.PlayerRefreshScreenOverMessageMessage;
 import net.exmo.exmodifier.util.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.modifierEntryMap;
+import static net.exmo.exmodifier.content.modifier.menu.RefreshMenu.compareItemType;
 
 public class ModifierEntryHelper extends ExHelper {
     public static final String MES = "ModifierEntry";
@@ -36,6 +46,152 @@ public class ModifierEntryHelper extends ExHelper {
 
     public static ModifierEntryHelper of(ItemStack itemStack){
         return new ModifierEntryHelper(itemStack);
+    }
+
+    public static class refreshContent{
+        public static ItemStack applyRefreshEffect(Player player, ItemStack inputItem, ItemStack washItem) {
+            if (inputItem.isEmpty() || washItem.isEmpty()) return ItemStack.EMPTY;
+
+            ItemStack result = inputItem;
+            boolean effectApplied = false;
+
+            // 处理洗涤材料逻辑
+            for (WashingMaterials material : ModifierHandle.materialsList) {
+                if (material.item.equals(washItem.getItem()) && washItem.getCount() >= material.NeedCount) {
+                    if (!checkMaterialConditions(result, material)) continue;
+
+                    ModifierEntryHelper modifierHelper = ModifierEntryHelper.of(result);
+                    processExistingEntries(modifierHelper, material.getKeepEntries());
+
+                    int finalRarity = calculateFinalRarity(material);
+                    applyNewEntries(player, result, material, finalRarity);
+                    processItemLevels(result, material);
+                    washItem.shrink(material.NeedCount);
+                    effectApplied = handleRefreshEvents(player, inputItem, washItem, result, material);
+                    break;
+                }
+            }
+
+            // 处理词条物品逻辑
+            if (!effectApplied && washItem.getItem() instanceof EntryItem) {
+                effectApplied = handleEntryItem(player, result, washItem);
+
+            }
+            if (player instanceof ServerPlayer serverPlayer){
+                PlayerRefreshScreenOverMessageMessage message1 ;
+                if (effectApplied){
+                    message1  = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refresh_success"));
+                }else {
+                    message1  = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refresh_fail"));
+                }
+                Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> serverPlayer), message1);
+            }
+
+            return effectApplied ? cleanupTags(result) : ItemStack.EMPTY;
+        }
+
+        private static boolean checkMaterialConditions(ItemStack item, WashingMaterials material) {
+            if (!material.OnlyTypes.isEmpty() && !ModifierEntry.containItemTypes(item, material.OnlyTypes)) return false;
+            if (material.OnlyItems != null && !material.OnlyItems.contains(ExUtil.getItemID(item)))
+                return false;
+            return material.OnlyTags == null || material.containTag(item);
+        }
+
+        private static void processExistingEntries(ModifierEntryHelper helper, int keepEntries) {
+            if (keepEntries == 0) {
+                helper.removeAllEntry(true, List.of(ModifierEntry.defaultTag));
+            } else {
+                List<ModifierInstant> entries = helper.getModifierEntries();
+                for (int i = entries.size() - 1; i >= keepEntries; i--) {
+                    helper.removeModifierEntry(entries.get(i), true);
+                }
+            }
+        }
+
+        private static int calculateFinalRarity(WashingMaterials material) {
+            if (material.MinRandomTime <= 0 || material.MaxRandomTime <= 0) return material.rarity;
+            return material.rarity + new Random().nextInt(material.MaxRandomTime - material.MinRandomTime) + material.MinRandomTime;
+        }
+
+        private static void applyNewEntries(Player player, ItemStack result, WashingMaterials material, int rarity) {
+            if (material.additionEntry > 0) {
+                if (CuriosUtil.isCuriosItem2(result)) {
+                    RandomEntryCurios(result, rarity, material.additionEntry, material.ItemId);
+                } else {
+                    ModifierHandle.CommonEvent.RandomEntry(
+                            result,
+                            rarity,
+                            material.additionEntry,
+                            material.ItemId,
+                            material.getKeepEntries()
+                    );
+                }
+
+                if (!player.level().isClientSide) {
+                    MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(
+                            player,
+                            material.additionEntry,
+                            rarity,
+                            material.ItemId
+                    ));
+                }
+            }
+        }
+
+        private static void processItemLevels(ItemStack result, WashingMaterials material) {
+            if (material.randomLevelSystemCount != 0) {
+                ItemLevelHandle.ItemLevelRefresh(
+                        result,
+                        material.randomLevelSystemCount,
+                        1,
+                        material.ItemId
+                );
+            }
+        }
+
+        private static boolean handleRefreshEvents(Player player, ItemStack input, ItemStack washItem, ItemStack result, WashingMaterials material) {
+            ExOnTableRefreshEntriesEvent event = new ExOnTableRefreshEntriesEvent(material, input, washItem, result);
+            MinecraftForge.EVENT_BUS.post(event);
+            return !event.isCanceled();
+        }
+
+        private static boolean handleEntryItem(Player player, ItemStack result, ItemStack washItem) {
+            if (!compareItemType(result, washItem)) return false;
+
+            ModifierEntryHelper helper = ModifierEntryHelper.of(result);
+            ModifierEntry entry = ((EntryItem) washItem.getItem()).getModifierEntry(washItem);
+
+            if (helper.getModifierEntryLevel(entry.id) >= entry.maxLevel) return false;
+
+            CompoundTag tag = result.getOrCreateTag();
+            int entryCount = tag.getInt("entryitem_add");
+
+            if (entryCount >= Config.canAddEntry) {
+                tag.putBoolean("can_add_max", true);
+                return true;
+            }
+
+            helper.addModifierEntry(new ModifierInstant(entry, EntryItem.getModifierLevel(washItem)), true, true);
+            tag.putInt("entryitem_add", entryCount + 1);
+            washItem.shrink(1);
+            return true;
+        }
+
+        private static ItemStack cleanupTags(ItemStack result) {
+            CompoundTag tag = result.getOrCreateTag();
+            tag.remove("modifier_refresh");
+            tag.remove("entry_item_add");
+            tag.remove("modifier_refresh_rarity");
+            tag.remove("random_level_system_count");
+            tag.remove("NeedCount");
+            tag.remove("wash_item");
+            tag.remove("keepEntries");
+            tag.remove("modifier_refresh_add");
+            tag.remove("UNKNOWN");
+            return result;
+        }
+
+
     }
 
     public static void moveOldEntry(ItemStack itemStack){
@@ -67,11 +223,17 @@ public class ModifierEntryHelper extends ExHelper {
         return  this;
 
     }
-    public ModifierEntryHelper removeAllEntry(boolean removeAttribute){
+    public ModifierEntryHelper removeAllEntry(boolean removeAttribute, List<TagKey<ModifierEntry>> onlyTags){
         for (ModifierInstant modifierInstant : getModifierEntries()){
+            if (onlyTags.isEmpty() || onlyTags.stream().anyMatch(tag -> modifierInstant.getModifierEntry().tags.contains(tag))){
             removeModifierEntry(modifierInstant,removeAttribute);
+            }
         }
         getMainNbt().put(MES,new ListTag());
+        return this;
+    }
+    public ModifierEntryHelper removeAllEntry(boolean removeAttribute){
+        removeAllEntry(removeAttribute,List.of());
         return this;
     }
     public static int getLivingEntityEntryLevel(String entryID, LivingEntity e){

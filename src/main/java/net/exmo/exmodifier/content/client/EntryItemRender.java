@@ -50,7 +50,8 @@ public class EntryItemRender implements IItemDecorator {
             } else {
                 // 应用最近的样式代码
                 if (visibleCount >= visibleStart) {
-                    String style = activeStyles.getOrDefault(visibleCount - 1, "");
+
+                    String style = activeStyles.values().stream().findFirst().orElse("");
                     result.append(style);
                 }
                 if (visibleCount >= visibleStart && visibleCount < visibleStart + length) {

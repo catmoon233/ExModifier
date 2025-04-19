@@ -25,13 +25,6 @@ public class RefreshMenuPlus extends AbstractContainerMenu implements Supplier<M
         super(RegisterOther.MenuAbout.REFRESH_MENU_PLUS.get(), p_39008_);
         this.access = Con(extraData, inventory.player.level());
         this.player = inventory.player;
-//        ItemCombinerMenuSlotDefinition $$4 = this.createInputSlotDefinitions();
-//        this.inputSlots = this.createContainer($$4.getNumOfInputSlots());
-//        this.inputSlotIndexes = $$4.getInputSlotIndexes();
-//        this.resultSlotIndex = $$4.getResultSlotIndex();
-//        this.createInputSlots($$4);
-//        this.createResultSlot($$4);
-//        this.createInventorySlots(p_39775_);
         this.addDataSlot(this.cost);
         this.world = inventory.player.level();
 
@@ -43,6 +36,11 @@ public class RefreshMenuPlus extends AbstractContainerMenu implements Supplier<M
         return Map.of();
     }
 
+
+    @Override
+    public void removed(Player p_38940_) {
+        super.removed(p_38940_);
+    }
 
     @Override
     public ItemStack quickMoveStack(Player player, int i) {

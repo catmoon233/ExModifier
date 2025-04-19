@@ -9,8 +9,11 @@ import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.util.*;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static net.exmo.exmodifier.Exmodifier.MODID;
 import static net.exmo.exmodifier.content.modifier.EntryItem.CommonEvent.df;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
@@ -33,6 +37,8 @@ import static net.exmo.exmodifier.content.type.ExType.*;
 //@SerialClass
 public class ModifierEntry implements SelectorClass<ModifierItemSelector<ModifierEntry>> {
 
+    public static final ResourceKey<Registry<ModifierEntry>> MODIFIER_KEY = ResourceKey.createRegistryKey( ResourceLocation.tryBuild(MODID,"modifier_entry"));
+    public static final TagKey<ModifierEntry> defaultTag = TagKey.create(MODIFIER_KEY, new ResourceLocation(MODID, "refresh_default"));
     public Map<String, String> setting = new HashMap<>();
     public float weight;
     public boolean cantSelect = false;
@@ -120,9 +126,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
         return  "modifier.entry." + id.substring(2);
     }
 
-    public boolean containItem(ItemStack stack) {
-        return this.modifierItemSelector.containItem(stack);
-    }
+
 
 
 //    public static boolean containItemTypes(ItemStack item, List<ItemType> onlyTypes) {
@@ -428,5 +432,9 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
             }
             return list;
 
+    }
+
+    public boolean hasDefaultTag() {
+        return tags.stream().anyMatch(tagKey -> tagKey.toString().equals(defaultTag.toString()));
     }
 }

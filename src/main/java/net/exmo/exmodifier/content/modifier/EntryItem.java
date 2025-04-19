@@ -34,9 +34,10 @@ public class EntryItem extends Item {
         if (stack.getTag() == null) return 1;
         return stack.getTag().getInt("modifier_level");
     }
+
     public static double getModifierChance(ItemStack stack) {
         if (stack.getTag() == null) return 0;
-        return stack.getTag().getDouble("modifier_possibility")* 100;
+        return stack.getTag().getDouble("modifier_possibility") * 100;
     }
 
     @Override
@@ -65,20 +66,20 @@ public class EntryItem extends Item {
                     if (modifierId.length() <= 2) return;
                     lc.add(Component.translatable(ModifierEntry.getDescriptionId(modifierId)));
                     if (!Screen.hasShiftDown()) {
-                        ListTag types = stack.getTag().getList("modifier_types",8);
+                        ListTag types = stack.getTag().getList("modifier_types", 8);
                         double possibility = stack.getTag().getDouble("modifier_possibility") * 100;
                         lc.add(Component.translatable("modifier.entry.possibility").append(df.format(possibility)).append("%"));
                         lc.add(Component.translatable("modifier.entry.level").append(String.valueOf(getModifierLevel(stack))));
                         lc.add(Component.translatable("modifier.entry.maxlevel").append(String.valueOf(modifierEntry.maxLevel)));
 
 
-                        if (!modifierEntry.localDescription.isEmpty()) lc.add(Component.translatable("modifier.entry.desc").append(Component.translatable(modifierEntry.localDescription)));
+                        if (!modifierEntry.localDescription.isEmpty())
+                            lc.add(Component.translatable("modifier.entry.desc").append(Component.translatable(modifierEntry.localDescription)));
                         if (!modifierEntry.Slots.isEmpty()) {
-
-                            if (modifierEntry.Slots.size()==1){
+                            if (modifierEntry.Slots.size() == 1) {
                                 lc.add(Component.translatable("modifier.entry.slot").append(Component.translatable("modifier.slot." + modifierEntry.Slots.get(0))));
-                            }else {
-                              //  lc.add(Component.translatable("modifier.entry.slot"));
+                            } else {
+                                //  lc.add(Component.translatable("modifier.entry.slot"));
                                 for (var slot : modifierEntry.Slots) {
                                     lc.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.slot." + slot)));
                                 }
@@ -93,25 +94,26 @@ public class EntryItem extends Item {
 
                             }
 
-                        }else {
-                            if (!types.isEmpty()) lc.add(Component.translatable("modifier.entry.type").append(types.get(0).getAsString()));
-
-                        }
-                            lc.add(Component.literal(" "));
-                            lc.add(Component.translatable("modifier.entry.look_more_shift"));
                         } else {
+                            if (!types.isEmpty())
+                                lc.add(Component.translatable("modifier.entry.type").append(types.get(0).getAsString()));
 
-                            if (modifierEntry == null)
-                                lc.add(Component.translatable("modifier.entry.unknown_modifier"));
-                            else lc.addAll(modifierEntry.GenerateItemTooltip());
                         }
-                        List<Component> ToRemove = event.getToolTip();
-                        event.getToolTip().removeAll(ToRemove);
-                        event.getToolTip().addAll(lc);
+                        lc.add(Component.literal(" "));
+                        lc.add(Component.translatable("modifier.entry.look_more_shift"));
+                    } else {
+
+                        if (modifierEntry == null)
+                            lc.add(Component.translatable("modifier.entry.unknown_modifier"));
+                        else lc.addAll(modifierEntry.GenerateItemTooltip());
                     }
+                    List<Component> ToRemove = event.getToolTip();
+                    event.getToolTip().removeAll(ToRemove);
+                    event.getToolTip().addAll(lc);
                 }
             }
         }
+    }
 
 
 }

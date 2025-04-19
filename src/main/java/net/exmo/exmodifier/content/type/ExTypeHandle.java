@@ -27,7 +27,7 @@ import java.util.Map;
 public class ExTypeHandle {
     //public static final Codec<ExTypeHandle> CODEC = Codec.unit(ExTypeHandle::new);
     public  static Map<String, ItemType> itemTypes = new HashMap<>();
-    public static Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/type");
+    public static Path ConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/type");
     public static List<MoConfig> FoundTypeConfigs = new ArrayList<>();
 
     public static void registerItemType(ItemType itemType) {

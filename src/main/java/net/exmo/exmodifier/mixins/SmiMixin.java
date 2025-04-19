@@ -150,7 +150,7 @@ public abstract class SmiMixin extends ItemCombinerMenu {
                                     ItemStack input = item.copy();
                                     itemInfo = new ItemInfo(input);
                                     modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
-                                    modifierEntryHelper.removeAllEntry(true);
+                                    modifierEntryHelper.removeAllEntry(true,List.of(ModifierEntry.defaultTag));
                                     //ModifierHandle.CommonEvent.clearEntry(input);
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied1","");
 //                    input.getOrCreateTag().putString("exmodifier_armor_modifier_applied2","");

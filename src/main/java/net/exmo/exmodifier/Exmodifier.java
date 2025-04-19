@@ -7,8 +7,7 @@ import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.init.RegisterOther;
-import net.exmo.exmodifier.network.ClearModifierEntryMessage;
-import net.exmo.exmodifier.network.SyncModifierEntryMessage;
+import net.exmo.exmodifier.network.*;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
@@ -114,6 +113,9 @@ public class Exmodifier {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         PACKET_HANDLER.registerMessage(messageID++, SyncModifierEntryMessage.class, SyncModifierEntryMessage::encode, SyncModifierEntryMessage::decode, SyncModifierEntryMessage::handle);
         PACKET_HANDLER.registerMessage(messageID++, ClearModifierEntryMessage.class, ClearModifierEntryMessage::encode, ClearModifierEntryMessage::decode, ClearModifierEntryMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, RefreshItemMessage.class, RefreshItemMessage::encode, RefreshItemMessage::decode, RefreshItemMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, ChangeRefreshMenuTextListMessage.class, ChangeRefreshMenuTextListMessage::encode, ChangeRefreshMenuTextListMessage::decode, ChangeRefreshMenuTextListMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, PlayerRefreshScreenOverMessageMessage.class, PlayerRefreshScreenOverMessageMessage::encode, PlayerRefreshScreenOverMessageMessage::decode, PlayerRefreshScreenOverMessageMessage::handle);
 
         ITEMS.register(modEventBus);
         try {
