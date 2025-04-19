@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>MC 极墨重锻词条编辑器</title>
+    <link rel="stylesheet" href="bjs.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- 编辑器区域 -->
+        <div class="editor-section">
+            <h2>高级词条配置</h2>
+
+            <!-- 基础信息 -->
+            <div class="form-group">
+                <label class="required">词条类型</label>
+                <input type="text" id="customType" placeholder="输入自定义词条类型" oninput="debouncedSync()">
+            </div>
+
+            <div class="form-group">
+                <label class="required">词条ID</label>
+                <input type="text" id="entryId" placeholder="输入词条基础ID" oninput="debouncedSync()">
+            </div>
+
+            <!-- 条件限制 -->
+            <div class="nested-section">
+                <h3>条件限制</h3>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="onlyHasThisEntry" onchange="debouncedSync()">
+                            独占词条
+                        </label>
+                        <label>
+                            <input type="checkbox" id="cantSelect" onchange="debouncedSync()">
+                            禁止选中
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>仅限物品</label>
+                    <div id="onlyItemsContainer"></div>
+                    <button onclick="addItem('onlyItemsContainer')">＋ 添加物品</button>
+                </div>
+
+                <div class="form-group">
+                    <label>仅限标签</label>
+                    <div id="onlyTagsContainer"></div>
+                    <button onclick="addTag('onlyTagsContainer')">＋ 添加标签</button>
+                </div>
+            </div>
+
+            <!-- 随机属性 -->
+            <div class="nested-section">
+                <h3>随机属性</h3>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="isRandom" checked onchange="toggleRandomNum()">
+                        启用随机属性
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>随机数量</label>
+                    <input type="number" id="randomNum" min="1" disabled>
+                </div>
+            </div>
+
+            <!-- 属性配置 -->
+            <div class="nested-section">
+                <h3>属性设置</h3>
+                <div class="attr-header">
+                    <span>属性类型</span>
+                    <span>数值</span>
+                    <span>操作符</span>
+                    <span>槽位</span>
+                    <span></span>
+                </div>
+                <div id="attributesContainer"></div>
+                <button onclick="addAttribute()">＋ 添加属性</button>
+            </div>
+        </div>
+
+        <!-- JSON编辑区域 -->
+        <div class="json-preview">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>JSON编辑器</h2>
+                <div>
+                    <button onclick="copyJSON()">复制</button>
+                    <button onclick="formatJSON()">格式化</button>
+                </div>
+            </div>
+            <textarea id="jsonOutput" class="json-textarea" onblur="syncFormFromJSON()"></textarea>
+        </div>
+    </div>
+
+    <script src="bjq.js"></script>
+</body>
+
+</html>
