@@ -3,6 +3,7 @@ package net.exmo.exmodifier.content.helper.register;
 import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ItemType;
 
 import java.util.Arrays;
@@ -15,7 +16,7 @@ public class ModifierCreateHelper {
     return new ModifierCreateHelper(id, type);
   }
   public  ModifierCreateHelper (String id, ItemType... type){
-    this.modifierEntry = new ModifierEntry(Arrays.toString(type).substring(0,2)+ id);
+    this.modifierEntry = new ModifierEntry(type[0].name().substring(0,2)+ id);
     this.modifierEntry.types.addAll(List.of(type));
 
   }
@@ -33,6 +34,16 @@ public class ModifierCreateHelper {
   }
   public ModifierCreateHelper type(List<ItemType> type){
     modifierEntry.types = type;
+    this.modifierEntry.id = type.toString().substring(0,2)+ modifierEntry.id;
+    return this;
+  }
+  public ModifierCreateHelper addType(ItemType type){
+    modifierEntry.types.add(type);
+    this.modifierEntry.id = type.toString().substring(0,2)+ modifierEntry.id;
+    return this;
+  }
+  public ModifierCreateHelper addType(ExType type){
+    modifierEntry.types.add(type.get());
     this.modifierEntry.id = type.toString().substring(0,2)+ modifierEntry.id;
     return this;
   }

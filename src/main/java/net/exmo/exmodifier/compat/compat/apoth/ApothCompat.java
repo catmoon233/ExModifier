@@ -21,16 +21,8 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod.EventBusSubscriber
 public class ApothCompat {
-    @SubscribeEvent
-    public static void onItemAttributeColorFix(ItemTooltipEvent event){
-//        event.getToolTip().forEach(
-//                component -> {
-//                    if (component.)
-//                }
-//        );
-    }
+
     public void SkinAttr(GatherSkippedAttributeTooltipsEvent e) {
         if (Config.entryFold && !Screen.hasShiftDown())return ;
 

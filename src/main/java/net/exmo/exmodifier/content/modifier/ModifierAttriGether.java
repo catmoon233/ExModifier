@@ -30,14 +30,15 @@ public class ModifierAttriGether extends AttriGether {
     public float weight = 0;
     public boolean isRandom = false;
     public int reserveDouble = 3;
-    public boolean hasUUID =false;
+    public boolean hasUUID = false;
     public double minValue = 0;
     public double maxValue = 0;
     public Map<Double, Float> simpleWeight = new HashMap<>();
-    public String Expression ="";
+    public String Expression = "";
     public List<String> OnlyItems = new java.util.ArrayList<>();
-    public  List<String> OnlySlots = new java.util.ArrayList<>();
-    public AttrGether toAttriGether(){
+    public List<String> OnlySlots = new java.util.ArrayList<>();
+
+    public AttrGether toAttriGether() {
         return new AttrGether(this.attribute, this.modifier);
     }
 
@@ -45,6 +46,7 @@ public class ModifierAttriGether extends AttriGether {
         this.Expression = expression;
         return this;
     }
+
     public ModifierAttriGether copy() {
         ModifierAttriGether attriGether = new ModifierAttriGether(this.attribute, this.modifier, this.slot);
         attriGether.weight = this.weight;
@@ -59,6 +61,7 @@ public class ModifierAttriGether extends AttriGether {
         attriGether.OnlySlots = this.OnlySlots;
         return attriGether;
     }
+
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putFloat("weight", weight);
@@ -151,10 +154,8 @@ public class ModifierAttriGether extends AttriGether {
     }
 
 
-
-
     public ModifierAttriGether(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
-        super(attribute, modifier,slot);
+        super(attribute, modifier, slot);
     }
 
     public ModifierAttriGether(Attribute attribute, AttributeModifier modifier) {
@@ -164,13 +165,14 @@ public class ModifierAttriGether extends AttriGether {
     public boolean isHasUUID() {
         return !this.modifier.getId().toString().isEmpty();
     }
-    public static List<ModifierAttriGether> GenerateModifierAttriGethers(String autokey,JsonObject obj) {
+
+    public static List<ModifierAttriGether> GenerateModifierAttriGethers(String autokey, JsonObject obj) {
         int index = 0;
         List<ModifierAttriGether> attriGethers = new java.util.ArrayList<>();
         for (Map.Entry<String, JsonElement> attrGetherEntry : obj.entrySet()) {
             try {
 
-                attriGethers.add(processAttrGether(autokey, attrGetherEntry,index));
+                attriGethers.add(processAttrGether(autokey, attrGetherEntry, index));
                 index++;
 
             } catch (Exception e) {
@@ -179,6 +181,7 @@ public class ModifierAttriGether extends AttriGether {
         }
         return attriGethers;
     }
+
     private static ModifierAttriGether processAttrGether(String autokey, Map.Entry<String, JsonElement> attrGetherEntry, int index) {
         JsonObject attrGetherObj = attrGetherEntry.getValue().getAsJsonObject();
         Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attrGetherEntry.getKey()));
@@ -193,9 +196,10 @@ public class ModifierAttriGether extends AttriGether {
 //        }
         AttributeModifier.Operation operation = ExConfigHandle.getOperation(attrGetherObj.get("operation").getAsString());
         EquipmentSlot slot = getEquipmentSlot(attrGetherObj);
-        String modifierName = (attrGetherObj.has("modifierName")) ? attrGetherObj.get("modifierName").getAsString() :autokey + index;;
+        String modifierName = (attrGetherObj.has("modifierName")) ? attrGetherObj.get("modifierName").getAsString() : autokey + index;
+        ;
         boolean autoName = false;
-        if (attrGetherObj.has("autoName")){
+        if (attrGetherObj.has("autoName")) {
             if (attrGetherObj.has("autoName")) {
                 if (attrGetherObj.get("autoName").getAsBoolean()) {
 
@@ -205,18 +209,19 @@ public class ModifierAttriGether extends AttriGether {
             }
         }
         UUID uuid = (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) ? UUID.fromString(attrGetherObj.get("uuid").getAsString()) : UUID.nameUUIDFromBytes(modifierName.getBytes());
-        if(attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean()) uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
+        if (attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean())
+            uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
         //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
-        Exmodifier.LOGGER.debug("uuid "+uuid);
+        Exmodifier.LOGGER.debug("uuid " + uuid);
         AttributeModifier modifier = new AttributeModifier(uuid, modifierName, attrValue, operation);
         ModifierAttriGether attrGether = new ModifierAttriGether(attribute, modifier, slot);
         attrGether.IsAutoEquipmentSlot = attrGetherObj.has("isAutoEquipmentSlot") && attrGetherObj.get("isAutoEquipmentSlot").getAsBoolean();
         attrGether.hasUUID = attrGetherObj.has("uuid");
-        if (!attrGether.IsAutoEquipmentSlot){
+        if (!attrGether.IsAutoEquipmentSlot) {
             if (attrGetherObj.has("slot")) {
                 if (!attrGetherObj.get("slot").getAsString().equals("auto")) {
                     attrGether.slot = EquipmentSlot.valueOf(attrGetherObj.get("slot").getAsString());
-                }else {
+                } else {
                     attrGether.IsAutoEquipmentSlot = true;
                 }
             }
@@ -233,8 +238,10 @@ public class ModifierAttriGether extends AttriGether {
 
 
     }
-    public MutableComponent GenerateTooltip (boolean canSeeWeight) {
-        if (canSeeWeight) return (generateTooltipBase().append(Component.translatable("exmodifier.tooltip.weight")).append(Component.literal("§9"+weight)));
+
+    public MutableComponent GenerateTooltip(boolean canSeeWeight) {
+        if (canSeeWeight)
+            return (generateTooltipBase().append(Component.translatable("exmodifier.tooltip.weight")).append(Component.literal("§9" + weight)));
         return generateTooltipBase();
     }
 

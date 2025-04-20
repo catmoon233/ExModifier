@@ -53,11 +53,11 @@ public class ExAttribute {
     public static final RegistryObject<Attribute> HIT_RATE;
     public static final RegistryObject<Attribute> PERCENT_HEAL;
     public static final RegistryObject<Attribute> INJURY_FREE;
-    public static final RegistryObject<Attribute> BEHIND_DAMAGE ;
-    public static final RegistryObject<Attribute> FIREWORK_DAMAGE ;
-    public static final RegistryObject<Attribute> DEFENSE ;
-    public static final RegistryObject<Attribute> DIRECT_PROTECTION ;
-    public static final RegistryObject<Attribute> MAGIC_PROTECTION ;
+    public static final RegistryObject<Attribute> BEHIND_DAMAGE;
+    public static final RegistryObject<Attribute> FIREWORK_DAMAGE;
+    public static final RegistryObject<Attribute> DEFENSE;
+    public static final RegistryObject<Attribute> DIRECT_PROTECTION;
+    public static final RegistryObject<Attribute> MAGIC_PROTECTION;
 
 
     static {
@@ -108,6 +108,7 @@ public class ExAttribute {
     private static RegistryObject<Attribute> registerAttribute(String name, double defaultValue, double minValue, double maxValue) {
         return ATTRIBUTES.register(name, () -> new RangedAttribute("attribute." + Exmodifier.MODID + "." + name, defaultValue, minValue, maxValue).setSyncable(true));
     }
+
     @SubscribeEvent
     public static void register(FMLConstructModEvent event) {
         event.enqueueWork(() -> {
@@ -143,18 +144,20 @@ public class ExAttribute {
 
     @Mod.EventBusSubscriber
     public static class Utils {
-        public static 	void particle(Entity entity){
+        public static void particle(Entity entity) {
             if (entity.level() instanceof ServerLevel _level)
-                _level.sendParticles(ParticleTypes.CLOUD,entity.getX(), entity.getY()+entity.getBbHeight()*0.5, entity.getZ(), 5, 0.2, 0.2, 0.2, 0.02 );
+                _level.sendParticles(ParticleTypes.CLOUD, entity.getX(), entity.getY() + entity.getBbHeight() * 0.5, entity.getZ(), 5, 0.2, 0.2, 0.2, 0.02);
         }
-        public static void move(Entity entity){
+
+        public static void move(Entity entity) {
             Random random = new Random();
-            double a =-1;
-            if (Math.random() <0.5)
-                a=1;
-            entity.setDeltaMovement(new Vec3((Math.cos(Math.toRadians(entity.getYRot())) * 2) *a, 0, (Math.sin(Math.toRadians(entity.getYRot())))*a));
+            double a = -1;
+            if (Math.random() < 0.5)
+                a = 1;
+            entity.setDeltaMovement(new Vec3((Math.cos(Math.toRadians(entity.getYRot())) * 2) * a, 0, (Math.sin(Math.toRadians(entity.getYRot()))) * a));
 
         }
+
         public static boolean isLookingBehindTarget(LivingEntity target, Vec3 attackerLocation) {
             if (attackerLocation != null) {
                 Vec3 lookingVector = target.getViewVector(1.0F);
@@ -169,49 +172,56 @@ public class ExAttribute {
             float multiplier = ((level * 0.2F) + 1.2F);
             return amount * multiplier;
         }
+
         @SubscribeEvent
         public static void AtAttack(LivingAttackEvent event) {
 
+            //被攻击者
             LivingEntity entity = event.getEntity();
+            //souree ->攻击者
             if (!(event.getSource().getEntity() instanceof LivingEntity souree)) return;
-            if (event.getSource().is(DamageTypes.MAGIC) || event.getSource().is(DamageTypes.INDIRECT_MAGIC) || event.getSource().is(DamageTypes.LAVA) )return;
+            if (event.getSource().is(DamageTypes.MAGIC) || event.getSource().is(DamageTypes.INDIRECT_MAGIC) || event.getSource().is(DamageTypes.LAVA))
+                return;
             if (entity.getAttributes().hasAttribute(ExAttribute.DODGE.get())) {
                 double remove_value = 0;
                 if (souree.getAttributes().hasAttribute(ExAttribute.HIT_RATE.get())) {
-                    remove_value =  souree.getAttributeValue(ExAttribute.HIT_RATE.get());
+                    remove_value = souree.getAttributeValue(ExAttribute.HIT_RATE.get());
                 }
                 double v = entity.getAttributeValue(ExAttribute.DODGE.get()) - remove_value;
                 if (Math.random() <= v) {
                     particle(entity);
                     move(entity);
-                    ExDodgeEvent e  = new ExDodgeEvent(entity,event,entity.getAttributeValue(ExAttribute.DODGE.get()),remove_value, ExDodgeEvent.resultType.MISS);
+                    ExDodgeEvent e = new ExDodgeEvent(entity, event, entity.getAttributeValue(ExAttribute.DODGE.get()), remove_value, ExDodgeEvent.resultType.MISS);
                     MinecraftForge.EVENT_BUS.post(e);
-                    if (e.result== ExDodgeEvent.resultType.MISS) event.setCanceled(true);
-                }else {
+                    if (e.result == ExDodgeEvent.resultType.MISS) event.setCanceled(true);
+                } else {
                     if (v < 0) {
-                        ExDodgeEvent e  = new ExDodgeEvent(entity,event,entity.getAttributeValue(ExAttribute.DODGE.get()),remove_value, ExDodgeEvent.resultType.HIT);
+                        ExDodgeEvent e = new ExDodgeEvent(entity, event, entity.getAttributeValue(ExAttribute.DODGE.get()), remove_value, ExDodgeEvent.resultType.HIT);
                         MinecraftForge.EVENT_BUS.post(e);
-                        if (e.result== ExDodgeEvent.resultType.MISS) event.setCanceled(true);
-                        else entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, (int)(v*2.5*-1), false, false));
+                        if (e.result == ExDodgeEvent.resultType.MISS) event.setCanceled(true);
+                        else
+                            entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, (int) (v * 2.5 * -1), false, false));
                     }
                 }
             }
         }
+
         @SubscribeEvent
         public static void DamageModifier(LivingHurtEvent event) {
             LivingEntity entity = event.getEntity();
             float FinallyDanage = event.getAmount();
             LivingEntity attacker = event.getSource().getEntity() instanceof LivingEntity ? (LivingEntity) event.getSource().getEntity() : null;
             if (event.getSource().getEntity() instanceof LivingEntity) {
-                if( isLookingBehindTarget(event.getEntity(), event.getSource().getSourcePosition())) {
-                    if (attacker!=null){
-                    if (attacker.getAttributes().hasAttribute(ExAttribute.BEHIND_DAMAGE.get())) {
-                        double multiplier = attacker.getAttributeValue(ExAttribute.BEHIND_DAMAGE.get());
-                        FinallyDanage = ((float) (multiplier * FinallyDanage));
-                        Level level = attacker.level();
-                        if (!level.isClientSide)
-                            if (multiplier>1) level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                    }
+                if (isLookingBehindTarget(event.getEntity(), event.getSource().getSourcePosition())) {
+                    if (attacker != null) {
+                        if (attacker.getAttributes().hasAttribute(ExAttribute.BEHIND_DAMAGE.get())) {
+                            double multiplier = attacker.getAttributeValue(ExAttribute.BEHIND_DAMAGE.get());
+                            FinallyDanage = ((float) (multiplier * FinallyDanage));
+                            Level level = attacker.level();
+                            if (!level.isClientSide)
+                                if (multiplier > 1)
+                                    level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.BLOCKS, 1.0F, 1.0F);
+                        }
                     }
                 }
                 if (attacker != null && attacker.getAttributes().hasAttribute(ExAttribute.FIREWORK_DAMAGE.get())) {
@@ -220,15 +230,15 @@ public class ExAttribute {
                 }
             }
 
-            if (entity.getAttributes().hasAttribute(ExAttribute.DEFENSE.get())){
+            if (entity.getAttributes().hasAttribute(ExAttribute.DEFENSE.get())) {
                 double v = entity.getAttributeValue(ExAttribute.DEFENSE.get());
                 FinallyDanage = (float) (FinallyDanage * Math.round(100 * (100 / (v - 1 + 100))) * 0.01);
 
 
             }
-            if (entity.getAttributes().hasAttribute(ExAttribute.INJURY_FREE.get())){
+            if (entity.getAttributes().hasAttribute(ExAttribute.INJURY_FREE.get())) {
                 double v = entity.getAttributeValue(ExAttribute.INJURY_FREE.get());
-                FinallyDanage = ((float) ((2- v) * (FinallyDanage)));
+                FinallyDanage = ((float) ((2 - v) * (FinallyDanage)));
             }
             if ((event.getSource().getEntity() instanceof LivingEntity entity1)) {
                 if (entity1.getAttributes().hasAttribute(ExAttribute.PERCENT_HEAL.get()) && entity1.getAttributes().hasAttribute(Attributes.MAX_HEALTH)) {
@@ -236,18 +246,19 @@ public class ExAttribute {
                     entity1.heal((float) (entity1.getAttributeValue(Attributes.MAX_HEALTH) * (v - 1)));
                 }
             }
-            if (entity.getAttributes().hasAttribute(ExAttribute.DIRECT_PROTECTION.get())){
-                       double v = entity.getAttributeValue(ExAttribute.DIRECT_PROTECTION.get());
-                FinallyDanage = (float) Math.max(0, FinallyDanage -  v);
+            if (entity.getAttributes().hasAttribute(ExAttribute.DIRECT_PROTECTION.get())) {
+                double v = entity.getAttributeValue(ExAttribute.DIRECT_PROTECTION.get());
+                FinallyDanage = (float) Math.max(0, FinallyDanage - v);
             }
-            if (event.getSource().is(DamageTypes.MAGIC)){
-                if (entity.getAttributes().hasAttribute(ExAttribute.MAGIC_PROTECTION.get())){
+            if (event.getSource().is(DamageTypes.MAGIC)) {
+                if (entity.getAttributes().hasAttribute(ExAttribute.MAGIC_PROTECTION.get())) {
                     double v = entity.getAttributeValue(ExAttribute.MAGIC_PROTECTION.get());
-                    FinallyDanage = (float) Math.max(0, FinallyDanage -  v);
+                    FinallyDanage = (float) Math.max(0, FinallyDanage - v);
                 }
             }
             event.setAmount(FinallyDanage);
         }
+
         @SubscribeEvent
         public static void persistAttributes(PlayerEvent.Clone event) {
             Player oldP = event.getOriginal();

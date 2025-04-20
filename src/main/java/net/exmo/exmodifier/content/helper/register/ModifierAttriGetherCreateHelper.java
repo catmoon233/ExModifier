@@ -73,10 +73,23 @@ public class ModifierAttriGetherCreateHelper {
         this.name = name;
         return this;
     }
+    public ModifierAttriGetherCreateHelper setMinValue(double minValue){
+        this.modifierAttriGether.minValue = minValue;
+        return this;
+    }
+    public ModifierAttriGetherCreateHelper setMaxValue(double maxValue){
+        this.modifierAttriGether.maxValue = maxValue;
+        return this;
+    }
+    public ModifierAttriGetherCreateHelper setPointNumber(int pointNumber){
+        this.modifierAttriGether.reserveDouble = pointNumber;
+        return this;
+    }
     public ModifierAttriGetherCreateHelper setExpression(String expression) {
         this.modifierAttriGether.Expression = expression;
         return this;
     }
+
 
     public ModifierCreateHelper finish_add(){
         if (name.isEmpty())name = modifierCreateHelper.modifierEntry.id + index;

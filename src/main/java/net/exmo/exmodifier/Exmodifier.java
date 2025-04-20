@@ -62,23 +62,25 @@ public class Exmodifier {
 
     // Directly reference a slf4j logger
     public static final String MODID = "exmodifier";
-   // public static final Logger LOGGER = LogUtils.getLogger();
+
+    // public static final Logger LOGGER = LogUtils.getLogger();
     public static class LOGGER {
-       public static Logger Logger = LogUtils.getLogger();
+        public static Logger Logger = LogUtils.getLogger();
 
         public static void info(String msg) {
             Logger.info(msg);
 
         }
+
         public static void debug(String msg) {
             if (Config.DebugInInfo) Logger.info(msg);
-            if (Config.Debug)  Logger.debug(msg);
+            if (Config.Debug) Logger.debug(msg);
         }
 
-       public static void error(String s, Exception e) {
+        public static void error(String s, Exception e) {
             Logger.error(s, e);
-       }
-   }
+        }
+    }
 
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
@@ -86,9 +88,9 @@ public class Exmodifier {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
     public static final RegistryObject<Item> ENTRY_ITEM = ITEMS.register("entry_item", () -> new EntryItem(new Item.Properties()));
-    public static  ItemStack TabIcon;
+    public static ItemStack TabIcon;
 
-    public final static  RegistryObject<CreativeModeTab> ExModifierTab =  CREATIVE_MODE_TABS.register("exmodifier_tab", () -> CreativeModeTab.builder()
+    public final static RegistryObject<CreativeModeTab> ExModifierTab = CREATIVE_MODE_TABS.register("exmodifier_tab", () -> CreativeModeTab.builder()
             .icon(Exmodifier::getTabIcon)
             .withSearchBar()
             .title(Component.translatable("itemGroup.exmodifier_tab"))
@@ -136,7 +138,7 @@ public class Exmodifier {
         RegisterOther.BlockAbout.REGISTRY.register(modEventBus);
         RegisterOther.ItemAbout.REGISTRY.register(modEventBus);
         modEventBus.addListener(this::AddToTab);
-        if (ModList.get().isLoaded("attributeslib")){
+        if (ModList.get().isLoaded("attributeslib")) {
             MinecraftForge.EVENT_BUS.addListener(new ApothCompat()::SkinAttr);
         }
         RegisterOther.MenuAbout.REGISTRY.register(modEventBus);
@@ -144,9 +146,9 @@ public class Exmodifier {
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
         long time_end = System.currentTimeMillis();
-        LOGGER.info("Mod loaded in " + (time_end - time_start) + "ms");
+
         RegisterOther.EventAbout.init();
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC,String.valueOf(FMLPaths.CONFIGDIR.get().resolve("exmo/exmodifier.toml")));
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, String.valueOf(FMLPaths.CONFIGDIR.get().resolve("exmo/exmodifier.toml")));
 //    for (EventC<? extends LivingEvent> v : RegisterOther.EventAbout.EVENT_C_LIST.itemTypes()){
 //
 //            EventCI<? extends LivingEvent> eventCI = new EventCI<>(v);
@@ -156,23 +158,25 @@ public class Exmodifier {
 //        for (EventC<? extends Event  > ec : ) {
 //
 //        }
+        LOGGER.info("Mod loaded in " + (time_end - time_start) + "ms");
     }
 
-    public  void gatherData(GatherDataEvent event) {
+    public void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
         LOGGER.debug("ExGatherData");
 //        APO provider = new APO(generator, existingFileHelper);
 //        generator.addProvider(event.includeServer(), provider);
     }
+
     private void setup(final FMLCommonSetupEvent event) {
         // Some preinit code
 //        LOGGER.info("HELLO FROM PREINIT");
 //        LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
     }
 
-    private void AddToTab(BuildCreativeModeTabContentsEvent event){
-        if (event.getTabKey()== CreativeModeTabs.FUNCTIONAL_BLOCKS){
+    private void AddToTab(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(RegisterOther.ItemAbout.Refresh_Table);
             event.accept(RegisterOther.ItemAbout.Embedded_Table);
         }
@@ -197,13 +201,13 @@ public class Exmodifier {
             ItemStack stack = ENTRY_ITEM.get().getDefaultInstance();
             stack.getOrCreateTag().putString("modifier_id", entry);
             ListTag listTag = new ListTag();
-            for (ItemType type : modifierEntry.types){
+            for (ItemType type : modifierEntry.types) {
                 listTag.add(StringTag.valueOf(type.name()));
             }
             stack.getOrCreateTag().put("modifier_types", listTag);
 
             double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry)).sum();
-          //  double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry) / totalWeight).sum();
+            //  double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry) / totalWeight).sum();
             stack.getOrCreateTag().putDouble("modifier_possibility", probability);
             if (modifierEntry.maxLevel <= 1) {
                 stack.getOrCreateTag().putInt("modifier_level", 1);
@@ -227,6 +231,7 @@ public class Exmodifier {
     private void processIMC(final InterModProcessEvent event) {
 
     }
+
     @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ClientEvents {
         @SubscribeEvent
