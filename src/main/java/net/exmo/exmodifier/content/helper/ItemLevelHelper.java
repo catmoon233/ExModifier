@@ -4,6 +4,7 @@ import net.exmo.exmodifier.content.event.parameter.EventParameter;
 import net.exmo.exmodifier.content.level.ItemLevel;
 import net.exmo.exmodifier.content.level.ItemLevelInstant;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
+import net.exmo.exmodifier.content.modifier.ModifierInstant;
 import net.exmo.exmodifier.events.ExItemUpEvent;
 import net.exmo.exmodifier.util.AttriGether;
 import net.exmo.exmodifier.util.DynamicExpressionEvaluator;
@@ -45,7 +46,22 @@ public class ItemLevelHelper extends ExHelper {
         return  this;
 
     }
+    public ItemLevelHelper copyOtherHelper(ItemLevelHelper other){
+            if (!other.ValidItemLevelNbt()) return this;
+            for (var itemLevelInstant : getItemLevelInstants()){
+
+            removeItemLevel(itemLevelInstant,true);
+             }
+            for (var itemLevelInstant : other.getItemLevelInstants()) {
+                addItemLevelInstant(itemLevelInstant);
+            }
+
+
+            return this;
+        }
+
     public ItemLevelHelper removeItemLevel(ItemLevelInstant itemLevelInstant, boolean removeAttribute) {
+        if (itemLevelInstant.isLock())return this;
         ListTag modifiersList = getItemLevelNbt();
         List<Integer> indicesToRemove = new ArrayList<>();
         for (int i = 0; i < modifiersList.size(); i++) {
@@ -86,7 +102,7 @@ public class ItemLevelHelper extends ExHelper {
                         ItemAttrUtil.removeAttributeModifierNoAmout(stack, attrGather.attribute, attrGather.getModifier(), slot);
                     }
                 }
-                ItemLevelHelper.of(stack).addItemLevelHelper(new ItemLevelInstant(itemLevel,level,maxLevel,xp,needXp));
+                ItemLevelHelper.of(stack).addItemLevelInstant(new ItemLevelInstant(itemLevel,level,maxLevel,xp,needXp));
                 List<String> keysToRemove = new ArrayList<>();
                 for (String key : tag.getAllKeys()) {
                     if (key.contains(itemLevel.id)) {
@@ -102,7 +118,7 @@ public class ItemLevelHelper extends ExHelper {
 
         }
     }
-    public ItemLevelHelper addItemLevelHelper(ItemLevelInstant itemLevelInstant)
+    public ItemLevelHelper addItemLevelInstant(ItemLevelInstant itemLevelInstant)
     {
         createNbt();
         if (!ValidMainNbt()) createMainNbt();
@@ -110,6 +126,7 @@ public class ItemLevelHelper extends ExHelper {
         CompoundTag tag1 = new CompoundTag();
         tag1.putString(ITEM_LEVEL_ID,itemLevelInstant.getItemLevel().id);
         tag1.putInt("Level",itemLevelInstant.getLevel());
+        tag1.putBoolean("islock", itemLevelInstant.isLock());
         tag1.putDouble("Xp",itemLevelInstant.xp);
         tag1.putDouble("NeedXp",itemLevelInstant.needXp);
         tag1.putInt("MaxLevel",itemLevelInstant.getMaxLevel());
@@ -137,9 +154,10 @@ public class ItemLevelHelper extends ExHelper {
             int level = tag.getInt("Level");
             int maxLevel = tag.getInt("MaxLevel");
             double xp = tag.getDouble("Xp");
+
             double needXp = tag.getDouble("NeedXp");
             String itemLevelId = tag.getString(ITEM_LEVEL_ID);
-            list.add(new ItemLevelInstant(ItemLevels.get(itemLevelId),level,maxLevel,xp,needXp));
+            list.add(new ItemLevelInstant(ItemLevels.get(itemLevelId),level,maxLevel,xp,needXp).setLock(tag.contains("islock")&&tag.getBoolean("islock")));
         }
         return list;
     }

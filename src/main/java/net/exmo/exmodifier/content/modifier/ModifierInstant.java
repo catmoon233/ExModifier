@@ -11,6 +11,7 @@ public class ModifierInstant {
     private ModifierEntry modifierEntry;
     private int level;
     private String slot;
+    private boolean lock = false;
     private boolean itemQualityLock;
 
     private CompoundTag data;
@@ -28,6 +29,21 @@ public class ModifierInstant {
         this.level = level;
     }
 
+    public ModifierInstant lock () {
+        this.lock = true;
+        return this;
+    }
+    public ModifierInstant unlock () {
+        this.lock = false;
+        return this;
+    }
+    public ModifierInstant setLock(boolean lock) {
+        this.lock = lock;
+        return this;
+    }
+    public boolean isLock() {
+        return lock;
+    }
 
     public ModifierInstant(ModifierEntry modifierEntry) {
         this.modifierEntry = modifierEntry;

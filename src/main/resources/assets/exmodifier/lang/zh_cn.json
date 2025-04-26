@@ -11,6 +11,7 @@
   "gui.exmodifier.refresh_0": "开始重铸",
   "gui.exmodifier.refresh_menu.selected": "选择",
   "gui.exmodifier.refresh_menu.enter": "了解",
+  "gui.exmodifier.inherit_tip": "对物品按下Ctrl以选择为词条继承物品",
   "gui.exmodifier.refresh_menu.look": "查看",
   "gui.exmodifier.refresh_1": "重铸信息",
   "gui.exmodifier.refresh_success": "§a重铸成功",

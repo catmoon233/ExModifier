@@ -118,6 +118,7 @@ public class Exmodifier {
         PACKET_HANDLER.registerMessage(messageID++, RefreshItemMessage.class, RefreshItemMessage::encode, RefreshItemMessage::decode, RefreshItemMessage::handle);
         PACKET_HANDLER.registerMessage(messageID++, ChangeRefreshMenuTextListMessage.class, ChangeRefreshMenuTextListMessage::encode, ChangeRefreshMenuTextListMessage::decode, ChangeRefreshMenuTextListMessage::handle);
         PACKET_HANDLER.registerMessage(messageID++, PlayerRefreshScreenOverMessageMessage.class, PlayerRefreshScreenOverMessageMessage::encode, PlayerRefreshScreenOverMessageMessage::decode, PlayerRefreshScreenOverMessageMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, RefreshCraftContentMessage.class, RefreshCraftContentMessage::encode, RefreshCraftContentMessage::decode, RefreshCraftContentMessage::handle);
 
         ITEMS.register(modEventBus);
         try {

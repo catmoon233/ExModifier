@@ -14,13 +14,15 @@
     "ItemMixin",
     "ItemStackMixin",
     "LivingSwingAction",
+    "TableCraftMixin",
     "ToolTipMixin"
   ],
   "client": [
     "ItemStackClientMixin",
     "LanguageMixin",
     "ModScreenMixin",
-    "RenderItemMixin"
+    "RenderItemMixin",
+    "TableCraftScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

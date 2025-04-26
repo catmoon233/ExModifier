@@ -12,21 +12,49 @@ public class ExApplyEntryAttrigetherEvent extends Event {
     public boolean isCurios;
     public String curiosSlot;
     public EquipmentSlot[] slot;
+
+
+    public ModifierInstant getOldInstant() {
+        return oldInstant;
+    }
+
+    public ExApplyEntryAttrigetherEvent setOldInstant(ModifierInstant oldInstant) {
+        this.oldInstant = oldInstant;
+        return this;
+    }
+
+    public ModifierInstant oldInstant = null;
+
+
+
+    public ModifierInstant getModifierInstant() {
+        return modifierInstant;
+    }
+
+    public void setModifierInstant(ModifierInstant modifierInstant) {
+        this.modifierInstant = modifierInstant;
+    }
+
     public ModifierInstant modifierInstant;
-    public ExApplyEntryAttrigetherEvent(ItemStack stack, ModifierAttriGether attriGether, EquipmentSlot[] slot, ModifierInstant modifierInstant){
+
+    public ExApplyEntryAttrigetherEvent(ItemStack stack, ModifierAttriGether attriGether, EquipmentSlot[] slot, ModifierInstant modifierInstant) {
         this.stack = stack;
         this.attriGether = attriGether;
         this.slot = slot;
         this.modifierInstant = modifierInstant;
 
+
     }
+
 
     public ExApplyEntryAttrigetherEvent(ItemStack stack, ModifierAttriGether attriGether, boolean isCurios, String curiosSlot) {
         this.stack = stack;
         this.attriGether = attriGether;
         this.isCurios = isCurios;
         this.curiosSlot = curiosSlot;
+
     }
+
 
     public ItemStack getStack() {
         return stack;

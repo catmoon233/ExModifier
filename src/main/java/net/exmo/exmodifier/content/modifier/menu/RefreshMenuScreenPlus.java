@@ -727,7 +727,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     boolean present = first.isPresent();
                     int needCount = present ? first.get().NeedCount : 1;
                     String s = "";
-                    if (needCount >= count) {
+                    if (needCount > count) {
                         s = "§4" + count + "/" + needCount;
                     } else {
                         s = "§a" + count + "/" + needCount;

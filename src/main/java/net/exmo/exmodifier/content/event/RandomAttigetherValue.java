@@ -1,7 +1,9 @@
 package net.exmo.exmodifier.content.event;
 
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.events.ExApplyEntryAttrigetherEvent;
+import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -9,11 +11,28 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.text.DecimalFormat;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Mod.EventBusSubscriber
 public class RandomAttigetherValue {
     @SubscribeEvent
     public static void apply(ExApplyEntryAttrigetherEvent event){
+        if (event.getOldInstant() !=null) {
+            AttributeModifier modifier = event.attriGether.modifier;
+            if (ModifierEntryHelper.item_old_number_cache.containsKey(modifier.getName())) {
+                double amount = ModifierEntryHelper.item_old_number_cache.get(modifier.getName());
+//            event.getOldInstant().getModifierEntry().attriGether.forEach(
+//                    e->{
+//                        if (e.maxValue!= e.minValue){
+//                            double amountFromAttributeName = ItemAttrUtil.getAmountFromAttributeName(event.stack, event.attriGether.attribute, e.modifier.getName());
+//                            if (amountFromAttributeName != 0) amount.set(amountFromAttributeName);
+//                        }
+//                    }
+//            );
+                event.attriGether.modifier = new AttributeModifier(modifier.getId(), modifier.getName(), amount, modifier.getOperation());
+                return;
+            }
+        }
         ModifierAttriGether attriGether = event.attriGether.copy();
         if (attriGether.maxValue!= attriGether.minValue){
             double randomValue = new Random().nextDouble(attriGether.minValue, attriGether.maxValue);

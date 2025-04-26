@@ -82,6 +82,7 @@ public class ExModifiervaV {
             clone.Suits = original.Suits;
             if (!event.isWasDeath())
             {
+                clone.craftIndex = original.craftIndex;
                 clone.syncContent = original.syncContent;
                 clone.attriGetherEffectInstances = original.attriGetherEffectInstances;
                 clone.itemsDamage = original.itemsDamage;
@@ -286,6 +287,7 @@ public class ExModifiervaV {
         public Map<String,String> syncContent = new HashMap<>();
         public List<AttriGetherEffectInstance> attriGetherEffectInstances = new ArrayList<>();
         public ItemStack Sitemstack = ItemStack.EMPTY;
+        public int craftIndex = -2;
 
         public void syncPlayerVariables(Entity entity) {
             if (entity instanceof ServerPlayer serverPlayer)
@@ -294,7 +296,7 @@ public class ExModifiervaV {
 
         public Tag writeNBT() {
             CompoundTag nbt = new CompoundTag();
-
+            nbt.putInt("craftIndex", craftIndex);
             nbt.put("Sitemstack", Sitemstack.save(new CompoundTag()));
             ListTag ExsuitListTag = new ListTag();
             for (ExSuit value : Suits) {
@@ -340,6 +342,7 @@ public class ExModifiervaV {
 
         public void readNBT(Tag Tag) {
             CompoundTag nbt = (CompoundTag) Tag;
+            craftIndex = nbt.getInt("craftIndex");
             Sitemstack = ItemStack.of(nbt.getCompound("Sitemstack"));
             ListTag ExSuitListTag = nbt.getList("Suits", 8);
             List<ExSuit> SuitsList = new ArrayList<>();
@@ -397,6 +400,7 @@ public class ExModifiervaV {
                 if (!context.getDirection().getReceptionSide().isServer()) {
                     PlayerVariables variables = ((PlayerVariables) Minecraft.getInstance().player.getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables()));
                     variables.Sitemstack = message.data.Sitemstack;
+                    variables.craftIndex = message.data.craftIndex;
                     variables.Suits = message.data.Suits;
                     variables.SuitsNum = message.data.SuitsNum;
                     variables.attriGetherEffectInstances = message.data.attriGetherEffectInstances;

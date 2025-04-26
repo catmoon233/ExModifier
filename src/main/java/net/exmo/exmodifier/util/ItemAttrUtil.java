@@ -141,6 +141,24 @@ public  class ItemAttrUtil {
         }
         return list;
     }
+    public static List<AttriGether> getAttributeModifiers(ItemStack stack) {
+        ArrayList<AttriGether> list = new ArrayList<>();
+        if (stack.getTag() != null && stack.getTag().contains("ExAttributeModifiers", 9)) {
+            ListTag listtag = stack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
+            for (int i = 0; i < listtag.size(); ) { // 注意这里使用i而不是i++
+                i++;
+                CompoundTag compoundTag = listtag.getCompound(i);
+                String modifierName = compoundTag.getString("Name");
+                AttributeModifier.Operation operation = AttributeModifier.Operation.fromValue(compoundTag.getInt("Operation"));
+
+                // 获取Amount和其他可能的参数，这里假设Amount是double类型
+                double amount = compoundTag.getDouble("Amount");
+                Attribute pAttribute = ForgeRegistries.ATTRIBUTES.getValue(ResourceLocation.tryParse(compoundTag.getString("AttributeName")));
+                list.add(new AttriGether(pAttribute, new AttributeModifier(modifierName, amount, operation),EquipmentSlot.byName(compoundTag.getString("Slot"))));
+            }
+        }
+        return list;
+    }
     public static AttributeModifier getAttributeModifierFromNamed(String name,ItemStack stack) {
         if (stack.getTag() != null && stack.getTag().contains("ExAttributeModifiers", 9)) {
             ListTag listtag = stack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);

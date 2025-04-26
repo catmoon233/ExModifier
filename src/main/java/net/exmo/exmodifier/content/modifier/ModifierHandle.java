@@ -650,7 +650,7 @@ public class ModifierHandle {
 //                }
 //            }
 //        }
-        public static void applyModifiersCurios(ItemStack stack, List<ModifierAttriGether> attriGethers, List<String> CuriosSlots) {
+        public static void applyModifiersCurios(ItemStack stack, List<ModifierAttriGether> attriGethers, List<String> CuriosSlots, ModifierInstant oldHelper) {
 //            Map<String, Multimap<Attribute, AttributeModifier>> attriMap = new HashMap<>();
 //            for (String CuriosSlot : CuriosSlots) {
 //                attriMap.put(CuriosSlot, CuriosUtil.getAttributeModifiersAffix(stack, CuriosSlot));
@@ -660,7 +660,7 @@ public class ModifierHandle {
                 attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName() + stack).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
-                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attriGether.attribute, attriGether.modifier), true, null);
+                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attriGether.attribute, attriGether.modifier), true, null).setOldInstant(oldHelper);
                     MinecraftForge.EVENT_BUS.post(event);
                     CuriosUtil.addAttributeModifierAffix(stack, new AttrGether(event.attriGether.attribute, event.attriGether.modifier));
 
@@ -683,19 +683,22 @@ public class ModifierHandle {
 //            }
         }
 
-        public static void applyModifiers(ItemStack stack, List<ModifierAttriGether> attriGethers, EquipmentSlot[] slot, ModifierInstant modifierInstant) {
+        public static void applyModifiers(ItemStack stack, List<ModifierAttriGether> attriGethers, EquipmentSlot[] slot, ModifierInstant modifierInstant, ModifierInstant oldHelper) {
             for (ModifierAttriGether attriGether : attriGethers) {
                 EquipmentSlot[] applicableSlot = attriGether.IsAutoEquipmentSlot ? slot : new EquipmentSlot[]{attriGether.slot};
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
                     attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName() + stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
-                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, attriGether, applicableSlot, modifierInstant);
+                    ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, attriGether, applicableSlot, modifierInstant).setOldInstant(oldHelper);
                     MinecraftForge.EVENT_BUS.post(event);
                     ItemAttrUtil.addItemAttributeModifier(event.stack, event.attriGether.attribute, event.attriGether.modifier, event.slot);
                 } else {
                     LOGGER.debug("attribute is not exists");
                 }
             }
+        }
+        public static void applyModifiers(ItemStack stack, List<ModifierAttriGether> attriGethers, EquipmentSlot[] slot, ModifierInstant modifierInstant) {
+            applyModifiers(stack, attriGethers, slot, modifierInstant, null);
         }
 
         public static void RandomEntryCurios(ItemStack stack, int rarity, int refreshnumber, String washItem) {

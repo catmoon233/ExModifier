@@ -330,7 +330,7 @@ public class ItemLevelHandle {
             if (foundItemLevels.contains(itemLevel))continue;
             Exmodifier.LOGGER.debug("add level entry: " + itemLevel.id);
             foundItemLevels.add(itemLevel);
-           ItemLevelHelper.of(stack).addItemLevelHelper(ItemLevelInstant.of(itemLevel));
+           ItemLevelHelper.of(stack).addItemLevelInstant(ItemLevelInstant.of(itemLevel));
 
             numAddedModifiers++;
 
