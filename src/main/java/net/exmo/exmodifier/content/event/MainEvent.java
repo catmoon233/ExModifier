@@ -2,6 +2,7 @@ package net.exmo.exmodifier.content.event;
 
 import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.content.modifier.RefreshContainTagHandle;
 import net.exmo.exmodifier.content.client.LanguageLoader;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
@@ -18,15 +19,8 @@ import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.resources.ZipHandle;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
-import net.exmo.exmodifier.util.AttributeCuriosHandle;
-import net.exmo.exmodifier.util.CuriosUtil;
-import net.exmo.exmodifier.util.DynamicExpressionEvaluator;
-import net.exmo.exmodifier.util.EntityAttrUtil;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
+import net.exmo.exmodifier.util.*;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
@@ -34,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -41,8 +36,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 //import net.minecraftforge.client.eventC.MovementInputUpdateEvent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
@@ -59,17 +52,18 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector2ic;
 import oshi.util.tuples.Pair;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
 
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Config.refresh_time;
+import static net.exmo.exmodifier.content.element.ExElementHandle.FoundDefaultElementConfigs;
+import static net.exmo.exmodifier.content.element.ExElementHandle.FoundEntityDefaultElementConfigs;
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.ItemLevelRefresh;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEntry;
@@ -115,10 +109,32 @@ public class MainEvent {
 
                 List<Component> tooo = new ArrayList<>();
                 tooo.add(toolTip1.get(0));
+
                 for (var a : ItemQualityHelper.of(itemStack).getQualityEntriesTooltip()) {
                     if (a.isShowInHeadTooltip) {
                         //   tooo.set(0,a.mutableComponent.append(Component.literal(" §r")).append(toolTip1.get(0)));
-                    } else tooo.add(a.mutableComponent);
+                    } else {
+                        if (a.showModifierComponent){
+                            tooo.add(Component.translatable("exmodifier.quality.modifier").append(a.mutableComponent));
+                        }else tooo.add(a.mutableComponent);
+                    }
+                }
+                {
+                    var elementComponent = Component.empty();
+                    AtomicBoolean flag = new AtomicBoolean(false);
+                    ExElementHelper.of(itemStack).getElements().forEach(
+                            exElementInstant -> {
+                                if (!flag.get()) {
+                                    flag.set(true);
+                                    elementComponent.append(exElementInstant.getDesc());
+                                } else {
+                                    elementComponent.append(" ").append(exElementInstant.getDesc());
+                                }
+
+                            }
+                    );
+
+                    if (flag.get()) tooo.add(elementComponent);
                 }
                 if (b) {
                     if (!Config.entryShowUnderLevel) {
@@ -368,6 +384,7 @@ public class MainEvent {
         public static class cheekEvent {
             @SubscribeEvent
             public static void PlayerHurtAndAttack(LivingHurtEvent event) {
+                if (event.getSource().is(DamageTypes.GENERIC_KILL))return;
                 if ((event.getEntity() instanceof Player player)) {
                     List<EventParameter<?>> eventParameters = new ArrayList<>();
                     eventParameters.add(new EventParameter<>("amount", event.getAmount()));
@@ -539,52 +556,51 @@ public class MainEvent {
         private static boolean handleArmorChangeExpectSuit(ItemStack toStack, boolean isClientSide) {
             // boolean isExSuitOperate = false;
             if (!isClientSide) {
-                ItemStack stack = toStack;
-                ItemInfo itemInfo = ItemInfo.of(stack);
+                ItemInfo itemInfo = ItemInfo.of(toStack);
                 ModifierEntryHelper modifierEntryHelper = itemInfo.getModifierEntryHelper();
-                ModifierEntryHelper.moveOldEntry(stack);
-                ItemLevelHelper.moveOldLevel(stack);
-                String string = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+                ModifierEntryHelper.moveOldEntry(toStack);
+                ItemLevelHelper.moveOldLevel(toStack);
+                String string = ExUtil.getItemID(toStack);
                 for (String s : UnMatchingModIDs) {
                     if (string.startsWith(s)) return true;
                 }
-                if (itemsDefaultEntry.containsKey(string)) {
-                    for (ModifierEntry modifierEntry : itemsDefaultEntry.get(string)) {
-                        new ModifierEntryHelper(stack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)), true, true);
-                    }
-                }
+//                if (itemsDefaultEntry.containsKey(string)) {
+//                    for (ModifierEntry modifierEntry : itemsDefaultEntry.get(string)) {
+//                        new ModifierEntryHelper(toStack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)), true, true);
+//                    }
+//                }
 
-                if (CuriosUtil.isCuriosItem2(stack)) {
-                    if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
-                        RandomEntryCurios(stack, 0, refresh_time, "none");
+                if (CuriosUtil.isCuriosItem2(toStack)) {
+                    if (toStack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
+                        RandomEntryCurios(toStack, 0, refresh_time, "none");
                     }
-                    if (stack.getTag() != null) {
-                        if (stack.getTag().contains("modifier_refresh")) {
-                            if (stack.getTag().getBoolean("modifier_refresh")) {
-                                stack.getTag().remove("modifier_refresh");
-                                stack.getTag().remove("UNKNOWN");
-                                RandomEntryCurios(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"));
+                    if (toStack.getTag() != null) {
+                        if (toStack.getTag().contains("modifier_refresh")) {
+                            if (toStack.getTag().getBoolean("modifier_refresh")) {
+                                toStack.getTag().remove("modifier_refresh");
+                                toStack.getTag().remove("UNKNOWN");
+                                RandomEntryCurios(toStack, toStack.getTag().getInt("modifier_refresh_rarity"), toStack.getTag().getInt("modifier_refresh_add"), toStack.getTag().getString("wash_item"));
                             }
                         }
                     }
                 } else {
-                    if (!stack.getTags().filter(e -> RefreshContainTagHandle.refreshContainTag.contains(e.toString())).toList().isEmpty() ||
+                    if (!toStack.getTags().filter(e -> RefreshContainTagHandle.refreshContainTag.contains(e.toString())).toList().isEmpty() ||
                             RefreshContainItemHandle.refreshContainItem.contains(string) ||
-                            hasAttrOrBow(stack) && !ModifierEntry.getType(stack).stream().filter(e -> e != ExType.UNKNOWN.get()).toList().isEmpty() && stack.getItem().getMaxStackSize(stack) == 1) {
-                        if (stack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
-                            ModifierSlotHelper modifierSlotHelper = ModifierSlotHelper.of(stack);
+                            hasAttrOrBow(toStack) && !ModifierEntry.getType(toStack).stream().filter(e -> e != ExType.UNKNOWN.get()).toList().isEmpty() && toStack.getItem().getMaxStackSize(toStack) == 1) {
+                        if (toStack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
+                            ModifierSlotHelper modifierSlotHelper = ModifierSlotHelper.of(toStack);
                             if (Config.FirstAddSlots && !modifierSlotHelper.validList()) {
                                 modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:front")));
                                 modifierSlotHelper.addSlot(ModifierSlotHandle.getSlot(ResourceLocation.tryParse("exmodifier:centre")));
                             }
-                            RandomEntry(stack, 0, refresh_time, "none", 0);
+                            RandomEntry(toStack, 0, refresh_time, "none", 0);
                         }
-                        if (stack.getTag() != null) {
-                            if (stack.getTag().contains("modifier_refresh")) {
-                                if (stack.getTag().getBoolean("modifier_refresh")) {
-                                    stack.getTag().remove("modifier_refresh");
-                                    stack.getTag().remove("UNKNOWN");
-                                    RandomEntry(stack, stack.getTag().getInt("modifier_refresh_rarity"), stack.getTag().getInt("modifier_refresh_add"), stack.getTag().getString("wash_item"), 0);
+                        if (toStack.getTag() != null) {
+                            if (toStack.getTag().contains("modifier_refresh")) {
+                                if (toStack.getTag().getBoolean("modifier_refresh")) {
+                                    toStack.getTag().remove("modifier_refresh");
+                                    toStack.getTag().remove("UNKNOWN");
+                                    RandomEntry(toStack, toStack.getTag().getInt("modifier_refresh_rarity"), toStack.getTag().getInt("modifier_refresh_add"), toStack.getTag().getString("wash_item"), 0);
                                 }
                             }
                         }
@@ -593,7 +609,7 @@ public class MainEvent {
 
                 int addLevelSystemCount = Config.add_level_system_count;
                 if (Config.add_level_system_count != 0) {
-                    ItemLevelRefresh(stack, 0, addLevelSystemCount, "none");
+                    ItemLevelRefresh(toStack, 0, addLevelSystemCount, "none");
                 }
             }
             return false;
@@ -701,12 +717,18 @@ public class MainEvent {
             RefreshContainItemHandle.readConfig();
             ModifierHandle.sendClearModifierEntryToAllClient();
             ExTypeHandle.readConfig();
+            ItemQualityHandle.init();
             ZipHandle.init();
+            //ExElementHandle.init(); 在ZIP_HANDLE中初始化
+            ExElementHandle.init2();
+            ExElementHandle.init3();
+            ItemQualityHandle.init2();
+
             ModifierHandle.readConfig();
             ExSuitHandle.readConfig();
             ModifierSlotHandle.reload();
 
-            ItemQualityHandle.init();
+
             if (runnable != null) runnable.run();
             for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()) {
                 ModifierHandle.sendModifierEntryToAllClient(modifierEntry);
@@ -743,11 +765,15 @@ public class MainEvent {
         ItemLevelHandle.ItemLevels.clear();
         ModifierHandle.onlyCanRefreshPointEntryItemIds.clear();
         ModifierHandle.cantWashItemIds.clear();
+        ExElementHandle.elementDefaultMap.clear();
+        ExElementHandle.elementDefaultMap2.clear();
+        ExElementHandle.exElements.clear();
         itemsDefaultEntry.clear();
         ModifierHandle.materialsList.clear();
         ModifierSlotHandle.registerSlots.clear();
         ModifierSlotHandle.unLockSlotItems.clear();
         ItemQualityHandle.itemQualityMap.clear();
+        ItemQualityHandle.itemDefaultQualityMap.clear();
 
         clearReadTempData();
 
@@ -758,7 +784,11 @@ public class MainEvent {
         ItemLevelHandle.Foundlvconfigs.clear();
         ExSuitHandle.FoundSuitConfigs.clear();
         ItemQualityHandle.FoundQualityConfigs.clear();
+        ItemQualityHandle.FoundDefaultQualityConfigs.clear();
         ExTypeHandle.FoundTypeConfigs.clear();
+        ExElementHandle.FoundElementConfigs.clear();
+        FoundEntityDefaultElementConfigs.clear();
+        FoundDefaultElementConfigs.clear();
     }
 }
 

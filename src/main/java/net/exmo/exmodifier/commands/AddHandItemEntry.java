@@ -8,6 +8,9 @@ import dev.shadowsoffire.apotheosis.adventure.loot.LootCategory;
 import dev.shadowsoffire.apotheosis.adventure.loot.LootRarity;
 import dev.shadowsoffire.placebo.reload.DynamicHolder;
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.element.ExElementHandle;
+import net.exmo.exmodifier.content.element.ExElementInstant;
+import net.exmo.exmodifier.content.helper.ExElementHelper;
 import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.helper.ModifierSlotHelper;
@@ -52,6 +55,13 @@ public class AddHandItemEntry {
     public static final SuggestionProvider<CommandSourceStack> Suggestion_Slots = (ctx, builder) -> {
         return SharedSuggestionProvider.suggest(
                 ModifierSlotHandle.registerSlots.keySet().stream()
+                        .map(resourceLocation -> "\"" + resourceLocation.toString() + "\""),
+                builder
+        );
+    };
+    public static final SuggestionProvider<CommandSourceStack> Suggestion_Elements = (ctx, builder) -> {
+        return SharedSuggestionProvider.suggest(
+                ExElementHandle.exElements.keySet().stream()
                         .map(resourceLocation -> "\"" + resourceLocation.toString() + "\""),
                 builder
         );
@@ -143,6 +153,22 @@ public class AddHandItemEntry {
             }
             return 0;
         }))));
+        event.getDispatcher().register(Commands.literal("addHandElement").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("elementId", StringArgumentType.string()).suggests(Suggestion_Elements).then(Commands.argument("level",IntegerArgumentType.integer(1)).executes(arguments -> {
+            extracted(arguments);
+            String _setval = StringArgumentType.getString(arguments, "elementId").replace("\"","");
+            Player player = EntityArgument.getPlayer(arguments, "player");
+            int level = IntegerArgumentType.getInteger(arguments, "level");
+
+            try {
+                ExElementHelper mh = ExElementHelper.of(player.getMainHandItem());
+                mh.addExElement(ExElementInstant.of(ExElementHandle.getExElement(_setval),level),true);
+
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return 0;
+        })))));
         event.getDispatcher().register(Commands.literal("addHandItemQuality").requires(s -> s.hasPermission(4)).
                 then(Commands.argument("player", EntityArgument.player()).
                         then(Commands.argument("QualityId", StringArgumentType.word())

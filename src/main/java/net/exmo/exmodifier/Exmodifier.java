@@ -8,6 +8,7 @@ import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.init.RegisterOther;
 import net.exmo.exmodifier.network.*;
+import net.exmo.exmodifier.util.ColorUtil;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
@@ -43,6 +44,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -110,6 +112,7 @@ public class Exmodifier {
 
     public Exmodifier() {
 
+
         long time_start = System.currentTimeMillis();
         // Register the setup method for modloading
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -119,6 +122,11 @@ public class Exmodifier {
         PACKET_HANDLER.registerMessage(messageID++, ChangeRefreshMenuTextListMessage.class, ChangeRefreshMenuTextListMessage::encode, ChangeRefreshMenuTextListMessage::decode, ChangeRefreshMenuTextListMessage::handle);
         PACKET_HANDLER.registerMessage(messageID++, PlayerRefreshScreenOverMessageMessage.class, PlayerRefreshScreenOverMessageMessage::encode, PlayerRefreshScreenOverMessageMessage::decode, PlayerRefreshScreenOverMessageMessage::handle);
         PACKET_HANDLER.registerMessage(messageID++, RefreshCraftContentMessage.class, RefreshCraftContentMessage::encode, RefreshCraftContentMessage::decode, RefreshCraftContentMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, DamageNumberCompatMessage.class, DamageNumberCompatMessage::encode, DamageNumberCompatMessage::decode, DamageNumberCompatMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, DamageNumberColorCompatMessage.class, DamageNumberColorCompatMessage::encode, DamageNumberColorCompatMessage::decode, DamageNumberColorCompatMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, SyncEntityElementMessage.class, SyncEntityElementMessage::encode, SyncEntityElementMessage::decode, SyncEntityElementMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, SyncEntityElementRemovedMessage.class, SyncEntityElementRemovedMessage::encode, SyncEntityElementRemovedMessage::decode, SyncEntityElementRemovedMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, AskSyncEntityElementMessage.class, AskSyncEntityElementMessage::encode, AskSyncEntityElementMessage::decode, AskSyncEntityElementMessage::handle);
 
         ITEMS.register(modEventBus);
         try {

@@ -65,8 +65,9 @@ public class ModifierInstant {
         return level;
     }
 
-    public void setLevel(int level) {
+    public ModifierInstant setLevel(int level) {
         this.level = level;
+        return this;
     }
 
     public CompoundTag getData() {

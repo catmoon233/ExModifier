@@ -55,7 +55,7 @@ public abstract class TableCraftMixin {
     }
 
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getServer()Lnet/minecraft/server/MinecraftServer;",shift = At.Shift.BEFORE),method = "slotChangedCraftingGrid", remap = false)
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getServer()Lnet/minecraft/server/MinecraftServer;",shift = At.Shift.BEFORE),method = "slotChangedCraftingGrid")
     private static void slotChangedCraftingGrid(AbstractContainerMenu p_150547_, Level p_150548_, Player p_150549_, CraftingContainer p_150550_, ResultContainer p_150551_, CallbackInfo ci){
         if (p_150549_ instanceof ServerPlayer) {
             _player = (ServerPlayer) p_150549_;
@@ -68,7 +68,7 @@ public abstract class TableCraftMixin {
         }
 
     }
-    @Redirect( at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/crafting/CraftingRecipe;assemble(Lnet/minecraft/world/Container;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;"),method = "slotChangedCraftingGrid", remap = false)
+    @Redirect( at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/crafting/CraftingRecipe;assemble(Lnet/minecraft/world/Container;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;"),method = "slotChangedCraftingGrid")
     private static ItemStack assemble(CraftingRecipe instance, Container container, RegistryAccess registryAccess) {
         CraftingContainer container1 = (CraftingContainer) container;
         boolean flag = false;

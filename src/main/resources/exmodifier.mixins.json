@@ -9,6 +9,7 @@
     "AttackBaseChange",
     "ChangeDurability",
     "ChangeDurabilityBar",
+    "DamageNumberCompat",
     "DigSpeedMixin",
     "ItemCombinerMenuMixin",
     "ItemMixin",

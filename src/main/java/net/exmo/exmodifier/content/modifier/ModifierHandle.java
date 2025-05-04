@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.content.client.LanguageLoader;
+import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
@@ -45,6 +46,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.Nullable;
+import oshi.util.tuples.Pair;
 
 
 import java.io.FileNotFoundException;
@@ -140,6 +142,10 @@ public class ModifierHandle {
     }
 
     private static DecimalFormat df = new DecimalFormat("#.#####");
+
+    public static List<ItemSelector> getItemSelector(ItemStack stack) {
+        return itemsDefaultEntry.keySet().stream().filter(entry -> entry.compare(stack)).toList();
+    }
 
     @Mod.EventBusSubscriber
     public static class CommonEvent {
@@ -449,7 +455,8 @@ public class ModifierHandle {
                                     boolean hasWashItem = materialsList.stream()
                                             .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
 
-                                    return modifier.containItemType(type) &&
+                                    return !ModifierEntryHelper.of(stack).getModifierEntriesB().contains(modifier) &&
+                                            modifier.containItemType(type) &&
                                             modifier.hasDefaultTag() &&
                                             modifier.modifierItemSelector.containItem(stack) &&
                                             !modifier.cantSelect &&
@@ -808,7 +815,7 @@ public class ModifierHandle {
     public static Map<String, ModifierEntry> modifierEntryMap = new HashMap<>();
     public static Map<ModifierEntry, List<String>> EEMatchQueue = new HashMap<>();
     public static List<String> cantWashItemIds = new ArrayList<>();
-    public static Map<String, List<ModifierEntry>> itemsDefaultEntry = new HashMap<>();
+    public static Map<ItemSelector, List<ModifierInstant>> itemsDefaultEntry = new HashMap<>();
     public static List<String> onlyCanRefreshPointEntryItemIds = new ArrayList<>();
 
     public static void RegisterModifierEntry(ModifierEntry modifierEntry) {
@@ -910,7 +917,13 @@ public class ModifierHandle {
                     processWashingMaterialEntry(entry);
                 }
             }
+            Foundmoconfigs = listFilesFromZipFile(zipFile, ConfigPath.getFileName());
+            for (MoConfig moconfig : Foundmoconfigs) {
+                processEntryMoConfigEntries(moconfig);
+            }
             // 读取物品默认条目配置
+            MinecraftForge.EVENT_BUS.post(new ExItemDefaultEntry());
+            // 读取其余配置文件
             String ItemsDefaultEntryFilePath = ItemsDefaultEntryConfigPath.getFileName().toString();
             ZipEntry item = zipFile.getEntry(ItemsDefaultEntryFilePath);
             if (item != null) {
@@ -922,13 +935,19 @@ public class ModifierHandle {
                 }
 
             }
+            ExElementHandle.init(); //初始化元素
+            // 读取元素
+            String ElementPath = ExElementHandle.ElementConfigPath.getFileName().toString();
+            ZipEntry element = zipFile.getEntry(ElementPath);
+            if (element != null) {
 
-            MinecraftForge.EVENT_BUS.post(new ExItemDefaultEntry());
-            // 读取其余配置文件
-            Foundmoconfigs = listFilesFromZipFile(zipFile, ConfigPath.getFileName());
-            for (MoConfig moconfig : Foundmoconfigs) {
-                processEntryMoConfigEntries(moconfig);
+                MoConfig ElementConfig = new MoConfig(Path.of(zipFile.getName(), ElementPath), zipFile.getInputStream(element));
+                ExElementHandle.processMoConfigEntries(ElementConfig);
+
             }
+
+
+
 
             // 读取升级配置
             Foundlvconfigs = listFilesFromZipFile(zipFile, LEVEL_CONFIG_PATH.getFileName());
@@ -937,15 +956,30 @@ public class ModifierHandle {
             }
 
             // 读取套装配置
-            ExSuitHandle.FoundSuitConfigs = listFilesFromZipFile(zipFile, ExSuitHandle.ConfigPath.getFileName());
-            for (MoConfig moconfig : ExSuitHandle.FoundSuitConfigs) {
+            Foundlvconfigs = listFilesFromZipFile(zipFile, ExSuitHandle.ConfigPath.getFileName());
+            for (MoConfig moconfig : Foundlvconfigs) {
                 ExSuitHandle.processMoConfigEntries(moconfig);
             }
 
             // 读取物品品质配置
-            ItemQualityHandle.FoundQualityConfigs = listFilesFromZipFile(zipFile, ItemQualityHandle.ItemsQualityConfigPath.getFileName());
-            for (MoConfig moconfig : ItemQualityHandle.FoundQualityConfigs) {
+            Foundlvconfigs = listFilesFromZipFile(zipFile, ItemQualityHandle.ItemsQualityConfigPath.getFileName());
+            for (MoConfig moconfig : Foundlvconfigs) {
                 ItemQualityHandle.processMoConfigEntries(moconfig);
+            }
+            //读取默认品质
+            Foundlvconfigs = listFilesFromZipFile(zipFile, ItemQualityHandle.ItemsDefaultQualityConfigPath.getFileName());
+            for (MoConfig moconfig : Foundlvconfigs) {
+                ItemQualityHandle.processMoConfigEntries2(moconfig);
+            }
+            //读取默认元素
+            Foundlvconfigs = listFilesFromZipFile(zipFile, ExElementHandle.DefaultElementConfigPath.getFileName());
+            for (MoConfig moconfig : Foundlvconfigs) {
+                ExElementHandle.processMoConfigEntries2(moconfig);
+            }
+            //读取默认元素
+            Foundlvconfigs = listFilesFromZipFile(zipFile, ExElementHandle.DefaultEntityElementConfigPath.getFileName());
+            for (MoConfig moconfig : Foundlvconfigs) {
+                ExElementHandle.processMoConfigEntries3(moconfig);
             }
             for (MoConfig moconfig : listFilesFromZipFile(zipFile, LanguageLoader.LANGUAGES_FILE_PATH.getFileName())) {
                 String string = moconfig.configFile.getFileName().toString();
@@ -974,16 +1008,22 @@ public class ModifierHandle {
         }
         try {
             JsonObject jsonObject = entry.getValue().getAsJsonObject();
-            List<String> entrysids = new ArrayList<>();
-            for (JsonElement item : jsonObject.get("entrys").getAsJsonArray()) {
-                entrysids.add(item.getAsString());
+            List<Pair<String,Integer>> entries = new ArrayList<>();
+            for (JsonElement item : jsonObject.get("entries").getAsJsonArray()) {
+                JsonObject asJsonObject = item.getAsJsonObject();
+                int level = asJsonObject.has("level") ? asJsonObject.get("level").getAsInt() : 1;
+                entries.add(new Pair<>(asJsonObject.get("id").getAsString(), level));
             }
 
-            List<ModifierEntry> modifierEntries = new ArrayList<>();
-            for (String entryid : entrysids) {
-                modifierEntries.add(modifierEntryMap.get(entryid));
+            List<ModifierInstant> modifierEntries = new ArrayList<>();
+            for (var entryA : entries ) {
+                modifierEntries.add(ModifierHandle.modifierEntryMap.get(entryA.getA()).toInstant(entryA.getB()));
             }
-            itemsDefaultEntry.put(entry.getKey(), modifierEntries);
+            ItemSelector itemSelector =null;
+            if (jsonObject.has("itemSelector")){
+                itemSelector= ItemSelector.EX_SERIALIZE.fromJsonSingleObject(jsonObject.get("itemSelector").getAsJsonObject(),"itemSelector");
+            }
+            if (itemSelector!=null) itemsDefaultEntry.put(itemSelector, modifierEntries);
             LOGGER.debug("Add ItemsDefaultEntry:" + entry.getKey() + " To ModifierEntry:" + modifierEntries);
 
         } catch (Exception e) {

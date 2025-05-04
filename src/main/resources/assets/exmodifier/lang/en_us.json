@@ -5,6 +5,7 @@
   " : ": " : ",
   "modifier.attri.¦": " §7¦ ",
   "modifier.entry.suit.color": "§6",
+  "config.jade.plugin_exmodifier.element": "exmodifier element plugin",
   "modifier.entry.ample": "§7Entry",
   "name.exmodifier.modmenu": "ExModifier Config Pack Import: ",
   "modifier.entry.can_add_max": "§7The maximum number of entries added has been reached",
@@ -48,5 +49,9 @@
   "attribute.exmodifier.hit_rate": "hit rate",
   "attribute.exmodifier.percent_heal": "attack percent heal",
   "attribute.exmodifier.arrow_base_damage": "base arrow damage",
-  "exmodifier.container.refresh.cost": "Enchantment Cost: %1$s"
+  "attribute.exmodifier.element_resistance_coefficient": "element resistance coefficient",
+  "attribute.exmodifier.element_conversion_coefficient": "element conversion coefficient",
+  "attribute.exmodifier.all_attribute_boost": "all attribute boost",
+  "exmodifier.container.refresh.cost": "Enchantment Cost: %1$s",
+  "exmodifier.quality.modifier": "§7Quality: "
 }

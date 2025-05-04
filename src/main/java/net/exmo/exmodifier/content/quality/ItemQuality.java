@@ -16,11 +16,13 @@ public class ItemQuality {
     public int rarity; //稀有度
     public List<ModifierEntry> entries = new ArrayList<>();
     public boolean cantRemoveEntry = false;
+
     public String Id;
     public float weight ;
     public float growValue ;
     public float addRefreshValue ;
-    private boolean isShowInHeadTooltip = true;
+    private boolean isShowInHeadTooltip = false;
+    public boolean ShowModifierComponent = true;
     public List<String> OnlyItemIds = new ArrayList<>();
     public List<String> OnlyItemTags = new ArrayList<>();
     public List<String> OnlyWashItems = new ArrayList<>();

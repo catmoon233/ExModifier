@@ -290,10 +290,10 @@ public class ItemLevelHandle {
             components.add(Component.translatable("modifier.xp")
                     .append(Component.literal(xpInfo))
                     .withStyle(ChatFormatting.GREEN));
-            ItemLevel _setval = new ItemLevel();
+
             if (itemLevelInstant.level>0) {
-                _setval.attriGethers = new ArrayList<>(itemLevelInstant.itemLevel.attriGethers);
-                for (LevelAttriGether ita : _setval.attriGethers) {
+                var _setval = new ArrayList<>(itemLevelInstant.itemLevel.attriGethers);
+                for (LevelAttriGether ita : _setval) {
                     for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
                         for (AttributeModifier modifier : stack.getAttributeModifiers(equipmentSlot).values()) {
                             if (modifier.getName().equals(ita.getModifier().getName())) {

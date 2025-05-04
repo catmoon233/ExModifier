@@ -1,15 +1,15 @@
 package net.exmo.exmodifier.util;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.exmo.exmodifier.util.exSerialize.ExSerialize;
+import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -17,8 +17,44 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> containNBT,
-                           CompareType type, List<TagKey<Item>> containTag,BiConsumer<ItemStack, AtomicBoolean> customCompare ){
+public final class ItemSelector {
+
+
+    public static final ExSerialize<ItemSelector> EX_SERIALIZE = ExSerialize.create(
+                    () -> {
+                        return new ItemSelector(
+                                null,
+                                new ArrayList<>(),
+                                new ArrayList<>(),
+                                CompareType.EMPTY,
+                                new ArrayList<>(),
+                                null
+                        );
+                    }
+            ).addStringListField("itemId", (itemSelector, s) -> {
+                itemSelector.itemId.addAll(s);
+            })
+            .addStringListField("nbt", (itemSelector, s) -> {
+                for (String a : s) {
+                    try {
+                        itemSelector.containNBT.add(TagParser.parseTag(a));
+                    } catch (CommandSyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }).addStringListField("containTag", (itemSelector, s) -> {
+                for (String a : s) {
+                    itemSelector.containTag.add(TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(),
+                            new ResourceLocation(a)));
+                }
+            })
+            .addStringField("type", (itemSelector, s) -> itemSelector.type = CompareType.valueOf(s));
+    private final Item item;
+    private final List<String> itemId;
+    private final List<CompoundTag> containNBT;
+    private  CompareType type;
+    private final List<TagKey<Item>> containTag;
+    private final BiConsumer<ItemStack, AtomicBoolean> customCompare;
 
 
     public enum CompareType {
@@ -43,8 +79,9 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
      */
     public ItemSelector(Item item, String itemId, List<CompoundTag> containNBT, CompareType type, List<TagKey<Item>> containTag, BiConsumer<ItemStack, AtomicBoolean> customCompare) {
 
-        this(item,Collections.singletonList(itemId), containNBT, type, containTag,customCompare);
+        this(item, Collections.singletonList(itemId), containNBT, type, containTag, customCompare);
     }
+
     public ItemSelector(Item item, List<String> itemId, List<CompoundTag> containNBT, CompareType type, List<TagKey<Item>> containTag, BiConsumer<ItemStack, AtomicBoolean> customCompare) {
         this.item = item;
         this.itemId = itemId;
@@ -53,6 +90,7 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
         this.containTag = containTag != null ? containTag : List.of();
         this.customCompare = customCompare;
     }
+
     public ItemSelector(Item item, String itemId, List<CompoundTag> containNBT, CompareType type, List<TagKey<Item>> containTag) {
         this(
                 item,
@@ -60,14 +98,15 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
                 containNBT,
                 type,
                 containTag,
-                (e,b) ->{
+                (e, b) -> {
                     b.set(false);
                 }
         );
 
     }
-    public ItemSelector( BiConsumer<ItemStack, AtomicBoolean> customCompare) {
-        this(null, List.of(), List.of(), CompareType.CUSTOM, List.of(),customCompare);
+
+    public ItemSelector(BiConsumer<ItemStack, AtomicBoolean> customCompare) {
+        this(null, List.of(), List.of(), CompareType.CUSTOM, List.of(), customCompare);
 
     }
 
@@ -92,29 +131,31 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
     public boolean compare(ItemStack stack) {
         if (stack.isEmpty()) return false;
 
+        final String itemID = ExUtil.getItemID(stack);
         return switch (type) {
             case TAG -> checkTags(stack);
             case CUSTOM -> {
                 AtomicBoolean u = new AtomicBoolean(false);
-                 customCompare.accept(stack, u);
-                 yield u.get();
+                customCompare.accept(stack, u);
+                yield u.get();
             }
-            case ID -> itemId.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString());
+            case ID -> itemId.contains(itemID);
             case ITEM -> Objects.equals(stack.getItem(), item);
             case NBT -> checkNBT(stack);
             case NBT_AND_ITEM -> Objects.equals(stack.getItem(), item) && checkNBT(stack);
-            case NBT_AND_ID ->
-                    itemId.contains(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()) && checkNBT(stack);
+            case NBT_AND_ID -> itemId.contains(itemID) && checkNBT(stack);
             default -> false;
         };
     }
 
 
-    public boolean compareItemSelector(ItemSelector itemSelector){
-        if (itemSelector.item != null && item!=null&& itemSelector.item != item) return false;
-        if (itemSelector.itemId !=null&&itemId!=null && !itemSelector.itemId.equals(itemId)) return false;
-        if (itemSelector.containNBT !=null&&containNBT !=null && !itemSelector.containNBT.equals(containNBT)) return false;
-        if (itemSelector.containTag !=null && containTag !=null &&!itemSelector.containTag.equals(containTag)) return false;
+    public boolean compareItemSelector(ItemSelector itemSelector) {
+        if (itemSelector.item != null && item != null && itemSelector.item != item) return false;
+        if (itemSelector.itemId != null && itemId != null && !itemSelector.itemId.equals(itemId)) return false;
+        if (itemSelector.containNBT != null && containNBT != null && !itemSelector.containNBT.equals(containNBT))
+            return false;
+        if (itemSelector.containTag != null && containTag != null && !itemSelector.containTag.equals(containTag))
+            return false;
 
         return true;
     }
@@ -128,22 +169,38 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
         return false;
     }
 
+
     private boolean checkNBT(ItemStack stack) {
         CompoundTag stackTag = stack.getTag();
         if (stackTag == null) return containNBT.isEmpty();
 
-        for (CompoundTag nbt : containNBT) {
-            // 检查所有键是否存在
-            boolean allKeysPresent = nbt.getAllKeys().stream().allMatch(stackTag::contains);
-            // 检查所有键值对是否相等
-            boolean allValuesEqual = allKeysPresent && stackTag.equals(nbt);
-            if (allValuesEqual) {
+        for (CompoundTag conditionNBT : containNBT) {
+            if (isSubset(conditionNBT, stackTag)) {
                 return true;
             }
         }
         return false;
     }
 
+    // 递归检查条件NBT是否为堆叠NBT的子集
+    private boolean isSubset(CompoundTag condition, CompoundTag target) {
+        for (String key : condition.getAllKeys()) {
+            Tag conditionTag = condition.get(key);
+            Tag targetTag = target.get(key);
+
+            if (targetTag == null) return false;
+
+            if (conditionTag instanceof CompoundTag conditionCompound) {
+                if (!(targetTag instanceof CompoundTag targetCompound) ||
+                        !isSubset(conditionCompound, targetCompound)) {
+                    return false;
+                }
+            } else if (!conditionTag.equals(targetTag)) {
+                return false;
+            }
+        }
+        return true;
+    }
 //    /**
 //     * 将ItemSelector对象序列化为NBT数据。
 //     *
@@ -196,7 +253,7 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
 
         CompareType type = CompareType.valueOf(tag.getString("CompareType"));
 
-        List<CompoundTag> containNBT = new java.util.ArrayList<>();
+        List<CompoundTag> containNBT = new ArrayList<>();
         if (tag.contains("ContainNBT", Tag.TAG_LIST)) {
             ListTag nbtList = tag.getList("ContainNBT", Tag.TAG_COMPOUND);
             for (Tag nbtTag : nbtList) {
@@ -206,7 +263,7 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
             }
         }
 
-        List<TagKey<Item>> containTag = new java.util.ArrayList<>();
+        List<TagKey<Item>> containTag = new ArrayList<>();
         if (tag.contains("ContainTag", Tag.TAG_LIST)) {
             ListTag tagList = tag.getList("ContainTag", Tag.TAG_STRING);
             for (Tag stringTag : tagList) {
@@ -218,4 +275,58 @@ public record ItemSelector(Item item, List<String> itemId, List<CompoundTag> con
 
         return new ItemSelector(item, itemId, containNBT, type, containTag);
     }
+
+    public Item item() {
+        return item;
+    }
+
+    public List<String> itemId() {
+        return itemId;
+    }
+
+    public List<CompoundTag> containNBT() {
+        return containNBT;
+    }
+
+    public CompareType type() {
+        return type;
+    }
+
+    public List<TagKey<Item>> containTag() {
+        return containTag;
+    }
+
+    public BiConsumer<ItemStack, AtomicBoolean> customCompare() {
+        return customCompare;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (ItemSelector) obj;
+        return Objects.equals(this.item, that.item) &&
+                Objects.equals(this.itemId, that.itemId) &&
+                Objects.equals(this.containNBT, that.containNBT) &&
+                Objects.equals(this.type, that.type) &&
+                Objects.equals(this.containTag, that.containTag) &&
+                Objects.equals(this.customCompare, that.customCompare);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(item, itemId, containNBT, type, containTag, customCompare);
+    }
+
+    @Override
+    public String toString() {
+        return "ItemSelector[" +
+                "item=" + item + ", " +
+                "itemId=" + itemId + ", " +
+                "containNBT=" + containNBT + ", " +
+                "type=" + type + ", " +
+                "containTag=" + containTag + ", " +
+                "customCompare=" + customCompare + ']';
+    }
+
 }

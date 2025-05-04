@@ -13,8 +13,11 @@ import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.util.ExConfigHandle;
+import net.exmo.exmodifier.util.ItemSelector;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -31,13 +34,20 @@ import static net.exmo.exmodifier.Exmodifier.LOGGER;
 public class ItemQualityHandle {
 
     public static Map<String, ItemQuality> itemQualityMap = new java.util.HashMap<>();
+    public static Map<ItemSelector, ItemQuality> itemDefaultQualityMap = new java.util.HashMap<>();
+
 
     public static final Path ItemsQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/quality/");
+    public static final Path ItemsDefaultQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/defaultQuality/");
     public static List<MoConfig> FoundQualityConfigs = new ArrayList<>();
+    public static List<MoConfig> FoundDefaultQualityConfigs = new ArrayList<>();
 
     public static void register(String id, ItemQuality itemQuality){
         itemQualityMap.put(id, itemQuality);
         Exmodifier.LOGGER.debug("Register ItemQuality: " + id);
+    }
+    public static List<ItemSelector> getItemSelector(ItemStack stack) {
+        return itemDefaultQualityMap.keySet().stream().filter(entry -> entry.compare(stack)).toList();
     }
     public static void init() throws IOException {
         if (Files.exists(ItemsQualityConfigPath)) {
@@ -49,6 +59,7 @@ public class ItemQualityHandle {
                 processMoConfigEntries(moconfig);
             }
 
+
             long endTime = System.nanoTime(); // 记录结束时间
             long duration = endTime - startTime; // 计算持续时间
             Exmodifier.LOGGER.debug("ReadConfig Quality Over time: " + duration / 1000000 + " ms");
@@ -59,15 +70,41 @@ public class ItemQualityHandle {
 //                processItemsQualityConfigEntry(entry);
 //            }
         }
+
+    }
+    public static void init2() throws IOException {
+        if (Files.exists(ItemsDefaultQualityConfigPath)) {
+            long startTime = System.nanoTime();
+            FoundDefaultQualityConfigs = ExConfigHandle.listFiles(ItemsDefaultQualityConfigPath);
+            for (MoConfig moconfig : FoundDefaultQualityConfigs) {
+                processMoConfigEntries2(moconfig);
+            }
+            long endTime = System.nanoTime();
+            long duration = endTime - startTime;
+            Exmodifier.LOGGER.debug("ReadConfig DefaultQuality Over time: " + duration / 1000000 + " ms");
+        }
+
     }
     public static void processMoConfigEntries(MoConfig moconfig) throws FileNotFoundException {
         if(moconfig.readEntrys().isEmpty()){
-            Exmodifier.LOGGER.info("No Suit Config Found");
+            Exmodifier.LOGGER.info("No Quality Config Found :"+moconfig.configFile);
             return;
         }
         for (Map.Entry<String, JsonElement> entry : moconfig.readEntrys()) {
             processItemsQualityConfigEntry(entry);
         }
+
+
+    }
+    public static void processMoConfigEntries2(MoConfig moconfig) throws FileNotFoundException {
+        if(moconfig.readEntrys().isEmpty()){
+            Exmodifier.LOGGER.info("No Default Quality Config Found :"+moconfig.configFile);
+            return;
+        }
+        for (Map.Entry<String, JsonElement> entry : moconfig.readEntrys()) {
+            processItemsDefaultQualityConfigEntry(entry);
+        }
+
 
     }
     public static class CommonEvent {
@@ -175,6 +212,8 @@ public class ItemQualityHandle {
             itemQuality.entries = modifierEntries;
             itemQuality.growValue = growValue;
             itemQuality.addRefreshValue = addRefreshValue;
+            itemQuality.setShowInHeadTooltip(jsonObject.has("showInHeadTooltip") && jsonObject.get("showInHeadTooltip").getAsBoolean());
+            itemQuality.ShowModifierComponent =(!jsonObject.has("ShowModifierComponent") || jsonObject.get("ShowModifierComponent").getAsBoolean());
             itemQuality.cantRemoveEntry = jsonObject.has("cantRemoveEntry") && jsonObject.get("cantRemoveEntry").getAsBoolean();
             itemQuality.LocalDescription = LocalDescription;
             itemQuality.autoRefresh = jsonObject.has("autoRefresh") && jsonObject.get("autoRefresh").getAsBoolean();
@@ -187,6 +226,28 @@ public class ItemQualityHandle {
             LOGGER.error("Error reading ItemsDefaultEntry config file", e);
         }
     }
+    private static void processItemsDefaultQualityConfigEntry(Map.Entry<String, JsonElement> entry) {
+        if (!entry.getValue().isJsonObject()) {
+            return;
+        }
+        try {
+            JsonObject jsonObject = entry.getValue().getAsJsonObject();
+            ItemQuality itemQuality = itemQualityMap.get(entry.getKey());
+            if (jsonObject.has("id")){
+                itemQuality = itemQualityMap.get(jsonObject.get("id").getAsString());
+            }
+            ItemSelector itemSelector =null;
+            if (jsonObject.has("itemSelector")){
+                itemSelector= ItemSelector.EX_SERIALIZE.fromJsonSingleObject(jsonObject.get("itemSelector").getAsJsonObject(),"itemSelector");
+            }
+            if (itemSelector!=null) itemDefaultQualityMap.put(itemSelector,itemQuality);
+            LOGGER.debug("Add ItemsDefaultQuality: " +  itemQuality.Id);
+
+        }catch (Exception e){
+            LOGGER.error("Error reading ItemsDefaultEntry config file", e);
+        }
+    }
+
     /*
     即将更新 装备强化模块
 	武器装备饰品将拥有稀有度，可内置每把武器的，

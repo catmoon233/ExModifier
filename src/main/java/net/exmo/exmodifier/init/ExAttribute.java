@@ -58,9 +58,19 @@ public class ExAttribute {
     public static final RegistryObject<Attribute> DEFENSE;
     public static final RegistryObject<Attribute> DIRECT_PROTECTION;
     public static final RegistryObject<Attribute> MAGIC_PROTECTION;
-
+    public static final RegistryObject<Attribute> ELEMENT_CONVERSION_COEFFICIENT;
+    public static final RegistryObject<Attribute> ELEMENT_RESISTANCE_COEFFICIENT;
+    public static final RegistryObject<Attribute> ALL_ATTRIBUTE_BOOST;
 
     static {
+        ALL_ATTRIBUTE_BOOST = registerAttribute("all_attribute_boost", 1, 0, 100000000);
+
+        //元素抗性系数
+        ELEMENT_RESISTANCE_COEFFICIENT = registerAttribute("element_resistance_coefficient", 1.2, 0, 100000000);
+
+        //元素转化系数
+        ELEMENT_CONVERSION_COEFFICIENT = registerAttribute("element_conversion_coefficient", 0.8, 0, 100000000);
+
         // 烟花伤害
         FIREWORK_DAMAGE = registerAttribute("firework_damage", 1, 0, 100000000);
 
@@ -132,6 +142,9 @@ public class ExAttribute {
             event.add(e, DEFENSE.get());
             event.add(e, DIRECT_PROTECTION.get());
             event.add(e, MAGIC_PROTECTION.get());
+            event.add(e, ELEMENT_CONVERSION_COEFFICIENT.get());
+            event.add(e, ELEMENT_RESISTANCE_COEFFICIENT.get());
+            event.add(e, ALL_ATTRIBUTE_BOOST.get());
             if (e.equals(EntityType.PLAYER)) {
                 event.add(e, MAX_DODGE.get());
                 event.add(e, FIREWORK_DAMAGE.get());
@@ -208,6 +221,7 @@ public class ExAttribute {
 
         @SubscribeEvent
         public static void DamageModifier(LivingHurtEvent event) {
+            if (event.getSource().is(DamageTypes.GENERIC_KILL))return;
             LivingEntity entity = event.getEntity();
             float FinallyDanage = event.getAmount();
             LivingEntity attacker = event.getSource().getEntity() instanceof LivingEntity ? (LivingEntity) event.getSource().getEntity() : null;
@@ -263,6 +277,7 @@ public class ExAttribute {
         public static void persistAttributes(PlayerEvent.Clone event) {
             Player oldP = event.getOriginal();
             Player newP = (Player) event.getEntity();
+            newP.getAttribute(ALL_ATTRIBUTE_BOOST.get()).setBaseValue(oldP.getAttribute(ALL_ATTRIBUTE_BOOST.get()).getBaseValue());
             newP.getAttribute(DODGE.get()).setBaseValue(oldP.getAttribute(DODGE.get()).getBaseValue());
             newP.getAttribute(BEHIND_DAMAGE.get()).setBaseValue(oldP.getAttribute(BEHIND_DAMAGE.get()).getBaseValue());
             newP.getAttribute(PERCENT_HEAL.get()).setBaseValue(oldP.getAttribute(PERCENT_HEAL.get()).getBaseValue());
@@ -270,6 +285,10 @@ public class ExAttribute {
             newP.getAttribute(DEFENSE.get()).setBaseValue(oldP.getAttribute(DEFENSE.get()).getBaseValue());
             newP.getAttribute(DIRECT_PROTECTION.get()).setBaseValue(oldP.getAttribute(DIRECT_PROTECTION.get()).getBaseValue());
             newP.getAttribute(MAGIC_PROTECTION.get()).setBaseValue(oldP.getAttribute(DIRECT_PROTECTION.get()).getBaseValue());
+            newP.getAttribute(INJURY_FREE.get()).setBaseValue(oldP.getAttribute(INJURY_FREE.get()).getBaseValue());
+            newP.getAttribute(FIREWORK_DAMAGE.get()).setBaseValue(oldP.getAttribute(FIREWORK_DAMAGE.get()).getBaseValue());
+            newP.getAttribute(ELEMENT_CONVERSION_COEFFICIENT.get()).setBaseValue(oldP.getAttribute(ELEMENT_RESISTANCE_COEFFICIENT.get()).getBaseValue());
+            newP.getAttribute(ELEMENT_RESISTANCE_COEFFICIENT.get()).setBaseValue(oldP.getAttribute(ELEMENT_RESISTANCE_COEFFICIENT.get()).getBaseValue());
         }
     }
 }

@@ -65,6 +65,9 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue ENTRY_SHOW_UNDER_LEVEL = BUILDER
             .comment("Enable ENTRY_SHOW_UNDER_LEVEL(need open ENTRY_FOLD)")
             .define("ENTRY_SHOW_UNDER_LEVEL", true);
+    public static final ForgeConfigSpec.BooleanValue ELEMENT_DEBUG = BUILDER
+            .comment("Enable ELEMENT_DEBUG")
+            .define("ELEMENT_DEBUG", false);
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // 配置值缓存
@@ -83,6 +86,7 @@ public class Config {
     public static boolean entryFold;
     public static boolean entryUnderLine;
     public static boolean entryShowUnderLevel;
+    public static boolean element_debug;
 
 
 
@@ -98,6 +102,7 @@ public class Config {
         FirstAddSlots = FIRST_ADD_SLOTS.get();
         Statistics = STATISTICS.get();
         RefreshReplaceOld = REFRESH_REPLACE_OLD.get();
+        element_debug = ELEMENT_DEBUG.get();
         entryColor = ENTRY_COLOR.get();
         ExMoTooltipRenderInRightValue = ExMoTooltipRenderInRight.get();
         ADMNUIN = ALWAYS_DISPLAY_MODIFIER_NAME_UNDER_ITEM_NAME.get();

@@ -6,7 +6,6 @@ import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.*;
 
-import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.events.ExOnTableRefreshEntriesEvent;
 import net.exmo.exmodifier.events.ExRefreshEvent;
@@ -14,7 +13,6 @@ import net.exmo.exmodifier.network.PlayerRefreshScreenOverMessageMessage;
 import net.exmo.exmodifier.util.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -23,16 +21,15 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
-import java.util.logging.Level;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 
@@ -229,7 +226,8 @@ public class ModifierEntryHelper extends ExHelper {
     }
 
 
-    public static Map<String,Double> item_old_number_cache = new HashMap<>();
+    public static Map<String, Double> item_old_number_cache = new HashMap<>();
+
     public ModifierEntryHelper copyOtherHelper(ModifierEntryHelper other) {
         if (!other.ValidModifierEntry()) return this;
 
@@ -237,7 +235,7 @@ public class ModifierEntryHelper extends ExHelper {
                 modifierEntry -> {
                     modifierEntry.attriGether.forEach(
                             attriGether -> {
-                                item_old_number_cache.put(attriGether.modifier.getName(), ItemAttrUtil.getAmountFromAttributeName(other.itemStack,attriGether.attribute, attriGether.modifier.getName()));
+                                item_old_number_cache.put(attriGether.modifier.getName(), ItemAttrUtil.getAmountFromAttributeName(other.itemStack, attriGether.attribute, attriGether.modifier.getName()));
                             }
                     );
                 }
@@ -247,7 +245,7 @@ public class ModifierEntryHelper extends ExHelper {
             addModifierEntry(modifierEntry.lock(), true, false, modifierEntry);
         }
         removeAllEntry(true);
-        for (ModifierInstant modifierEntry : getModifierEntries()){
+        for (ModifierInstant modifierEntry : getModifierEntries()) {
             modifierEntry.unlock();
         }
         item_old_number_cache.clear();
@@ -256,12 +254,12 @@ public class ModifierEntryHelper extends ExHelper {
 
     public ModifierEntryHelper removeAllEntry(boolean removeAttribute, List<TagKey<ModifierEntry>> onlyTags) {
         for (ModifierInstant modifierInstant : getModifierEntries()) {
-            if (!modifierInstant.isLock() &&( onlyTags.isEmpty() || onlyTags.stream().anyMatch(tag -> modifierInstant.getModifierEntry().tags.contains(tag)))) {
+            if (!modifierInstant.isLock() && (onlyTags.isEmpty() || onlyTags.stream().anyMatch(tag -> modifierInstant.getModifierEntry().tags.contains(tag)))) {
                 removeModifierEntry(modifierInstant, removeAttribute);
 
             }
         }
-    //    getMainNbt().put(MES, new ListTag());
+        //    getMainNbt().put(MES, new ListTag());
         return this;
     }
 
@@ -418,13 +416,22 @@ public class ModifierEntryHelper extends ExHelper {
 
     public boolean gatherModifierInstant(ModifierInstant modifierInstant) {
         List<ModifierInstant> modifierEntries = getModifierEntries();
-        if (modifierEntries.stream().anyMatch(x -> x.getModifierEntry().id.equals(modifierInstant.getModifierEntry().id))) {
-            int level = modifierInstant.getLevel() + getModifierEntryLevel(modifierInstant.getModifierEntry().id);
-            removeModifierEntryUnLock(modifierInstant, true);
-            addModifierEntry(new ModifierInstant(modifierInstant.getModifierEntry(), level).setSlot(modifierInstant.getSlot().get()), true, false);
-            return true;
+        AtomicInteger level = new AtomicInteger(modifierInstant.getLevel());
+        List<ModifierInstant> toRemove = new ArrayList<>();
+        modifierEntries.forEach(x -> {
+            if (x.getModifierEntry().id.equals(modifierInstant.getModifierEntry().id)) {
+                level.set(modifierInstant.getLevel() + x.getLevel());
+                toRemove.add(x);
+            }
+        });
+
+        if (level.get() == modifierInstant.getLevel()) return false;
+        for (ModifierInstant re : toRemove){
+            removeModifierEntryUnLock(re, true);
         }
-        return false;
+
+        addModifierEntry(modifierInstant.setLevel(level.get()), true, false);
+        return level.get() != modifierInstant.getLevel();
     }
 
     public ListTag getModifierEntriesNbt() {
@@ -476,7 +483,7 @@ public class ModifierEntryHelper extends ExHelper {
         if (gather) {
             if (gatherModifierInstant(modifierInstant)) return this;
         }
-        ;
+
         CompoundTag tag1 = new CompoundTag();
         tag1.putString(MEID, modifierInstant.getModifierEntry().id);
         if (modifierInstant.isItemQualityLock()) tag1.putBoolean("ItemQualityLock", true);
@@ -490,8 +497,8 @@ public class ModifierEntryHelper extends ExHelper {
             List<ModifierAttriGether> addTo = selectModifierAttributes(modifierInstant.getModifierEntry());
 
             if (CuriosUtil.isCuriosItem2(this.itemStack))
-                applyModifiersCurios(itemStack, addTo, CuriosUtil.getSlotsFromItemstack(itemStack),oldInstant);
-            else applyModifiers(itemStack, addTo, getEquipmentSlot(itemStack), modifierInstant,oldInstant);
+                applyModifiersCurios(itemStack, addTo, CuriosUtil.getSlotsFromItemstack(itemStack), oldInstant);
+            else applyModifiers(itemStack, addTo, getEquipmentSlot(itemStack), modifierInstant, oldInstant);
         }
         return this;
     }
