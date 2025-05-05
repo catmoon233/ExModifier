@@ -3,8 +3,8 @@ package net.exmo.exmodifier.content.modifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.util.AttrGether;
-import net.exmo.exmodifier.util.AttriGether;
+import net.exmo.exmodifier.util.gether.AttriGether;
+import net.exmo.exmodifier.util.ExAttributeModifier;
 import net.exmo.exmodifier.util.ExConfigHandle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -17,11 +17,9 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEquipmentSlot;
 
@@ -38,9 +36,9 @@ public class ModifierAttriGether extends AttriGether {
     public List<String> OnlyItems = new java.util.ArrayList<>();
     public List<String> OnlySlots = new java.util.ArrayList<>();
 
-    public AttrGether toAttriGether() {
-        return new AttrGether(this.attribute, this.modifier);
-    }
+//    public AttrGether toAttriGether() {
+//        return new AttrGether(this.attribute, this.modifier);
+//    }
 
     public ModifierAttriGether setExpression(String expression) {
         this.Expression = expression;
@@ -154,17 +152,14 @@ public class ModifierAttriGether extends AttriGether {
     }
 
 
-    public ModifierAttriGether(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
+    public ModifierAttriGether(Attribute attribute, ExAttributeModifier modifier, EquipmentSlot slot) {
         super(attribute, modifier, slot);
     }
 
-    public ModifierAttriGether(Attribute attribute, AttributeModifier modifier) {
+    public ModifierAttriGether(Attribute attribute, ExAttributeModifier modifier) {
         super(attribute, modifier);
     }
 
-    public boolean isHasUUID() {
-        return !this.modifier.getId().toString().isEmpty();
-    }
 
     public static List<ModifierAttriGether> GenerateModifierAttriGethers(String autokey, JsonObject obj) {
         int index = 0;
@@ -208,12 +203,12 @@ public class ModifierAttriGether extends AttriGether {
                 }
             }
         }
-        UUID uuid = (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) ? UUID.fromString(attrGetherObj.get("uuid").getAsString()) : UUID.nameUUIDFromBytes(modifierName.getBytes());
-        if (attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean())
-            uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
-        //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
-        Exmodifier.LOGGER.debug("uuid " + uuid);
-        AttributeModifier modifier = new AttributeModifier(uuid, modifierName, attrValue, operation);
+//        UUID uuid = (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) ? UUID.fromString(attrGetherObj.get("uuid").getAsString()) : UUID.nameUUIDFromBytes(modifierName.getBytes());
+//        if (attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean())
+//            uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
+//        //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
+//        Exmodifier.LOGGER.debug("uuid " + uuid);
+        ExAttributeModifier modifier = new ExAttributeModifier( modifierName, attrValue, operation);
         ModifierAttriGether attrGether = new ModifierAttriGether(attribute, modifier, slot);
         attrGether.IsAutoEquipmentSlot = attrGetherObj.has("isAutoEquipmentSlot") && attrGetherObj.get("isAutoEquipmentSlot").getAsBoolean();
         attrGether.hasUUID = attrGetherObj.has("uuid");

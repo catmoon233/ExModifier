@@ -66,10 +66,10 @@ public class ExAttribute {
         ALL_ATTRIBUTE_BOOST = registerAttribute("all_attribute_boost", 1, 0, 100000000);
 
         //元素抗性系数
-        ELEMENT_RESISTANCE_COEFFICIENT = registerAttribute("element_resistance_coefficient", 1.2, 0, 100000000);
+        ELEMENT_RESISTANCE_COEFFICIENT = registerAttribute("element_resistance_coefficient", 6, 0, 100000000);
 
         //元素转化系数
-        ELEMENT_CONVERSION_COEFFICIENT = registerAttribute("element_conversion_coefficient", 0.8, 0, 100000000);
+        ELEMENT_CONVERSION_COEFFICIENT = registerAttribute("element_conversion_coefficient", 1, 0, 100000000);
 
         // 烟花伤害
         FIREWORK_DAMAGE = registerAttribute("firework_damage", 1, 0, 100000000);

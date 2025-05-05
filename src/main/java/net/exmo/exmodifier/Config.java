@@ -68,6 +68,21 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue ELEMENT_DEBUG = BUILDER
             .comment("Enable ELEMENT_DEBUG")
             .define("ELEMENT_DEBUG", false);
+    public static final ForgeConfigSpec.IntValue MAX_REFINE = BUILDER
+            .comment("refine max count")
+            .defineInRange("MAX_REFINE", 5,0,Integer.MAX_VALUE);
+    public static final ForgeConfigSpec.DoubleValue REFINE_EFFECT = BUILDER
+            .comment("refine max count")
+            .defineInRange("REFINE_EFFECT", 0.1,0,Double.MAX_VALUE);
+    public static final ForgeConfigSpec.BooleanValue REFINE_SYSTEM = BUILDER
+            .comment("open refine system")
+            .define("REFINE_SYSTEM", false);
+    public static final ForgeConfigSpec.BooleanValue REFINE_ALAWAYS_DISPLAY_TOOLTIP = BUILDER
+            .comment("alaways display star tooltip")
+            .define("REFINE_ALAWAYS_DISPLAY_TOOLTIP", false);
+    public static final ForgeConfigSpec.BooleanValue REFINE_NEED_SAME_STAR = BUILDER
+            .comment("refine need same star")
+            .define("REFINE_NEED_SAME_STAR", false);
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // 配置值缓存
@@ -87,6 +102,11 @@ public class Config {
     public static boolean entryUnderLine;
     public static boolean entryShowUnderLevel;
     public static boolean element_debug;
+    public static int max_refine;
+    public static double refine_effect;
+    public static boolean refine_system;
+    public static boolean alaways_display_modifier_name_under_item_name;
+    public static boolean refine_need_same_star;
 
 
 
@@ -109,5 +129,10 @@ public class Config {
         entryFold = ENTRY_FOLD.get();
         entryUnderLine = ENTRY_UNDER_LINE.get();
         entryShowUnderLevel = ENTRY_SHOW_UNDER_LEVEL.get();
+        max_refine = MAX_REFINE.get() ;
+        refine_effect = REFINE_EFFECT.get();
+        alaways_display_modifier_name_under_item_name = REFINE_ALAWAYS_DISPLAY_TOOLTIP.get();
+        refine_system = REFINE_SYSTEM.get();
+        refine_need_same_star = REFINE_NEED_SAME_STAR.get();
     }
 }

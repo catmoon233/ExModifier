@@ -1,6 +1,8 @@
 
-package net.exmo.exmodifier.util;
+package net.exmo.exmodifier.util.gether;
 
+import net.exmo.exmodifier.util.ExUtil;
+import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -11,6 +13,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
+import java.util.UUID;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
@@ -18,6 +21,24 @@ import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 public class AttrGether {
 	public Attribute attribute;
 	public AttributeModifier attributeModifier;
+	public static final ExSerialize<AttrGether> exSerialize = ExSerialize.create(()->new AttrGether(null,new AttributeModifier(UUID.randomUUID(),"",0, AttributeModifier.Operation.ADDITION)))
+			.addStringField("attribute",(k,v)->{
+				k.attribute = ExUtil.getAttribute(v);
+			})
+			.addStringField("modifier_name",(k,v)->{
+				k.attributeModifier = new AttributeModifier(k.attributeModifier.getId(),v,0, AttributeModifier.Operation.ADDITION);
+			})
+			.addFloatField("modifier_amount",(k,v)->{
+				k.attributeModifier = new AttributeModifier(k.attributeModifier.getId(),k.attributeModifier.getName(),v.doubleValue(), k.attributeModifier.getOperation());
+			})
+			.addStringField("modifier_operation",(k,v)->{
+				k.attributeModifier = new AttributeModifier(k.attributeModifier.getId(),k.attributeModifier.getName(),0, AttributeModifier.Operation.valueOf(v));
+			})
+			.addStringField("modifier_uuid",(k,v)->{
+				k.attributeModifier = new AttributeModifier(UUID.fromString(v),k.attributeModifier.getName(),k.attributeModifier.getAmount(), k.attributeModifier.getOperation());
+			})
+			;
+
 	public AttrGether(Attribute attribute, AttributeModifier attributeModifier) {
 		this.attribute = attribute;
 		this.attributeModifier = attributeModifier;
@@ -72,10 +93,15 @@ public class AttrGether {
 		return Component.translatable("exmodifier.tooltip.error3");
 	}
 
-	private AttributeModifier getModifier() {
+	public AttributeModifier getModifier() {
 		return attributeModifier;
 	}
-	private Attribute getAttribute() {
+	public Attribute getAttribute() {
 		return attribute;
+	}
+
+	public AttrGether setModifierUUID(UUID uuid) {
+		this.attributeModifier = new AttributeModifier(uuid, attributeModifier.getName(), attributeModifier.getAmount(), attributeModifier.getOperation());
+		return this;
 	}
 }

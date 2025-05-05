@@ -1,5 +1,6 @@
-package net.exmo.exmodifier.util;
+package net.exmo.exmodifier.util.gether;
 
+import net.exmo.exmodifier.util.ExAttributeModifier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -9,11 +10,9 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
-import java.util.UUID;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
@@ -22,19 +21,16 @@ public class AttriGether {
     public EquipmentSlot slot = null;
     public boolean IsAutoEquipmentSlot = false;
     public Attribute attribute;
-    public AttributeModifier modifier;
-    public AttriGether(Attribute attribute, AttributeModifier modifier,EquipmentSlot slot) {
-
+    public ExAttributeModifier modifier;
+    public AttriGether(Attribute attribute, ExAttributeModifier modifier,EquipmentSlot slot) {
         this.attribute = attribute;
         this.modifier = modifier;
         this.slot =     slot;
-        ItemStack itemStack;
-
     }
-    public AttriGether setModifierUUID(UUID uuid){
-        this.modifier = new AttributeModifier(uuid, modifier.getName(), modifier.getAmount(), modifier.getOperation());
-        return this;
-    }
+//    public AttriGether setModifierUUID(UUID uuid){
+//        this.modifier = new ExAttributeModifier(uuid, modifier.getName(), modifier.getAmount(), modifier.getOperation());
+//        return this;
+//    }
     public CompoundTag toNBT1() {
         CompoundTag tag = new CompoundTag();
         String sslot = "";
@@ -45,7 +41,7 @@ public class AttriGether {
         if (key!=null) {
             tag.putString("attribute", key.toString());
         }
-        if (modifier.getId()!=null)tag.putString("modifierId", modifier.getId().toString());
+        //if (modifier.getId()!=null)tag.putString("modifierId", modifier.getId().toString());
         tag.putString("modifierName", modifier.getName());
         tag.putDouble("modifierAmount", modifier.getAmount());
         if (modifier.getOperation()!=null)tag.putInt("modifierOperation", modifier.getOperation().toValue());
@@ -63,26 +59,26 @@ public class AttriGether {
         String attributeId = tag.getString("attribute");
         String modifierId1 = tag.getString("modifierId");
         attriGether.attribute = ForgeRegistries.ATTRIBUTES.getValue(ResourceLocation.tryParse(attributeId));
-        UUID modifierId=null;
-        if (!modifierId1.isEmpty()){
-            modifierId = UUID.fromString(modifierId1);
-        }else{
-            modifierId = UUID.randomUUID();
-        }
+//        UUID modifierId=null;
+//        if (!modifierId1.isEmpty()){
+//            modifierId = UUID.fromString(modifierId1);
+//        }else{
+//            modifierId = UUID.randomUUID();
+//        }
         String modifierName = tag.getString("modifierName");
         double modifierAmount = tag.getDouble("modifierAmount");
         net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation modifierOperation = net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.fromValue(tag.getInt("modifierOperation"));
 
-        attriGether.modifier = new AttributeModifier(modifierId, modifierName, modifierAmount, modifierOperation);
+        attriGether.modifier = new ExAttributeModifier( modifierName, modifierAmount, modifierOperation);
 
         return attriGether;
     }
 
-    public AttriGether(Attribute attribute, AttributeModifier modifier) {
+    public AttriGether(Attribute attribute, ExAttributeModifier modifier) {
         this.attribute = attribute;
         this.modifier = modifier;
     }
-    public AttriGether(Attribute attribute, AttributeModifier modifier,boolean isAutoEquipmentSlot) {
+    public AttriGether(Attribute attribute, ExAttributeModifier modifier,boolean isAutoEquipmentSlot) {
         this.attribute = attribute;
         this.modifier = modifier;
         this.IsAutoEquipmentSlot = isAutoEquipmentSlot;
@@ -92,13 +88,13 @@ public class AttriGether {
         return attribute;
     }
 
-    public AttributeModifier getModifier() {
+    public ExAttributeModifier getModifier() {
         return modifier;
     }
     public MutableComponent generateTooltipBase()
     {
 
-        AttributeModifier attributemodifier = this.getModifier();
+        ExAttributeModifier attributemodifier = this.getModifier();
         Attribute attribute = this.getAttribute();
         if (attribute == null)return Component.translatable("exmodifier.tooltip.error1");
         if (attributemodifier ==null)return Component.translatable("exmodifier.tooltip.error2");

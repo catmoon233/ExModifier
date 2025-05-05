@@ -17,28 +17,30 @@ import java.util.*;
 
 @Mod.EventBusSubscriber
 public class ExElementEntityData {
-    public static final Map<UUID,ExElementInstant> ELEMENT_ENTITY_DATA = new java.util.HashMap<>();
+    public static final Map<UUID, ExElementInstant> ELEMENT_ENTITY_DATA = new java.util.HashMap<>();
 
     public static ExElementInstant getOrAskElement(UUID uuid) {
-        ExElementInstant exElementInstant =null;
+        ExElementInstant exElementInstant = null;
         if (ELEMENT_ENTITY_DATA.containsKey(uuid)) {
             exElementInstant = ELEMENT_ENTITY_DATA.get(uuid);
         }
-        if (exElementInstant==null) {
+        if (exElementInstant == null) {
             Exmodifier.PACKET_HANDLER.sendToServer(new AskSyncEntityElementMessage(uuid));
         }
         return exElementInstant;
     }
+
     @SubscribeEvent
-    public static void onAdd(EntityJoinLevelEvent event){
-        if (event.getEntity() instanceof LivingEntity livingEntity){
-            if (livingEntity instanceof Player)return;
-            if (livingEntity.level() instanceof ServerLevel serverLevel){
-            Map<ResourceLocation, ExElement> exElements = ExElementHandle.exElements;
+    public static void onAdd(EntityJoinLevelEvent event) {
+        if (event.getEntity() instanceof LivingEntity livingEntity) {
+            if (livingEntity instanceof Player) return;
+            if (livingEntity.level() instanceof ServerLevel serverLevel) {
+                Map<ResourceLocation, ExElement> exElements =new HashMap<>(ExElementHandle.exElements);
+                exElements.remove(new ResourceLocation("exmodifier:normal"));
                 List<ResourceLocation> list = exElements.keySet().stream().toList();
-                if (list.isEmpty())return;
+                if (list.isEmpty()) return;
                 List<ExElementInstant> exElementInstant;
-                if (ExElementHandle.elementDefaultMap2.containsKey(livingEntity.getType())){
+                if (ExElementHandle.elementDefaultMap2.containsKey(livingEntity.getType())) {
                     exElementInstant = ExElementHandle.elementDefaultMap2.get(livingEntity.getType());
                 } else {
                     exElementInstant = new ArrayList<>();
@@ -50,14 +52,14 @@ public class ExElementEntityData {
                 for (ExElementInstant exElementInstant1 : exElementInstant) {
                     ExElementEntityHelper.of(livingEntity).addExElement(exElementInstant1, true);
                 }
-            serverLevel.getPlayers(
-                    player -> {
-                        for (ExElementInstant exElementInstant1 : exElementInstant) {
-                            Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncEntityElementMessage(livingEntity.getUUID(), exElementInstant1));
+                serverLevel.getPlayers(
+                        player -> {
+                            for (ExElementInstant exElementInstant1 : exElementInstant) {
+                                Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncEntityElementMessage(livingEntity.getUUID(), exElementInstant1));
+                            }
+                            return true;
                         }
-                    return true;
-                    }
-            );
+                );
             }
         }
     }

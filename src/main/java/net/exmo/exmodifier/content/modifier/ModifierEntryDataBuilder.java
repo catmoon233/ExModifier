@@ -267,8 +267,8 @@ public class ModifierEntryDataBuilder {
                 if (attriGether.isRandom) attriGetherJson.addProperty("isRandom", attriGether.isRandom);
 
                 attriGetherJson.addProperty("modifierName", attriGether.getModifier().getName());
-                if (attriGether.getModifier().getId() != null)
-                    attriGetherJson.addProperty("uuid", attriGether.getModifier().getId().toString());
+//                if (attriGether.getModifier().getId() != null)
+//                    attriGetherJson.addProperty("uuid", attriGether.getModifier().getId().toString());
 
                 attriGetherJson.addProperty("attribute", attriGether.attribute.getDescriptionId());
 

@@ -4,8 +4,7 @@ import net.exmo.exmodifier.content.modifier.menu.RefreshMenuScreenPlus;
 import net.exmo.exmodifier.util.ExClientUtils;
 import net.minecraft.world.entity.player.Player;
 
-import static net.exmo.exmodifier.content.modifier.menu.RefreshMenuScreenPlus.filterItems;
-import static net.exmo.exmodifier.content.modifier.menu.RefreshMenuScreenPlus.filterItems2;
+
 
 public class MessageClientFunction {
     public static void ApplyChangeRefreshMenuTextListMessage(int a,int b){

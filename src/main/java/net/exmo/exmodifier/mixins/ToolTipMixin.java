@@ -34,10 +34,10 @@ public abstract class ToolTipMixin {
         ItemStack stack = (ItemStack) (Object) this;
         if (Config.entryFold && !Screen.hasShiftDown())return multimap;
         if (stack.getTag()==null)return multimap;
-        List<ModifierEntry> entrys = new ModifierEntryHelper(stack).getModifierEntriesB();
+        List<ModifierEntry> entries = new ModifierEntryHelper(stack).getModifierEntriesB();
         List<ModifierAttriGether> attriGethers = new ArrayList<>();
 
-        for (ModifierEntry entry : entrys) {
+        for (ModifierEntry entry : entries) {
             if (entry != null) {
                 attriGethers.addAll(entry.attriGether);
             }
@@ -53,7 +53,7 @@ public abstract class ToolTipMixin {
         // 遍历 multimap 并记录需要删除的 AttributeModifier
         multimap.forEach((attribute, attributeModifier) -> {
          //   Exmodifier.LOGGER.debug("Attribute: " + attribute + ", Modifier: " + attributeModifier + "Id " + attributeModifier.getId());
-            if (attriGethers.stream().anyMatch(modifierAttriGether -> modifierAttriGether.getModifier().getName().equals(attributeModifier.getName()))) {
+            if (attriGethers.stream().anyMatch(modifierAttriGether -> modifierAttriGether.getModifier().getName().equals(attributeModifier.getName())) || attributeModifier.getName().equals("exmodifier_refine")) {
                 toRemove.add(attributeModifier);
             }
         });

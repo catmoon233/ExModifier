@@ -2,8 +2,8 @@ package net.exmo.exmodifier.events;
 
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.content.modifier.MoConfig;
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.util.gether.AttriGetherNormal;
 import net.minecraftforge.eventbus.api.Event;
 
 import java.util.List;
@@ -11,12 +11,12 @@ import java.util.List;
 public class ExAddSuitAttrigethersEvent extends Event {
 
 
-    public   List<ModifierAttriGether> modifierAttriGathers;
+    public   List<AttriGetherNormal> modifierAttriGathers;
     public   MoConfig moconfig;
     public   ExSuit exSuit;
     public   JsonObject attrGethers;
 
-    public ExAddSuitAttrigethersEvent(MoConfig moconfig, ExSuit exSuit, JsonObject attrGethers, List<ModifierAttriGether> modifierAttriGathers){
+    public ExAddSuitAttrigethersEvent(MoConfig moconfig, ExSuit exSuit, JsonObject attrGethers, List<AttriGetherNormal> modifierAttriGathers){
         this.moconfig = moconfig;
         this.exSuit = exSuit;
         this.attrGethers = attrGethers;
@@ -27,11 +27,11 @@ public class ExAddSuitAttrigethersEvent extends Event {
     }
 
 
-    public List<ModifierAttriGether> getModifierAttriGathers() {
+    public List<AttriGetherNormal> getModifierAttriGathers() {
         return modifierAttriGathers;
     }
 
-    public void setModifierAttriGathers(List<ModifierAttriGether> modifierAttriGathers) {
+    public void setModifierAttriGathers(List<AttriGetherNormal> modifierAttriGathers) {
         this.modifierAttriGathers = modifierAttriGathers;
     }
 

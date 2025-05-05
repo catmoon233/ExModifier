@@ -1,12 +1,11 @@
 package net.exmo.exmodifier.content.event;
 
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.suit.ExSuit;
-import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.ExAfterArmorChange;
 import net.exmo.exmodifier.events.ExSuitApplyOnChangeEvent;
 
 import net.exmo.exmodifier.network.ExModifiervaV;
+import net.exmo.exmodifier.util.gether.AttriGetherNormal;
 import net.exmo.exmodifier.util.EntityAttrUtil;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -57,16 +56,16 @@ public class AppointConditionDamage {
             }
         }
         exSuit.attriGether.values().forEach(ea ->{
-            for (ModifierAttriGether e : ea.stream().filter(e -> !e.getOnlyItems().isEmpty()).toList()){
+            for (AttriGetherNormal e : ea.stream().filter(e -> !e.getOnlyItems().isEmpty()).toList()){
                 EntityAttrUtil.entityAddAttrTF(e.attribute, e.getModifier(), player, EntityAttrUtil.WearOrTake.TAKE);
             }
         });
         ExModifiervaV.PlayerVariables vars = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
         if (vars.SuitsNum.get(exSuit.id)!=null){
             for (int i = 1; i <=vars.SuitsNum.get(exSuit.id) ; i++) {
-                List<ModifierAttriGether> attriGethers = exSuit.attriGether.get(i);
+                List<AttriGetherNormal> attriGethers = exSuit.attriGether.get(i);
                 if (attriGethers != null) {
-                    for (ModifierAttriGether e : attriGethers.stream().filter(e -> !e.getOnlyItems().isEmpty()).toList()) {
+                    for (AttriGetherNormal e : attriGethers.stream().filter(e -> !e.getOnlyItems().isEmpty()).toList()) {
                         List<String> onlyitems = e.getOnlyItems();
                         List<String> onlyslots = e.getOnlySlots();
                     //    Exmodifier.LOGGER.debug(" 1 " + onlyitems);

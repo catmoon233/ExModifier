@@ -185,6 +185,7 @@ public class ItemQualityHandle {
         try {
             JsonObject jsonObject = entry.getValue().getAsJsonObject();
             int rarity = jsonObject.has("rarity") ? jsonObject.get("rarity").getAsInt() : 0;
+            int maxRefine = jsonObject.has("maxRefine") ? jsonObject.get("maxRefine").getAsInt() : 0;
             float growValue = jsonObject.has("growValue") ? jsonObject.get("growValue").getAsFloat() : 0F;
             float addRefreshValue = jsonObject.has("addRefreshValue") ? jsonObject.get("addRefreshValue").getAsFloat() : 0F;
             String id = entry.getKey();
@@ -212,8 +213,10 @@ public class ItemQualityHandle {
             itemQuality.entries = modifierEntries;
             itemQuality.growValue = growValue;
             itemQuality.addRefreshValue = addRefreshValue;
+            itemQuality.Max_Refine = maxRefine;
             itemQuality.setShowInHeadTooltip(jsonObject.has("showInHeadTooltip") && jsonObject.get("showInHeadTooltip").getAsBoolean());
             itemQuality.ShowModifierComponent =(!jsonObject.has("ShowModifierComponent") || jsonObject.get("ShowModifierComponent").getAsBoolean());
+            itemQuality.refineNeedSameStar =(!jsonObject.has("refineNeedSameStar") || jsonObject.get("refineNeedSameStar").getAsBoolean());
             itemQuality.cantRemoveEntry = jsonObject.has("cantRemoveEntry") && jsonObject.get("cantRemoveEntry").getAsBoolean();
             itemQuality.LocalDescription = LocalDescription;
             itemQuality.autoRefresh = jsonObject.has("autoRefresh") && jsonObject.get("autoRefresh").getAsBoolean();

@@ -19,8 +19,10 @@ public class ItemQuality {
 
     public String Id;
     public float weight ;
+    public int Max_Refine;
     public float growValue ;
     public float addRefreshValue ;
+    public boolean refineNeedSameStar;
     private boolean isShowInHeadTooltip = false;
     public boolean ShowModifierComponent = true;
     public List<String> OnlyItemIds = new ArrayList<>();

@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.helper.register;
 
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
+import net.exmo.exmodifier.util.ExAttributeModifier;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -14,7 +15,7 @@ public class ModifierAttriGetherCreateHelper {
     private ModifierAttriGether modifierAttriGether;
     private String AttributeName;
     private Attribute attribute;
-    private UUID uuid;
+    //private UUID uuid;
     private String name="";
     private double amount;
     private AttributeModifier.Operation operation;
@@ -93,9 +94,9 @@ public class ModifierAttriGetherCreateHelper {
 
     public ModifierCreateHelper finish_add(){
         if (name.isEmpty())name = modifierCreateHelper.modifierEntry.id + index;
-        if (uuid==null)uuid = UUID.nameUUIDFromBytes(name.getBytes());
+//        if (uuid==null)uuid = UUID.nameUUIDFromBytes(name.getBytes());
         if (attribute==null)if(!AttributeName.isEmpty())attribute= ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(AttributeName));
-        AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
+        ExAttributeModifier modifier = new ExAttributeModifier( name, amount, operation);
         if (modifierAttriGether==null)modifierAttriGether = new ModifierAttriGether(attribute,modifier);
         else {
             modifierAttriGether.attribute = attribute;
@@ -111,9 +112,9 @@ public class ModifierAttriGetherCreateHelper {
     }
     public ModifierAttriGether finish(){
         if (name.isEmpty())name = modifierCreateHelper.modifierEntry.id + index;
-        if (uuid==null)uuid = UUID.nameUUIDFromBytes(name.getBytes());
+//        if (uuid==null)uuid = UUID.nameUUIDFromBytes(name.getBytes());
         if (attribute==null)if(!AttributeName.isEmpty())attribute= ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(AttributeName));
-        AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
+        ExAttributeModifier modifier = new ExAttributeModifier( name, amount, operation);
         if (modifierAttriGether==null)modifierAttriGether = new ModifierAttriGether(attribute,modifier);
         if (!slot.equals("auto")){
             modifierAttriGether.slot = EquipmentSlot.valueOf(slot);

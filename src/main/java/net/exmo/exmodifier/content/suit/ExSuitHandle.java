@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.MoConfig;
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.type.ExType;
@@ -14,6 +13,7 @@ import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.events.ExAddSuitAttrigetherEvent;
 import net.exmo.exmodifier.events.ExAddSuitAttrigethersEvent;
 import net.exmo.exmodifier.network.ExModifiervaV;
+import net.exmo.exmodifier.util.gether.AttriGetherNormal;
 import net.exmo.exmodifier.util.ExConfigHandle;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -251,8 +251,8 @@ public class ExSuitHandle {
         return null;
     }
 
-    private static List<ModifierAttriGether> processAttrGethers(MoConfig moconfig, ExSuit exSuit, JsonObject attrGethers,int level) {
-        List<ModifierAttriGether> attrGethersToReturn = new ArrayList<>();
+    private static List<AttriGetherNormal> processAttrGethers(MoConfig moconfig, ExSuit exSuit, JsonObject attrGethers, int level) {
+        List<AttriGetherNormal> attrGethersToReturn = new ArrayList<>();
         int index = 0;
         for (Map.Entry<String, JsonElement> attrGetherEntry : attrGethers.entrySet()) {
             try {
@@ -266,7 +266,7 @@ public class ExSuitHandle {
         MinecraftForge.EVENT_BUS.post(event);
         return event.getModifierAttriGathers();
     }
-    private static ModifierAttriGether processAttrGether(MoConfig moconfig, ExSuit exSuit, Map.Entry<String, JsonElement> attrGetherEntry,int index,int level) {
+    private static AttriGetherNormal processAttrGether(MoConfig moconfig, ExSuit exSuit, Map.Entry<String, JsonElement> attrGetherEntry,int index,int level) {
         JsonObject attrGetherObj = attrGetherEntry.getValue().getAsJsonObject();
         Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attrGetherEntry.getKey()));
         double attrValue = attrGetherObj.get("value").getAsDouble();
@@ -297,19 +297,19 @@ public class ExSuitHandle {
         Exmodifier.LOGGER.debug("uuid "+uuid);
         AttributeModifier modifier = new AttributeModifier(uuid, modifierName, attrValue, operation);
 
-        ModifierAttriGether attrGether = new ModifierAttriGether(attribute, modifier);
+        AttriGetherNormal attrGether = new AttriGetherNormal(attribute, modifier);
         attrGether.hasUUID = attrGetherObj.has("uuid");
         if (attrGetherObj.has("OnlyItems")){
             for (JsonElement item : attrGetherObj.getAsJsonArray("OnlyItems")){
                 String asString = item.getAsString();
                 Exmodifier.LOGGER.debug("Adding Item: " + asString);
-                attrGether.OnlyItems.add(asString);
+                attrGether.getOnlyItems().add(asString);
 
             }
         }
         if (attrGetherObj.has("OnlySlots")){
             for (JsonElement item : attrGetherObj.getAsJsonArray("OnlySlots")){
-                attrGether.OnlySlots.add(item.getAsString());
+                attrGether.getOnlySlots().add(item.getAsString());
                 Exmodifier.LOGGER.debug("Adding Slot: " + item.getAsString());
             }
         }

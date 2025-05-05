@@ -1,0 +1,61 @@
+package net.exmo.exmodifier.network;
+
+import net.exmo.exmodifier.Config;
+import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
+import net.exmo.exmodifier.content.refine.RefineHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
+
+import java.util.function.Supplier;
+
+public record RefineItemMessage(int refreshItem, int toRefreshItem) {
+    public static void encode(RefineItemMessage msg, FriendlyByteBuf buffer) {
+        CompoundTag p130080 = new CompoundTag();
+        p130080.putInt("refreshItem", msg.refreshItem);
+        p130080.putInt("toRefreshItem", msg.toRefreshItem);
+        buffer.writeNbt(p130080);
+    }
+
+    public static RefineItemMessage decode(FriendlyByteBuf buffer) {
+        CompoundTag compoundTag = buffer.readNbt();
+        return new RefineItemMessage(compoundTag.getInt("refreshItem"),compoundTag.getInt("toRefreshItem"));
+    }
+
+    public static void handle(RefineItemMessage msg, Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            ServerPlayer player = ctx.get().getSender();
+            if (!Config.refine_system){
+                Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.close_refine_system")));
+                return;
+            }
+            ItemStack refineItem = player.getInventory().getItem(msg.refreshItem);
+            ItemStack toRefreshItem = player.getInventory().getItem(msg.toRefreshItem);
+            RefineHelper refineHelper = RefineHelper.of(toRefreshItem);
+            boolean b = refineHelper.canRefine(refineItem);
+            PlayerRefreshScreenOverMessageMessage message1;
+            if (b){
+                refineHelper.addRefine(true,1);
+                message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_success"));
+                refineItem.shrink(1);
+            }else {
+                message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_fail"));
+            }
+            Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), message1);
+            player.containerMenu.slotsChanged(null);
+            player.containerMenu.transferState(player.containerMenu);
+            player.inventoryMenu.sendAllDataToRemote();
+            player.containerMenu.broadcastChanges();
+            player.inventoryMenu.broadcastChanges();
+            ChangeRefreshMenuTextListMessage message = new ChangeRefreshMenuTextListMessage(msg.refreshItem, msg.toRefreshItem);
+            Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), message);
+
+        });
+        ctx.get().setPacketHandled(true);
+    }
+}

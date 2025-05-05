@@ -3,8 +3,8 @@ package net.exmo.exmodifier.events;
 import com.google.gson.JsonElement;
 
 import net.exmo.exmodifier.content.modifier.MoConfig;
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.util.gether.AttriGetherNormal;
 import net.minecraftforge.eventbus.api.Event;
 
 import java.util.Map;
@@ -14,8 +14,8 @@ public class ExAddSuitAttrigetherEvent extends Event {
     public ExSuit exSuit;
     public Map.Entry<String, JsonElement> attrGetherEntry;
     public int index;
-    public ModifierAttriGether attrGether;
-    public ExAddSuitAttrigetherEvent(MoConfig moconfig, ExSuit exSuit, Map.Entry<String, JsonElement> attrGetherEntry, int index, ModifierAttriGether attrGether){
+    public AttriGetherNormal attrGether;
+    public ExAddSuitAttrigetherEvent(MoConfig moconfig, ExSuit exSuit, Map.Entry<String, JsonElement> attrGetherEntry, int index, AttriGetherNormal attrGether){
         this.moconfig = moconfig;
         this.exSuit = exSuit;
         this.attrGetherEntry = attrGetherEntry;
@@ -55,11 +55,11 @@ public class ExAddSuitAttrigetherEvent extends Event {
         this.index = index;
     }
 
-    public ModifierAttriGether getAttrGether() {
+    public AttriGetherNormal getAttrGether() {
         return attrGether;
     }
 
-    public void setAttrGether(ModifierAttriGether attrGether) {
+    public void setAttrGether(AttriGetherNormal attrGether) {
         this.attrGether = attrGether;
     }
 }

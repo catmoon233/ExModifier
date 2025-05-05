@@ -1,5 +1,7 @@
 package net.exmo.exmodifier.util;
 
+import net.exmo.exmodifier.util.gether.AttrGether;
+import net.exmo.exmodifier.util.gether.AttrSimpleGether;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -38,16 +40,18 @@ CuriosUtil {
             this.slot = slot;
         }
     }
-    public static void addAttributeModifierAffix(ItemStack itemStack, AttrGether attriGether){
+    public static void addAttributeModifierAffix(ItemStack itemStack, AttrSimpleGether attriGether){
         CompoundTag tag = itemStack.getOrCreateTag();
         if (!tag.contains("ExCurioAttributeModifiers")) tag.put("ExCurioAttributeModifiers", new ListTag());
         ListTag modifiersList = tag.getList("ExCurioAttributeModifiers", 10);
         CompoundTag tag1 = new CompoundTag();
-        tag1.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attriGether.attribute).toString());
-        tag1.putString("Name", attriGether.attributeModifier.getName());
-        tag1.putString("UUID", attriGether.attributeModifier.getId().toString());
-        tag1.putDouble("Amount", attriGether.attributeModifier.getAmount());
-        tag1.putInt("Operation", attriGether.attributeModifier.getOperation().toValue());
+        String attributeID = ExUtil.getAttributeID(attriGether.attribute);
+        tag1.putString("AttributeName", attributeID);
+        String name = attriGether.exAttributeModifier.getName();
+        tag1.putString("Name", name);
+        tag1.putString("UUID", UUID.nameUUIDFromBytes((itemStack.toString() + attributeID + name).getBytes()).toString());
+        tag1.putDouble("Amount", attriGether.exAttributeModifier.getAmount());
+        tag1.putInt("Operation", attriGether.exAttributeModifier.getOperation().toValue());
         modifiersList.add(tag1);
     }
     public static void addSimpleAttributeModifierAffix(ItemStack itemStack, SimpleAttrGather attrGather,double amount){
@@ -78,7 +82,7 @@ CuriosUtil {
                 UUID uuid = UUID.nameUUIDFromBytes((itemStack.toString() + name + attributeName).getBytes());
                 if (string.length()>=36) uuid = UUID.fromString(string);
                 int operation= modifier.getInt("Operation");
-                attrGethers.add(new AttrGether(ForgeRegistries.ATTRIBUTES.getValue(ResourceLocation.tryParse(attributeName)), new AttributeModifier(uuid, name, amount, AttributeModifier.Operation.fromValue(operation))));
+                attrGethers.add(new AttrGether(ExUtil.getAttribute(attributeName), new AttributeModifier(uuid ,name, amount, AttributeModifier.Operation.fromValue(operation))));
 
             }
         }
@@ -100,17 +104,17 @@ CuriosUtil {
     public static boolean isCuriosItem2(ItemStack itemStack){
         return !getSlotsFromItemstack(itemStack).isEmpty();
     }
-    public static void addAttributeModifier(ItemStack itemStack, AttriGether attriGether, String slot){
-        CuriosUtil.addAttributeModifier(itemStack, ForgeRegistries.ATTRIBUTES.getKey(attriGether.attribute).toString(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation().toValue(), slot);
-    }
-    public static void addAttributeModifierApi(ItemStack itemStack, AttriGether attriGether, String slot){
-        if (attriGether.attribute!=null)
-        {
-            {
-                CuriosApi.addModifier(itemStack, attriGether.attribute,attriGether.modifier.getName(), attriGether.modifier.getId(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation(),slot);
-            }
-        }
-    }
+//    public static void addAttributeModifier(ItemStack itemStack, AttriGether attriGether, String slot){
+//        CuriosUtil.addAttributeModifier(itemStack, ForgeRegistries.ATTRIBUTES.getKey(attriGether.attribute).toString(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation().toValue(), slot);
+//    }
+//    public static void addAttributeModifierApi(ItemStack itemStack, AttriGether attriGether, String slot){
+//        if (attriGether.attribute!=null)
+//        {
+//            {
+//                CuriosApi.addModifier(itemStack, attriGether.attribute,attriGether.modifier.getName(), attriGether.modifier.getId(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation(),slot);
+//            }
+//        }
+//    }
     public static List<slotInfo> getCurioAttributeModifiers(ItemStack itemStack) {
         List<slotInfo> slotInfos = new ArrayList<>();
         if (itemStack != null && !itemStack.isEmpty()) {

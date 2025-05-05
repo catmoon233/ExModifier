@@ -31,7 +31,7 @@ public class ApothCompat {
         List<Multimap<Attribute, AttributeModifier>> mapList = new ArrayList<>();
 
         EquipmentSlot[] var3 = EquipmentSlot.values();
-        int var4 = var3.length;
+        //int var4 = var3.length;
 
         for (EquipmentSlot equipmentSlot : var3) {
             mapList.add(stack.getAttributeModifiers(equipmentSlot));
@@ -42,8 +42,12 @@ public class ApothCompat {
         for (Multimap<Attribute, AttributeModifier> map : mapList) {
             for (ModifierEntry modifier : modifiers) {
                 for (AttributeModifier m : map.values()) {
+                    if (m.getName().equals("exmodifier_refine")){
+                        e.skipUUID(m.getId());
+                        continue;
+                    }
                     for (ModifierAttriGether modifierEntry : modifier.attriGether) {
-                        if (m.getName().equals(modifierEntry.modifier.getName())) {
+                        if (m.getName().equals(modifierEntry.modifier.getName()) ) {
                             e.skipUUID(m.getId());
                         }
                     }

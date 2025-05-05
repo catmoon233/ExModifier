@@ -1,5 +1,6 @@
-package net.exmo.exmodifier.util;
+package net.exmo.exmodifier.util.gether;
 
+import net.exmo.exmodifier.util.ExAttributeModifier;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -15,21 +16,21 @@ public class AttriGetherPlus extends AttriGether {
     public List<String> OnlyItems= new ArrayList<>();
     public List<String> OnlyTags= new ArrayList<>();
 
-    public AttriGetherPlus(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot, List<String> tags, List<String> items) {
+    public AttriGetherPlus(Attribute attribute, ExAttributeModifier modifier, EquipmentSlot slot, List<String> tags, List<String> items) {
         super(attribute, modifier, slot);
         OnlyItems.addAll(items);
         OnlyTags.addAll(tags);
     }
 
-    public AttriGetherPlus(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
+    public AttriGetherPlus(Attribute attribute, ExAttributeModifier modifier, EquipmentSlot slot) {
         super(attribute, modifier, slot);
     }
 
-    public AttriGetherPlus(Attribute attribute, AttributeModifier modifier) {
+    public AttriGetherPlus(Attribute attribute, ExAttributeModifier modifier) {
         super(attribute, modifier);
     }
 
-    public AttriGetherPlus(Attribute attribute, AttributeModifier modifier, boolean isAutoEquipmentSlot) {
+    public AttriGetherPlus(Attribute attribute, ExAttributeModifier modifier, boolean isAutoEquipmentSlot) {
         super(attribute, modifier, isAutoEquipmentSlot);
     }
 
@@ -38,7 +39,7 @@ public class AttriGetherPlus extends AttriGether {
 
         // Serialize superclass properties
         compound.putString("AttributeName", this.getAttribute().getDescriptionId());
-        compound.put("AttributeModifier", this.getModifier().save());
+        compound.put("AttributeModifier", this.getModifier().toModifier().save());
 
         if (this.slot != null) {
             compound.putString("Slot", this.slot.getName());
@@ -66,7 +67,7 @@ public class AttriGetherPlus extends AttriGether {
     }
     public static AttriGetherPlus deserializeNBT(CompoundTag nbt) {
         Attribute attribute = getAttribute(nbt.getString("AttributeName")) ;
-        AttributeModifier modifier = AttributeModifier.load(nbt.getCompound("AttributeModifier"));
+        ExAttributeModifier modifier = ExAttributeModifier.fromModifier(AttributeModifier.load(nbt.getCompound("AttributeModifier")));
         EquipmentSlot slot = nbt.contains("Slot") ? EquipmentSlot.byName(nbt.getString("Slot")) : null;
 
         List<String> items = new ArrayList<>();

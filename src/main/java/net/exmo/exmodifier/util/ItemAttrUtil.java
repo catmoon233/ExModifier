@@ -1,10 +1,13 @@
 package net.exmo.exmodifier.util;
 
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.util.gether.AttriGether;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -154,15 +157,15 @@ public  class ItemAttrUtil {
                 // 获取Amount和其他可能的参数，这里假设Amount是double类型
                 double amount = compoundTag.getDouble("Amount");
                 Attribute pAttribute = ForgeRegistries.ATTRIBUTES.getValue(ResourceLocation.tryParse(compoundTag.getString("AttributeName")));
-                list.add(new AttriGether(pAttribute, new AttributeModifier(modifierName, amount, operation),EquipmentSlot.byName(compoundTag.getString("Slot"))));
+                list.add(new AttriGether(pAttribute, new ExAttributeModifier(modifierName, amount, operation),EquipmentSlot.byName(compoundTag.getString("Slot"))));
             }
         }
         return list;
     }
-    public static AttributeModifier getAttributeModifierFromNamed(String name,ItemStack stack) {
+    public static ExAttributeModifier getAttributeModifierFromNamed(String name,ItemStack stack) {
         if (stack.getTag() != null && stack.getTag().contains("ExAttributeModifiers", 9)) {
             ListTag listtag = stack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
-            for (int i = 0; i < listtag.size(); ) { // 注意这里使用i而不是i++
+            for (int i = 0; i < listtag.size(); i++) { // 注意这里使用i而不是i++
                 CompoundTag compoundTag = listtag.getCompound(i);
                 if (compoundTag.getString("Name").equals(name)) {
                     return getAttributeModifierFromCompoundTag(compoundTag);
@@ -171,7 +174,7 @@ public  class ItemAttrUtil {
         }
         return null;
     }
-    public static void addItemAttributeModifier(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot[] pSlot) {
+    public static void addItemAttributeModifier(ItemStack itemStack, Attribute pAttribute, ExAttributeModifier pModifier, EquipmentSlot[] pSlot) {
         if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute)){
             Exmodifier.LOGGER.Logger.error("Attribute " + pAttribute + " does not exist");
             return;
@@ -201,14 +204,14 @@ public  class ItemAttrUtil {
         }
 
     }
-    public static boolean hasDifferentAttributeValue(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
+    public static boolean hasDifferentAttributeValue(ItemStack itemStack, Attribute pAttribute, ExAttributeModifier pModifier, EquipmentSlot pSlot) {
         if (itemStack.getTag() != null && itemStack.getTag().contains("ExAttributeModifiers", 9)) {
             ListTag listtag = itemStack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
             for (int i = 0; i < listtag.size(); i++) {
                 CompoundTag compoundTag = listtag.getCompound(i);
                 if (
                         compoundTag.contains("AttributeName") &&
-                                compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+                                compoundTag.getString("AttributeName").equals(ExUtil.getAttributeID(pAttribute)) &&
                                 compoundTag.contains("Name") &&
                                 compoundTag.getString("Name").equals(pModifier.getName()) &&
                                 compoundTag.contains("Operation") &&
@@ -224,7 +227,7 @@ public  class ItemAttrUtil {
         return false;
     }
 
-    public static boolean hasAttributeModifierCompoundTagNoAmount(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
+    public static boolean hasAttributeModifierCompoundTagNoAmount(ItemStack itemStack, Attribute pAttribute, ExAttributeModifier pModifier, EquipmentSlot pSlot) {
         if (itemStack.getTag() != null && itemStack.getTag().contains("ExAttributeModifiers", 9)) {
             ListTag listtag = itemStack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
             for (int i = 0; i < listtag.size(); i++) {
@@ -265,7 +268,7 @@ public  class ItemAttrUtil {
         return false;
     }
 
-    public static void removeAttributeModifierNoAmout(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
+    public static void removeAttributeModifierNoAmout(ItemStack itemStack, Attribute pAttribute, ExAttributeModifier pModifier, EquipmentSlot pSlot) {
         if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute))return;
         if (itemStack.getTag() != null && itemStack.getTag().contains("ExAttributeModifiers", 9)) {
             ListTag listtag = itemStack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
@@ -287,7 +290,7 @@ public  class ItemAttrUtil {
             }
         }
     }
-    public static void removeAttributeModifier(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
+    public static void removeAttributeModifier(ItemStack itemStack, Attribute pAttribute, ExAttributeModifier pModifier, EquipmentSlot pSlot) {
         if (!ForgeRegistries.ATTRIBUTES.containsValue(pAttribute))return;
         if (itemStack.getTag() != null && itemStack.getTag().contains("ExAttributeModifiers", 9)) {
             ListTag listtag = itemStack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
@@ -333,17 +336,17 @@ public  class ItemAttrUtil {
             }
         }
     }
-    public static void addItemAttributeModifier2(ItemStack itemStack, Attribute pAttribute, AttributeModifier pModifier, EquipmentSlot pSlot) {
+    public static void addItemAttributeModifier2(ItemStack itemStack, Attribute pAttribute, ExAttributeModifier pModifier, EquipmentSlot pSlot) {
         try {
             if (hasDifferentAttributeValue(itemStack, pAttribute, pModifier, pSlot)) {
-                AttributeModifier currentModifier = getAttributeModifierFromCompoundTag(getAttributeModifierCompoundTag(pAttribute, pModifier, pSlot));
+                ExAttributeModifier currentModifier = getAttributeModifierFromCompoundTag(getAttributeModifierCompoundTag(pAttribute, pModifier, pSlot));
 
                 if (currentModifier != null) {
                     double oldAmount = currentModifier.getAmount();
                     // 保证数值增加的逻辑安全，防止溢出
                     double updatedAmount = Math.min(oldAmount + pModifier.getAmount(), Double.MAX_VALUE);
 
-                    AttributeModifier updatedModifier = new AttributeModifier(pModifier.getName(), updatedAmount, pModifier.getOperation());
+                    ExAttributeModifier updatedModifier = new ExAttributeModifier(pModifier.getName(), updatedAmount, pModifier.getOperation());
                     removeAttributeModifier(itemStack, pAttribute, currentModifier, pSlot);
                     addItemAttributeModifier(itemStack, pAttribute, updatedModifier,new EquipmentSlot[]{pSlot});
                 } else {
@@ -365,13 +368,13 @@ public  class ItemAttrUtil {
     {
         attmap.put(name,attgroup);
     }
-    public static CompoundTag getAttributeModifierCompoundTag(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
+    public static CompoundTag getAttributeModifierCompoundTag(Attribute attribute, ExAttributeModifier modifier, EquipmentSlot slot) {
         if (modifier==null)return null;
         if (attribute==null)return null;
-        CompoundTag compoundtag = modifier.save();
-            compoundtag.putString("AttributeName", ForgeRegistries.ATTRIBUTES.getKey(attribute).toString());
+        CompoundTag compoundtag = new CompoundTag();
+            compoundtag.putString("AttributeName", ExUtil.getAttributeID(attribute));
             compoundtag.putInt("Operation", modifier.getOperation().toValue());
-            compoundtag.putUUID("UUID", modifier.getId());
+            compoundtag.putUUID("UUID", Mth.createInsecureUUID(RandomSource.createNewThreadLocalInstance()));
             compoundtag.putDouble("Amount", modifier.getAmount());
             compoundtag.putString("Name", modifier.getName());
             if (slot != null) {
@@ -380,7 +383,7 @@ public  class ItemAttrUtil {
 
         return compoundtag;
     }
-    public static AttributeModifier getAttributeModifierFromCompoundTag(CompoundTag compoundTag) {
+    public static ExAttributeModifier getAttributeModifierFromCompoundTag(CompoundTag compoundTag) {
         if (compoundTag.contains("AttributeName") && compoundTag.contains("Name") && compoundTag.contains("Operation")) {
             ResourceLocation attributeId = new ResourceLocation(compoundTag.getString("AttributeName"));
             String modifierName = compoundTag.getString("Name");
@@ -390,14 +393,14 @@ public  class ItemAttrUtil {
             double amount = compoundTag.getDouble("Amount");
 
             // 根据具体实现，AttributeModifier可能还需要UUID或其他额外信息
-            UUID uuid = null;
-            if (compoundTag.contains("UUIDMost") && compoundTag.contains("UUIDLeast")) {
-                long most = compoundTag.getLong("UUIDMost");
-                long least = compoundTag.getLong("UUIDLeast");
-                uuid = new UUID(most, least);
-            }
+//            UUID uuid = null;
+//            if (compoundTag.contains("UUIDMost") && compoundTag.contains("UUIDLeast")) {
+//                long most = compoundTag.getLong("UUIDMost");
+//                long least = compoundTag.getLong("UUIDLeast");
+//                uuid = new UUID(most, least);
+//            }
 
-            return new AttributeModifier(uuid, modifierName, amount, operation);
+            return new ExAttributeModifier( modifierName, amount, operation);
         }
         return null; // 如果缺少必要信息，则返回null
     }

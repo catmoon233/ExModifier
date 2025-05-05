@@ -144,7 +144,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public static List<Component> GenerateTooltip(List<ModifierAttriGether> attriGethers, ItemStack itemStack) {
         List<Component> tooltips = new java.util.ArrayList<>();
         for (ModifierAttriGether modifierAttriGether : attriGethers) {
-            AttributeModifier attributemodifier = modifierAttriGether.getModifier();
+            ExAttributeModifier attributemodifier = modifierAttriGether.getModifier();
             Attribute attribute = modifierAttriGether.getAttribute();
             if (attribute == null) continue;
             if (attributemodifier == null) continue;

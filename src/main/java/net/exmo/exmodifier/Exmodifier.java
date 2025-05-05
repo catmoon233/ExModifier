@@ -2,13 +2,13 @@ package net.exmo.exmodifier;
 
 import com.mojang.logging.LogUtils;
 import net.exmo.exmodifier.compat.compat.apoth.ApothCompat;
+import net.exmo.exmodifier.content.attributeEffect.modern.EffectSyncPacket;
 import net.exmo.exmodifier.content.client.EntryItemRender;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.init.RegisterOther;
 import net.exmo.exmodifier.network.*;
-import net.exmo.exmodifier.util.ColorUtil;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
@@ -44,7 +44,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
-import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,6 +126,10 @@ public class Exmodifier {
         PACKET_HANDLER.registerMessage(messageID++, SyncEntityElementMessage.class, SyncEntityElementMessage::encode, SyncEntityElementMessage::decode, SyncEntityElementMessage::handle);
         PACKET_HANDLER.registerMessage(messageID++, SyncEntityElementRemovedMessage.class, SyncEntityElementRemovedMessage::encode, SyncEntityElementRemovedMessage::decode, SyncEntityElementRemovedMessage::handle);
         PACKET_HANDLER.registerMessage(messageID++, AskSyncEntityElementMessage.class, AskSyncEntityElementMessage::encode, AskSyncEntityElementMessage::decode, AskSyncEntityElementMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, RefineItemMessage.class, RefineItemMessage::encode, RefineItemMessage::decode, RefineItemMessage::handle);
+        PACKET_HANDLER.registerMessage(messageID++, EffectSyncPacket.class,
+                EffectSyncPacket::encode, EffectSyncPacket::new,
+                EffectSyncPacket::handle);
 
         ITEMS.register(modEventBus);
         try {

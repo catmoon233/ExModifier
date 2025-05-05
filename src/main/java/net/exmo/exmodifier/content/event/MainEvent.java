@@ -10,6 +10,7 @@ import net.exmo.exmodifier.content.helper.*;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
+import net.exmo.exmodifier.content.refine.RefineHelper;
 import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.slot.ModifierSlotHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
@@ -20,6 +21,7 @@ import net.exmo.exmodifier.content.resources.ZipHandle;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.*;
+import net.exmo.exmodifier.util.gether.AttriGetherNormal;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -31,7 +33,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
@@ -110,6 +111,12 @@ public class MainEvent {
                 List<Component> tooo = new ArrayList<>();
                 tooo.add(toolTip1.get(0));
 
+                if (Config.refine_system){
+                    Component refineTooltip = RefineHelper.of(itemStack).getRefineTooltip(false);
+                    if (refineTooltip != null) {
+                        tooo.add(refineTooltip);
+                    }
+                }
                 for (var a : ItemQualityHelper.of(itemStack).getQualityEntriesTooltip()) {
                     if (a.isShowInHeadTooltip) {
                         //   tooo.set(0,a.mutableComponent.append(Component.literal(" §r")).append(toolTip1.get(0)));
@@ -164,6 +171,10 @@ public class MainEvent {
                             tooo.add(Component.empty());
                         }
                     }
+                }
+                Component starUpComponent = RefineHelper.of(itemStack).getStarUpComponent();
+                if (starUpComponent != null){
+                    tooo.add(starUpComponent);
                 }
                 if (tooo.size() <= 1) return;
                 toolTip1.clear();
@@ -240,14 +251,14 @@ public class MainEvent {
         public static void iLevelAttriGetherModifier(ExApplyEntryAttrigetherEvent event) {
             if (event.attriGether.Expression != null && !event.attriGether.Expression.isEmpty()) {
                 ItemStack stack = event.stack;
-                AttributeModifier modifier = event.attriGether.getModifier();
+                ExAttributeModifier modifier = event.attriGether.getModifier();
                 int level = event.modifierInstant.getLevel();
                 Exmodifier.LOGGER.debug("iLevelAttriGetherModifier: " + event.attriGether.Expression + " level: " + level);
                 DynamicExpressionEvaluator dynamicExpressionEvaluator = new DynamicExpressionEvaluator();
                 dynamicExpressionEvaluator.setVariable("level", level);
                 dynamicExpressionEvaluator.setVariable("l", level);
-                double amout = dynamicExpressionEvaluator.evaluate(event.attriGether.Expression);
-                event.attriGether.modifier = new AttributeModifier(modifier.getId(), modifier.getName(), amout, modifier.getOperation());
+                double amount = dynamicExpressionEvaluator.evaluate(event.attriGether.Expression);
+                event.attriGether.modifier.setAmount(amount);
             }
         }
 
@@ -670,16 +681,16 @@ public class MainEvent {
 
 
                     int suitLevel = ExSuitHandle.GetSuitLevel(player, suit);
-                    List<ModifierAttriGether> attriGethers = suit.attriGether.get(effectType == WEAR ? suitLevel : suitLevel + 1);
+                    List<AttriGetherNormal> attriGethers = suit.attriGether.get(effectType == WEAR ? suitLevel : suitLevel + 1);
 
                     if (attriGethers != null) {
-                        for (ModifierAttriGether attrGether : attriGethers.stream().filter(attrGether -> attrGether.getOnlyItems().isEmpty()).toList()) {
+                        for (AttriGetherNormal attrGether : attriGethers.stream().filter(attrGether -> attrGether.getOnlyItems().isEmpty()).toList()) {
                             Exmodifier.LOGGER.debug("items : " + attrGether.getOnlyItems().toString());
                             //    if (attrGether.getOnlySlots() ==null|| attrGether.getOnlySlots().isEmpty()) {
 
                             ExApplySuitAttrigetherEvent event1 = new ExApplySuitAttrigetherEvent(player, stack, effectType, attrGether);
                             try {
-                                Exmodifier.LOGGER.debug("Apply Suit AttriGether: " + attrGether.attribute.getDescriptionId() + " " + attrGether.modifier.getOperation().toString() + " " + attrGether.modifier.getAmount());
+                                Exmodifier.LOGGER.debug("Apply Suit AttriGether: " + attrGether.attribute.getDescriptionId() + " " + attrGether.attributeModifier.getOperation().toString() + " " + attrGether.attributeModifier.getAmount());
                             } catch (Exception e) {
                                 System.out.println(e);
                             }

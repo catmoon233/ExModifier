@@ -1,10 +1,9 @@
 package net.exmo.exmodifier.events;
 
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
+import net.exmo.exmodifier.util.gether.AttriGetherNormal;
 import net.exmo.exmodifier.util.EntityAttrUtil;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
 
 public class ExApplySuitAttrigetherEvent extends Event {
@@ -12,10 +11,10 @@ public class ExApplySuitAttrigetherEvent extends Event {
     public ItemStack stack;
     public EntityAttrUtil.WearOrTake effectType;
 
-    public ModifierAttriGether attriGether;
+    public AttriGetherNormal attriGether;
 
 
-    public ExApplySuitAttrigetherEvent(Player player, ItemStack stack, EntityAttrUtil.WearOrTake effectType, ModifierAttriGether attriGether) {
+    public ExApplySuitAttrigetherEvent(Player player, ItemStack stack, EntityAttrUtil.WearOrTake effectType, AttriGetherNormal attriGether) {
         this.player = player;
         this.stack = stack;
         this.effectType = effectType;
@@ -46,11 +45,11 @@ public class ExApplySuitAttrigetherEvent extends Event {
         this.effectType = effectType;
     }
 
-    public ModifierAttriGether getAttriGether() {
+    public AttriGetherNormal getAttriGether() {
         return attriGether;
     }
 
-    public void setAttriGether(ModifierAttriGether attriGether) {
+    public void setAttriGether(AttriGetherNormal attriGether) {
         this.attriGether = attriGether;
     }
 }

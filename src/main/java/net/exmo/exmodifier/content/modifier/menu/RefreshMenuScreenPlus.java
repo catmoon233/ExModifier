@@ -2,13 +2,16 @@ package net.exmo.exmodifier.content.modifier.menu;
 
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.EntryItem;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.WashingMaterials;
+import net.exmo.exmodifier.content.refine.RefineHelper;
 import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.network.RefineItemMessage;
 import net.exmo.exmodifier.network.RefreshItemMessage;
 import net.exmo.exmodifier.util.ExUtil;
 import net.minecraft.ChatFormatting;
@@ -129,22 +132,39 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
         });
 
-        addPage("设置", screen -> {
+        if (Config.refine_system) addPage("精炼", screen -> {
             screen.addRenderableWidget(new ImageWidget(80, this.topPos - 20, this.width - 160, this.imageHeight, MENU_TEXTURE));
+            screen.addRenderableWidget(new RefreshWidget(100, this.topPos + 20, this.width / 3, this.imageHeight - 60, MENU_TEXTURE));
+            ;
+            this.itemListViewer = new ItemListViewer(manageSlot == 0 ? filterItems(player.getInventory().items) : filterItems3(player.getInventory().items),
+                    120 + this.width / 3, topPos + 20,
+                    this.width - 160 - this.width / 3 - 40 - 20, imageHeight - 60);
+            // 启用搜索功能
+            itemListViewer.setShowSearchBox(false);
 
-            screen.addRenderableWidget(new CycleButton.Builder<Boolean>(b -> {
-                if (b) {
-                    return Component.literal("已开启");
-                } else {
-                    return Component.literal("已关闭");
-                }
 
-            })
-                    .withValues(true, false)
-                    .create(100, 50, 100, 20,
-                            Component.literal("选项开关"),
-                            (b, v) -> {
-                            }));
+            // 自定义搜索框外观
+            itemListViewer.setSearchBackground(
+                    WIDGETS_TEXTURE_W,
+                    0x80000000 // 半透明橙色背景
+            );
+
+            textList = new TextListWidget(
+                    List.of(),
+                    100 + 64 + 10, RefreshMenuScreenPlus.this.topPos + 40,
+                    RefreshMenuScreenPlus.this.width / 3 - 82, 45
+            );
+            if (!selectedItemStack.isEmpty()) {
+                textList.entries = getTextEntries();
+                textList.calculateLayout();
+                ;
+            }
+            ;
+            //  RefreshMenuScreenPlus.this.children().removeIf(widget -> widget instanceof TextListWidget);
+
+            addRenderableWidget(itemListViewer);
+
+
         });
     }
 
@@ -197,9 +217,15 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 .toList();
     }
 
-    public static List<ItemStack> filterItems2(List<ItemStack> items) {
+    public List<ItemStack> filterItems2(List<ItemStack> items) {
         return items.stream()
-                .filter(item -> !item.isEmpty() && ModifierHandle.materialsList.stream().anyMatch(entry -> entry.ItemId.equals(ExUtil.getItemID(item))) || (item.getItem() instanceof EntryItem && ModifierHandle.modifierEntryMap.containsKey(EntryItem.getModifierID(item))))
+                .filter(item -> item != this.selectedItemStack && !item.isEmpty() && ModifierHandle.materialsList.stream().anyMatch(entry -> entry.ItemId.equals(ExUtil.getItemID(item))) || (item.getItem() instanceof EntryItem && ModifierHandle.modifierEntryMap.containsKey(EntryItem.getModifierID(item))))
+                .toList();
+    }
+
+    public List<ItemStack> filterItems3(List<ItemStack> items) {
+        return items.stream()
+                .filter(item -> !item.isEmpty() && item != this.selectedItemStack && RefineHelper.of(item).canRefine(this.selectedItemStack))
                 .toList();
     }
 
@@ -542,9 +568,22 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         private final ExSlotButton infoButton;
         private final ExSlotButton materialButton;
 
-        public static int findSlotMatchingItem(ItemStack stack, Inventory inventory) {
+        public int findSlotMatchingItemS(ItemStack stack, Inventory inventory) {
             for (int i = 0; i < inventory.items.size(); ++i) {
                 ItemStack itemStack = inventory.items.get(i);
+                if (itemStack == RefreshMenuScreenPlus.this.selectedRefreshItem) continue;
+                if (!itemStack.isEmpty() && itemStack.getCount() == stack.getCount() && ItemStack.isSameItemSameTags(stack, itemStack)) {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public int findSlotMatchingItemM(ItemStack stack, Inventory inventory) {
+            for (int i = 0; i < inventory.items.size(); ++i) {
+                ItemStack itemStack = inventory.items.get(i);
+                if (itemStack == RefreshMenuScreenPlus.this.selectedItemStack) continue;
                 if (!itemStack.isEmpty() && itemStack.getCount() == stack.getCount() && ItemStack.isSameItemSameTags(stack, itemStack)) {
                     return i;
                 }
@@ -573,7 +612,21 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                         RefreshMenuScreenPlus.this.itemListViewer.items =
                                 filterItems(getMinecraft().player.getInventory().items);
                     }
-            );
+            ) {
+                @Override
+                public void render(GuiGraphics gg, int p_93658_, int p_93659_, float p_93660_) {
+                    if (isHovered) {
+                        ItemStack selectedItemStack1 = RefreshMenuScreenPlus.this.selectedItemStack;
+                        if (!selectedItemStack1.isEmpty()) {
+                            gg.pose().pushPose();
+                            gg.pose().translate(0, 0, 2100);
+                            gg.renderTooltip(RefreshMenuScreenPlus.this.font, selectedItemStack1, p_93658_, p_93659_);
+                            gg.pose().popPose();
+                        }
+                    }
+                    super.render(gg, p_93658_, p_93659_, p_93660_);
+                }
+            };
             int baseButtonSize2Y = 24;
             int baseButtonSize2X = (w - 45) / 2;
 
@@ -583,14 +636,22 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     WIDGETS_TEXTURE_W, WIDGETS_TEXTURE_W2, baseButtonSize2X, baseButtonSize2Y,
                     -1,
                     () -> {
-                        RefreshItemMessage msg = new RefreshItemMessage(
-                                findSlotMatchingItem(selectedRefreshItem, player.getInventory()),
-                                findSlotMatchingItem(selectedItemStack, player.getInventory())
-                        );
-                        Exmodifier.PACKET_HANDLER.sendToServer(msg);
+                        if (currentPage == 0) {
+                            RefreshItemMessage msg = new RefreshItemMessage(
+                                    findSlotMatchingItemM(selectedRefreshItem, player.getInventory()),
+                                    findSlotMatchingItemS(selectedItemStack, player.getInventory())
+                            );
+                            Exmodifier.PACKET_HANDLER.sendToServer(msg);
+                        } else if (currentPage == 1) {
+                            RefineItemMessage msg = new RefineItemMessage(
+                                    findSlotMatchingItemM(selectedRefreshItem, player.getInventory()),
+                                    findSlotMatchingItemS(selectedItemStack, player.getInventory())
+                            );
+                            Exmodifier.PACKET_HANDLER.sendToServer(msg);
+                        }
 
                     }
-            ).setComponent(Component.translatable("gui.exmodifier.refresh_0"));
+            ).setComponent(currentPage == 1 ? Component.translatable("gui.exmodifier.refresh_2") : Component.translatable("gui.exmodifier.refresh_0"));
             this.infoButton = new ExSlotButton(
                     x + 20 + baseButtonSize2X + 5, y + h - baseButtonSize2Y - 16,
                     baseButtonSize2X, baseButtonSize2Y,
@@ -599,7 +660,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     () -> {
                         //todo 重铸信息
                     }
-            ).setComponent(Component.translatable("gui.exmodifier.refresh_1"));
+            ).setComponent(currentPage == 1 ? Component.translatable("gui.exmodifier.refresh_3") : Component.translatable("gui.exmodifier.refresh_1"));
 
 
             int materialBtnWidth = width - 40;
@@ -611,8 +672,13 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     1,
                     () -> {
                         manageSlot = 1;
-                        RefreshMenuScreenPlus.this.itemListViewer.items =
-                                filterItems2(getMinecraft().player.getInventory().items);
+                        if (currentPage == 0) {
+                            RefreshMenuScreenPlus.this.itemListViewer.items =
+                                    filterItems2(getMinecraft().player.getInventory().items);
+                        } else if (currentPage == 1) {
+                            RefreshMenuScreenPlus.this.itemListViewer.items =
+                                    filterItems3(getMinecraft().player.getInventory().items);
+                        }
                     }
             );
         }
@@ -687,13 +753,31 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     false
             );
             guiGraphics.pose().popPose();
+            if (currentPage == 1) {
+                if (!RefreshMenuScreenPlus.this.selectedItemStack.isEmpty()) {
+                    Component refineTooltip = RefineHelper.of(selectedItemStack).getRefineTooltip(true);
+                    if (refineTooltip != null) {
+                        guiGraphics.pose().pushPose();
+                        guiGraphics.pose().translate(0, 15, 0);
+                        guiGraphics.pose().scale(1.5f, 1.5f, 0);
+                        guiGraphics.drawString(font,
+                                refineTooltip,
+                                (int) ((x + 64 + 10) / 1.5),
+                                (int) ((y + 2) / 1.5),
+                                Color.YELLOW.getRGB(),
+                                false
+                        );
+                        guiGraphics.pose().popPose();
+                    }
+                }
+            }
         }
 
         private void renderMaterialSlot(GuiGraphics guiGraphics) {
             if (selectedRefreshItem.isEmpty()) {
 
                 Component text = Component.translatable(
-                        "gui.exmodifier.refresh.select_" + (manageSlot == 1 ? 0 : 1));
+                        "gui.exmodifier.refresh.select_" + (manageSlot == 1 ? 0 : 1) + currentPage);
                 int textWidth = font.width(text);
                 int centerX = materialButton.getX() + (materialButton.getWidth() - textWidth) / 2 + 6;
                 int centerY = materialButton.getY() + (materialButton.getHeight() - 8) / 2;
@@ -1289,6 +1373,9 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
                 if (isMouseOverSlot((int) mouseX, (int) mouseY, slotX, slotY)) {
                     selected = index;
+                    if (button == 0) {
+                        //    putItem();
+                    }
                     showContextMenu((int) mouseX, (int) mouseY);
                     return true;
                 }
@@ -1306,18 +1393,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         private void showContextMenu(int x, int y) {
             contextMenu = new ContextMenu(x, y, Arrays.asList(
                     new ActionButton("gui.exmodifier.refresh_menu.selected", b -> {
-                        if (manageSlot == 0) {
-                            selectedItemStack = items.get(selected);
-                            if (!selectedItemStack.isEmpty()) {
-                                textList.entries = getTextEntries();
-                                textList.calculateLayout();
-                                ;
-                            }
-                            ;
-                        }
-                        if (manageSlot == 1) {
-                            selectedRefreshItem = items.get(selected);
-                        }
+                        putItem();
 
                         SystemToast.add(new ToastComponent(Minecraft.getInstance()),
                                 SystemToast.SystemToastIds.PACK_COPY_FAILURE, Component.literal("使用操作"), Component.literal("选择物品"));
@@ -1327,6 +1403,19 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                             SystemToast.add(new ToastComponent(Minecraft.getInstance()), SystemToast.SystemToastIds.PACK_COPY_FAILURE, Component.literal("使用操作"), Component.literal("使用物品"))
                     )
             ));
+        }
+
+        private void putItem() {
+            if (manageSlot == 0) {
+                selectedItemStack = items.get(selected);
+                if (!selectedItemStack.isEmpty()) {
+                    textList.entries = getTextEntries();
+                    textList.calculateLayout();
+                }
+            }
+            if (manageSlot == 1) {
+                selectedRefreshItem = items.get(selected);
+            }
         }
 
 

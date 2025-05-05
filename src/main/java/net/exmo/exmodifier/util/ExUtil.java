@@ -61,6 +61,12 @@ public class ExUtil {
 
     }
 
+
+    public static Attribute getAttribute(String attribute){
+        return _AS.values().stream().filter(s -> s.equals(attribute)).findFirst().map(s -> _AS.entrySet().stream().filter(entry -> entry.getValue().equals(s)).findFirst().get().getKey()).orElse(null);
+    }
+
+
     public static String getAttributeID(RegistryObject<Attribute> attribute){
         return getAttributeID(attribute.get());
     }

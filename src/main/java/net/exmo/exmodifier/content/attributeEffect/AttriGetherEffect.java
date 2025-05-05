@@ -1,7 +1,7 @@
 package net.exmo.exmodifier.content.attributeEffect;
 
 import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.util.AttriGether;
+import net.exmo.exmodifier.util.gether.AttrGether;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.BossEvent;
@@ -31,8 +31,8 @@ public class AttriGetherEffect
 
     private String localDescription;
     private boolean visible;
-    private List<AttriGether> attriGethers;
-    public AttriGetherEffect(BossEvent.BossBarColor bossBarColor,BossEvent.BossBarOverlay bossBarOverlay,String bossBarName,boolean visible,ResourceLocation id ,List<AttriGether> attriGethers) {
+    private List<AttrGether> attriGethers;
+    public AttriGetherEffect(BossEvent.BossBarColor bossBarColor,BossEvent.BossBarOverlay bossBarOverlay,String bossBarName,boolean visible,ResourceLocation id ,List<AttrGether> attriGethers) {
         this.bossBarColor = bossBarColor;
         this.bossBarOverlay = bossBarOverlay;
         this.id = id;
@@ -68,11 +68,11 @@ public class AttriGetherEffect
         this.visible = visible;
     }
 
-    public List<AttriGether> getAttriGethers() {
+    public List<AttrGether> getAttriGethers() {
         return attriGethers;
     }
 
-    public void setAttriGethers(List<AttriGether> attriGethers) {
+    public void setAttriGethers(List<AttrGether> attriGethers) {
         this.attriGethers = attriGethers;
     }
 

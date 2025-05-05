@@ -2,6 +2,7 @@ package net.exmo.exmodifier.content.level;
 
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.util.DynamicExpressionEvaluator;
+import net.exmo.exmodifier.util.ExAttributeModifier;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -37,15 +38,15 @@ public class LevelAttriGether extends ModifierAttriGether {
         return super.getAttribute();
     }
 
-    public AttributeModifier getModifier(int Level, int rate ,DynamicExpressionEvaluator dynamicExpressionEvaluator) throws ScriptException {
-        return new AttributeModifier(this.modifier.getId(), this.modifier.getName(), dynamicExpressionEvaluator.evaluate(Expression), this.modifier.getOperation());
+    public ExAttributeModifier getModifier(int Level, int rate ,DynamicExpressionEvaluator dynamicExpressionEvaluator) throws ScriptException {
+        return new ExAttributeModifier( this.modifier.getName(), dynamicExpressionEvaluator.evaluate(Expression), this.modifier.getOperation());
     }
 
-    public LevelAttriGether(Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
+    public LevelAttriGether(Attribute attribute, ExAttributeModifier modifier, EquipmentSlot slot) {
         super(attribute, modifier, slot);
     }
 
-    public LevelAttriGether(Attribute attribute, AttributeModifier modifier) {
+    public LevelAttriGether(Attribute attribute, ExAttributeModifier modifier) {
         super(attribute, modifier);
     }
 

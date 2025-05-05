@@ -52,7 +52,7 @@ public class ItemLevelHandle {
             for (int i = 0; i < attriGethers.size(); i++){
                 DynamicExpressionEvaluator dynamicExpressionEvaluator = new DynamicExpressionEvaluator();
                 LevelAttriGether attriGether = attriGethers.get(i);
-                UUID uuid = UUID.nameUUIDFromBytes((attriGether.getModifier().getName()+i+ stack).getBytes());
+                //UUID uuid = UUID.nameUUIDFromBytes((attriGether.getModifier().getName()+i+ stack).getBytes());
                List< EquipmentSlot> slot = Collections.singletonList(attriGether.slot);
                 if (attriGether.IsAutoEquipmentSlot) {
                     if (stack.getItem() instanceof ArmorItem armorItem){
@@ -72,8 +72,8 @@ public class ItemLevelHandle {
                 for (EquipmentSlot equipmentSlot : slot) {
                     ItemAttrUtil.removeAttributeModifierNoAmout(stack, attriGether.getAttribute(), attriGether.getModifier(), equipmentSlot);
                     dynamicExpressionEvaluator.setVariable("level", event.nowLevel);
-                    double amout =  dynamicExpressionEvaluator.evaluate(attriGether.Expression);
-                    ItemAttrUtil.addItemAttributeModifier2(stack,attriGether.attribute,new AttributeModifier(uuid,attriGether.getModifier().getName(), amout, attriGether.modifier.getOperation()), equipmentSlot);
+                    double amount =  dynamicExpressionEvaluator.evaluate(attriGether.Expression);
+                    ItemAttrUtil.addItemAttributeModifier2(stack,attriGether.attribute,attriGether.getModifier().setAmount(amount), equipmentSlot);
 
                 }
 
@@ -297,7 +297,7 @@ public class ItemLevelHandle {
                     for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
                         for (AttributeModifier modifier : stack.getAttributeModifiers(equipmentSlot).values()) {
                             if (modifier.getName().equals(ita.getModifier().getName())) {
-                                ita.modifier = modifier;
+                                ita.modifier = ExAttributeModifier.fromModifier(modifier);
                             }
                         }
                     }
@@ -451,12 +451,12 @@ public class ItemLevelHandle {
                 }
             }
         }
-        UUID uuid = (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) ? UUID.fromString(attrGetherObj.get("uuid").getAsString()) : UUID.nameUUIDFromBytes(modifierName.getBytes());
-        if(attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean()) uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
-        //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
-        Exmodifier.LOGGER.debug("uuid "+uuid);
+//        UUID uuid = (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) ? UUID.fromString(attrGetherObj.get("uuid").getAsString()) : UUID.nameUUIDFromBytes(modifierName.getBytes());
+//        if(attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean()) uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
+//        //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
+//        Exmodifier.LOGGER.debug("uuid "+uuid);
 
-        AttributeModifier modifier = new AttributeModifier(uuid, modifierName, attrValue, operation);
+        ExAttributeModifier modifier = new ExAttributeModifier( modifierName, attrValue, operation);
         LevelAttriGether attrGether = new LevelAttriGether(attribute, modifier, slot);
         if (attrGetherObj.has("minValue")){
             attrGether.minValue = attrGetherObj.get("minValue").getAsDouble();

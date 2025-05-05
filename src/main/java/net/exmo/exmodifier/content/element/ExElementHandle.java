@@ -10,6 +10,7 @@ import net.exmo.exmodifier.content.helper.ExElementHelper;
 import net.exmo.exmodifier.content.helper.entity.ExElementEntityHelper;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.events.ElementDamageEvent;
+import net.exmo.exmodifier.events.OnElementRegisterEvent;
 import net.exmo.exmodifier.init.ExAttribute;
 import net.exmo.exmodifier.network.DamageNumberColorCompatMessage;
 import net.exmo.exmodifier.network.DamageNumberCompatMessage;
@@ -99,6 +100,7 @@ public class ExElementHandle {
         }
         var elements = ExElement.EX_SERIALIZE.fromJson(moconfig.jsonObject);
         elements.forEach(ExElementHandle::registryExElement);
+        MinecraftForge.EVENT_BUS.post(new OnElementRegisterEvent());
 
     }
 
@@ -246,6 +248,10 @@ public class ExElementHandle {
 
     @Mod.EventBusSubscriber
     public static class CommonEvent {
+        @SubscribeEvent
+        public static void registerNormal(OnElementRegisterEvent elementRegisterEvent){
+            elementRegisterEvent.registerElement(new ExElement(ResourceLocation.tryParse("exmodifier:normal")).setRestrain(Map.of()));
+        }
 
         @SubscribeEvent(priority = EventPriority.HIGHEST)
         public static void onHurt(LivingDamageEvent event) {
@@ -274,25 +280,19 @@ public class ExElementHandle {
 
         public static float getArmorResistance(LivingEntity entity, ExElementInstant attackElement) {
             float totalResistance = 0.0f;
-
-            // 遍历所有装备槽
             for (EquipmentSlot slot : EquipmentSlot.values()) {
                 ItemStack itemStack = entity.getItemBySlot(slot);
                 if (itemStack.isEmpty()) continue;
 
-
-                // 2. 元素特性抗性
                 ExElementHelper elementHelper = ExElementHelper.of(itemStack);
                 if (!elementHelper.getElements().isEmpty()) {
                     for (ExElementInstant armorElement : elementHelper.getElements()) {
-                        // 计算元素克制关系
-                        float elementResist = armorElement.getElement().getRestrain().getOrDefault(attackElement.getElement().getId().toString(), 1f);
-
-                        // 抗性公式：等级对数增长 + 基础抗性
-                        float resistance = (float) (Math.log1p(armorElement.getLevel() / 1000.0) // 平滑增长
-                                * elementResist * 0.15f // 系数控制
-                        );
-                        totalResistance += resistance;
+                        float elementResist = armorElement.getElement().getRestrain().getOrDefault(
+                                attackElement.getElement().getId().toString(), 1f);
+                        // 调整抗性系数为更平缓的增长
+                        float resistance = (float) (Math.log1p(armorElement.getLevel() / 500.0) // 基数从1000改为500
+                                * elementResist * 0.12f); // 系数从0.15降为0.12
+                        totalResistance = Math.min(totalResistance + resistance, 0.75f); // 增加抗性上限75%
                     }
                 }
             }
@@ -305,20 +305,20 @@ public class ExElementHandle {
             Entity entity = event.getSource().getEntity();
             if (entity instanceof LivingEntity livingEntity) {
                 ItemStack mainHandItem = livingEntity.getMainHandItem();
-                List<ExElementInstant> elements;
+                List<ExElementInstant> elements = new ArrayList<>(List.of(new ExElementInstant(exElements.get(ResourceLocation.tryParse("exmodifier:normal")), 1)));
                 if (mainHandItem.hasTag()) {
                     elements = ExElementHelper.of(mainHandItem).getElements();
                 } else {
                     List<ExElementInstant> exElementInstants1 = ExElementEntityHelper.of(livingEntity).getExElementInstants();
                     if (!exElementInstants1.isEmpty()) {
                         elements = exElementInstants1;
-                    } else return;
+                    };
                 }
                 if (!elements.isEmpty()) {
-                    // if (livingEntity instanceof ServerPlayer serverPlayer) {
                     ExElementInstant exElementInstant = elements.get(0);
-
                     LivingEntity target = event.getEntity();
+
+                    // 粒子效果逻辑保持不变
                     if (livingEntity.level() instanceof ServerLevel serverLevel) {
                         ParticleType<?> simpleParticleType = exElementInstant.getElement().getSimpleParticleType();
                         if (simpleParticleType != null) {
@@ -329,95 +329,115 @@ public class ExElementHandle {
                         }
                     }
 
-                    // ====== 核心参数配置 ======
-                    float conversion_rate = 80.0f;     // 攻击转化基数
-                    float resistance_rate = 5000.0f;    // 防御抗性基数（值越大防御收益越低）
-                    float dominance_base = 1.8f;        // 压制基准指数
-                    float overkill_threshold = 50.0f;   // 碾压判定阈值（攻击/防御比值）
-
-                    // ====== 动态参数获取 ======
-                    if (livingEntity.getAttributes().hasAttribute(ExAttribute.ELEMENT_CONVERSION_COEFFICIENT.get())) {
-                        conversion_rate = (float) livingEntity.getAttributeValue(ExAttribute.ELEMENT_CONVERSION_COEFFICIENT.get()) * 100;
-                    }
-                    if (target.getAttributes().hasAttribute(ExAttribute.ELEMENT_RESISTANCE_COEFFICIENT.get())) {
-                        resistance_rate = (float) target.getAttributeValue(ExAttribute.ELEMENT_RESISTANCE_COEFFICIENT.get()) * 100;
-                    }
-
-                    ExElementEntityHelper exElementEntityHelper = ExElementEntityHelper.of(target);
-                    List<ExElementInstant> exElementInstants = exElementEntityHelper.getExElementInstants();
-                    if (!exElementInstants.isEmpty()) {
-                        var el = exElementInstants.get(0);
-                        int attackerLevel = exElementInstant.getLevel();
-                        int targetLevel = el.getLevel();
-                        // ====== 新增：护甲抗性计算 ======
-                        float armorResistance = getArmorResistance(target, exElementInstant);
-                        // ====== 公式计算 ======
-                        // 1. 动态压制系数（随攻击强度对数增长）
-                        Float baseMultiplier = exElementInstant.getElement().getRestrain().getOrDefault(el.getElement().getId().toString(), 1f);
 
 
-                        float dominanceEffect = (float) Math.pow(baseMultiplier, dominance_base + Math.log1p(attackerLevel / 10000.0) // 对数增长控制
-                        );
+                        // ====== 核心参数调整 ======
+                        float conversion_rate = 120.0f;     // 攻击转化基数增大（值越大攻击收益越低）
+                        float resistance_base = 300.0f;      // 防御抗性基数减小（值越小防御收益越低）
+                        float dominance_power = 0.7f;        // 压制强度系数增强
+                        float overkill_ratio = 0.25f;        // 碾压加成系数降低
 
-                        //2. 攻击因子（非线性增长 + 转化率放大）
-                        float attackBase = attackerLevel * conversion_rate / 100.0f; // 将转化率作为放大系数（如80→0.8倍）
-                        float attackFactor;
+                        // ====== 动态参数获取调整 ======
+                        if (livingEntity.getAttributes().hasAttribute(ExAttribute.ELEMENT_CONVERSION_COEFFICIENT.get())) {
+                            conversion_rate = Math.max(
+                                    (float) livingEntity.getAttributeValue(ExAttribute.ELEMENT_CONVERSION_COEFFICIENT.get()) * 80.0f,
+                                    0); // 增加转化率上限
+                        }
+                        if (target.getAttributes().hasAttribute(ExAttribute.ELEMENT_RESISTANCE_COEFFICIENT.get())) {
+                            resistance_base = Math.max(
+                                    (float) target.getAttributeValue(ExAttribute.ELEMENT_RESISTANCE_COEFFICIENT.get()) * 80.0f,
+                                    0); // 增加抗性下限
+                        }
 
-                        // 核心增长公式：对数平滑 + 转化率指数增强
-                        if (attackBase <= 1000) {
-                            // 低区间：快速线性增长
-                            attackFactor = 1.0f + (float) Math.log1p(attackBase) * 0.5f;
+                        ExElementEntityHelper exElementEntityHelper = ExElementEntityHelper.of(target);
+                        List<ExElementInstant> exElementInstants = exElementEntityHelper.getExElementInstants();
+                        if (!exElementInstants.isEmpty()) {
+                            var el = exElementInstants.get(0);
+                            int attackerLevel = exElementInstant.getLevel();
+                            int targetLevel = el.getLevel();
+
+                            float armorResistance = getArmorResistance(target, exElementInstant);
+
+                            // ====== 增强压制效果 ======
+                            Float baseMultiplier = exElementInstant.getElement().getRestrain().getOrDefault(el.getElement().getId().toString(), 1f);
+                            // 调整对数基数从10000改为5000增强压制成长
+                            float dominanceEffect = (float)Math.pow( Math.pow(
+                                    baseMultiplier,
+                                    dominance_power + (float) Math.log1p(attackerLevel / 5000.0)
+                            ),1.35f);
+
+                            // ====== 攻击因子调整 ======
+                            float conversion_ratio = conversion_rate / 120.0f; // 基准调整
+                            float attackBase = attackerLevel * conversion_ratio;
+                            float attackFactor;
+
+                            // 三阶段系数调整
+                            if (attackBase <= 800) { // 提高第一阶段阈值
+                                attackFactor = 1.0f + attackBase * 0.3f; // 系数从0.5降为0.3
+                            } else if (attackBase <= 8000) {
+                                float logGrowth = (float) Math.log1p(attackBase - 800) * 1.5f; // 系数从2.0降为1.5
+                                attackFactor = 1.0f + 240.0f + logGrowth; // 基础值调整
+                            } else {
+                                float baseValue = 1.0f + 240.0f + (float) Math.log(7200) * 1.5f;
+                                float additional = (float) Math.pow(attackBase - 8000, 0.5f); // 指数从0.55降为0.5
+                                attackFactor = baseValue + additional;
+                            }
+
+                            // ====== 碾压加成合并优化 ======
+                            if (attackerLevel > 50 * targetLevel) {
+                                float overkill = (float) Math.log10(attackerLevel / (targetLevel + 1.0f));
+                                float overkillBoost = overkill_ratio * (1.0f + conversion_ratio * 0.08f); // 转化率影响降低
+                                attackFactor *= 1.0f + Math.min(overkill, 2.5f) * overkillBoost; // 最大加成层数降为2.5
+                            }
+
+                            // ====== 防御因子调整 ======
+                            float defenseFactor = 1.0f + (float) Math.pow(
+                                    (targetLevel * resistance_base) / 800.0f, // 分母从1000改为800
+                                    0.75f // 指数从0.7提高到0.75
+                            );
+
+                            // ====== 最终倍率合成 ======
+                            float finalMultiplier = dominanceEffect * attackFactor / defenseFactor;
+                            finalMultiplier = Math.max(0.01f, finalMultiplier * (1.0f - armorResistance)); // 保底15%伤害
+
+                            float amount = event.getAmount() * finalMultiplier;
+
+                            // ====== 调试信息优化 ======
+                            if (Config.element_debug) {
+                                String analysis = String.format("""
+                                                [平衡版元素分析]
+                                                压制系统：
+                                                ↳ 克制关系: %s → %s 系数: %s
+                                                ↳ 基础倍率: %.2f → 增强指数: %.2f → 最终压制: %.2f
+                                                攻击系统：
+                                                ↳ 等级: %,d → 转化率: %.1f%% → 计算基数: %.1f
+                                                ↳ 成长曲线: %s → 攻击因子: %.2f
+                                                防御系统：
+                                                ↳ 等级: %,d → 抗性系数: %.1f → 防御因子: %.2f
+                                                ↳ 护甲减伤: %.1f%%
+                                                最终倍率: %.2f × (%.2f / %.2f) × %.1f%% = %.2f
+                                                最终伤害: %.1f → %.1f
+                                                """,
+                                        exElementInstant.getElement().getId(), el.getElement().getId(),baseMultiplier,
+                                        baseMultiplier, dominance_power + Math.log1p(attackerLevel / 5000.0), dominanceEffect,
+                                        attackerLevel, conversion_rate, attackBase,
+                                        (attackBase <= 800) ? "线性" : (attackBase <= 8000) ? "对数" : "亚线性", attackFactor,
+                                        targetLevel, resistance_base, defenseFactor,
+                                        armorResistance * 100,
+                                        dominanceEffect, attackFactor, defenseFactor, (1 - armorResistance) * 100, finalMultiplier,
+                                        event.getAmount(), amount
+                                );
+                                livingEntity.sendSystemMessage(Component.literal(analysis));
+                            }
+
+                            event.setAmount(amount);
                         } else {
-                            // 高区间：亚线性增长防爆炸
-                            attackFactor = 1.0f + (float) (Math.pow(attackBase, 0.7) / 50.0f);
+                            float armorResistance = getArmorResistance(target, exElementInstant);
+                            event.setAmount(event.getAmount() * Math.max(0.15f, 1.0f - armorResistance));
                         }
-
-                        // 碾压加成（独立乘区）
-                        if (attackerLevel > overkill_threshold * targetLevel) {
-                            float overkillRatio = (float) Math.log10(attackerLevel / (targetLevel + 1.0f));
-                            attackFactor *= 1.0f + overkillRatio * 0.3f; // 每10倍攻击强度增加30%（更可控）
-                        }
-                        if (attackerLevel > overkill_threshold * targetLevel) {
-                            float overkillRatio = (float) Math.log10(attackerLevel / (targetLevel + 1.0f));
-                            attackFactor *= 1.0f + overkillRatio * 0.5f; // 每10倍攻击强度增加50%
-                        }
-
-                        // 3. 防御因子（亚线性增长）
-                        float defenseFactor = 1.0f + (float) Math.pow(targetLevel / resistance_rate, 0.6f);
-
-                        // 4. 最终倍率合成
-                        float finalMultiplier = dominanceEffect * attackFactor / defenseFactor;
-                        //finalMultiplier = Math.max(0.1f, finalMultiplier); //下限
-                        // 应用抗性（示例：乘法叠加）
-                        finalMultiplier *= (1.0f - armorResistance);
-                        // ====== 伤害计算 ======
-                        float amount = event.getAmount() * finalMultiplier;
-
-                        // ====== 详细输出 ======
-                        if (Config.element_debug) {
-                            String analysis = String.format("""
-                                    [元素伤害分析]
-                                    基础压制值: %,f
-                                    攻击方强度: %,d → 转化效率: %.1f
-                                    防御方强度: %,d → 抗性效率: %.4f
-                                    压制增强: %.2f^(%.2f) → %.2f
-                                    攻击因子: %.2f %s
-                                    防御因子: %.2f
-                                    最终倍率: %.2f × (%.2f / %.2f) = %.2f
-                                    最终伤害: %.1f × %.2f = %.1f
-                                    """, baseMultiplier, attackerLevel, conversion_rate, targetLevel, resistance_rate, baseMultiplier, dominance_base + Math.log1p(attackerLevel / 10000.0), dominanceEffect, attackFactor, (attackerLevel > overkill_threshold * targetLevel) ? "[碾压激活]" : "", defenseFactor, dominanceEffect, attackFactor, defenseFactor, finalMultiplier, event.getAmount(), finalMultiplier, amount);
-                            livingEntity.sendSystemMessage(Component.literal(analysis));
-                        }
-
-                        event.setAmount(amount);
-                        //     }
-                    } else {
-                        float armorResistance = getArmorResistance(target, exElementInstant);
-                        event.setAmount(event.getAmount() *Math.max (0,1.0f - armorResistance));
                     }
+                    cache.invalidate(event.getSource());
                 }
             }
-            cache.invalidate(event.getSource());
-        }
     }
 }

@@ -42,6 +42,7 @@ public abstract class ItemStackClientMixin {
                 modifierEntry -> {
                     modifierEntry.attriGether.forEach(
                             attriGether -> {
+
                                 if( entityAttributeModifier.getName().contains(attriGether.modifier.getName())){
                                     ChatFormatting chatFormattingFromString = ModifierHandle.getChatFormattingFromString(Component.translatable(modifierEntry.getDescriptionId()).getString());
                                     if (chatFormattingFromString == null) chatFormattingFromString = ChatFormatting.BLUE;

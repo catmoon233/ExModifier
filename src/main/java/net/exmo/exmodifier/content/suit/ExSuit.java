@@ -1,11 +1,9 @@
 package net.exmo.exmodifier.content.suit;
 
 import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
-import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ItemType;
-import net.exmo.exmodifier.util.AttriGetherPlus;
+import net.exmo.exmodifier.util.gether.AttriGetherNormal;
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.*;
@@ -33,9 +31,9 @@ public class ExSuit {
 
     public static final Trigger MainTrigger = Trigger.TICK;
     public Map<Integer,Trigger> triggers = new HashMap<>();
-    public Map<Integer, List<ModifierAttriGether>> getAttriGether() {
+    public Map<Integer, List<AttriGetherNormal>> getAttriGether() {
         return attriGether;
-    }    public Map<Integer, List<ModifierAttriGether>> getAttriGetherC() {
+    }    public Map<Integer, List<AttriGetherNormal>> getAttriGetherC() {
         return new HashMap<>(attriGether);
 
     }
@@ -93,7 +91,7 @@ public class ExSuit {
         return null;
     }
     public List<ModifierEntry> entry = new ArrayList<>();
-    public Map<Integer,List< ModifierAttriGether>> attriGether = new java.util.HashMap<>();
+    public Map<Integer,List<AttriGetherNormal>> attriGether = new java.util.HashMap<>();
     private   Map<Integer,List<MobEffectInstance> > effect = new java.util.HashMap<>();
     public Map<String,Float> itemDamage = new java.util.HashMap<>();
     public ExSuit(){
@@ -125,7 +123,7 @@ public class ExSuit {
         this.MaxLevel =Math.max(Collections.max(attriGether.keySet()), Collections.max(effect.keySet()));
 
     }
-    public ExSuit(String id, List<ModifierEntry> entry, Map<Integer,List< ModifierAttriGether>> attriGether) {
+    public ExSuit(String id, List<ModifierEntry> entry, Map<Integer,List< AttriGetherNormal>> attriGether) {
         this.id = id;
         this.entry = entry;
         this.attriGether = attriGether;
@@ -146,13 +144,13 @@ public class ExSuit {
     public Map<Integer, List<MobEffectInstance>> getEffect() {
         return effect;
     }
-    public void setLevelAttriGether(int level,List< ModifierAttriGether> attriGether) {
+    public void setLevelAttriGether(int level,List< AttriGetherNormal> attriGether) {
         Exmodifier.LOGGER.debug("setLevelAttriGether " + level + " " + attriGether);
         if (attriGether != null) {
             this.attriGether.put(level, attriGether);
         }
     }
-    public void setAttriGether(Map<Integer,List< ModifierAttriGether>> attriGether) {
+    public void setAttriGether(Map<Integer,List< AttriGetherNormal>> attriGether) {
         this.attriGether = attriGether;
     }
 

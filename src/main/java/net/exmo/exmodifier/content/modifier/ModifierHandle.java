@@ -20,8 +20,9 @@ import net.exmo.exmodifier.network.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.network.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.*;
-import net.exmo.exmodifier.util.AttrGether;
+import net.exmo.exmodifier.util.gether.AttrGether;
 import net.exmo.exmodifier.content.type.ExType;
+import net.exmo.exmodifier.util.gether.AttrSimpleGether;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
@@ -208,7 +209,7 @@ public class ModifierHandle {
                 if (foldFlag || skinFold) {
                     tooltips.addAll(GenSuitInfo(player, modifierEntry));
                     for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
-                        AttributeModifier attributemodifier = modifierAttriGether.getModifier();
+                        ExAttributeModifier attributemodifier = modifierAttriGether.getModifier();
                         Attribute attribute = modifierAttriGether.getAttribute();
                         if (attribute == null) continue;
                         if (attributemodifier == null) continue;
@@ -664,12 +665,12 @@ public class ModifierHandle {
 //            }
 //            List<CuriosUtil.slotInfo> attriList = CuriosUtil.getCurioAttributeModifiers(stack);
             for (ModifierAttriGether attriGether : attriGethers) {
-                attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName() + stack).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
+                attriGether.modifier = new ExAttributeModifier( attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
                     ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attriGether.attribute, attriGether.modifier), true, null).setOldInstant(oldHelper);
                     MinecraftForge.EVENT_BUS.post(event);
-                    CuriosUtil.addAttributeModifierAffix(stack, new AttrGether(event.attriGether.attribute, event.attriGether.modifier));
+                    CuriosUtil.addAttributeModifierAffix(stack, new AttrSimpleGether(event.attriGether.attribute, event.attriGether.getModifier()));
 
 //                    for (String CuriosSlot : CuriosSlots) CuriosUtil.addAttributeModifierApi(stack,attriGether,CuriosSlot);
                     //   ItemAttrUtil.addItemAttributeModifier(stack, attriGether.attribute, attriGether.modifier, applicableSlot);
@@ -695,7 +696,7 @@ public class ModifierHandle {
                 EquipmentSlot[] applicableSlot = attriGether.IsAutoEquipmentSlot ? slot : new EquipmentSlot[]{attriGether.slot};
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
-                    attriGether.modifier = new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName() + stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
+                    attriGether.modifier =ExAttributeModifier.fromModifier(new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName() + stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation()));
                     ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, attriGether, applicableSlot, modifierInstant).setOldInstant(oldHelper);
                     MinecraftForge.EVENT_BUS.post(event);
                     ItemAttrUtil.addItemAttributeModifier(event.stack, event.attriGether.attribute, event.attriGether.modifier, event.slot);
@@ -1332,20 +1333,20 @@ public class ModifierHandle {
                 }
             }
         }
-        UUID uuid = null;
-        if (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) {
-            UUID.fromString(attrGetherObj.get("uuid").getAsString());
-        } else {
-            UUID.nameUUIDFromBytes(modifierName.getBytes());
+//        UUID uuid = null;
+//        if (attrGetherObj.has("uuid") && !attrGetherObj.get("uuid").getAsString().isEmpty()) {
+//            UUID.fromString(attrGetherObj.get("uuid").getAsString());
+//        } else {
+//            UUID.nameUUIDFromBytes(modifierName.getBytes());
+//
+//
+//        }
+//        if (attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean())
+//            uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
+//        //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
+//        LOGGER.debug("uuid " + uuid);
 
-
-        }
-        if (attrGetherObj.has("autoUUID") && attrGetherObj.get("autoUUID").getAsBoolean())
-            uuid = UUID.nameUUIDFromBytes(modifierName.getBytes());
-        //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
-        LOGGER.debug("uuid " + uuid);
-
-        AttributeModifier modifier = new AttributeModifier(uuid, modifierName, attrValue, operation);
+        ExAttributeModifier modifier = new ExAttributeModifier( modifierName, attrValue, operation);
         ModifierAttriGether attrGether = new ModifierAttriGether(attribute, modifier, slot);
         if (attrGetherObj.has("minValue")) {
             attrGether.minValue = attrGetherObj.get("minValue").getAsDouble();

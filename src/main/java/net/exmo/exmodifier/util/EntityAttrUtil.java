@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.util;
 
+import net.exmo.exmodifier.util.gether.AttrGether;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -47,22 +48,22 @@ public class EntityAttrUtil {
                 break;
         }
     }
-    public static void entityAddAttrTF(AttriGether attriGether, LivingEntity entity, WearOrTake wearOrTake) {
-        Attribute attribute = attriGether.getAttribute();
-        AttributeModifier attributeModifier = attriGether.getModifier();
-
-        switch (wearOrTake) {
-            case WEAR:
-                if (entity.getAttributes().hasAttribute(attribute)) if (!(entity.getAttribute(attribute).hasModifier(attributeModifier)))   entity.getAttribute(attribute).addPermanentModifier(attributeModifier);
-
-                break;
-            case TAKE:
-                if (entity.getAttributes().hasAttribute(attribute)) if ((entity.getAttribute(attribute).hasModifier(attributeModifier)))
-                    entity.getAttribute(attribute).removeModifier(attributeModifier);
-
-                break;
-        }
-    }
+//    public static void entityAddAttrTF(AttriGether attriGether, LivingEntity entity, WearOrTake wearOrTake) {
+//        Attribute attribute = attriGether.getAttribute();
+//        AttributeModifier attributeModifier = attriGether.getModifier();
+//
+//        switch (wearOrTake) {
+//            case WEAR:
+//                if (entity.getAttributes().hasAttribute(attribute)) if (!(entity.getAttribute(attribute).hasModifier(attributeModifier)))   entity.getAttribute(attribute).addPermanentModifier(attributeModifier);
+//
+//                break;
+//            case TAKE:
+//                if (entity.getAttributes().hasAttribute(attribute)) if ((entity.getAttribute(attribute).hasModifier(attributeModifier)))
+//                    entity.getAttribute(attribute).removeModifier(attributeModifier);
+//
+//                break;
+//        }
+//    }
     public static void entityAddAttrTF(Attribute attribute, AttributeModifier attributeModifier, LivingEntity entity, WearOrTake wearOrTake) {
     if (attribute==null)return;
     if(attributeModifier==null)return;

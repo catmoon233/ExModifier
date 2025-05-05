@@ -2,7 +2,7 @@ package net.exmo.exmodifier.content.attributeEffect;
 
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.network.ExModifiervaV;
-import net.exmo.exmodifier.util.AttriGether;
+import net.exmo.exmodifier.util.gether.AttrGether;
 import net.exmo.exmodifier.util.EntityAttrUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -50,11 +50,11 @@ public class AttriGetherEffectHandle {
 
 @SubscribeEvent
 public static void init(FMLCommonSetupEvent event){
-        registerEffect(new AttriGetherEffect(BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.PROGRESS,"§6睡眠之力",true,new ResourceLocation("exmodifier","sleep"), List.of(new AttriGether(Attributes.MAX_HEALTH, new AttributeModifier(UUID.fromString("7f7f7f7f-7f7f-7f7f-7f7f-7f7f7f7f7f7f"), "sleep", 10, AttributeModifier.Operation.ADDITION)))).setRandomAttrUUID(true));
+        registerEffect(new AttriGetherEffect(BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.PROGRESS,"§6睡眠之力",true,new ResourceLocation("exmodifier","sleep"), List.of(new AttrGether(Attributes.MAX_HEALTH, new AttributeModifier(UUID.fromString("7f7f7f7f-7f7f-7f7f-7f7f-7f7f7f7f7f7f"), "sleep", 10, AttributeModifier.Operation.ADDITION)))).setRandomAttrUUID(true));
         registerEffect(new AttriGetherEffect(BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_6,"§4暴怒",true,new ResourceLocation("exmodifier","angry"), List.of(
-                new AttriGether(Attributes.MAX_HEALTH, new AttributeModifier(UUID.fromString("7f7f7f7f-7f7f-7f7f-7f7f-7f7f7f7f7f6f"), "angry", 0.5, AttributeModifier.Operation.MULTIPLY_TOTAL)),
-                new AttriGether(Attributes.ATTACK_DAMAGE, new AttributeModifier(UUID.fromString("7f7f7f7f-7f7f-7f7f-7f7f-7f7f7f7f7f5f"), "angry1", 0.5, AttributeModifier.Operation.MULTIPLY_TOTAL)),
-                new AttriGether(Attributes.MOVEMENT_SPEED, new AttributeModifier(UUID.fromString("7f7f7f7f-7f7f-7f7f-7f7f-7f7f7f7f7f7f"), "angry2", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL))
+                new AttrGether(Attributes.MAX_HEALTH, new AttributeModifier(UUID.fromString("7f7f7f7f-7f7f-7f7f-7f7f-7f7f7f7f7f6f"), "angry", 0.5, AttributeModifier.Operation.MULTIPLY_TOTAL)),
+                new AttrGether(Attributes.ATTACK_DAMAGE, new AttributeModifier(UUID.fromString("7f7f7f7f-7f7f-7f7f-7f7f-7f7f7f7f7f5f"), "angry1", 0.5, AttributeModifier.Operation.MULTIPLY_TOTAL)),
+                new AttrGether(Attributes.MOVEMENT_SPEED, new AttributeModifier(UUID.fromString("7f7f7f7f-7f7f-7f7f-7f7f-7f7f7f7f7f7f"), "angry2", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL))
         )).setRandomAttrUUID(true));
 }
     public static ServerBossEvent genBossBar(JsonObject jsonObject) {
@@ -92,18 +92,18 @@ public static void init(FMLCommonSetupEvent event){
         return UUID.nameUUIDFromBytes((attriGetherEffectInstance.getUuid().toString()+uuid.toString()).getBytes());
     }
     public static void removeAttriGetherEffect(AttriGetherEffectInstance attriGetherEffectInstance, Player player) {
-        for (AttriGether attriGether : attriGetherEffectInstance.getAttriGetherEffect().getAttriGethers()){
+        for (AttrGether attriGether : attriGetherEffectInstance.getAttriGetherEffect().getAttriGethers()){
             if (attriGetherEffectInstance.randomAttrUUID){
-                EntityAttrUtil.entityAddAttrTF(new AttriGether(attriGether.getAttribute(), attriGether.getModifier()).setModifierUUID(GenEffectModifierUUID(attriGetherEffectInstance, attriGether.modifier.getId())), player, EntityAttrUtil.WearOrTake.TAKE);
+                EntityAttrUtil.entityAddAttrTF(new AttrGether(attriGether.getAttribute(), attriGether.getModifier()).setModifierUUID(GenEffectModifierUUID(attriGetherEffectInstance, attriGether.getModifier().getId())), player, EntityAttrUtil.WearOrTake.TAKE);
             }else EntityAttrUtil.entityAddAttrTF(attriGether, player, EntityAttrUtil.WearOrTake.TAKE);
         }
 
     }
     public static void addEffectAttriGether(AttriGetherEffectInstance attriGetherEffectInstance, Player player) {
-        for (AttriGether attriGether : attriGetherEffectInstance.getAttriGetherEffect().getAttriGethers())
+        for (AttrGether attriGether : attriGetherEffectInstance.getAttriGetherEffect().getAttriGethers())
         {
             if (attriGetherEffectInstance.randomAttrUUID){
-            EntityAttrUtil.entityAddAttrTF(new AttriGether(attriGether.getAttribute(), attriGether.getModifier()).setModifierUUID(GenEffectModifierUUID(attriGetherEffectInstance,attriGether.modifier.getId())), player, EntityAttrUtil.WearOrTake.WEAR);
+            EntityAttrUtil.entityAddAttrTF(new AttrGether(attriGether.getAttribute(), attriGether.getModifier()).setModifierUUID(GenEffectModifierUUID(attriGetherEffectInstance,attriGether.getModifier().getId())), player, EntityAttrUtil.WearOrTake.WEAR);
         }
             else EntityAttrUtil.entityAddAttrTF(attriGether, player, EntityAttrUtil.WearOrTake.WEAR);
         }
