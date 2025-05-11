@@ -27,27 +27,27 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber
 public class CapabilityAttachHandler {
-    @SubscribeEvent
-    public static void onSleep(PlayerSleepInBedEvent event){
-        // 创建属性修改器列表
-        List<AttrGether> attributes = List.of(
-                new AttrGether(
-                        Attributes.ATTACK_DAMAGE,
-                        new AttributeModifier(UUID.randomUUID(), "attack_boost", 5.0, AttributeModifier.Operation.MULTIPLY_BASE)
-                ));
-
-// 创建效果实例
-        CustomEffectInstance effect = new CustomEffectInstance(
-                new ResourceLocation("exmodifier", "strength_effect"),
-                200, // 10秒（假设每秒20tick）
-                1,
-                new ResourceLocation("exmodifier", "textures/gui/strength_icon.png"),
-                attributes
-        );
-
-// 应用到实体
-        CEEffectUtils.applyEffect(event.getEntity(), effect);
-    }
+//    @SubscribeEvent
+//    public static void onSleep(PlayerSleepInBedEvent event){
+//        // 创建属性修改器列表
+//        List<AttrGether> attributes = List.of(
+//                new AttrGether(
+//                        Attributes.ATTACK_DAMAGE,
+//                        new AttributeModifier(UUID.randomUUID(), "attack_boost", 5.0, AttributeModifier.Operation.MULTIPLY_BASE)
+//                ));
+//
+//// 创建效果实例
+//        CustomEffectInstance effect = new CustomEffectInstance(
+//                new ResourceLocation("exmodifier", "strength_effect"),
+//                200, // 10秒（假设每秒20tick）
+//                1,
+//                new ResourceLocation("exmodifier", "textures/gui/strength_icon.png"),
+//                attributes
+//        );
+//
+//// 应用到实体
+//        CEEffectUtils.applyEffect(event.getEntity(), effect);
+//    }
     @SubscribeEvent
     public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof LivingEntity) {
