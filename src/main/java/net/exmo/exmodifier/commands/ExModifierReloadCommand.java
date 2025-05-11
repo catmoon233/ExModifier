@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static net.exmo.exmodifier.content.event.MainEvent.sendExmoServerDataToServerPlayer;
+
 @Mod.EventBusSubscriber
 public class ExModifierReloadCommand {
 
@@ -104,9 +106,8 @@ public class ExModifierReloadCommand {
     public static void sendUpdatedModifiersToClients(MinecraftServer server) {
         if (server != null && server.getPlayerList() != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()) {
-                    ModifierHandle.sendModifierEntryToClient(modifierEntry, player);
-                }
+                ModifierHandle.sendClearDataToClient(player);
+                sendExmoServerDataToServerPlayer(player);
             }
         }
     }

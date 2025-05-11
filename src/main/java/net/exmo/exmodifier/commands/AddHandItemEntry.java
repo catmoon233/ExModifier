@@ -153,7 +153,7 @@ public class AddHandItemEntry {
             }
             return 0;
         }))));
-        event.getDispatcher().register(Commands.literal("addHandElement").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("elementId", StringArgumentType.string()).suggests(Suggestion_Elements).then(Commands.argument("level",IntegerArgumentType.integer(1)).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("addHandElement").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("elementId", StringArgumentType.string()).suggests(Suggestion_Elements).then(Commands.argument("level",IntegerArgumentType.integer(-100000)).executes(arguments -> {
             extracted(arguments);
             String _setval = StringArgumentType.getString(arguments, "elementId").replace("\"","");
             Player player = EntityArgument.getPlayer(arguments, "player");

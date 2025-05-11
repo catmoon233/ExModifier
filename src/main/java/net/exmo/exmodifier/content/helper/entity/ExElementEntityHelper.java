@@ -90,6 +90,7 @@ public class ExElementEntityHelper extends BaseEntityHelper{
     }
 
     public ExElementEntityHelper addExElement(ExElementInstant exElementInstant, boolean gather){
+        if (exElementInstant.getElement()==null||exElementInstant.getElement().getId() == null) return this;
         if (!ValidMainNbt()) createMainNbt();
         createElementNbt();
         if (gather) {

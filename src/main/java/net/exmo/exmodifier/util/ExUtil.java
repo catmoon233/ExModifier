@@ -1,5 +1,8 @@
 package net.exmo.exmodifier.util;
 
+import com.google.common.base.CaseFormat;
+import net.exmo.exmodifier.content.dynamicAttributes.DynamicAttribute;
+import net.exmo.exmodifier.content.dynamicAttributes.DynamicAttributeRegister;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -25,7 +28,9 @@ public class ExUtil {
             return tagKey;
         }
     }
-
+    public static String classToString(Class<?> clazz) {
+        return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, clazz.getSimpleName());
+    }
     static HashMap<Item, String> _IS = new HashMap<>();
 
     public static String getItemID(Item item) {
@@ -50,6 +55,9 @@ public class ExUtil {
 
     static Map<Attribute,String> _AS = new HashMap<>();
     public static String getAttributeID(Attribute attribute){
+        if (attribute == null) return "";
+        if (attribute instanceof DynamicAttribute dynamicAttribute)
+        if (DynamicAttributeRegister.dynamicAttributes.containsValue(dynamicAttribute)) return dynamicAttribute.attributeId();
         if (_AS.containsKey(attribute)){
             return _AS.get(attribute);
         }else

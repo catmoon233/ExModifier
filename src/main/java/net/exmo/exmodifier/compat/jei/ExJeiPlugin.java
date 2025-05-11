@@ -56,7 +56,7 @@ public class ExJeiPlugin implements IModPlugin {
             }
             stack.getOrCreateTag().put("modifier_types", listTag);
             double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry)).sum();
-          //  double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry) / totalWeight).sum();
+          //  double probability = exElement.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry) / totalWeight).sum();
             stack.getOrCreateTag().putDouble("modifier_possibility", probability);
             if (modifierEntry.maxLevel <= 1) {
                 stack.getOrCreateTag().putInt("modifier_level", 1);

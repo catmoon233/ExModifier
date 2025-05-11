@@ -1,4 +1,5 @@
 package net.exmo.exmodifier.content.modifier;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -26,50 +27,51 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 
-public class ModifierPreparableReloadListener extends SimplePreparableReloadListener<Map<ResourceLocation, ModifierEntry>> {
+public class ModifierPreparableReloadListener extends SimplePreparableReloadListener<Map<ResourceLocation, JsonObject>> {
 
     private static final Gson GSON = new Gson();
 
-    Map<ResourceLocation,ModifierEntry> entries;
+    Map<ResourceLocation, JsonObject> entries;
 
     @Override
-    protected Map<ResourceLocation, ModifierEntry> prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+    protected Map<ResourceLocation, JsonObject> prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
         pProfiler.startTick();
         pProfiler.push("loading modifier data...");
-        // season_shop/data/season_shop
         var loader = listResources(pResourceManager, pProfiler);
-
         pProfiler.pop();
         return loader;
     }
 
     @SuppressWarnings("unchecked")
-    public Map<ResourceLocation, ModifierEntry> listResources(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
-        Map<ResourceLocation, ModifierEntry> loader = new HashMap<>();
+    public Map<ResourceLocation, JsonObject> listResources(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        Map<ResourceLocation, JsonObject> loader = new HashMap<>();
         for (Map.Entry<ResourceLocation, Resource> resource : pResourceManager.listResources("modifier_entries", p -> p.getPath().endsWith(".json")).entrySet()) {
             ResourceLocation key = resource.getKey();
             try (Reader reader = resource.getValue().openAsReader()) {
                 Resource packResources = pResourceManager.getResource(key).orElseThrow(() -> new IOException("Resource not found: " + key));
                 String jsonString = IOUtils.toString(packResources.open(), StandardCharsets.UTF_8);
                 JsonObject jsonObject = GSON.fromJson(jsonString, JsonObject.class);
-                ArrayList<ModifierEntry> jsonList = new ArrayList<>();
-                ModifierHandle.processModifierEntry(jsonObject.toString(),jsonList );
-                for (ModifierEntry entry : jsonList){
-                    loader.put(key,  entry);
-                }
+                loader.put(key, jsonObject);
             } catch (Exception e) {
                 Exmodifier.LOGGER.Logger.error("Failed to load custom data pack: {}", key, e);
             }
         }
         return loader;
     }
+
     @Override
-    protected void apply(Map<ResourceLocation, ModifierEntry> p_10793_, ResourceManager p_10794_, ProfilerFiller p_10795_) {
-        for (Map.Entry<ResourceLocation, ModifierEntry> entry : p_10793_.entrySet()) {
-            ModifierHandle.RegisterModifierEntry(entry.getValue());
-
+    protected void apply(Map<ResourceLocation, JsonObject> jsonObjects, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        for (Map.Entry<ResourceLocation, JsonObject> entry : jsonObjects.entrySet()) {
+            try {
+                ArrayList<ModifierEntry> jsonList = new ArrayList<>();
+                ModifierHandle.processModifierEntry(entry.getValue().toString(), jsonList);
+                for (ModifierEntry modifierEntry : jsonList) {
+                    ModifierHandle.RegisterModifierEntry(modifierEntry);
+                }
+            } catch (Exception e) {
+                Exmodifier.LOGGER.Logger.error("Failed to process modifier entry: {}", entry.getKey(), e);
+            }
         }
-
     }
 
     @Override

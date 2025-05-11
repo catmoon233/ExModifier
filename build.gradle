@@ -185,8 +185,7 @@ dependencies {
 
     //implementation fg.deobf("curse.maven:curios-309927:5680164")
     //runtimeOnly fg.deobf("curse.maven:architectury-api-419699:5137938")
-    runtimeOnly fg.deobf('curse.maven:l2library-620203:5071762')
-
+    implementation fg.deobf("curse.maven:l2library-620203:6338339")
     //runtimeOnly fg.deobf("curse.maven:artifacts-312353:5693342")
    // runtimeOnly fg.deobf("curse.maven:cloth-config-348521:4973441")
     implementation fg.deobf("curse.maven:apotheosis-313970:5642736")
@@ -204,9 +203,11 @@ dependencies {
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.4.2')
     implementation fg.deobf("curse.maven:slashblade-resharped-1022428:6298272")
 
+    implementation fg.deobf("curse.maven:in-control-257356:5932870")
     implementation fg.deobf("curse.maven:mutil-351914:4824501")
     implementation((fg.deobf("dev.xkmc.l2damagetracker:l2damagetracker:0.3.7")))
     implementation fg.deobf("curse.maven:classic-bars-317642:5134370")
+    implementation fg.deobf("curse.maven:l2-complements-758349:6435103")
     implementation fg.deobf("curse.maven:jade-324717:6271651")
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
@@ -215,6 +216,7 @@ dependencies {
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}"))
+    implementation fg.deobf("curse.maven:l2hostility-909207:6497957")
     // at runtime, use the full JEI jar for Forge
     runtimeOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}"))
 

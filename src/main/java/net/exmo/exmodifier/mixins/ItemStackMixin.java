@@ -108,7 +108,7 @@ public abstract class ItemStackMixin {
             if (exElementHelper.getElementEntriesSize() == 0) {
                 for (var itemSelector : itemSelectors3) {
 
-                    ExElementHandle.elementDefaultMap.get(itemSelector).forEach(
+                    ExElementHandle.elementDefaultMap.get(itemSelector).exElementInstants().forEach(
                             exElementInstant -> exElementHelper.addExElement(exElementInstant, true)
                     );
                 }

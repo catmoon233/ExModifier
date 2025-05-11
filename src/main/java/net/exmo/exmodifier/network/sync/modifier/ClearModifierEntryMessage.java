@@ -1,8 +1,5 @@
-package net.exmo.exmodifier.network;
-import net.exmo.exmodifier.content.modifier.ModifierEntry;
-import net.exmo.exmodifier.content.modifier.ModifierEntryDataBuilder;
+package net.exmo.exmodifier.network.sync.modifier;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 

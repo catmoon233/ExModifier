@@ -5,7 +5,7 @@
   "itemGroup.exmodifier_tab": "§6重铸书",
   " : ": " : ",
   "null": "",
-
+  "modifier.element.exmodifier:normal": "§7普通",
   "exmodifier.refine.tooltip.star.up": "§e星级效果: ",
   "exmodifier.refine.tooltip.star.up_2": "%§e全属性提升",
   "gui.exmodifier.refresh_empty": "请右键选择物品",

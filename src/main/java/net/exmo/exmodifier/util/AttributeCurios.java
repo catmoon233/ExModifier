@@ -36,7 +36,7 @@ AttributeCurios extends Item  implements ICurioItem {
 		attributeCurios.add(this);
 
 	}
-	public  List<DynamicAttribute> getDynamicAttributes(LivingEntity entity){
+	public  List<DynamicAttributeInstant> getDynamicAttributes(LivingEntity entity){
 		return new ArrayList<>();
 	};
 	public String getAttributeID(Attribute attribute){
@@ -50,11 +50,11 @@ AttributeCurios extends Item  implements ICurioItem {
 	@Override
 	public void curioTick(SlotContext slotContext, ItemStack stack) {
 		ICurioItem.super.curioTick(slotContext, stack);
-		List<DynamicAttribute> dynamicAttributes = getDynamicAttributes(slotContext.entity());
-		for (DynamicAttribute dynamicAttribute : dynamicAttributes) {
-			if (dynamicAttribute.type() == DynamicAttribute.DynamicAttributeGeneratorType.TICK) {
-				CuriosUtil.removeAttributeModifierAffix(stack, dynamicAttribute.baseAttribute(), dynamicAttribute.modifierName());
-				Pair<SimpleAttrGather, Double> calculate = dynamicAttribute.calculate(slotContext.entity());
+		List<DynamicAttributeInstant> dynamicAttributeInstants = getDynamicAttributes(slotContext.entity());
+		for (DynamicAttributeInstant dynamicAttributeInstant : dynamicAttributeInstants) {
+			if (dynamicAttributeInstant.type() == DynamicAttributeInstant.DynamicAttributeGeneratorType.TICK) {
+				CuriosUtil.removeAttributeModifierAffix(stack, dynamicAttributeInstant.baseAttribute(), dynamicAttributeInstant.modifierName());
+				Pair<SimpleAttrGather, Double> calculate = dynamicAttributeInstant.calculate(slotContext.entity());
 				CuriosUtil.addSimpleAttributeModifierAffix(stack, calculate.getLeft(), calculate.getRight());
 			}
 		}

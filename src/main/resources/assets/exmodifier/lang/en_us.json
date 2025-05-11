@@ -7,6 +7,7 @@
   "modifier.entry.suit.color": "§6",
   "config.jade.plugin_exmodifier.element": "exmodifier element plugin",
   "modifier.entry.ample": "§7Entry",
+  "modifier.element.exmodifier:normal": "§7normal",
   "name.exmodifier.modmenu": "ExModifier Config Pack Import: ",
   "modifier.entry.can_add_max": "§7The maximum number of entries added has been reached",
   "modifier.entry.type": "§7Type: ",

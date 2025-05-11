@@ -10,11 +10,13 @@ import net.exmo.exmodifier.events.ExCanRefineEvent;
 import net.exmo.exmodifier.events.ExRefineMaxCountEvent;
 import net.exmo.exmodifier.init.ExAttribute;
 import net.exmo.exmodifier.util.ExAttributeModifier;
+import net.exmo.exmodifier.util.ExUtil;
 import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
@@ -79,14 +81,21 @@ public class RefineHelper extends ExHelper {
             for (var slot : ModifierEntry.getType(itemStack).stream().map(ItemType::equipmentSlot)
                     .toArray(EquipmentSlot[][]::new)){
                 for (EquipmentSlot slot1 : slot) {
-                    ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, ExAttribute.ALL_ATTRIBUTE_BOOST.get(), getRefineModifier(0), slot1);
-                    if (add>0) ItemAttrUtil.addItemAttributeModifier2(itemStack, ExAttribute.ALL_ATTRIBUTE_BOOST.get(), getRefineModifier(add+refine), slot1);                }
+                    Attribute attribute = getAttribute();
+                    ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, attribute, getRefineModifier(0), slot1);
+                    if (add>0) ItemAttrUtil.addItemAttributeModifier2(itemStack, attribute, getRefineModifier(add+refine), slot1);                }
             }
 
             getMainNbt().putInt("refine",refine+add);
         }
         return this;
     }
+
+    private static Attribute getAttribute() {
+        Attribute attribute = ExUtil.getAttribute(Config.refine_attribute);
+        return attribute;
+    }
+
     public RefineHelper removeRefine(boolean removeAttribute,int remove){
         if(validKey())
         {
@@ -94,8 +103,8 @@ public class RefineHelper extends ExHelper {
             EquipmentSlot[] equipmentSlot = getEquipmentSlot(itemStack);
             int add = refine - remove;
             for (EquipmentSlot slot : equipmentSlot){
-                ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, ExAttribute.ALL_ATTRIBUTE_BOOST.get(), getRefineModifier(remove), slot);
-                if (add>0) ItemAttrUtil.addItemAttributeModifier2(itemStack, ExAttribute.ALL_ATTRIBUTE_BOOST.get(), getRefineModifier(add), slot);
+                ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, getAttribute(), getRefineModifier(remove), slot);
+                if (add>0) ItemAttrUtil.addItemAttributeModifier2(itemStack, getAttribute(), getRefineModifier(add), slot);
             }
             getMainNbt().putInt("refine", add);
         }
@@ -107,11 +116,11 @@ public class RefineHelper extends ExHelper {
             //int oldRefine = getMainNbt().getInt("refine");
             EquipmentSlot[] equipmentSlot = getEquipmentSlot(itemStack);
             for (EquipmentSlot slot : equipmentSlot){
-                ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, ExAttribute.ALL_ATTRIBUTE_BOOST.get(), getRefineModifier(0),slot);
+                ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, getAttribute(), getRefineModifier(0),slot);
             }
             if (refine>0) {
                 for (EquipmentSlot slot : equipmentSlot) {
-                    ItemAttrUtil.addItemAttributeModifier2(itemStack, ExAttribute.ALL_ATTRIBUTE_BOOST.get(), getRefineModifier(refine), slot);
+                    ItemAttrUtil.addItemAttributeModifier2(itemStack, getAttribute(), getRefineModifier(refine), slot);
                 }
             }
             getMainNbt().putInt("refine", refine);
@@ -161,8 +170,8 @@ public class RefineHelper extends ExHelper {
             String formattedValue = df.format(exmodifierRefine); // 格式化数值
 
             return Component.translatable("exmodifier.refine.tooltip.star.up")
-                    .append(Component.literal(formattedValue))
-                    .append(Component.translatable("exmodifier.refine.tooltip.star.up_2"))
+                    .append(Component.literal(formattedValue+"%"))
+                    .append(Component.translatable(getAttribute().getDescriptionId()))
                     .withStyle(ChatFormatting.YELLOW);
         }
         return null;

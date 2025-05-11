@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.util.gether;
 
 import net.exmo.exmodifier.util.ExAttributeModifier;
+import net.exmo.exmodifier.util.ExUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -61,7 +62,7 @@ public class AttriGetherPlus extends AttriGether {
     }
     public static Attribute getAttribute(String attribute) {
         for (Attribute attr : ForgeRegistries.ATTRIBUTES){
-            if (ForgeRegistries.ATTRIBUTES.getKey(attr).toString().equals(attribute))return attr;
+            if (ExUtil.getAttributeID(attr).equals(attribute))return attr;
         }
         return null;
     }

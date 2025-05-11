@@ -1,4 +1,4 @@
-package net.exmo.exmodifier.compat.compat.apoth;
+package net.exmo.exmodifier.compat;
 
 import com.google.common.collect.Multimap;
 import dev.shadowsoffire.attributeslib.api.client.GatherSkippedAttributeTooltipsEvent;
@@ -6,7 +6,6 @@ import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.content.helper.ItemLevelHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevel;
-import net.exmo.exmodifier.content.level.ItemLevelInstant;
 import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.minecraft.client.gui.screens.Screen;
@@ -14,9 +13,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
 import java.util.List;

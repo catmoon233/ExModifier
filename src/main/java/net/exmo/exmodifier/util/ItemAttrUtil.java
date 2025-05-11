@@ -112,7 +112,7 @@ public  class ItemAttrUtil {
         ListTag listtag = stack.getTag().getList("ExAttributeModifiers", Tag.TAG_COMPOUND);
         for (int i = 0; i < listtag.size(); i++) {
             CompoundTag compoundTag = listtag.getCompound(i);
-                             if (compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+                             if (compoundTag.getString("AttributeName").equals(ExUtil.getAttributeID(attribute).toString())) {
                     if (compoundTag.getString("Name").equals(name)) {
                         return compoundTag.getDouble("Amount");
                     }
@@ -130,7 +130,7 @@ public  class ItemAttrUtil {
             for (int i = 0; i < listtag.size(); ) { // 注意这里使用i而不是i++
                 i++;
                 CompoundTag compoundTag = listtag.getCompound(i);
-                  if ( compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+                  if ( compoundTag.getString("AttributeName").equals(ExUtil.getAttributeID(attribute).toString())) {
                       String modifierName = compoundTag.getString("Name");
                       AttributeModifier.Operation operation = AttributeModifier.Operation.fromValue(compoundTag.getInt("Operation"));
 
@@ -190,7 +190,7 @@ public  class ItemAttrUtil {
 //                CompoundTag compoundTag = listtag.getCompound(i);
 //                if (
 //                        compoundTag.getUUID("UUID").equals(pModifier.getId())&&
-//                        compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+//                        compoundTag.getString("AttributeName").equals(ExUtil.getAttributeID(pAttribute).toString()) &&
 //                                compoundTag.getString("Name").equals(pModifier.getName()) &&
 //                                compoundTag.getInt("Operation") == pModifier.getOperation().toValue()
 //                ) {
@@ -234,7 +234,7 @@ public  class ItemAttrUtil {
                 CompoundTag compoundTag = listtag.getCompound(i);
                 if (
                         compoundTag.contains("AttributeName") &&
-                                compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+                                compoundTag.getString("AttributeName").equals(ExUtil.getAttributeID(pAttribute).toString()) &&
                                 compoundTag.contains("Name") &&
                                 compoundTag.getString("Name").equals(pModifier.getName()) &&
                                 compoundTag.contains("Operation") &&
@@ -254,7 +254,7 @@ public  class ItemAttrUtil {
                 CompoundTag compoundTag = listtag.getCompound(i);
                 if (
                         compoundTag.contains("AttributeName") &&
-                                compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+                                compoundTag.getString("AttributeName").equals(ExUtil.getAttributeID(pAttribute).toString()) &&
                                 compoundTag.contains("UUIDMost") && // Assuming "UUIDMost" and "UUIDLeast" are used to store the UUID
                                 compoundTag.getLong("UUIDMost") == pModifierUUID.getMostSignificantBits() &&
                                 compoundTag.contains("UUIDLeast") &&
@@ -276,7 +276,7 @@ public  class ItemAttrUtil {
                 CompoundTag compoundTag = listtag.getCompound(i);
                 if (
                         compoundTag.contains("AttributeName") &&
-                                compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+                                compoundTag.getString("AttributeName").equals(ExUtil.getAttributeID(pAttribute).toString()) &&
                                 compoundTag.contains("Name") &&
                                 compoundTag.getString("Name").equals(pModifier.getName()) &&
                                 compoundTag.contains("Operation") &&
@@ -298,7 +298,7 @@ public  class ItemAttrUtil {
                 CompoundTag compoundTag = listtag.getCompound(i);
                 if (
                         compoundTag.contains("AttributeName") &&
-                                compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+                                compoundTag.getString("AttributeName").equals(ExUtil.getAttributeID(pAttribute).toString()) &&
                                 compoundTag.contains("Name") &&
                                 compoundTag.getDouble("Amount") == pModifier.getAmount() &&
                                 compoundTag.getString("Name").equals(pModifier.getName()) &&
@@ -321,7 +321,7 @@ public  class ItemAttrUtil {
                 CompoundTag compoundTag = listtag.getCompound(i);
                 if (
                         compoundTag.contains("AttributeName") &&
-                                compoundTag.getString("AttributeName").equals(ForgeRegistries.ATTRIBUTES.getKey(pAttribute).toString()) &&
+                                compoundTag.getString("AttributeName").equals(ExUtil.getAttributeID(pAttribute).toString()) &&
                                 compoundTag.getDouble("Amount") == pModifier.getAmount() &&
                                 compoundTag.contains("Name") &&
                                 compoundTag.getString("Name").equals(pModifier.getName()) &&

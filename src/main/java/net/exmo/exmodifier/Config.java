@@ -83,7 +83,17 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue REFINE_NEED_SAME_STAR = BUILDER
             .comment("refine need same star")
             .define("REFINE_NEED_SAME_STAR", false);
+    public static final ForgeConfigSpec.ConfigValue<String> REFINE_ATTRIBUTE = BUILDER
+            .comment("THE REFINE ADD ATTRIBUTE")
+            .define("REFINE_ATTRIBUTE", "minecraft:generic.attack_damage");
+    public static final ForgeConfigSpec.BooleanValue ELEMENT_SUMMON_DEBUG = BUILDER
+            .comment("ELEMENT_SUMMON_DEBUG")
+            .define("ELEMENT_SUMMON_DEBUG", false);
+    public static final ForgeConfigSpec.BooleanValue USE_NEW_DAMAGE_FORMULA = BUILDER
+            .comment("USE_NEW_DAMAGE_FORMULA")
+            .define("USE_NEW_DAMAGE_FORMULA", true);
     static final ForgeConfigSpec SPEC = BUILDER.build();
+
 
     // 配置值缓存
     public static int refresh_time;
@@ -107,12 +117,16 @@ public class Config {
     public static boolean refine_system;
     public static boolean alaways_display_modifier_name_under_item_name;
     public static boolean refine_need_same_star;
+    public static String refine_attribute;
+    public static boolean element_summon_debug;
+    public static boolean useNewDamageFormula;
 
 
 
     @SubscribeEvent
-    public static void onLoad(final ModConfigEvent event) {
+    public static void onLoad(ModConfigEvent event) {
         // 当配置加载时更新缓存值
+        refine_attribute = REFINE_ATTRIBUTE.get();
         refresh_time = REFRESH_TIME.get();
         compact_tooltip = COMPACT_TOOLTIP.get();
         add_level_system_count = ADD_LEVEL_SYSTEM_COUNT.get();
@@ -134,5 +148,7 @@ public class Config {
         alaways_display_modifier_name_under_item_name = REFINE_ALAWAYS_DISPLAY_TOOLTIP.get();
         refine_system = REFINE_SYSTEM.get();
         refine_need_same_star = REFINE_NEED_SAME_STAR.get();
+        element_summon_debug = ELEMENT_SUMMON_DEBUG.get();
+        useNewDamageFormula = USE_NEW_DAMAGE_FORMULA.get();
     }
 }

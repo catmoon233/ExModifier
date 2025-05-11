@@ -1,4 +1,5 @@
-package net.exmo.exmodifier.network;
+package net.exmo.exmodifier.network.sync.modifier;
+import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierEntryDataBuilder;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
@@ -26,8 +27,7 @@ public record SyncModifierEntryMessage(ModifierEntry modifierEntry) {
         ctx.get().enqueueWork(() -> {
             // Handle the received message
             ModifierEntry modifierEntry = msg.modifierEntry();
-            // Process the modifierEntry as needed
-            System.out.println("Received modifierEntry: " + modifierEntry);
+            Exmodifier.LOGGER.debug("Received modifierEntry: " + modifierEntry);
             ModifierHandle.RegisterModifierEntry(modifierEntry);
         });
         ctx.get().setPacketHandled(true);

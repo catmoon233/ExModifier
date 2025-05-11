@@ -99,6 +99,7 @@ public class ExElementHelper extends ExHelper{
     }
 
     public ExElementHelper addExElement(ExElementInstant exElementInstant, boolean gather){
+        if (exElementInstant.getElement()==null)return this;
         createNbt();
         if (!ValidMainNbt()) createMainNbt();
         createElementNbt();

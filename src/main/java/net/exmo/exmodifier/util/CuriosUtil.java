@@ -105,7 +105,7 @@ CuriosUtil {
         return !getSlotsFromItemstack(itemStack).isEmpty();
     }
 //    public static void addAttributeModifier(ItemStack itemStack, AttriGether attriGether, String slot){
-//        CuriosUtil.addAttributeModifier(itemStack, ForgeRegistries.ATTRIBUTES.getKey(attriGether.attribute).toString(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation().toValue(), slot);
+//        CuriosUtil.addAttributeModifier(itemStack, ExUtil.getAttributeID(attriGether.attribute).toString(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation().toValue(), slot);
 //    }
 //    public static void addAttributeModifierApi(ItemStack itemStack, AttriGether attriGether, String slot){
 //        if (attriGether.attribute!=null)

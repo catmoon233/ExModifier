@@ -786,6 +786,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 renderItemInSlot(guiGraphics, selectedRefreshItem,
                         materialButton.getX(), materialButton.getY(),
                         materialButton.getWidth(), materialButton.getHeight());
+                guiGraphics.renderItemDecorations(font, selectedRefreshItem, materialButton.getX(), materialButton.getY());
             }
 
         }

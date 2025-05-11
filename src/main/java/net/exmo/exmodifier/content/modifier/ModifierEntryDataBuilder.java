@@ -233,7 +233,7 @@ public class ModifierEntryDataBuilder {
             for (int i = 0; i < entry.attriGether.size(); i++) {
                 ModifierAttriGether attriGether = entry.attriGether.get(i);
                 JsonObject attriGetherJson = new JsonObject();
-                attriGetherJson.addProperty("id", ForgeRegistries.ATTRIBUTES.getKey(attriGether.getAttribute()).toString());
+                attriGetherJson.addProperty("id", ExUtil.getAttributeID(attriGether.getAttribute()).toString());
                 if (attriGether.weight != 0.0f) attriGetherJson.addProperty("weight", attriGether.weight);
                 if (attriGether.getModifier().getAmount() != 0.0f)
                     attriGetherJson.addProperty("value", attriGether.getModifier().getAmount());

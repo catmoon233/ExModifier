@@ -532,7 +532,7 @@ public class ModifierEntryHelper extends ExHelper {
             if (CuriosUtil.isCuriosItem2(itemStack)) {
                 for (ModifierAttriGether modifierAttriGether : modifierInstant.getModifierEntry().attriGether) {
                     if (modifierAttriGether.attribute != null)
-                        CuriosUtil.removeAttributeModifierAffix(itemStack, ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether.attribute).toString(), modifierAttriGether.modifier.getName());
+                        CuriosUtil.removeAttributeModifierAffix(itemStack, ExUtil.getAttributeID(modifierAttriGether.attribute).toString(), modifierAttriGether.modifier.getName());
                 }
             }
             for (ModifierAttriGether modifierAttriGether : modifierInstant.getModifierEntry().attriGether) {
@@ -628,8 +628,8 @@ public class ModifierEntryHelper extends ExHelper {
                         ItemAttrUtil.removeAttributeModifierNoAmout(stack, modifierAttriGether1.getAttribute(), modifierAttriGether1.getModifier(), slot);
                     else {
                         for (String curioType : curiosType) {
-                            if (ForgeRegistries.ATTRIBUTES.containsValue(modifierAttriGether1.getAttribute()) && ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute()) != null)
-                                CuriosUtil.removeAttributeModifierAffix(stack, ForgeRegistries.ATTRIBUTES.getKey(modifierAttriGether1.getAttribute()).toString(), modifierAttriGether1.getModifier().getName());
+                            if (ForgeRegistries.ATTRIBUTES.containsValue(modifierAttriGether1.getAttribute()) && ExUtil.getAttributeID(modifierAttriGether1.getAttribute()) != null)
+                                CuriosUtil.removeAttributeModifierAffix(stack, ExUtil.getAttributeID(modifierAttriGether1.getAttribute()).toString(), modifierAttriGether1.getModifier().getName());
                         }
                     }
                     stack.getOrCreateTag().remove("exmodifier_armor_modifier_applied" + i);

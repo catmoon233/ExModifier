@@ -10,6 +10,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.ZipFile;
@@ -42,12 +43,17 @@ public class ZipHandle {
         }
 
     }
-    public static void init() throws IOException {
+    public record ZipFunction(List<Runnable> elementDefault,List<Runnable> defaultEntry){
+       public ZipFunction() {
+           this(new ArrayList<>(),new ArrayList<>());
+       }
+    }
+    public static ZipFunction init() throws IOException {
         if (!Files.exists(ZIP_FILE_DIR)) {
             Files.createDirectories(ZIP_FILE_DIR);
-            return;
+            return new ZipFunction();
         }
-
+        ZipFunction zipFunction = new ZipFunction();
         Files.list(ZIP_FILE_DIR).forEach(path -> {
 
 
@@ -55,13 +61,14 @@ public class ZipHandle {
                     path.toString().endsWith(".7z") || path.toString().endsWith(".rar") ||
                     path.toString().endsWith(".gz")) {
                 try (ZipFile zipFile = new ZipFile(path.toFile())) {
-                    readConfigFromZipFile(zipFile);
+                    readConfigFromZipFile(zipFile,zipFunction );
                 } catch (IOException e) {
                     Exmodifier.LOGGER.error("IOException:", e);
                 }
             }
 
         });
+        return zipFunction;
 
     }
 

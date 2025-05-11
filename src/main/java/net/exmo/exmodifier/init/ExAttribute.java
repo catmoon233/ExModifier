@@ -63,6 +63,7 @@ public class ExAttribute {
     public static final RegistryObject<Attribute> ALL_ATTRIBUTE_BOOST;
 
     static {
+
         ALL_ATTRIBUTE_BOOST = registerAttribute("all_attribute_boost", 1, 0, 100000000);
 
         //元素抗性系数

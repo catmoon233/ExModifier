@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.util.gether;
 
 import net.exmo.exmodifier.util.ExAttributeModifier;
+import net.exmo.exmodifier.util.ExUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -37,7 +38,7 @@ public class AttriGether {
         if (slot != null)sslot = slot.getName();
         tag.putString("slot", sslot);
         tag.putBoolean("IsAutoEquipmentSlot", IsAutoEquipmentSlot);
-        ResourceLocation key = ForgeRegistries.ATTRIBUTES.getKey(attribute);
+        ResourceLocation key = ResourceLocation.tryParse(ExUtil.getAttributeID(attribute));
         if (key!=null) {
             tag.putString("attribute", key.toString());
         }
@@ -105,7 +106,7 @@ public class AttriGether {
         boolean flag = false;
         String percent = "";
         double d1;
-        if (attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL  &&!percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+        if (attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL  &&!percentAtr.contains(ExUtil.getAttributeID(attribute).toString())) {
             if ((attribute).equals(Attributes.KNOCKBACK_RESISTANCE)) {
                 d1 = d0 * 10.0;
             } else {
@@ -115,12 +116,12 @@ public class AttriGether {
             d1 = d0 * 100.0;
         }
         String amouta2 = "";
-        if (percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())){
+        if (percentAtr.contains(ExUtil.getAttributeID(attribute).toString())){
             percent = "%";
             DecimalFormat df = new DecimalFormat("#.####");
             amouta2 = df.format(attributemodifier.getAmount() * 100);
             if (this.attribute.getDescriptionId().length() >=4){
-                if (ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("twtp") ||ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("isfix") ) {
+                if (ExUtil.getAttributeID(attribute).toString().startsWith("twtp") ||ExUtil.getAttributeID(attribute).toString().startsWith("isfix") ) {
                     amouta2 = df.format(attributemodifier.getAmount()) ;
                 }
             }

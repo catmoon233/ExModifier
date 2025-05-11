@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 
 public record SyncEntityElementMessage(UUID uuid, ExElementInstant exElementInstant) {
     public static void encode(SyncEntityElementMessage msg, FriendlyByteBuf buffer) {
+        if (msg.exElementInstant.getElement() ==null || msg.exElementInstant.getElement().getId() == null)return;
         CompoundTag compoundTag = new CompoundTag();
         compoundTag.putInt("Level", msg.exElementInstant.getLevel());
         compoundTag.putString("ID", msg.exElementInstant.getElement().getId().toString());

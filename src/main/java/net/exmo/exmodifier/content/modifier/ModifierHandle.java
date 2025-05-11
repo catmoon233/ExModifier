@@ -6,19 +6,29 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.content.client.LanguageLoader;
+import net.exmo.exmodifier.content.element.DefaultEntityElement;
+import net.exmo.exmodifier.content.element.DefaultItemElement;
+import net.exmo.exmodifier.content.element.ExElement;
 import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.content.helper.ItemInfo;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
+import net.exmo.exmodifier.content.resources.ZipHandle;
 import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.events.*;
-import net.exmo.exmodifier.network.ClearModifierEntryMessage;
+import net.exmo.exmodifier.network.sync.defaultEntityElement.ClearDefaultItemElementMessage;
+import net.exmo.exmodifier.network.sync.defaultEntityElement.SyncDefaultItemElementMessage;
+import net.exmo.exmodifier.network.sync.defaultItemElement.ClearDefaultEntityElementMessage;
+import net.exmo.exmodifier.network.sync.defaultItemElement.SyncDefaultEntityElementMessage;
+import net.exmo.exmodifier.network.sync.element.ClearElementMessage;
+import net.exmo.exmodifier.network.sync.element.SyncElementMessage;
+import net.exmo.exmodifier.network.sync.modifier.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.ExModifiervaV;
-import net.exmo.exmodifier.network.SyncModifierEntryMessage;
+import net.exmo.exmodifier.network.sync.modifier.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.gether.AttrGether;
 import net.exmo.exmodifier.content.type.ExType;
@@ -75,13 +85,13 @@ public class ModifierHandle {
 //    }
     public static List<String> percentAtr = new ArrayList<>();
 
-    public static void sendModifierEntryToServer(ModifierEntry modifierEntry) {
-
-        PACKET_HANDLER.sendToServer(new SyncModifierEntryMessage(modifierEntry));
-        // 处理服务器未初始化的情况
-        LOGGER.Logger.error("Server is not initialized yet.");
-
-    }
+//    public static void sendModifierEntryToServer(ModifierEntry modifierEntry) {
+//
+//        PACKET_HANDLER.sendToServer(new SyncModifierEntryMessage(modifierEntry));
+//        // 处理服务器未初始化的情况
+//        //LOGGER.Logger.error("Server is not initialized yet.");
+//
+//    }
 
     public static ModifierEntry findModifierEntry(String id) {
         return modifierEntryMap.get(id);
@@ -91,14 +101,31 @@ public class ModifierHandle {
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncModifierEntryMessage(modifierEntry));
     }
 
-    public static void sendClearModifierEntryToClient(ServerPlayer player) {
+    public static void sendElementToClient(ExElement e, ServerPlayer player) {
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncElementMessage(e));
+    }
+
+    public static void sendDefaultEntityElementToClient(DefaultEntityElement e, ServerPlayer player) {
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncDefaultEntityElementMessage(e));
+    }
+
+    public static void sendDefaultItemElementToClient(DefaultItemElement e, ServerPlayer player) {
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncDefaultItemElementMessage(e));
+    }
+
+
+    public static void sendClearDataToClient(ServerPlayer player) {
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearModifierEntryMessage());
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearElementMessage());
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearDefaultEntityElementMessage());
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearDefaultItemElementMessage());
+
     }
 
     public static void sendModifierEntryToAllClient(ModifierEntry modifierEntry) {
         MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
         if (currentServer == null) {
-            LOGGER.Logger.error("Server is not initialized yet.");
+            //LOGGER.Logger.error("Server is not initialized yet.");
             return;
         }
         for (ServerPlayer player : currentServer.getPlayerList().getPlayers()) {
@@ -106,14 +133,14 @@ public class ModifierHandle {
         }
     }
 
-    public static void sendClearModifierEntryToAllClient() {
+    public static void sendClearDataToAllClient() {
         MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
         if (currentServer == null) {
-            LOGGER.Logger.error("Server is not initialized yet.");
+            //LOGGER.Logger.error("Server is not initialized yet.");
             return;
         }
         for (ServerPlayer player : currentServer.getPlayerList().getPlayers()) {
-            PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearModifierEntryMessage());
+            sendClearDataToClient(player);
         }
     }
 
@@ -254,7 +281,7 @@ public class ModifierHandle {
                             DecimalFormat df = new DecimalFormat("#.####");
                             amouta2 = df.format(attributemodifier.getAmount() * 100);
                             if (modifierAttriGether.attribute.getDescriptionId().length() >= 4) {
-                                if (attributeID.startsWith("twtp") || ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("isfix")) {
+                                if (attributeID.startsWith("twtp") || ExUtil.getAttributeID(attribute).toString().startsWith("isfix")) {
                                     amouta2 = df.format(attributemodifier.getAmount());
                                 }
                             }
@@ -340,31 +367,31 @@ public class ModifierHandle {
                 if (modifierEntry.id != null) LOGGER.debug("add entry: " + modifierEntry.id);
                 modifierEntries.add(modifierEntry);
                 if (modifierEntry == null) {
-                    LOGGER.debug("modifierEntry is null");
+                    LOGGER.debug("exElement is null");
                     return;
                 }
                 weightedUtil.removeKey(modifierEntry.id);
-                //        if (!appliedModifiers.contains(modifierEntry.Id)) {
+                //        if (!appliedModifiers.contains(exElement.Id)) {
                 LOGGER.debug("add entry start: " + modifierEntry.id);
-                // appliedModifiers.add(modifierEntry.Id);
+                // appliedModifiers.add(exElement.Id);
 
-//                    stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.Id);
+//                    stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, exElement.Id);
                 numAddedModifiers++;
                 LOGGER.debug("add entry ing: " + modifierEntry.id);
                 ModifierEntryHelper.of(stack).addModifierEntry(ModifierInstant.of(modifierEntry), true, true);
 
-//                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(modifierEntry,stack);
-//                    ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, true, refreshments, attriGethers,modifierEntry,modifierEntries);
+//                    List<ModifierAttriGether> attriGethers = selectModifierAttributes(exElement,stack);
+//                    ExAddEntryAttrigethersEvent event = new ExAddEntryAttrigethersEvent(stack, weightedUtil, true, refreshments, attriGethers,exElement,modifierEntries);
 //                    MinecraftForge.EVENT_BUS.post(event);
 //
-//                    LOGGER.debug("add entry end: " + modifierEntry.Id +" "+attriGethers);
+//                    LOGGER.debug("add entry end: " + exElement.Id +" "+attriGethers);
 //                    finalAttriGethers.addAll(event.getAttriGether());
-//                    if (modifierEntry.OnlyHasThisEntry){
+//                    if (exElement.OnlyHasThisEntry){
 //                        finalAttriGethers = new ArrayList<>(event.getAttriGether());
 //                        for (int i = numAddedModifiers ; i < refreshments; i++){
 //                            stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + i, "");
 //                        }
-//                        stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", modifierEntry.Id);
+//                        stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied", exElement.Id);
 //                        break;
 //                    }
 //             //   }
@@ -387,18 +414,18 @@ public class ModifierHandle {
                 LOGGER.debug("add entry: " + modifierEntry.id);
                 modifierEntries.add(modifierEntry);
                 if (modifierEntry == null) {
-                    LOGGER.debug("modifierEntry is null");
+                    LOGGER.debug("exElement is null");
                     continue;
                 }
 
-                // if (!appliedModifiers.contains(modifierEntry.Id)) {
+                // if (!appliedModifiers.contains(exElement.Id)) {
                 LOGGER.debug("add entry start: " + modifierEntry.id);
-                //  appliedModifiers.add(modifierEntry.Id);
+                //  appliedModifiers.add(exElement.Id);
                 weightedUtil.removeKey(modifierEntry.id);
                 ItemInfo itemInfo = new ItemInfo(stack);
                 ModifierInstant modifierInstant = new ModifierInstant(modifierEntry, 1);
                 itemInfo.getModifierEntryHelper().addModifierEntry(modifierInstant, false, true);
-                //   stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, modifierEntry.Id);
+                //   stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, exElement.Id);
                 numAddedModifiers++;
                 LOGGER.debug("add entry ing: " + modifierEntry.id);
 
@@ -513,17 +540,17 @@ public class ModifierHandle {
         }
 
 
-//            public static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry modifierEntry, ItemStack stack) {
+//            public static List<ModifierAttriGether> selectModifierAttributes(ModifierEntry exElement, ItemStack stack) {
 //                List<ModifierAttriGether> attriGethers = new ArrayList<>();
 //
-//                if (modifierEntry.RandomNum > 0) {
-//                    int remainingRandoms = modifierEntry.RandomNum;
+//                if (exElement.RandomNum > 0) {
+//                    int remainingRandoms = exElement.RandomNum;
 //                    Map<String, ModifierAttriGether> toRandom = new HashMap<>();
 //                    Map<String, Float> weightMap = new HashMap<>();
 //
 //                    // Populate toRandom and weightMap in a single loop
-//                    for (int i = 0; i < modifierEntry.attriGether.size(); i++) {
-//                        ModifierAttriGether attriGether = modifierEntry.attriGether.get(i);
+//                    for (int i = 0; i < exElement.attriGether.size(); i++) {
+//                        ModifierAttriGether attriGether = exElement.attriGether.get(i);
 //                        if (attriGether.weight > 0) {
 //                            String key = String.valueOf(i);
 //                            toRandom.put(key, attriGether);
@@ -542,7 +569,7 @@ public class ModifierHandle {
 //                        ModifierAttriGether selectedAttriGether = toRandom.get(selectedKey);
 //
 //                        if (selectedAttriGether != null && !attriGethers.contains(selectedAttriGether)) {
-//                            ExAddEntryAttrigetherEvent event = new ExAddEntryAttrigetherEvent(modifierEntry, selectedAttriGether, stack);
+//                            ExAddEntryAttrigetherEvent event = new ExAddEntryAttrigetherEvent(exElement, selectedAttriGether, stack);
 //                            MinecraftForge.EVENT_BUS.post(event);
 //                            attriGethers.add(event.selectedAttriGether);
 //                            Exmodifier.LOGGER.debug ("add Random entry: " + event.selectedAttriGether.getAttribute().getDescriptionId());
@@ -551,7 +578,7 @@ public class ModifierHandle {
 //                    }
 //
 //                } else {
-//                    attriGethers.addAll(modifierEntry.attriGether.stream()
+//                    attriGethers.addAll(exElement.attriGether.stream()
 //                            .filter(attriGether -> !attriGether.isRandom)
 //                            .toList());
 //                }
@@ -623,9 +650,9 @@ public class ModifierHandle {
 //            if (!modifierEntries.contains(modifier)) modifierEntries.add(modifier);
 //            boolean over = false;
 //            Map<String, Float> weightedUtilmap = new HashMap<>();
-//            for (ModifierEntry modifierEntry : modifierEntries.stream().filter(Objects::nonNull).toList()) {
-//                Exmodifier.LOGGER.info(modifierEntry.getId());
-//                weightedUtilmap.put(modifierEntry.getId(), 1.0f);
+//            for (ModifierEntry exElement : modifierEntries.stream().filter(Objects::nonNull).toList()) {
+//                Exmodifier.LOGGER.info(exElement.getId());
+//                weightedUtilmap.put(exElement.getId(), 1.0f);
 //            }
 //
 //            Map<ExType, EquipmentSlot> typeSlotMap =new  HashMap<>( Map.of(
@@ -665,7 +692,7 @@ public class ModifierHandle {
 //            }
 //            List<CuriosUtil.slotInfo> attriList = CuriosUtil.getCurioAttributeModifiers(stack);
             for (ModifierAttriGether attriGether : attriGethers) {
-                attriGether.modifier = new ExAttributeModifier( attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
+                attriGether.modifier = new ExAttributeModifier(attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation());
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
                     ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, new ModifierAttriGether(attriGether.attribute, attriGether.modifier), true, null).setOldInstant(oldHelper);
@@ -696,7 +723,7 @@ public class ModifierHandle {
                 EquipmentSlot[] applicableSlot = attriGether.IsAutoEquipmentSlot ? slot : new EquipmentSlot[]{attriGether.slot};
 
                 if (ForgeRegistries.ATTRIBUTES.containsValue(attriGether.attribute)) {
-                    attriGether.modifier =ExAttributeModifier.fromModifier(new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName() + stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation()));
+                    attriGether.modifier = ExAttributeModifier.fromModifier(new AttributeModifier(UUID.nameUUIDFromBytes((attriGether.modifier.getName() + stack.getItem().getDescriptionId()).getBytes()), attriGether.modifier.getName(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation()));
                     ExApplyEntryAttrigetherEvent event = new ExApplyEntryAttrigetherEvent(stack, attriGether, applicableSlot, modifierInstant).setOldInstant(oldHelper);
                     MinecraftForge.EVENT_BUS.post(event);
                     ItemAttrUtil.addItemAttributeModifier(event.stack, event.attriGether.attribute, event.attriGether.modifier, event.slot);
@@ -705,6 +732,7 @@ public class ModifierHandle {
                 }
             }
         }
+
         public static void applyModifiers(ItemStack stack, List<ModifierAttriGether> attriGethers, EquipmentSlot[] slot, ModifierInstant modifierInstant) {
             applyModifiers(stack, attriGethers, slot, modifierInstant, null);
         }
@@ -853,7 +881,7 @@ public class ModifierHandle {
         try {
             // 打印所有属性的日志
 //            ForgeRegistries.ATTRIBUTES.forEach(attribute ->
-//                    LOGGER.debug("Attribute: " + ForgeRegistries.ATTRIBUTES.getKey(attribute))
+//                    LOGGER.debug("Attribute: " + ExUtil.getAttributeID(attribute))
 //            );
 
             // 读取洗涤材料配置
@@ -899,7 +927,7 @@ public class ModifierHandle {
         }
     }
 
-    public static void readConfigFromZipFile(ZipFile zipFile) {
+    public static void readConfigFromZipFile(ZipFile zipFile, ZipHandle.ZipFunction zipFunction) {
         long startTime = System.nanoTime(); // 记录开始时间
         try {
             // 读取自定义类型配置
@@ -925,18 +953,20 @@ public class ModifierHandle {
             // 读取物品默认条目配置
             MinecraftForge.EVENT_BUS.post(new ExItemDefaultEntry());
             // 读取其余配置文件
+
             String ItemsDefaultEntryFilePath = ItemsDefaultEntryConfigPath.getFileName().toString();
             ZipEntry item = zipFile.getEntry(ItemsDefaultEntryFilePath);
             if (item != null) {
-
                 MoConfig washingMaterialsConfig = new MoConfig(Path.of(zipFile.getName(), ItemsDefaultEntryFilePath), zipFile.getInputStream(item));
-
-                for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
-                    processItemsDefaultEntryEntry(entry);
-                }
-
+                Set<Map.Entry<String, JsonElement>> entries = washingMaterialsConfig.readEntrys();
+                zipFunction.defaultEntry().add(() -> {
+                    for (Map.Entry<String, JsonElement> entry : entries) {
+                        processItemsDefaultEntryEntry(entry);
+                    }
+                });
             }
-            ExElementHandle.init(); //初始化元素
+
+
             // 读取元素
             String ElementPath = ExElementHandle.ElementConfigPath.getFileName().toString();
             ZipEntry element = zipFile.getEntry(ElementPath);
@@ -946,8 +976,6 @@ public class ModifierHandle {
                 ExElementHandle.processMoConfigEntries(ElementConfig);
 
             }
-
-
 
 
             // 读取升级配置
@@ -974,14 +1002,36 @@ public class ModifierHandle {
             }
             //读取默认元素
             Foundlvconfigs = listFilesFromZipFile(zipFile, ExElementHandle.DefaultElementConfigPath.getFileName());
-            for (MoConfig moconfig : Foundlvconfigs) {
-                ExElementHandle.processMoConfigEntries2(moconfig);
-            }
+            zipFunction.elementDefault().add(
+                    () -> {
+                            for (MoConfig moconfig : Foundlvconfigs) {
+                                try {
+                                    ExElementHandle.processMoConfigEntries2(moconfig);
+                                } catch (FileNotFoundException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+                        );
+
+
+
             //读取默认元素
             Foundlvconfigs = listFilesFromZipFile(zipFile, ExElementHandle.DefaultEntityElementConfigPath.getFileName());
-            for (MoConfig moconfig : Foundlvconfigs) {
-                ExElementHandle.processMoConfigEntries3(moconfig);
-            }
+            zipFunction.elementDefault().add(
+                    () -> {
+                        try {
+                            for (MoConfig moconfig : Foundlvconfigs) {
+                                ExElementHandle.processMoConfigEntries3(moconfig);
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+            );
+
+
             for (MoConfig moconfig : listFilesFromZipFile(zipFile, LanguageLoader.LANGUAGES_FILE_PATH.getFileName())) {
                 String string = moconfig.configFile.getFileName().toString();
                 String languageCode = string.substring(0, string.length() - 5);
@@ -1009,7 +1059,7 @@ public class ModifierHandle {
         }
         try {
             JsonObject jsonObject = entry.getValue().getAsJsonObject();
-            List<Pair<String,Integer>> entries = new ArrayList<>();
+            List<Pair<String, Integer>> entries = new ArrayList<>();
             for (JsonElement item : jsonObject.get("entries").getAsJsonArray()) {
                 JsonObject asJsonObject = item.getAsJsonObject();
                 int level = asJsonObject.has("level") ? asJsonObject.get("level").getAsInt() : 1;
@@ -1017,14 +1067,14 @@ public class ModifierHandle {
             }
 
             List<ModifierInstant> modifierEntries = new ArrayList<>();
-            for (var entryA : entries ) {
+            for (var entryA : entries) {
                 modifierEntries.add(ModifierHandle.modifierEntryMap.get(entryA.getA()).toInstant(entryA.getB()));
             }
-            ItemSelector itemSelector =null;
-            if (jsonObject.has("itemSelector")){
-                itemSelector= ItemSelector.EX_SERIALIZE.fromJsonSingleObject(jsonObject.get("itemSelector").getAsJsonObject(),"itemSelector");
+            ItemSelector itemSelector = null;
+            if (jsonObject.has("itemSelector")) {
+                itemSelector = ItemSelector.EX_SERIALIZE.fromJsonSingle(jsonObject.get("itemSelector").getAsJsonObject());
             }
-            if (itemSelector!=null) itemsDefaultEntry.put(itemSelector, modifierEntries);
+            if (itemSelector != null) itemsDefaultEntry.put(itemSelector, modifierEntries);
             LOGGER.debug("Add ItemsDefaultEntry:" + entry.getKey() + " To ModifierEntry:" + modifierEntries);
 
         } catch (Exception e) {
@@ -1156,7 +1206,7 @@ public class ModifierHandle {
 
         JsonObject itemObject = itemElement.getAsJsonObject();
         ModifierEntry modifierEntry = new ModifierEntry();
-        //modifierEntry.type = itemObject.has("type") ? ModifierEntry.StringToType(itemObject.get("type").getAsString()) : moconfig.type;
+        //exElement.type = itemObject.has("type") ? ModifierEntry.StringToType(itemObject.get("type").getAsString()) : moconfig.type;
         if (!moconfig.CuriosType.isEmpty()) modifierEntry.curiosType = moconfig.CuriosType;
 
         List<ItemType> types = new ArrayList<>();
@@ -1346,7 +1396,7 @@ public class ModifierHandle {
 //        //UUID uuid = ExConfigHandle.generateUUIDFromString(modifierName);
 //        LOGGER.debug("uuid " + uuid);
 
-        ExAttributeModifier modifier = new ExAttributeModifier( modifierName, attrValue, operation);
+        ExAttributeModifier modifier = new ExAttributeModifier(modifierName, attrValue, operation);
         ModifierAttriGether attrGether = new ModifierAttriGether(attribute, modifier, slot);
         if (attrGetherObj.has("minValue")) {
             attrGether.minValue = attrGetherObj.get("minValue").getAsDouble();

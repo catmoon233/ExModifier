@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class ExElement implements ExSerClass {
     private ResourceLocation id;
-    private String CustomLocation;
+    private String CustomLocation ="";
 
     public float getParticleScale() {
         return ParticleScale;
@@ -26,19 +26,20 @@ public class ExElement implements ExSerClass {
 
     private float ParticleScale = 0.2f;
     private ParticleType<?> simpleParticleType;
-    public static final ExSerialize<ExElement> EX_SERIALIZE = ExSerialize.create(()-> new ExElement(null))
-            .withAutoId((e, id) -> e.setId(new ResourceLocation(id)))
-            .addResourceLocationField("icon", ExElement::setIconTexture)
-            .addIntField("color", ExElement::setColor)
-            .addStringField("custom_loc", ExElement::setCustomLocation)
-            .addFloatField("particle_scale",ExElement::setParticleScale)
-            .addStringField("particle_id",(exElement, s) -> {
+    public static final ExSerialize<ExElement> EX_SERIALIZE = ExSerialize.create(()-> new ExElement(new ResourceLocation("exmodifier:null")))
+            .withAutoId((e)->e.getId().toString(),(e, id) -> e.setId(new ResourceLocation(id)))
+            .addResourceLocationField("id", ExElement::getId,ExElement::setId)
+            .addResourceLocationField("icon", ExElement::getIconTexture,ExElement::setIconTexture)
+            .addIntField("color", ExElement::getColor,ExElement::setColor)
+            .addStringField("custom_loc", ExElement::getCustomLocation,ExElement::setCustomLocation)
+            .addFloatField("particle_scale",  ExElement::getParticleScale,ExElement::setParticleScale)
+            .addStringField("particle_id",exElement -> exElement.getSimpleParticleType().toString(),(exElement, s) -> {
                 ParticleType<?> value = ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation(s));
                 if (value !=null) {
                     exElement.setSimpleParticleType(value);
                 }
             })
-            .addFloatMapField("restrain", ExElement::setRestrain);
+            .addFloatMapField("restrain", ExElement::getRestrain,ExElement::setRestrain);
 
 
 
@@ -66,7 +67,7 @@ public class ExElement implements ExSerClass {
     }
 
     private ResourceLocation iconTexture;
-    private int color;
+    private int color =0;
     private Map<String,Float> Restrain = new HashMap<>();
 
     public Map<String, Float> getRestrain() {

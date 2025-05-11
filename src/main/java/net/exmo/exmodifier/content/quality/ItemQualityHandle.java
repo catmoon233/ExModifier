@@ -241,7 +241,7 @@ public class ItemQualityHandle {
             }
             ItemSelector itemSelector =null;
             if (jsonObject.has("itemSelector")){
-                itemSelector= ItemSelector.EX_SERIALIZE.fromJsonSingleObject(jsonObject.get("itemSelector").getAsJsonObject(),"itemSelector");
+                itemSelector= ItemSelector.EX_SERIALIZE.fromJsonSingle(jsonObject.get("itemSelector").getAsJsonObject());
             }
             if (itemSelector!=null) itemDefaultQualityMap.put(itemSelector,itemQuality);
             LOGGER.debug("Add ItemsDefaultQuality: " +  itemQuality.Id);

@@ -31,10 +31,10 @@ public final class ItemSelector {
                                 null
                         );
                     }
-            ).addStringListField("itemId", (itemSelector, s) -> {
+            ).addStringListField("itemId",itemSelector -> itemSelector.itemId, (itemSelector, s) -> {
                 itemSelector.itemId.addAll(s);
             })
-            .addStringListField("nbt", (itemSelector, s) -> {
+            .addStringListField("nbt", itemSelector -> itemSelector.containNBT.stream().map(CompoundTag::getAsString).toList(),(itemSelector, s) -> {
                 for (String a : s) {
                     try {
                         itemSelector.containNBT.add(TagParser.parseTag(a));
@@ -42,13 +42,13 @@ public final class ItemSelector {
                         throw new RuntimeException(e);
                     }
                 }
-            }).addStringListField("containTag", (itemSelector, s) -> {
+            }).addStringListField("containTag", itemSelector -> itemSelector.containTag.stream().map(TagKey::location).map(ResourceLocation::toString).toList(), (itemSelector, s) -> {
                 for (String a : s) {
                     itemSelector.containTag.add(TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(),
                             new ResourceLocation(a)));
                 }
             })
-            .addStringField("type", (itemSelector, s) -> itemSelector.type = CompareType.valueOf(s));
+            .addStringField("type", ItemSelector::getTypeID ,(itemSelector, s) -> itemSelector.type = CompareType.valueOf(s));
     private final Item item;
     private final List<String> itemId;
     private final List<CompoundTag> containNBT;
@@ -57,6 +57,9 @@ public final class ItemSelector {
     private final BiConsumer<ItemStack, AtomicBoolean> customCompare;
 
 
+    public String getTypeID() {
+        return type.name();
+    }
     public enum CompareType {
         EMPTY,
         TAG,

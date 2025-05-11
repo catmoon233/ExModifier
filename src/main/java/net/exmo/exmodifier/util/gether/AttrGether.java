@@ -22,19 +22,21 @@ public class AttrGether {
 	public Attribute attribute;
 	public AttributeModifier attributeModifier;
 	public static final ExSerialize<AttrGether> exSerialize = ExSerialize.create(()->new AttrGether(null,new AttributeModifier(UUID.randomUUID(),"",0, AttributeModifier.Operation.ADDITION)))
-			.addStringField("attribute",(k,v)->{
+			.addStringField("attribute",attrGether ->
+				ExUtil.getAttributeID(attrGether.attribute)
+			,(k,v)->{
 				k.attribute = ExUtil.getAttribute(v);
 			})
-			.addStringField("modifier_name",(k,v)->{
+			.addStringField("modifier_name",attrGether -> attrGether.attributeModifier.getName(),(k,v)->{
 				k.attributeModifier = new AttributeModifier(k.attributeModifier.getId(),v,0, AttributeModifier.Operation.ADDITION);
 			})
-			.addFloatField("modifier_amount",(k,v)->{
+			.addFloatField("modifier_amount",attrGether -> (float) attrGether.attributeModifier.getAmount(),(k, v)->{
 				k.attributeModifier = new AttributeModifier(k.attributeModifier.getId(),k.attributeModifier.getName(),v.doubleValue(), k.attributeModifier.getOperation());
 			})
-			.addStringField("modifier_operation",(k,v)->{
+			.addStringField("modifier_operation",attrGether -> attrGether.attributeModifier.getOperation().name(),(k,v)->{
 				k.attributeModifier = new AttributeModifier(k.attributeModifier.getId(),k.attributeModifier.getName(),0, AttributeModifier.Operation.valueOf(v));
 			})
-			.addStringField("modifier_uuid",(k,v)->{
+			.addStringField("modifier_uuid",attrGether -> attrGether.attributeModifier.getId().toString(),(k,v)->{
 				k.attributeModifier = new AttributeModifier(UUID.fromString(v),k.attributeModifier.getName(),k.attributeModifier.getAmount(), k.attributeModifier.getOperation());
 			})
 			;
@@ -59,7 +61,7 @@ public class AttrGether {
 		boolean flag = false;
 		String percent = "";
 		double d1;
-		if (attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL  &&!percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+		if (attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL  &&!percentAtr.contains(ExUtil.getAttributeID(attribute).toString())) {
 			if ((attribute).equals(Attributes.KNOCKBACK_RESISTANCE)) {
 				d1 = d0 * 10.0;
 			} else {
@@ -69,12 +71,12 @@ public class AttrGether {
 			d1 = d0 * 100.0;
 		}
 		String amouta2 = "";
-		if (percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())){
+		if (percentAtr.contains(ExUtil.getAttributeID(attribute).toString())){
 			percent = "%";
 			DecimalFormat df = new DecimalFormat("#.####");
 			amouta2 = df.format(attributemodifier.getAmount() * 100);
 			if (this.attribute.getDescriptionId().length() >=4){
-				if (ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("twtp") ||ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("isfix") ) {
+				if (ExUtil.getAttributeID(attribute).toString().startsWith("twtp") ||ExUtil.getAttributeID(attribute).toString().startsWith("isfix") ) {
 					amouta2 = df.format(attributemodifier.getAmount()) ;
 				}
 			}

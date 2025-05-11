@@ -1,7 +1,8 @@
 package net.exmo.exmodifier;
 
+import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
-import net.exmo.exmodifier.compat.compat.apoth.ApothCompat;
+import net.exmo.exmodifier.compat.ApothCompat;
 import net.exmo.exmodifier.content.attributeEffect.modern.EffectSyncPacket;
 import net.exmo.exmodifier.content.client.EntryItemRender;
 import net.exmo.exmodifier.content.modifier.*;
@@ -9,6 +10,14 @@ import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.init.RegisterOther;
 import net.exmo.exmodifier.network.*;
+import net.exmo.exmodifier.network.sync.defaultEntityElement.ClearDefaultItemElementMessage;
+import net.exmo.exmodifier.network.sync.defaultEntityElement.SyncDefaultItemElementMessage;
+import net.exmo.exmodifier.network.sync.defaultItemElement.ClearDefaultEntityElementMessage;
+import net.exmo.exmodifier.network.sync.defaultItemElement.SyncDefaultEntityElementMessage;
+import net.exmo.exmodifier.network.sync.element.ClearElementMessage;
+import net.exmo.exmodifier.network.sync.element.SyncElementMessage;
+import net.exmo.exmodifier.network.sync.modifier.ClearModifierEntryMessage;
+import net.exmo.exmodifier.network.sync.modifier.SyncModifierEntryMessage;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
@@ -25,6 +34,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -36,8 +46,10 @@ import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.IndexedMessageCodec;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -45,10 +57,8 @@ import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -60,7 +70,7 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.modifierEntryM
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("exmodifier")
 public class Exmodifier {
-
+    public static final Gson GSON = new Gson();
     // Directly reference a slf4j logger
     public static final String MODID = "exmodifier";
 
@@ -108,6 +118,46 @@ public class Exmodifier {
 
     ;
 
+    public static <MSG> void registerMessage(Class<MSG> messageClass) {
+        try {
+            // 获取 encode 方法
+            java.lang.reflect.Method encodeMethod = messageClass.getMethod("encode", messageClass, FriendlyByteBuf.class);
+            // 获取 decode 方法
+            java.lang.reflect.Method decodeMethod = messageClass.getMethod("decode", FriendlyByteBuf.class);
+            // 获取 handle 方法
+            java.lang.reflect.Method handleMethod = messageClass.getMethod("handle", messageClass, Supplier.class);
+
+            // 将方法转换为 BiConsumer 和 Function
+            BiConsumer<MSG, FriendlyByteBuf> encoder = (msg, buffer) -> {
+                try {
+                    encodeMethod.invoke(null, msg, buffer);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to encode message", e);
+                }
+            };
+
+            Function<FriendlyByteBuf, MSG> decoder = buffer -> {
+                try {
+                    return (MSG) decodeMethod.invoke(null, buffer);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to decode message", e);
+                }
+            };
+
+            BiConsumer<MSG, Supplier<NetworkEvent.Context>> messageConsumer = (msg, ctx) -> {
+                try {
+                    handleMethod.invoke(null, msg, ctx);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to handle message", e);
+                }
+            };
+
+            // 注册消息
+            PACKET_HANDLER.registerMessage(messageID++, messageClass, encoder, decoder, messageConsumer);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Failed to find required methods in message class", e);
+        }
+    }
 
     public Exmodifier() {
 
@@ -131,6 +181,14 @@ public class Exmodifier {
                 EffectSyncPacket::encode, EffectSyncPacket::new,
                 EffectSyncPacket::handle);
 
+       registerMessage(SyncElementMessage.class);
+       registerMessage(ClearElementMessage.class);
+       registerMessage(SyncDefaultEntityElementMessage.class);
+       registerMessage(ClearDefaultEntityElementMessage.class);
+       registerMessage(SyncDefaultItemElementMessage.class);
+       registerMessage(ClearDefaultItemElementMessage.class);
+
+       registerMessage(ClearDefaultEntityElementMessage.class);
         ITEMS.register(modEventBus);
         try {
             init(null);
@@ -197,7 +255,25 @@ public class Exmodifier {
             modifierItemStacks.forEach(event::accept);
         }
     }
+    private static final Collection<AbstractMap.SimpleEntry<Runnable, Integer>> workQueue = new ConcurrentLinkedQueue<>();
 
+    public static void queueServerWork(int tick, Runnable action) {
+        if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER)
+            workQueue.add(new AbstractMap.SimpleEntry<>(action, tick));
+    }
+    @SubscribeEvent
+    public void tick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            List<AbstractMap.SimpleEntry<Runnable, Integer>> actions = new ArrayList<>();
+            workQueue.forEach(work -> {
+                work.setValue(work.getValue() - 1);
+                if (work.getValue() == 0)
+                    actions.add(work);
+            });
+            actions.forEach(e -> e.getKey().run());
+            workQueue.removeAll(actions);
+        }
+    }
     // 新增方法：生成 Modifier 的 ItemStack 列表
     public static List<ItemStack> generateModifierItemStacks() {
         List<ItemStack> itemStacks = new ArrayList<>();
@@ -219,7 +295,7 @@ public class Exmodifier {
             stack.getOrCreateTag().put("modifier_types", listTag);
 
             double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry)).sum();
-            //  double probability = modifierEntry.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry) / totalWeight).sum();
+            //  double probability = exElement.types.stream().mapToDouble(type -> weights.get(type.name()).getProbability(entry) / totalWeight).sum();
             stack.getOrCreateTag().putDouble("modifier_possibility", probability);
             if (modifierEntry.maxLevel <= 1) {
                 stack.getOrCreateTag().putInt("modifier_level", 1);

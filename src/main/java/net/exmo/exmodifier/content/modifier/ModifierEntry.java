@@ -161,7 +161,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
             boolean flag = false;
             String percent = "";
             double d1;
-            if (attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL && !percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+            if (attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && attributemodifier.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL && !percentAtr.contains(ExUtil.getAttributeID(attribute).toString())) {
                 if ((attribute).equals(Attributes.KNOCKBACK_RESISTANCE)) {
                     d1 = d0 * 10.0;
                 } else {
@@ -171,12 +171,12 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
                 d1 = d0 * 100.0;
             }
             String amouta2 = "";
-            if (percentAtr.contains(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString())) {
+            if (percentAtr.contains(ExUtil.getAttributeID(attribute).toString())) {
                 percent = "%";
                 DecimalFormat df = new DecimalFormat("#.####");
                 amouta2 = df.format(attributemodifier.getAmount() * 100);
                 if (modifierAttriGether.attribute.getDescriptionId().length() >= 4) {
-                    if (ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("twtp") || ForgeRegistries.ATTRIBUTES.getKey(attribute).toString().startsWith("isfix")) {
+                    if (ExUtil.getAttributeID(attribute).toString().startsWith("twtp") || ExUtil.getAttributeID(attribute).toString().startsWith("isfix")) {
                         amouta2 = df.format(attributemodifier.getAmount());
                     }
                 }

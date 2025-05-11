@@ -2,7 +2,7 @@ package net.exmo.exmodifier.content.event;
 
 import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.content.element.ExElementHandle;
+import net.exmo.exmodifier.content.element.*;
 import net.exmo.exmodifier.content.modifier.RefreshContainTagHandle;
 import net.exmo.exmodifier.content.client.LanguageLoader;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
@@ -28,6 +28,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -52,6 +53,7 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
@@ -63,6 +65,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Config.refresh_time;
+import static net.exmo.exmodifier.commands.ExModifierReloadCommand.sendUpdatedModifiersToClients;
 import static net.exmo.exmodifier.content.element.ExElementHandle.FoundDefaultElementConfigs;
 import static net.exmo.exmodifier.content.element.ExElementHandle.FoundEntityDefaultElementConfigs;
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.ItemLevelRefresh;
@@ -220,7 +223,7 @@ public class MainEvent {
 //            if (stack.getTag()==null)return;
 //            if (CuriosUtil.isCuriosItem(stack)) {
 //                boolean addf = false;
-//                for (ModifierEntry modifierEntry : new ModifierEntryHelper(stack).getModifierEntriesB()) {
+//                for (ModifierEntry exElement : new ModifierEntryHelper(stack).getModifierEntriesB()) {
 //                    if (stack.getTag().getBoolean("UNKNOWN")) {
 //                        event.getTooltipElements().add(Either.left(Component.translatable("null")));
 //                        event.getTooltipElements().add(Either.left(Component.translatable("modifier.entry.UNKNOWN")));
@@ -229,7 +232,7 @@ public class MainEvent {
 //                            addf = true;
 //                            event.getTooltipElements().add(Either.left(Component.translatable("null")));
 //                            event.getTooltipElements().add(Either.left(Component.translatable("modifier.entry")));
-//                            for (ExSuit suit : ExSuitHandle.LoadExSuit.itemTypes().stream().filter(exSuit -> exSuit.entry.contains(modifierEntry))
+//                            for (ExSuit suit : ExSuitHandle.LoadExSuit.itemTypes().stream().filter(exSuit -> exSuit.entry.contains(exElement))
 //                                    .toList()) {
 //                                if (suit.visible) {
 //
@@ -241,7 +244,7 @@ public class MainEvent {
 //                                }
 //                            }
 //                        }
-//                        event.getTooltipElements().add(Either.left((Component.translatable("modifier.entry." + modifierEntry.Id.substring(2)))));
+//                        event.getTooltipElements().add(Either.left((Component.translatable("modifier.entry." + exElement.Id.substring(2)))));
 //
 //                    }
 //                }
@@ -274,7 +277,7 @@ public class MainEvent {
 
                         for (ModifierInstant modifierEntry : new ItemInfo(stack).getModifierEntryHelper().getModifierEntries()) {
                             if (modifierEntry.getSlot().isPresent()) continue;
-                            // Exmodifier.LOGGER.debug("modifier Id:" + modifierEntry.Id);
+                            // Exmodifier.LOGGER.debug("modifier Id:" + exElement.Id);
                             if (!Config.compact_tooltip) tooltip.add(Component.translatable("null"));
                             tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack, false));
 
@@ -576,8 +579,8 @@ public class MainEvent {
                     if (string.startsWith(s)) return true;
                 }
 //                if (itemsDefaultEntry.containsKey(string)) {
-//                    for (ModifierEntry modifierEntry : itemsDefaultEntry.get(string)) {
-//                        new ModifierEntryHelper(toStack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(modifierEntry.id)), true, true);
+//                    for (ModifierEntry exElement : itemsDefaultEntry.get(string)) {
+//                        new ModifierEntryHelper(toStack).addModifierEntry(ModifierInstant.of(ModifierEntryHelper.getEntry(exElement.id)), true, true);
 //                    }
 //                }
 
@@ -726,13 +729,13 @@ public class MainEvent {
             BaseItemSelected.IDS = new HashMap<>();
             RefreshContainTagHandle.readConfig();
             RefreshContainItemHandle.readConfig();
-            ModifierHandle.sendClearModifierEntryToAllClient();
+            ModifierHandle.sendClearDataToAllClient();
             ExTypeHandle.readConfig();
             ItemQualityHandle.init();
-            ZipHandle.init();
-            //ExElementHandle.init(); 在ZIP_HANDLE中初始化
-            ExElementHandle.init2();
-            ExElementHandle.init3();
+            ExElementHandle.init();
+            ZipHandle.ZipFunction init = ZipHandle.init();
+            if (runnable != null) runnable.run();
+
             ItemQualityHandle.init2();
 
             ModifierHandle.readConfig();
@@ -740,18 +743,28 @@ public class MainEvent {
             ModifierSlotHandle.reload();
 
 
-            if (runnable != null) runnable.run();
-            for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values()) {
-                ModifierHandle.sendModifierEntryToAllClient(modifierEntry);
-            }
+
+            ExElementHandle.init2();
+            ExElementHandle.init3();
+            init.elementDefault().forEach(Runnable::run);
+            init.defaultEntry().forEach(Runnable::run);
             ModifierHandle.EEMatchQueueHandle();
             LanguageLoader.load(LanguageLoader.LANGUAGES_FILE_PATH);
             clearReadTempData();
+            MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
+            if (currentServer != null) {
+                sendUpdatedModifiersToClients(currentServer);
+            }
         }
 
         @SubscribeEvent
         public static void atReload(AddReloadListenerEvent event) throws IOException {
-            init(() -> event.addListener(new ModifierPreparableReloadListener()));
+            init(() -> {
+                event.addListener(new ModifierPreparableReloadListener());
+                event.addListener(new ElementPreparableReloadListener());
+                event.addListener(new DefaultEntityElementPreparableReloadListener());
+                event.addListener(new DefaultItemElementPreparableReloadListener());
+            });
 
 
         }
@@ -760,16 +773,29 @@ public class MainEvent {
         public static void playJoinServer(PlayerEvent.PlayerLoggedInEvent event) {
             Player entity = event.getEntity();
             if (!entity.level().isClientSide()) {
-                ModifierHandle.sendClearModifierEntryToClient((ServerPlayer) entity);
-                for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values())
-                    ModifierHandle.sendModifierEntryToClient(modifierEntry, (ServerPlayer) entity);
-
+                ModifierHandle.sendClearDataToClient((ServerPlayer) entity);
+                sendExmoServerDataToServerPlayer((ServerPlayer) entity);
             }
+        }
+    }
+
+    public static void sendExmoServerDataToServerPlayer(ServerPlayer entity) {
+        for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values())
+            ModifierHandle.sendModifierEntryToClient(modifierEntry, entity);
+        for (ExElement exElement : ExElementHandle.exElements.values()) {
+            ModifierHandle.sendElementToClient(exElement, entity);
+        }
+        for (var e : ExElementHandle.elementDefaultMap.values()) {
+            ModifierHandle.sendDefaultItemElementToClient(e, entity);
+        }
+        for (var e : ExElementHandle.elementDefaultMap2.values()) {
+            ModifierHandle.sendDefaultEntityElementToClient(e, entity);
         }
     }
 
     public static void clearOldData() {
         ExSuitHandle.LoadExSuit.clear();
+        ExElementEntityData.defaultEntityAttributes.clear();
         LanguageLoader.LANGUAGES.clear();
         ModifierHandle.modifierEntryMap.clear();
         ExTypeHandle.itemTypes.values().removeIf(e -> !ExType.defaultTypes.contains(e.name()));

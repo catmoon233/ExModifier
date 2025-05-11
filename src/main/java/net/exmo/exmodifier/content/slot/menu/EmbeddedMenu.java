@@ -192,9 +192,9 @@ public class EmbeddedMenu extends AbstractContainerMenu {
                    // String itemId = ForgeRegistries.ITEMS.getKey(input.getItem()).toString();
                     if (modifierEntry==null)return;
                     if (!modifierEntry.getModifierItemSelector().containItem(input))return;
-//                    if (!modifierEntry.OnlyItems.isEmpty() && modifierEntry.OnlyItems.contains(itemId) )return;
-//                    if (!modifierEntry.containTag(input))return;
-//                    if (!modifierEntry.UnlessItemIds)return;
+//                    if (!exElement.OnlyItems.isEmpty() && exElement.OnlyItems.contains(itemId) )return;
+//                    if (!exElement.containTag(input))return;
+//                    if (!exElement.UnlessItemIds)return;
 
                     ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(input);
 
@@ -224,7 +224,7 @@ public class EmbeddedMenu extends AbstractContainerMenu {
 
                             ResourceLocation key = ModifierSlotHandle.getKey(a);
                             if (key==null)continue;
-//                            if (!modifierEntry.Slots.contains(key.toString())){
+//                            if (!exElement.Slots.contains(key.toString())){
 //                                this.ClueId[i] = -1;
 //                                this.levelClue[i] =-1;
 //                                this.costs[i] = 0;
