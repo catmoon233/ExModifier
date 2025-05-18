@@ -41,7 +41,7 @@ public class ExElementEntityData {
             if (livingEntity instanceof Player) return;
             defaultEntityAttributes.put(
                     livingEntity.getType(),
-                    new defAttribute(livingEntity.getMaxHealth(), livingEntity.getAttribute(Attributes.ATTACK_DAMAGE)!=null?livingEntity.getAttribute(Attributes.ATTACK_DAMAGE).getValue():1)
+                    new defAttribute(livingEntity.getAttributeValue(Attributes.MAX_HEALTH), livingEntity.getAttribute(Attributes.ATTACK_DAMAGE)!=null?livingEntity.getAttribute(Attributes.ATTACK_DAMAGE).getValue():1)
             );
         }
 
@@ -49,7 +49,7 @@ public class ExElementEntityData {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onAdd(EntityJoinLevelEvent event) {
-        Exmodifier.queueServerWork(1, () -> {
+        Exmodifier.queueServerWork(2, () -> {
         if (event.getEntity() instanceof LivingEntity livingEntity) {
             if (livingEntity instanceof Player) return;
             if (livingEntity.level() instanceof ServerLevel serverLevel) {

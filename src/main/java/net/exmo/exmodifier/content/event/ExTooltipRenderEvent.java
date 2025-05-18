@@ -18,7 +18,6 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil.renderTooltipBackground;
 
 @Mod.EventBusSubscriber
 public class ExTooltipRenderEvent {

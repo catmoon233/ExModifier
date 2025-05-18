@@ -10,7 +10,6 @@ import net.exmo.exmodifier.content.helper.*;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
-import net.exmo.exmodifier.content.refine.RefineHelper;
 import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.slot.ModifierSlotHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
@@ -22,7 +21,7 @@ import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.gether.AttriGetherNormal;
-import net.minecraft.client.gui.screens.Screen;
+
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
@@ -38,7 +37,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 //import net.minecraftforge.client.eventC.MovementInputUpdateEvent;
-import net.minecraftforge.client.event.RenderTooltipEvent;
+
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.GrindstoneEvent;
@@ -47,7 +46,6 @@ import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -61,7 +59,6 @@ import top.theillusivec4.curios.api.event.CurioChangeEvent;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Config.refresh_time;
@@ -73,7 +70,6 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEntry;
 import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.TAKE;
 import static net.exmo.exmodifier.util.EntityAttrUtil.WearOrTake.WEAR;
-import static net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil.renderTooltipBackground;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MainEvent {
@@ -93,99 +89,8 @@ public class MainEvent {
             UnMatchingModIDs.add("umapyoi");
         }
 
-        @SubscribeEvent
-        public static void TooltipChange(ItemTooltipEvent event) {
-            ItemStack itemStack = event.getItemStack();
-            if (itemStack.getTag() != null) {
-                // if (!CuriosUtil.isCuriosItem(event.getItemStack())) {
-
-                List<Component> toolTip1 = event.getToolTip();
-                List<Component> toolTip = new ArrayList<>();
-                boolean b = Config.entryFold && !Screen.hasShiftDown();
-                Pair<List<Component>, Integer> listIntegerPair = null;
-                if (!b) {
-                    listIntegerPair = CommonEvent.EntryInfoTooltip(itemStack, toolTip1, event.getEntity());
-                    if (!Config.ExMoTooltipRenderInRightValue) {
-                        toolTip = listIntegerPair.getA();
-                    }
-                }
 
 
-                List<Component> tooo = new ArrayList<>();
-                tooo.add(toolTip1.get(0));
-
-                if (Config.refine_system){
-                    Component refineTooltip = RefineHelper.of(itemStack).getRefineTooltip(false);
-                    if (refineTooltip != null) {
-                        tooo.add(refineTooltip);
-                    }
-                }
-                for (var a : ItemQualityHelper.of(itemStack).getQualityEntriesTooltip()) {
-                    if (a.isShowInHeadTooltip) {
-                        //   tooo.set(0,a.mutableComponent.append(Component.literal(" §r")).append(toolTip1.get(0)));
-                    } else {
-                        if (a.showModifierComponent){
-                            tooo.add(Component.translatable("exmodifier.quality.modifier").append(a.mutableComponent));
-                        }else tooo.add(a.mutableComponent);
-                    }
-                }
-                {
-                    var elementComponent = Component.empty();
-                    AtomicBoolean flag = new AtomicBoolean(false);
-                    ExElementHelper.of(itemStack).getElements().forEach(
-                            exElementInstant -> {
-                                if (!flag.get()) {
-                                    flag.set(true);
-                                    elementComponent.append(exElementInstant.getDesc());
-                                } else {
-                                    elementComponent.append(" ").append(exElementInstant.getDesc());
-                                }
-
-                            }
-                    );
-
-                    if (flag.get()) tooo.add(elementComponent);
-                }
-                if (b) {
-                    if (!Config.entryShowUnderLevel) {
-                        for (var aa : ModifierEntryHelper.of(itemStack).getModifierEntriesB()) {
-                            if (aa.displayNameInItemName) continue;
-                            tooo.add(Component.translatable(aa.getDescriptionId()));
-                        }
-                        tooo.add(Component.empty());
-                    }
-                }
-                tooo.addAll(ItemLevelHandle.genItemLevelInfo(itemStack));
-                if (b) {
-                    if (Config.entryShowUnderLevel) {
-                        for (var aa : ModifierEntryHelper.of(itemStack).getModifierEntries()) {
-                            if (aa.getModifierEntry().displayNameInItemName || aa.getSlot().isPresent()) continue;
-                            tooo.add(Component.translatable(aa.getModifierEntry().getDescriptionId()));
-                        }
-
-                    }
-                }
-                for (int i = 1; i < toolTip1.size(); i++) {
-                    tooo.add(toolTip1.get(i));
-                }
-                if (!b) {
-                    if (Config.ExMoTooltipRenderInRightValue) {
-                        for (int i = 0; i < listIntegerPair.getB(); i++) {
-                            tooo.add(Component.empty());
-                        }
-                    }
-                }
-                Component starUpComponent = RefineHelper.of(itemStack).getStarUpComponent();
-                if (starUpComponent != null){
-                    tooo.add(starUpComponent);
-                }
-                if (tooo.size() <= 1) return;
-                toolTip1.clear();
-                toolTip1.addAll(tooo);
-                //   }
-
-            }
-        }
 
         @SubscribeEvent
         public static void CuriosChange(CurioChangeEvent event) {
@@ -292,11 +197,25 @@ public class MainEvent {
             return new Pair<>(tooltip, tooltip.size());
         }
 
-        @SubscribeEvent
-        public static void RenderTooltipAffix(RenderTooltipEvent.Color gatherComponents) {
 
-        }
-
+//      public   static int tick =0;
+//        @SubscribeEvent
+//        public static void ServerTick(TickEvent.ServerTickEvent event) {
+//            tick++;
+//            if (tick % 20 == 0) {
+//                MinecraftServer server = event.getServer();
+//                List<ServerPlayer> players = server.getPlayerList().getPlayers();
+//
+//                // 使用并行流优化实体计数
+//                List<ServerLevel> serverLevels =new ArrayList<>();
+//                server.getAllLevels().forEach(serverLevels::add);
+//                AtomicInteger entityCount = new AtomicInteger();
+//                serverLevels.parallelStream().map(ServerLevel::getEntities).map(e-> entityCount.addAndGet(1));
+//
+//                RealTimeWebServer.onlinePlayers.set(players);
+//                RealTimeWebServer.entityCount.set( entityCount.get());
+//            }
+//        }
 
         @SubscribeEvent
         public static void AtJoinGame(PlayerEvent.PlayerLoggedInEvent event) {
@@ -724,7 +643,7 @@ public class MainEvent {
             return flag;
         }
 
-        public static void init(Runnable runnable) throws IOException {
+        public static Runnable init(Runnable runnable) throws IOException {
             clearOldData();
             BaseItemSelected.IDS = new HashMap<>();
             RefreshContainTagHandle.readConfig();
@@ -753,18 +672,28 @@ public class MainEvent {
             clearReadTempData();
             MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
             if (currentServer != null) {
-                sendUpdatedModifiersToClients(currentServer);
+            if (runnable!=null)return () -> sendUpdatedModifiersToClients(currentServer);
+            sendUpdatedModifiersToClients(currentServer);
             }
+            return null;
         }
 
         @SubscribeEvent
         public static void atReload(AddReloadListenerEvent event) throws IOException {
-            init(() -> {
-                event.addListener(new ModifierPreparableReloadListener());
-                event.addListener(new ElementPreparableReloadListener());
-                event.addListener(new DefaultEntityElementPreparableReloadListener());
-                event.addListener(new DefaultItemElementPreparableReloadListener());
-            });
+//            Runnable init = init(() -> {
+//            event.addListener(new ModifierPreparableReloadListener());
+//            event.addListener(new ElementPreparableReloadListener());
+//            event.addListener(new DefaultEntityElementPreparableReloadListener());
+//            event.addListener(new DefaultItemElementPreparableReloadListener());
+//            });
+//            if (init != null) {
+//                init.run();
+//            }
+
+            event.addListener(new ModifierPreparableReloadListener());
+            event.addListener(new ElementPreparableReloadListener());
+            event.addListener(new DefaultEntityPreparableReloadListener());
+            event.addListener(new DefaultItemPreparableReloadListener());
 
 
         }
@@ -780,15 +709,21 @@ public class MainEvent {
     }
 
     public static void sendExmoServerDataToServerPlayer(ServerPlayer entity) {
-        for (ModifierEntry modifierEntry : ModifierHandle.modifierEntryMap.values())
+        // 使用副本遍历以避免 ConcurrentModificationException
+        List<ModifierEntry> modifierEntries = new ArrayList<>(ModifierHandle.modifierEntryMap.values());
+        for (ModifierEntry modifierEntry : modifierEntries) {
             ModifierHandle.sendModifierEntryToClient(modifierEntry, entity);
-        for (ExElement exElement : ExElementHandle.exElements.values()) {
+        }
+        List<ExElement> exElements = new ArrayList<>(ExElementHandle.exElements.values());
+        for (ExElement exElement : exElements) {
             ModifierHandle.sendElementToClient(exElement, entity);
         }
-        for (var e : ExElementHandle.elementDefaultMap.values()) {
+        List<DefaultItemElement> defaultItemElements = new ArrayList<>(ExElementHandle.elementDefaultMap.values());
+        for (var e : defaultItemElements) {
             ModifierHandle.sendDefaultItemElementToClient(e, entity);
         }
-        for (var e : ExElementHandle.elementDefaultMap2.values()) {
+        List<DefaultEntityElement> defaultEntityElements = new ArrayList<>(ExElementHandle.elementDefaultMap2.values());
+        for (var e : defaultEntityElements) {
             ModifierHandle.sendDefaultEntityElementToClient(e, entity);
         }
     }

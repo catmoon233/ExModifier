@@ -55,6 +55,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
+import web.RealTimeWebServer;
 
 import java.io.IOException;
 import java.util.*;
@@ -159,8 +160,9 @@ public class Exmodifier {
         }
     }
 
-    public Exmodifier() {
+    public Exmodifier() throws Exception {
 
+    //    RealTimeWebServer.main(new String[]{""});
 
         long time_start = System.currentTimeMillis();
         // Register the setup method for modloading
@@ -320,13 +322,7 @@ public class Exmodifier {
 
     }
 
-    @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class ClientEvents {
-        @SubscribeEvent
-        public static void registerItemDecoration(RegisterItemDecorationsEvent event) {
-            event.register(ENTRY_ITEM.get(), new EntryItemRender());
-        }
-    }
+
 
     public static <T> void addNetworkMessage(Class<T> messageType, BiConsumer<T, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
         PACKET_HANDLER.registerMessage(messageID, messageType, encoder, decoder, messageConsumer);

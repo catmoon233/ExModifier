@@ -38,11 +38,13 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.PacketDistributor;
 
+import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ExElementHandle {
@@ -277,7 +279,8 @@ public class ExElementHandle {
     public static class CommonEvent {
         @SubscribeEvent
         public static void registerNormal(OnElementRegisterEvent elementRegisterEvent){
-            elementRegisterEvent.registerElement(new ExElement(ResourceLocation.tryParse("exmodifier:normal")).setRestrain(new HashMap<>()));
+            ResourceLocation id = ResourceLocation.tryParse("exmodifier:normal");
+            if (getExElement(id)==null) elementRegisterEvent.registerElement(new ExElement(id).setColor(Color.WHITE.getRGB()).setRestrain(new HashMap<>()));
         }
 
         @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -502,6 +505,7 @@ public class ExElementHandle {
 
                     // 压制效果计算保持不变...
                     Map<String, Float> restrain = exElementInstant.getElement().getRestrain();
+                    if (el.getElement()==null) return;
                     if (restrain==null) restrain = new HashMap<>();
                     Float baseMultiplier = restrain .getOrDefault(el.getElement().getId().toString(), 1f);
 //                    float dominanceEffect = (float) Math.pow(Math.pow(

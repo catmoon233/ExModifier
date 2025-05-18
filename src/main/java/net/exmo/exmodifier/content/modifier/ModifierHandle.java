@@ -34,6 +34,7 @@ import net.exmo.exmodifier.util.gether.AttrGether;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.util.gether.AttrSimpleGether;
 import net.minecraft.ChatFormatting;
+
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;

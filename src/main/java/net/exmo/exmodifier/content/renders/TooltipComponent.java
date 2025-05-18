@@ -3,8 +3,11 @@ package net.exmo.exmodifier.content.renders;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
+@OnlyIn(value = Dist.CLIENT)
 
 public abstract class TooltipComponent {
     public final List<Component> components;

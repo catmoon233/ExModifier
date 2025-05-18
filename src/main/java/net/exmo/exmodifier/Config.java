@@ -92,6 +92,9 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue USE_NEW_DAMAGE_FORMULA = BUILDER
             .comment("USE_NEW_DAMAGE_FORMULA")
             .define("USE_NEW_DAMAGE_FORMULA", true);
+    public static final ForgeConfigSpec.BooleanValue AUTO_WEAPON_ELEMENT = BUILDER
+            .comment("AUTO_WEAPON_ELEMENT")
+            .define("AUTO_WEAPON_ELEMENT", false);
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
 
@@ -120,6 +123,7 @@ public class Config {
     public static String refine_attribute;
     public static boolean element_summon_debug;
     public static boolean useNewDamageFormula;
+    public static boolean autoWeaponElement;
 
 
 
@@ -150,5 +154,6 @@ public class Config {
         refine_need_same_star = REFINE_NEED_SAME_STAR.get();
         element_summon_debug = ELEMENT_SUMMON_DEBUG.get();
         useNewDamageFormula = USE_NEW_DAMAGE_FORMULA.get();
+        autoWeaponElement = AUTO_WEAPON_ELEMENT.get();
     }
 }

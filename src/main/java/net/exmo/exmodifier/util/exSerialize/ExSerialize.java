@@ -12,6 +12,16 @@ import java.util.stream.Collectors;
 public class ExSerialize<T> {
     private final Supplier<T> constructor;
     private autoID autoIdSetter;
+    private List<String> dontSyncToClientField = new ArrayList<>();
+    private String lastField = "";
+    public ExSerialize<T> dontSyncToClient(String fieldName) {
+        dontSyncToClientField.add(fieldName);
+        return this;
+    }
+    public ExSerialize<T> dontSyncToClient() {
+        dontSyncToClientField.add(lastField);
+        return this;
+    }
     public class autoID {
         public Function<T, String> getter;
         public BiConsumer<T, String> autoIdSetter;
@@ -178,7 +188,7 @@ public class ExSerialize<T> {
                     json.add(field.name, value);
                 }
             } catch (Exception e) {
-                Exmodifier.LOGGER.Logger.error("Field '{}' serialization failed: {}", field.name, e.getMessage());
+                getError("Field '{}' serialization failed: {}", field.name, e);
             }
         });
         return json;
@@ -196,6 +206,7 @@ public class ExSerialize<T> {
     public List<T> fromJson(JsonObject json) {
         List<T> result = new ArrayList<>();
         for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
+            if (!entry.getValue().isJsonObject())continue;
             result.add(createInstance(
                     entry.getKey(),
                     entry.getValue().getAsJsonObject()
@@ -210,8 +221,16 @@ public class ExSerialize<T> {
     public List<T> fromJson(JsonArray array, Function<JsonObject, String> idExtractor) {
         List<T> result = new ArrayList<>();
         array.forEach(element -> {
-            JsonObject json = element.getAsJsonObject();
-            result.add(createInstance(idExtractor.apply(json), json));
+            JsonObject json =null;
+            if (element.isJsonObject()) {
+                try {
+                    json = element.getAsJsonObject();
+                } catch (Exception ignored) {
+                }
+            }
+            if (json!=null) {
+                result.add(createInstance(idExtractor.apply(json), json));
+            }
         });
         return result;
     }
@@ -223,8 +242,7 @@ public class ExSerialize<T> {
                 try {
                     field.serializeToNbt(object, tag);
                 } catch (Exception e) {
-                    Exmodifier.LOGGER.Logger.error("NBT serialization failed for field '{}': {}",
-                            field.name, e.getMessage());
+                    getError("NBT serialization failed for field '{}': {}", field.name, e);
                 }
             }
         });
@@ -232,6 +250,27 @@ public class ExSerialize<T> {
         return tag;
     }
 
+    private static <T> void getError(String s, String field, Exception e) {
+        Exmodifier.LOGGER.Logger.error(s,
+                field, e.getMessage());
+    }
+
+    public CompoundTag toSyncNbt(T object) {
+        CompoundTag tag = new CompoundTag();
+        fields.forEach(field -> {
+            if (field.nbtSerializer != null) {
+                if (!dontSyncToClientField.contains(field.name)) {
+                    try {
+                        field.serializeToNbt(object, tag);
+                    } catch (Exception e) {
+                        getError("NBT serialization failed for field '{}': {}", field.name, e);
+                    }
+                }
+            }
+        });
+        if (autoIdSetter!=null) tag.putString("id", autoIdSetter.getter.apply(object));
+        return tag;
+    }
     public T fromNbt(CompoundTag tag) {
         T instance = constructor.get();
         fields.forEach(field -> {
@@ -239,8 +278,7 @@ public class ExSerialize<T> {
                 try {
                     field.deserializeFromNbt(tag, instance);
                 } catch (Exception e) {
-                    Exmodifier.LOGGER.Logger.error("NBT deserialization failed for field '{}': {}",
-                            field.name, e.getMessage());
+                    getError("NBT deserialization failed for field '{}': {}", field.name, e);
                 }
             }
         });
@@ -258,6 +296,7 @@ public class ExSerialize<T> {
             BiConsumer<CompoundTag, V> nbtSerializer,
             Function<T, V> getter
     ) {
+        lastField = name;
         fields.add(new FieldHandler<>(
                 name,
                 jsonDeserializer,
@@ -287,7 +326,7 @@ public class ExSerialize<T> {
                     setter.accept(instance, value);
 
                 } catch (Exception e) {
-                    Exmodifier.LOGGER.Logger.error("Field '{}' parsing failed: {}", field.name, e.getMessage());
+                    getError("Field '{}' parsing failed: {}", field.name, e);
                 }
             }
         });
@@ -303,8 +342,7 @@ public class ExSerialize<T> {
             }
             return JsonNull.INSTANCE;
         } catch (Exception e) {
-            Exmodifier.LOGGER.Logger.error("JSON serialization failed for field '{}': {}",
-                    field.name, e.getMessage());
+            getError("JSON serialization failed for field '{}': {}", field.name, e);
             return JsonNull.INSTANCE;
         }
     }

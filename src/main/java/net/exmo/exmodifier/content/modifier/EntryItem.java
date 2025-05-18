@@ -8,6 +8,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -45,7 +46,7 @@ public class EntryItem extends Item {
         return Component.translatable(ModifierEntry.getDescriptionId(getModifierID(stack)));
     }
 
-    @Mod.EventBusSubscriber
+    @Mod.EventBusSubscriber(value = Dist.CLIENT)
     public static class CommonEvent {
         public static final DecimalFormat df = new DecimalFormat("#.####");
 

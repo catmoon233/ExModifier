@@ -4,7 +4,6 @@ import dev.shadowsoffire.apotheosis.adventure.affix.effect.DurableAffix;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.init.ExAttribute;
 import net.exmo.exmodifier.util.ItemAttrUtil;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;

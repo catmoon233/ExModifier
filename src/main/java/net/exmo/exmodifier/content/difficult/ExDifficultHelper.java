@@ -72,7 +72,7 @@ public class ExDifficultHelper {
         }
 
         // 4. 调试输出成长计算
-        if (Config.element_debug && debug) {
+        if (Config.element_summon_debug && debug) {
             server.getPlayerList().broadcastSystemMessage(Component.literal("[DEBUG] 成长计算 | 阶段: %s | 基底值: %.1f | 增幅系数: %.1f".formatted(
                     stage, Math.pow(product, getExponent(product)), getFactor(product))),false);
         }
@@ -87,7 +87,7 @@ public class ExDifficultHelper {
         // 6. 最终处理并输出调试信息
         int finalLevel = (int) Math.max(1, Math.min(50_000, Math.round(rawLevel)));
 
-        if (Config.element_debug && debug) {
+        if (Config.element_summon_debug && debug) {
             server.getPlayerList().broadcastSystemMessage(Component.literal("[DEBUG] 最终计算 | 衰减前等级: %.1f | 衰减后等级: %.1f | 最终等级: %d".formatted(
                     preDecayLevel, rawLevel, finalLevel)),false);
             server.sendSystemMessage(Component.literal("----------------------------------------"));

@@ -4,7 +4,9 @@ package net.exmo.exmodifier.mixins;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.exmo.exmodifier.Config;
+import net.exmo.exmodifier.content.element.ExElement;
 import net.exmo.exmodifier.content.element.ExElementHandle;
+import net.exmo.exmodifier.content.element.ExElementInstant;
 import net.exmo.exmodifier.content.helper.ExElementHelper;
 import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
@@ -13,6 +15,7 @@ import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.ModifierInstant;
 import net.exmo.exmodifier.content.quality.ItemQuality;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
+import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.init.ExAttribute;
 import net.exmo.exmodifier.util.ExUtil;
 import net.exmo.exmodifier.util.ItemSelector;
@@ -41,8 +44,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import snownee.jade.impl.ui.ElementHelper;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -56,6 +61,7 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.itemsDefaultEn
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
 
+    private static final ExElement exElement = new ExElement(ResourceLocation.tryParse("exmodifier:normal")).setRestrain(new HashMap<>()).setColor(Color.WHITE.getRGB());
     @Shadow
     private CompoundTag tag;
 
@@ -66,13 +72,15 @@ public abstract class ItemStackMixin {
     @Nullable
     public abstract CompoundTag getTagElement(String p_41738_);
 
+    private static boolean isRefresh = false;
     /**
      * @author anmaos
      */
     @Inject(at = @At("RETURN"), method = "getAttributeModifiers", cancellable = true)
     private void nu$getAttributeModifiers$add(EquipmentSlot pSlot, CallbackInfoReturnable<Multimap<Attribute, AttributeModifier>> cir) {
         ItemStack stack = (ItemStack) (Object) this;
-        {
+        if (!isRefresh){   {
+
             List<ItemSelector> itemSelectors = ItemQualityHandle.getItemSelector(stack);
             if (!itemSelectors.isEmpty()) {
                 ItemQualityHelper itemQualityHelper = ItemQualityHelper.of(stack);
@@ -108,12 +116,30 @@ public abstract class ItemStackMixin {
             if (exElementHelper.getElementEntriesSize() == 0) {
                 for (var itemSelector : itemSelectors3) {
 
-                    ExElementHandle.elementDefaultMap.get(itemSelector).exElementInstants().forEach(
+                    List<ExElementInstant> elementInstants = ExElementHandle.elementDefaultMap.get(itemSelector).exElementInstants();
+                    elementInstants.forEach(
                             exElementInstant -> exElementHelper.addExElement(exElementInstant, true)
                     );
+
+                }
+
+
+                if (Config.autoWeaponElement) {
+                    if (itemSelectors3.isEmpty()) {
+                        isRefresh = true;
+                        double sum = stack.getAttributeModifiers(EquipmentSlot.MAINHAND).get(Attributes.ATTACK_DAMAGE).stream()
+                                .mapToDouble(AttributeModifier::getAmount).sum();
+                        if (sum > 0) {
+                            if (exElement != null) {
+                                exElementHelper.addExElement(ExElementInstant.of(exElement, (int) (sum * 100)), true);
+                            }
+                        }
+
+                    }
                 }
             }
         }
+    }else isRefresh = false;
         if (stack.getTag() == null) return;
         Multimap<Attribute, AttributeModifier> multimap = HashMultimap.create();
         CompoundTag data = tag;

@@ -4,12 +4,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil.renderTooltipBackground;
 
+@OnlyIn(value = Dist.CLIENT)
 public class BelowTooltipComponent extends SideTooltipComponent{
     public BelowTooltipComponent(List<Component> components, int spacing) {
         super(components, spacing);

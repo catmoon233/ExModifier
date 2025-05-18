@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>MC服务器监控面板</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/style.css" rel="stylesheet">
+</head>
+<body>
+<div class="container py-4">
+    <header class="text-center mb-5">
+        <h1 class="display-4 text-warning mb-3">
+            <i class="fas fa-server me-3"></i>Minecraft 1.20.1 监控
+            <small class="text-muted d-block mt-2 fs-5">服务器状态实时分析系统</small>
+        </h1>
+    </header>
+
+    <div class="row g-4">
+        <!-- 左侧状态列 -->
+        <div class="col-lg-3">
+            <!-- 实时状态卡片 -->
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0"><i class="fas fa-heartbeat me-2"></i>核心指标</h4>
+                </div>
+                <div class="card-body">
+                    <!-- 服务器健康状态 -->
+                    <div class="status-item mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>健康状态</span>
+                            <span id="serverHealth" class="badge bg-success">优秀</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 实体数量 -->
+                    <div class="status-item mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>实体数量</span>
+                            <div>
+                                <span id="entityCount" class="badge bg-warning">0</span>
+                                <small class="text-muted">/5000</small>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div id="entityProgress" class="progress-bar progress-bar-striped bg-warning"
+                                 role="progressbar"></div>
+                        </div>
+                    </div>
+
+                    <!-- 玩家在线 -->
+                    <div class="status-item mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>在线玩家</span>
+                            <div>
+                                <span id="playerCount" class="badge bg-success">0</span>
+                                <small class="text-muted">/20</small>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div id="playerProgress" class="progress-bar progress-bar-striped bg-success"
+                                 role="progressbar"></div>
+                        </div>
+                    </div>
+
+                    <!-- 新增TPS监控 -->
+                    <div class="status-item mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>服务器TPS</span>
+                            <span id="tpsValue" class="badge bg-info">20.0</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div id="tpsProgress" class="progress-bar bg-info" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间图表列 -->
+        <div class="col-lg-5">
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i>性能趋势</h4>
+                    <div class="chart-controls">
+                        <button class="btn btn-sm btn-outline-secondary active" data-chart="resource">
+                            <i class="fas fa-microchip"></i> 资源
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" data-chart="tps">
+                            <i class="fas fa-tachometer-alt"></i> TPS
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body position-relative">
+                    <div class="chart-loader"></div>
+                    <canvas id="resourceChart"></canvas>
+                    <canvas id="tpsChart" class="d-none"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧信息列 -->
+        <div class="col-lg-4">
+            <!-- 玩家列表 -->
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-users me-2"></i>在线玩家</h4>
+                    <span class="badge bg-primary" id="playerListCount">0</span>
+                </div>
+                <div class="card-body player-list">
+                    <div id="players" class="list-group"></div>
+                </div>
+            </div>
+
+            <!-- 新增世界信息卡片 -->
+            <div class="card shadow-lg mt-4">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0"><i class="fas fa-globe me-2"></i>世界状态</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-2 bg-dark rounded">
+                                <div class="text-muted small">游戏时间</div>
+                                <div id="worldTime" class="h5 mb-0">00:00</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-2 bg-dark rounded">
+                                <div class="text-muted small">加载区块</div>
+                                <div id="loadedChunks" class="h5 mb-0">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-2 bg-dark rounded">
+                                <div class="text-muted small">网络延迟</div>
+                                <div id="serverPing" class="h5 mb-0">0ms</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-2 bg-dark rounded">
+                                <div class="text-muted small">存储使用</div>
+                                <div id="diskUsage" class="h5 mb-0">0GB</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.3.0"></script>
+<script src="/chart.js"></script>
+</body>
+</html>

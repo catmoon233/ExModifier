@@ -6,21 +6,23 @@
   "refmap": "exmodifier.refmap.json",
   "mixins": [
     "AbstractArrowMixin",
-    "AttackBaseChange",
     "ChangeDurability",
     "ChangeDurabilityBar",
-    "DamageNumberCompat",
     "DigSpeedMixin",
     "ItemCombinerMenuMixin",
     "ItemMixin",
     "ItemStackMixin",
     "LivingSwingAction",
     "TableCraftMixin",
-    "ToolTipMixin"
+    "TestMixin"
+
   ],
   "client": [
     "ItemStackClientMixin",
     "LanguageMixin",
+    "DamageNumberCompat",
+
+    "ToolTipMixin",
     "ModScreenMixin",
     "RenderItemMixin",
     "TableCraftScreenMixin"

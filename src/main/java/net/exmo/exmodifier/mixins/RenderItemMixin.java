@@ -1,8 +1,7 @@
 package net.exmo.exmodifier.mixins;
 
 import net.exmo.exmodifier.content.modifier.EntryItem;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.multiplayer.ClientLevel;
+
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
