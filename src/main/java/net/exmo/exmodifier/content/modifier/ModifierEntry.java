@@ -489,7 +489,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
                     list.add(Component.translatable("modifier.entry.tag").append(tags.get(0).toString()));
 
             }
-            list.add(Component.translatable("modifier.entry.source"));
+            list.add(Component.translatable("modifier.entry.source").append(source));
             return list;
 
     }

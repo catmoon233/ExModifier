@@ -10,6 +10,7 @@
   "exmodifier.refine.tooltip.star.up_2": "%§e全属性提升",
   "gui.exmodifier.refresh_empty": "请右键选择物品",
   "tooltip.exmodifier.entry_book.none": "§4错误词条",
+  "modifier.entry.source": "来源: ",
   "gui.exmodifier.search": "搜索物品...",
   "gui.exmodifier.close_refine_system": "精炼系统未在服务器上启用",
   "gui.exmodifier.refine_success": "§a精炼成功",

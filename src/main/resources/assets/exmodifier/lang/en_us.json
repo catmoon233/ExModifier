@@ -56,5 +56,6 @@
   "exmodifier.container.refresh.cost": "Enchantment Cost: %1$s",
   "exmodifier.quality.modifier": "§7Quality: ",
   "exmodifier.refine.tooltip.star.on": "★",
-  "exmodifier.refine.tooltip.star.off": "☆"
+  "exmodifier.refine.tooltip.star.off": "☆",
+  "modifier.entry.source": "Source:"
 }
