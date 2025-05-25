@@ -51,10 +51,11 @@ public class ExSerialize<T> {
 
     private final List<FieldHandler<T, ?>> fields = new ArrayList<>();
 
-    public ExSerialize<T> marge(ExSerialize<?> other){
-        fields.addAll((Collection<? extends FieldHandler<T, ?>>) other.fields);
+    public ExSerialize<T> marge(ExSerialize<? extends T> other){
+        fields.addAll((List<FieldHandler<T, ?>>)(List<?>)other.fields);
         return this;
     }
+
     private ExSerialize(Supplier<T> constructor) {
         this.constructor = constructor;
     }

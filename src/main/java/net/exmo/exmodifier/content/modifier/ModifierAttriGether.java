@@ -3,6 +3,7 @@ package net.exmo.exmodifier.content.modifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.util.ExUtil;
 import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.exmo.exmodifier.util.gether.AttriGether;
 import net.exmo.exmodifier.util.ExAttributeModifier;
@@ -50,9 +51,29 @@ public class ModifierAttriGether extends AttriGether {
                     obj -> obj.get("value").getAsFloat()
                 ))
         )
-        .marge(
-            AttriGether.ExSer // 假设父类已定义序列化配置
-        );
+            .addResourceLocationField("attribute",
+                    e -> ResourceLocation.tryParse(ExUtil.getAttributeID(e.attribute)),
+                    (e, v) -> e.attribute = ForgeRegistries.ATTRIBUTES.getValue(v))
+            .addStringField("slot",
+                    e -> e.slot != null ? e.slot.getName() : "",
+                    (e, v) -> e.slot = EquipmentSlot.byName(v))
+            .addBooleanField("IsAutoEquipmentSlot",
+                    e -> e.IsAutoEquipmentSlot,
+                    (e, v) -> e.IsAutoEquipmentSlot = v)
+            .addJsonObjectField("modifier",
+                    e -> {
+                        JsonObject obj = new JsonObject();
+                        obj.addProperty("name", e.modifier.getName());
+                        obj.addProperty("amount", e.modifier.getAmount());
+                        obj.addProperty("operation", e.modifier.getOperation().toValue());
+                        return obj;
+                    },
+                    (e, json) -> {
+                        String name = json.get("name").getAsString();
+                        double amount = json.get("amount").getAsDouble();
+                        AttributeModifier.Operation operation = AttributeModifier.Operation.fromValue(json.get("operation").getAsInt());
+                        e.modifier = new ExAttributeModifier(name, amount, operation);
+                    });
 
     public float weight = 0;
     public boolean isRandom = false;
