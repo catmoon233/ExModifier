@@ -6,10 +6,22 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 
 import java.util.List;
+import java.util.UUID;
 
 public class CustomEffectInstance {
     private final ResourceLocation effectId;
     private int duration;
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public CustomEffectInstance setUuid(UUID uuid) {
+        this.uuid = uuid;
+        return this;
+    }
+
+    private UUID uuid;
 
     public CustomEffectInstance setAmplifier(int amplifier) {
         this.amplifier = amplifier;
@@ -35,12 +47,13 @@ public class CustomEffectInstance {
     private final List<AttrGether> attributes;
     private boolean needsSync = true;
 
-    public CustomEffectInstance(ResourceLocation id, int duration, int amplifier, ResourceLocation icon, List<AttrGether> attributes) {
+    public CustomEffectInstance(ResourceLocation id, int duration, int amplifier, ResourceLocation icon, List<AttrGether> attributes,UUID uuid) {
         this.effectId = id;
         this.duration = duration;
         this.amplifier = amplifier;
         this.icon = icon;
         this.attributes = attributes;
+        this.uuid = uuid;
     }
 
     public void tick(LivingEntity entity) {

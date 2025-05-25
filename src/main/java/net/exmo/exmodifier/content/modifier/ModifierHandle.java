@@ -29,6 +29,8 @@ import net.exmo.exmodifier.network.sync.element.SyncElementMessage;
 import net.exmo.exmodifier.network.sync.modifier.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.network.sync.modifier.SyncModifierEntryMessage;
+import net.exmo.exmodifier.network.sync.suit.ClearExSuitMessage;
+import net.exmo.exmodifier.network.sync.suit.SyncExSuitMessage;
 import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.gether.AttrGether;
 import net.exmo.exmodifier.content.type.ExType;
@@ -114,12 +116,17 @@ public class ModifierHandle {
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncDefaultItemElementMessage(e));
     }
 
+    public static void sendExSuitToClient(ExSuit e, ServerPlayer player) {
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncExSuitMessage(e));
+    }
+
 
     public static void sendClearDataToClient(ServerPlayer player) {
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearModifierEntryMessage());
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearElementMessage());
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearDefaultEntityElementMessage());
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearDefaultItemElementMessage());
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClearExSuitMessage());
 
     }
 
@@ -1184,6 +1191,7 @@ public class ModifierHandle {
             // 创建 MoConfig 对象并设置属性
             MoConfig moconfig = new MoConfig(Path.of(""));
             moconfig.type = ModifierEntry.StringToType(jsonObject.get("type").getAsString());
+            moconfig.autoTypeId = jsonObject.get("autoTypeId").getAsBoolean();
             // moconfig.CuriosType = jsonObject.get("CuriosType").getAsString();
 
             // 获取 modifier 入口项的集合
@@ -1243,7 +1251,8 @@ public class ModifierHandle {
 
         }
         modifierEntry.types = types;
-        modifierEntry.id = affString + key;
+        boolean autoTypeId =itemObject.has("autoTypeId") ? itemObject.get("autoTypeId").getAsBoolean() : moconfig.autoTypeId;
+        modifierEntry.id = autoTypeId ?  affString + key : key;
         modifierEntry.isRandom = itemObject.has("isRandom") && itemObject.get("isRandom").getAsBoolean();
         modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry") && itemObject.get("OnlyHasThisEntry").getAsBoolean();
 

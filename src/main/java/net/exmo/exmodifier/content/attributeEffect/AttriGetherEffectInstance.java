@@ -10,6 +10,17 @@ public class AttriGetherEffectInstance {
     public AttriGetherEffect attriGetherEffect;
     public int startDuration;
     public int amplifier;
+
+    public boolean isRandomAttrUUID() {
+        return randomAttrUUID;
+    }
+
+    public AttriGetherEffectInstance setRandomAttrUUID(boolean randomAttrUUID) {
+        this.randomAttrUUID = randomAttrUUID;
+        return this;
+    }
+
+    public UUID uuid;
     public boolean randomAttrUUID =false;
    // public ServerBossEvent bossEvent;
     public boolean showParticle;
@@ -70,7 +81,8 @@ public class AttriGetherEffectInstance {
         this.showBossBar = showBossBar;
     }
 
-    public UUID uuid;
+
+
     public boolean showBossBar;
     public CompoundTag toNBT() {
         CompoundTag nbt = new CompoundTag();

@@ -66,6 +66,7 @@ public class CapabilityAttachHandler {
                                 effectTag.putInt("Duration", effect.getDuration());
                                 effectTag.putInt("Amplifier", effect.getAmplifier());
                                 effectTag.putString("Icon", effect.getIcon().toString());
+                                effectTag.putString("UUID", effect.getUuid().toString());
                                 // 序列化属性...
                                 if (!effect.getAttributes().isEmpty()) {
                                     ListTag specialTagsArray = new ListTag();
@@ -86,13 +87,14 @@ public class CapabilityAttachHandler {
                             for (Tag tag : effectsList) {
                                 CompoundTag effectTag = (CompoundTag) tag;
                                 ResourceLocation id = new ResourceLocation(effectTag.getString("Id"));
+                                UUID uuid = UUID.fromString(effectTag.getString("UUID"));
                                 int duration = effectTag.getInt("Duration");
                                 int amplifier = effectTag.getInt("Amplifier");
                                 ResourceLocation icon = new ResourceLocation(effectTag.getString("Icon"));
                                 ListTag specialTagsArray = effectTag.getList("Attributes", Tag.TAG_COMPOUND);
                                 List<AttrGether> attrGet = specialTagsArray.stream().map(e -> AttrGether.exSerialize.fromNbt((CompoundTag) e)).toList();
 
-                                cap.addEffect(new CustomEffectInstance(id, duration, amplifier, icon, attrGet));
+                                cap.addEffect(new CustomEffectInstance(id, duration, amplifier, icon, attrGet,uuid));
                             }
                         }
 

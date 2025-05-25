@@ -73,6 +73,22 @@ public class ExSerialize<T> {
     }
 
     // region 字段注册方法
+    // 新增Integer-String Map字段支持
+    public ExSerialize<T> addIntStringMapField(String name, BiConsumer<T, Map<Integer, String>> setter) {
+        return addIntStringMapField(name, t -> Collections.emptyMap(), setter);
+    }
+
+    public ExSerialize<T> addIntStringMapField(String name,
+                                              Function<T, Map<Integer, String>> getter,
+                                              BiConsumer<T, Map<Integer, String>> setter) {
+        return addField(name,
+                json -> parseIntStringMap(json.getAsJsonObject()),
+                setter,
+                tag -> parseNbtIntStringMap((CompoundTag) tag),
+                (nbt, value) -> serializeNbtIntStringMap(nbt, name, value),
+                getter
+        );
+    }
     // 基础类型字段
     public ExSerialize<T> addStringField(String name, BiConsumer<T, String> setter) {
         return addStringField(name, t -> null, setter);
@@ -229,6 +245,23 @@ public class ExSerialize<T> {
                 setter,
                 tag -> parseNbtJsonObjectList((ListTag) tag),
                 (nbt, value) -> serializeNbtJsonObjectList(nbt, name, value),
+                getter
+        );
+    }
+
+    // 新增String Map字段支持
+    public ExSerialize<T> addStringMapField(String name, BiConsumer<T, Map<String, String>> setter) {
+        return addStringMapField(name, t -> Collections.emptyMap(), setter);
+    }
+
+    public ExSerialize<T> addStringMapField(String name,
+                                           Function<T, Map<String, String>> getter,
+                                           BiConsumer<T, Map<String, String>> setter) {
+        return addField(name,
+                json -> parseStringMap(json.getAsJsonObject()),
+                setter,
+                tag -> parseNbtStringMap((CompoundTag) tag),
+                (nbt, value) -> serializeNbtStringMap(nbt, name, value),
                 getter
         );
     }
@@ -558,6 +591,50 @@ public class ExSerialize<T> {
         List<JsonObject> list = new ArrayList<>();
         array.forEach(e -> list.add(e.getAsJsonObject()));
         return list;
+    }
+
+    private Map<String, String> parseStringMap(JsonObject json) {
+        return json.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().getAsString()
+                ));
+    }
+
+    private Map<String, String> parseNbtStringMap(CompoundTag tag) {
+        return tag.getAllKeys().stream()
+                .collect(Collectors.toMap(
+                        k -> k,
+                        k -> tag.getString(k)
+                ));
+    }
+
+    private void serializeNbtStringMap(CompoundTag parent, String name, Map<String, String> map) {
+        CompoundTag mapTag = new CompoundTag();
+        map.forEach(mapTag::putString);
+        parent.put(name, mapTag);
+    }
+
+    private Map<Integer, String> parseIntStringMap(JsonObject json) {
+        return json.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> Integer.parseInt(e.getKey()),
+                        e -> e.getValue().getAsString()
+                ));
+    }
+
+    private Map<Integer, String> parseNbtIntStringMap(CompoundTag tag) {
+        return tag.getAllKeys().stream()
+                .collect(Collectors.toMap(
+                        k -> Integer.parseInt(k),
+                        k -> tag.getString(k)
+                ));
+    }
+
+    private void serializeNbtIntStringMap(CompoundTag parent, String name, Map<Integer, String> map) {
+        CompoundTag mapTag = new CompoundTag();
+        map.forEach((k, v) -> mapTag.putString(k.toString(), v));
+        parent.put(name, mapTag);
     }
     // endregion
 

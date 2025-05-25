@@ -4,17 +4,25 @@ import net.exmo.exmodifier.content.element.DefaultEntityElement;
 import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.util.AbstractReloadListener;
 
+import java.io.FileNotFoundException;
+
 import static net.exmo.exmodifier.util.ExUtil.classToString;
 
-public class ExSuitPreparableReloadListener extends AbstractReloadListener<DefaultEntityElement> {
+public class ExSuitPreparableReloadListener extends AbstractReloadListener<ExSuit> {
 
     public ExSuitPreparableReloadListener() {
         super("suit",
             "loading ex suit data...",
-            DefaultEntityElement.SERIALIZER::fromJson,
-            (key, element) -> {
-                if (!element.getEntityTypeString().isEmpty()) {
-                    ExElementHandle.elementDefaultMap2.put(element.getEntityType(), element);
+            e-> {
+                try {
+                    return ExSuitHandle.processMoConfigEntries(e);
+                } catch (FileNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                }
+            },
+            (key, suit) -> {
+                if (suit !=null) {
+                    ExSuitHandle.registerExSuit(suit);
                 }
             });
     }

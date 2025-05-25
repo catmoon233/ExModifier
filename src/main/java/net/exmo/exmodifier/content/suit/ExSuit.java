@@ -27,6 +27,7 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
     .addIntField("MaxLevel", ExSuit::getMaxLevel, null)
         .addBooleanField("newTooltipPage", ExSuit::isNewTooltipPage, ExSuit::setNewTooltipPage)
         .addBooleanField("hasMobEffect",  ExSuit::isHasMobEffect, (obj, hasMobEffect) -> obj.hasMobEffect = hasMobEffect)
+        .addIntStringMapField("effectLocalDescription", ExSuit::getEffectLocalDescription, ExSuit::setEffectLocalDescription)
 
 
     ;
@@ -128,6 +129,17 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
     }
 
     public String LocalDescription ="";
+
+    public Map<Integer, String> getEffectLocalDescription() {
+        return effectLocalDescription;
+    }
+
+    public ExSuit setEffectLocalDescription(Map<Integer, String> effectLocalDescription) {
+        this.effectLocalDescription = effectLocalDescription;
+        return this;
+    }
+
+    public Map<Integer,String> effectLocalDescription= new HashMap<>();
 	public Map<Integer,List<String>> commands = new HashMap<>();
     public int MaxLevel ;
     public boolean visible = true;

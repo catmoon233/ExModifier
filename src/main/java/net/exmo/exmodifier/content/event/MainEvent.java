@@ -14,6 +14,7 @@ import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.slot.ModifierSlotHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.content.suit.ExSuitPreparableReloadListener;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.resources.ZipHandle;
@@ -690,6 +691,7 @@ public class MainEvent {
 //                init.run();
 //            }
 
+            event.addListener(new ExSuitPreparableReloadListener());
             event.addListener(new ModifierPreparableReloadListener());
             event.addListener(new ElementPreparableReloadListener());
             event.addListener(new DefaultEntityPreparableReloadListener());
@@ -710,6 +712,10 @@ public class MainEvent {
 
     public static void sendExmoServerDataToServerPlayer(ServerPlayer entity) {
         // 使用副本遍历以避免 ConcurrentModificationException
+        List<ExSuit> exSuits = new ArrayList<>(ExSuitHandle.LoadExSuit.values());
+        for (ExSuit exSuit : exSuits) {
+            ModifierHandle.sendExSuitToClient(exSuit, entity);
+        }
         List<ModifierEntry> modifierEntries = new ArrayList<>(ModifierHandle.modifierEntryMap.values());
         for (ModifierEntry modifierEntry : modifierEntries) {
             ModifierHandle.sendModifierEntryToClient(modifierEntry, entity);
@@ -726,6 +732,7 @@ public class MainEvent {
         for (var e : defaultEntityElements) {
             ModifierHandle.sendDefaultEntityElementToClient(e, entity);
         }
+
     }
 
     public static void clearOldData() {

@@ -339,6 +339,22 @@ public class ExSuitHandle {
             registerExSuit(exSuit);
         }
     }
+    public static List<ExSuit> processMoConfigEntries(JsonObject jsonObject) throws FileNotFoundException {
+
+        List<ExSuit> entries = new ArrayList<>();
+        for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+            try {
+                Exmodifier.LOGGER.debug("Reading Suit Config: " + entry.getKey());
+                MoConfig moconfig = new MoConfig(null, true);
+                moconfig.type = ModifierEntry.StringToType(jsonObject.get("type").getAsString());
+                processSuitEntry(moconfig, entry, entries);
+                Exmodifier.LOGGER.debug("Reading Suit Config Over: " + entry.getKey());
+            } catch (Exception e) {
+                Exmodifier.LOGGER.Logger.error("Error processing modifier entry: " + entry.getKey(), e);
+            }
+        }
+        return entries;
+    }
     public static void init() throws Exception {
 
     }

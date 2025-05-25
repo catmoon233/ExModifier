@@ -81,19 +81,6 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public String icon = "";
     public String source = "";
     public List<String> entityTypes = new ArrayList<>();
-
-    public List<String> getExsuit() {
-        return exsuit;
-    }
-
-    public ModifierEntry setExsuit(List<String> exsuit) {
-        this.exsuit = exsuit;
-        if (ModifierHandle.EEMatchQueue.containsKey(this.id)) {
-            ModifierHandle.EEMatchQueue.get(this.id).addAll(exsuit);
-        }else ModifierHandle.EEMatchQueue.put(this.id, exsuit);
-        return this;
-    }
-
     public List<String> exsuit = new ArrayList<>();
     public List<TagKey<ModifierEntry>> tags = new ArrayList<>();
     public boolean OnlyHasThisEntry = false;
@@ -112,6 +99,18 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public List<ModifierAttriGether> attriGether = new java.util.ArrayList<>();
     public  List<String> specialTags = new ArrayList<>();
 
+
+    public List<String> getExsuit() {
+        return exsuit;
+    }
+
+    public ModifierEntry setExsuit(List<String> exsuit) {
+        this.exsuit = exsuit;
+        if (ModifierHandle.EEMatchQueue.containsKey(this.id)) {
+            ModifierHandle.EEMatchQueue.get(this.id).addAll(exsuit);
+        }else ModifierHandle.EEMatchQueue.put(this.id, exsuit);
+        return this;
+    }
 
     public ModifierEntry(String id) {
         this.id = id;
@@ -432,7 +431,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
         var onlyItems = getModifierItemSelector().getOnlyItems();
         if(!onlyItems.isEmpty())  list.add(Component.translatable("modifier.entry.only_items").append(String.join(",", onlyItems)));
 
-            if (isRandom && RandomNum != 0)
+        if (isRandom && RandomNum != 0)
                 list.add(Component.translatable("modifier.entry.is_random").append(String.valueOf(RandomNum)));
 
 
