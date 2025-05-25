@@ -25,13 +25,13 @@ import java.util.function.Consumer;
 
 
 public class BaseItemSelector<T> {
-    public static ExSerialize<Object> ExSer = ExSerialize.create(BaseItemSelector::new)
-        .addStringListField("onlyTags", e -> ((BaseItemSelector) e).OnlyTags, (s, v) -> ((BaseItemSelector) s).OnlyTags = v)
-        .addStringListField("onlyItems", e -> ((BaseItemSelector) e).OnlyItems, (s, v) -> ((BaseItemSelector) s).OnlyItems = v)
-        .addStringListField("unlessItemTags", e -> ((BaseItemSelector) e).UnlessItemTags, (s, v) -> ((BaseItemSelector) s).UnlessItemTags = v)
-        .addStringListField("unlessItemIds", e -> ((BaseItemSelector) e).UnlessItemIds, (s, v) -> ((BaseItemSelector) s).UnlessItemIds = v)
-        .addStringListField("onlySlots", e -> ((BaseItemSelector) e).OnlySlots, (s, v) -> ((BaseItemSelector) s).OnlySlots = v);
-
+//    // 修改第33行代码（及同类型字段声明）：
+//    public static ExSerialize<BaseItemSelector<?>> ExSer = ExSerialize.create(BaseItemSelector::new)
+//            .addStringListField("onlyTags", e -> e.OnlyTags, (s, v) -> s.OnlyTags = v)
+//            .addStringListField("onlyItems", e -> e.OnlyItems, (s, v) -> s.OnlyItems = v)
+//            .addStringListField("unlessItemTags", e -> e.UnlessItemTags, (s, v) -> s.UnlessItemTags = v)
+//            .addStringListField("unlessItemIds", e -> e.UnlessItemIds, (s, v) -> s.UnlessItemIds = v)
+//            .addStringListField("onlySlots", e -> e.OnlySlots, (s, v) -> s.OnlySlots = v);
     protected static final Codec<BaseItemSelector<?>> CODEC = Codec.unit(BaseItemSelector::new);
 
 

@@ -13,10 +13,10 @@ import java.util.function.Consumer;
 
 public class ModifierItemSelector<T> extends BaseItemSelector<T> {
     public static ExSerialize<Object> ExSer = ExSerialize.create(ModifierItemSelector::new)
-        .addStringListField("onlyWashItems", 
+        .addStringListField("onlyWashItems",
             e -> ((ModifierItemSelector) e).OnlyWashItems,
-            (modifierItemSelector, strings) -> ((ModifierItemSelector) modifierItemSelector).OnlyWashItems = strings)
-        .marge(BaseItemSelector.ExSer); // 合并基类序列化配置
+            (modifierItemSelector, strings) -> ((ModifierItemSelector) modifierItemSelector).OnlyWashItems = strings);
+//        .marge(BaseItemSelector.ExSer); // 合并基类序列化配置
 
     protected List<String> OnlyWashItems = new ArrayList<>();
 
