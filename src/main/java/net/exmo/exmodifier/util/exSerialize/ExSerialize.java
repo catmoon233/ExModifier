@@ -4,6 +4,7 @@ import com.google.gson.*;
 import net.exmo.exmodifier.Exmodifier;
 import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
+import oshi.util.tuples.Pair;
 
 import java.util.*;
 import java.util.function.*;
@@ -12,7 +13,9 @@ import java.util.stream.Collectors;
 public class ExSerialize<T> {
     private final Supplier<T> constructor;
     private autoID autoIdSetter;
+    private Map<Pair<Function<T, Object>,BiConsumer<T, Object>>,ExSerialize<Object>> subclasses  = new HashMap<>();
     private List<String> dontSyncToClientField = new ArrayList<>();
+    private List<String> onlyReadField = new ArrayList<>();
     private String lastField = "";
     public ExSerialize<T> dontSyncToClient(String fieldName) {
         dontSyncToClientField.add(fieldName);
@@ -22,6 +25,16 @@ public class ExSerialize<T> {
         dontSyncToClientField.add(lastField);
         return this;
     }
+    public ExSerialize<T> onlyRead(String fieldName) {
+        onlyReadField.add(fieldName);
+        return this;
+    }
+    public ExSerialize<T> onlyRead() {
+        onlyReadField.add(lastField);
+        return this;
+    }
+
+
     public class autoID {
         public Function<T, String> getter;
         public BiConsumer<T, String> autoIdSetter;
@@ -31,10 +44,23 @@ public class ExSerialize<T> {
             this.autoIdSetter = autoIdSetter;
         }
     }
+
+    public List<FieldHandler<T, ?>> getFields() {
+        return fields;
+    }
+
     private final List<FieldHandler<T, ?>> fields = new ArrayList<>();
 
+    public ExSerialize<T> marge(ExSerialize<?> other){
+        fields.addAll((Collection<? extends FieldHandler<T, ?>>) other.fields);
+        return this;
+    }
     private ExSerialize(Supplier<T> constructor) {
         this.constructor = constructor;
+    }
+    public ExSerialize<T> addSubclass(Function<T, Object> getter,BiConsumer<T, Object> setter,ExSerialize<Object> ser){
+        subclasses.put(new Pair<>(getter,setter),ser);
+        return this;
     }
 
     public static <T> ExSerialize<T> create(Supplier<T> constructor) {
@@ -64,6 +90,21 @@ public class ExSerialize<T> {
         );
     }
 
+    public ExSerialize<T> addBooleanField(String name, BiConsumer<T, Boolean> setter) {
+        return addBooleanField(name, t -> false, setter);
+    }
+
+    public ExSerialize<T> addBooleanField(String name,
+                                      Function<T, Boolean> getter,
+                                      BiConsumer<T, Boolean> setter) {
+        return addField(name,
+                json -> getJsonPrimitive(json).getAsBoolean(),
+                setter,
+                tag ->  ((ByteTag) tag).getAsByte() !=0,
+                (nbt, value) -> nbt.putBoolean(name, value),
+                getter
+        );
+    }
     public ExSerialize<T> addIntField(String name, BiConsumer<T, Integer> setter) {
         return addIntField(name, t -> 0, setter);
     }
@@ -83,6 +124,21 @@ public class ExSerialize<T> {
     public ExSerialize<T> addFloatField(String name, BiConsumer<T, Float> setter) {
         return addFloatField(name, t -> 0f, setter);
     }
+    public ExSerialize<T> addDoubleField(String name, BiConsumer<T, Double> setter) {
+        return addDoubleField(name, t -> 0d, setter);
+    }
+    public ExSerialize<T> addDoubleField(String name,
+                                      Function<T, Double> getter,
+                                      BiConsumer<T, Double> setter) {
+        return addField(name,
+                json -> getJsonPrimitive(json).getAsDouble(),
+                setter,
+                tag -> ((DoubleTag) tag).getAsDouble(),
+                (nbt, value) -> nbt.putDouble(name, value),
+                getter
+        );
+    }
+
 
     public ExSerialize<T> addFloatField(String name,
                                         Function<T, Float> getter,
@@ -191,8 +247,15 @@ public class ExSerialize<T> {
                 getError("Field '{}' serialization failed: {}", field.name, e);
             }
         });
+        subclasses.forEach(
+                (tFunction, exSerialize) -> {
+                    JsonObject singleJson = exSerialize.toSingleJson(tFunction.getA().apply(object));
+                    singleJson.asMap().forEach(json::add);
+                }
+        );
         return json;
     }
+
 
     public JsonArray toJson(List<T> objects) {
         JsonArray array = new JsonArray();
@@ -232,17 +295,25 @@ public class ExSerialize<T> {
                 result.add(createInstance(idExtractor.apply(json), json));
             }
         });
+
         return result;
     }
 
     public CompoundTag toNbt(T object) {
         CompoundTag tag = new CompoundTag();
+        subclasses.forEach(
+                (tFunction, exSerialize) -> {
+                    tag.merge(exSerialize.toNbt(object));
+                }
+        );
         fields.forEach(field -> {
             if (field.nbtSerializer != null) {
-                try {
-                    field.serializeToNbt(object, tag);
-                } catch (Exception e) {
-                    getError("NBT serialization failed for field '{}': {}", field.name, e);
+                if ( !onlyReadField.contains(field.name)) {
+                    try {
+                        field.serializeToNbt(object, tag);
+                    } catch (Exception e) {
+                        getError("NBT serialization failed for field '{}': {}", field.name, e);
+                    }
                 }
             }
         });
@@ -259,7 +330,7 @@ public class ExSerialize<T> {
         CompoundTag tag = new CompoundTag();
         fields.forEach(field -> {
             if (field.nbtSerializer != null) {
-                if (!dontSyncToClientField.contains(field.name)) {
+                if (!dontSyncToClientField.contains(field.name) && !onlyReadField.contains(field.name)) {
                     try {
                         field.serializeToNbt(object, tag);
                     } catch (Exception e) {
@@ -283,6 +354,11 @@ public class ExSerialize<T> {
             }
         });
         if (autoIdSetter!=null) autoIdSetter.autoIdSetter.accept(instance, tag.getString("id"));
+        subclasses.forEach(
+                (tFunction, exSerialize) -> {
+                   tFunction.getB().accept(instance,exSerialize.fromNbt(tag));
+                }
+        );
         return instance;
     }
     // endregion
@@ -330,6 +406,11 @@ public class ExSerialize<T> {
                 }
             }
         });
+        subclasses.forEach(
+                (tFunction, exSerialize) -> {
+                    tFunction.getB().accept(instance,exSerialize.fromJson(json));
+                }
+        );
         return instance;
     }
 
@@ -480,7 +561,7 @@ public class ExSerialize<T> {
     }
     // endregion
 
-    private static class FieldHandler<T, V> {
+    public static class FieldHandler<T, V> {
         final String name;
         final Function<JsonElement, V> deserializer;
         final BiConsumer<T, V> setter;

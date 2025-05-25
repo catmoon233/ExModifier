@@ -5,6 +5,7 @@ import com.mojang.datafixers.types.Func;
 import com.mojang.serialization.Codec;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.util.ExUtil;
+import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +25,15 @@ import java.util.function.Consumer;
 
 
 public class BaseItemSelector<T> {
+    public static ExSerialize<Object> ExSer = ExSerialize.create(BaseItemSelector::new)
+        .addStringListField("onlyTags", e -> ((BaseItemSelector) e).OnlyTags, (s, v) -> ((BaseItemSelector) s).OnlyTags = v)
+        .addStringListField("onlyItems", e -> ((BaseItemSelector) e).OnlyItems, (s, v) -> ((BaseItemSelector) s).OnlyItems = v)
+        .addStringListField("unlessItemTags", e -> ((BaseItemSelector) e).UnlessItemTags, (s, v) -> ((BaseItemSelector) s).UnlessItemTags = v)
+        .addStringListField("unlessItemIds", e -> ((BaseItemSelector) e).UnlessItemIds, (s, v) -> ((BaseItemSelector) s).UnlessItemIds = v)
+        .addStringListField("onlySlots", e -> ((BaseItemSelector) e).OnlySlots, (s, v) -> ((BaseItemSelector) s).OnlySlots = v);
+
     protected static final Codec<BaseItemSelector<?>> CODEC = Codec.unit(BaseItemSelector::new);
+
 
 
     public T setUnlessItemTags(List<String> unlessItemTags) {

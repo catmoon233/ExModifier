@@ -1,7 +1,9 @@
 package net.exmo.exmodifier.util.gether;
 
+import com.google.gson.JsonObject;
 import net.exmo.exmodifier.util.ExAttributeModifier;
 import net.exmo.exmodifier.util.ExUtil;
+import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -19,6 +21,32 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 
 public class AttriGether {
+    // 新增序列化配置
+    public static ExSerialize<AttriGether> ExSer = ExSerialize.create(AttriGether::new)
+        .addResourceLocationField("attribute", 
+            e -> ResourceLocation.tryParse(ExUtil.getAttributeID(e.attribute)),
+            (e, v) -> e.attribute = ForgeRegistries.ATTRIBUTES.getValue(v))
+        .addStringField("slot", 
+            e -> e.slot != null ? e.slot.getName() : "",
+            (e, v) -> e.slot = EquipmentSlot.byName(v))
+        .addBooleanField("IsAutoEquipmentSlot", 
+            e -> e.IsAutoEquipmentSlot, 
+            (e, v) -> e.IsAutoEquipmentSlot = v)
+        .addJsonObjectField("modifier",
+            e -> {
+                JsonObject obj = new JsonObject();
+                obj.addProperty("name", e.modifier.getName());
+                obj.addProperty("amount", e.modifier.getAmount());
+                obj.addProperty("operation", e.modifier.getOperation().toValue());
+                return obj;
+            },
+            (e, json) -> {
+                String name = json.get("name").getAsString();
+                double amount = json.get("amount").getAsDouble();
+                AttributeModifier.Operation operation = AttributeModifier.Operation.fromValue(json.get("operation").getAsInt());
+                e.modifier = new ExAttributeModifier(name, amount, operation);
+            });
+
     public EquipmentSlot slot = null;
     public boolean IsAutoEquipmentSlot = false;
     public Attribute attribute;
@@ -28,7 +56,12 @@ public class AttriGether {
         this.modifier = modifier;
         this.slot =     slot;
     }
-//    public AttriGether setModifierUUID(UUID uuid){
+
+    public AttriGether() {
+
+    }
+
+    //    public AttriGether setModifierUUID(UUID uuid){
 //        this.modifier = new ExAttributeModifier(uuid, modifier.getName(), modifier.getAmount(), modifier.getOperation());
 //        return this;
 //    }

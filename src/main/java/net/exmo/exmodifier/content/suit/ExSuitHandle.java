@@ -42,7 +42,7 @@ public class ExSuitHandle {
     public static ExSuit FoundAllTypeSuitById(String id){
 
         for (ExSuit exSuit : LoadExSuit.values()){
-            if (exSuit.entry.stream().anyMatch(entry -> entry.id.equals(id))){
+            if (exSuit.entry.stream().anyMatch(entry -> entry.equals(id))){
                 return exSuit;
             }
         }
@@ -53,7 +53,7 @@ public class ExSuitHandle {
         List<ExSuit> exSuits = new ArrayList<>();
         for (ExSuit exSuit : LoadExSuit.values()){
             if (exSuit.type == ExType.ALL.get()) {
-                if (exSuit.entry.stream().anyMatch(entry -> entry.id.substring(2).equals(id.substring(2)))) {
+                if (exSuit.entry.stream().anyMatch(entry -> entry.substring(2).equals(id.substring(2)))) {
                     Exmodifier.LOGGER.debug("Found About ExSuit: " + exSuit.id);
                     exSuits.add(exSuit);
                 }
@@ -122,7 +122,7 @@ public class ExSuitHandle {
     public static Integer GetSuitLevel(Player player,ExSuit s){
         return player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).map(capability -> capability.SuitsNum.getOrDefault(s, 0)).orElse(0);
     }
-    public static void RegisterExSuit(ExSuit exSuit){
+    public static void registerExSuit(ExSuit exSuit){
         LoadExSuit.put(exSuit.id,exSuit);
         Exmodifier.LOGGER.info("Registered ExSuit: "+ exSuit);
     }
@@ -156,7 +156,7 @@ public class ExSuitHandle {
                 // Exmodifier.LOGGER.debug("匹配中: "+key);
                 ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(key);
                 if (entry1 != null) {
-                    exSuit.addEntry(entry1);
+                    exSuit.addEntry(entry1.id);
                     Exmodifier.LOGGER.debug("Add About ModifierEntry: "+entry1.id +" in "+entry.getKey());
                 }
             }
@@ -164,7 +164,7 @@ public class ExSuitHandle {
         else {
             ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(string.substring(0, 2) + entry.getKey());
             if (entry1 != null) {
-                exSuit.addEntry(entry1);
+                exSuit.addEntry(entry1.id);
                 Exmodifier.LOGGER.debug("Found About ModifierEntry: "+entry1.id);
             }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + string.substring(0,2) + entry.getKey());
 
@@ -178,10 +178,11 @@ public class ExSuitHandle {
         exSuit.type = moconfig.type;
         exSuit.id = string.substring(0,2) + entry.getKey();
         if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
+        if (itemObject.has("newTooltipPage"))exSuit.newTooltipPage= itemObject.get("newTooltipPage").getAsBoolean();
         if (itemObject.has("LocalDescription"))exSuit.LocalDescription= itemObject.get("LocalDescription").getAsString();
         // if (itemObject.has("trigger")) exSuit.MainTrigger = StringToTrigger(itemObject.get("trigger").getAsString());
         if (itemObject.has("excludeArmorInHand"))exSuit.setting.put("excludeArmorInHand", String.valueOf(itemObject.get("excludeArmorInHand").getAsBoolean()));
-        for (int i = 1; i <= 10; i++) {
+        for (int i = 1; i <= 16; i++) {
             if (itemObject.has(i + "")) {
                 JsonObject suitObj = itemObject.getAsJsonObject(i + "");
                 ExSuit.Trigger trigger = suitObj.has("trigger") ?  StringToTrigger(suitObj.get("trigger").getAsString()) : ExSuit.MainTrigger;
@@ -335,7 +336,7 @@ public class ExSuitHandle {
             }
         }
         for (ExSuit exSuit : entries){
-            RegisterExSuit(exSuit);
+            registerExSuit(exSuit);
         }
     }
     public static void init() throws Exception {

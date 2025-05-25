@@ -2,9 +2,7 @@ package net.exmo.exmodifier.content.element;
 
 import net.exmo.exmodifier.util.exSerialize.ExSerClass;
 import net.exmo.exmodifier.util.exSerialize.ExSerialize;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -27,8 +25,8 @@ public class ExElement implements ExSerClass {
     private float ParticleScale = 0.2f;
     private ParticleType<?> simpleParticleType;
     public static final ExSerialize<ExElement> EX_SERIALIZE = ExSerialize.create(()-> new ExElement(new ResourceLocation("exmodifier:null")))
-            .withAutoId((e)->e.getId().toString(),(e, id) -> e.setId(new ResourceLocation(id)))
-            .addResourceLocationField("id", ExElement::getId,ExElement::setId)
+            .withAutoId((e)->e.getResId().toString(),(e, id) -> e.setId(new ResourceLocation(id)))
+            .addResourceLocationField("id", ExElement::getResId,ExElement::setId)
             .addResourceLocationField("icon", ExElement::getIconTexture,ExElement::setIconTexture)
             .addIntField("color", ExElement::getColor,ExElement::setColor)
             .addStringField("custom_loc", ExElement::getCustomLocation,ExElement::setCustomLocation)
@@ -88,8 +86,13 @@ public class ExElement implements ExSerClass {
         return this;
     }
 
-    public ResourceLocation getId() {
+    public ResourceLocation getResId() {
         return id;
+    }
+
+    @Override
+    public ExSerialize getExSerialize() {
+        return EX_SERIALIZE;
     }
 
     public ExElement setId(ResourceLocation id) {

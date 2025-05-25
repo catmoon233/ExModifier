@@ -3,6 +3,7 @@ package net.exmo.exmodifier.content.modifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.exmo.exmodifier.util.gether.AttriGether;
 import net.exmo.exmodifier.util.ExAttributeModifier;
 import net.exmo.exmodifier.util.ExConfigHandle;
@@ -20,10 +21,38 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEquipmentSlot;
 
 public class ModifierAttriGether extends AttriGether {
+    // 新增序列化配置
+    public static ExSerialize<ModifierAttriGether> ExSer = ExSerialize.create(ModifierAttriGether::new)
+        .addFloatField("weight", e -> e.weight, (e, v) -> e.weight = v)
+        .addBooleanField("isRandom", e -> e.isRandom, (e, v) -> e.isRandom = v)
+        .addBooleanField("hasUUID", e -> e.hasUUID, (e, v) -> e.hasUUID = v)
+        .addDoubleField("minValue", e -> e.minValue, (e, v) -> e.minValue = v)
+        .addDoubleField("maxValue", e -> e.maxValue, (e, v) -> e.maxValue = v)
+        .addStringField("Expression", e -> e.Expression, (e, v) -> e.Expression = v)
+        .addStringListField("OnlyItems", e -> e.OnlyItems, (e, v) -> e.OnlyItems = v)
+        .addStringListField("OnlySlots", e -> e.OnlySlots, (e, v) -> e.OnlySlots = v)
+        .addJsonObjectList("simpleWeight",
+            e -> e.simpleWeight.entrySet().stream()
+                .map(entry -> {
+                    JsonObject obj = new JsonObject();
+                    obj.addProperty("key", entry.getKey());
+                    obj.addProperty("value", entry.getValue());
+                    return obj;
+                }).collect(Collectors.toList()),
+            (e, list) -> e.simpleWeight = list.stream()
+                .collect(Collectors.toMap(
+                    obj -> obj.get("key").getAsDouble(),
+                    obj -> obj.get("value").getAsFloat()
+                ))
+        )
+        .marge(
+            AttriGether.ExSer // 假设父类已定义序列化配置
+        );
 
     public float weight = 0;
     public boolean isRandom = false;
@@ -35,6 +64,10 @@ public class ModifierAttriGether extends AttriGether {
     public String Expression = "";
     public List<String> OnlyItems = new java.util.ArrayList<>();
     public List<String> OnlySlots = new java.util.ArrayList<>();
+
+    public ModifierAttriGether() {
+        super(null, null);
+    }
 
 //    public AttrGether toAttriGether() {
 //        return new AttrGether(this.attribute, this.modifier);

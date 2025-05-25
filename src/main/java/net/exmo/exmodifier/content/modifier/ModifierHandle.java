@@ -182,11 +182,11 @@ public class ModifierHandle {
         public static List<Component> GenSuitInfo(Player player, ModifierEntry modifierEntry) {
             if (player == null) return null;
             List<Component> tooltips = new ArrayList<>();
-            if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.stream().anyMatch(a -> a.id.equals(modifierEntry.id)))) {
+            if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.stream().anyMatch(a -> a.equals(modifierEntry.id)))) {
                 ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
                 if (!Config.compact_tooltip) tooltips.add(Component.translatable("modifier.entry.suit"));
 
-                for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.stream().anyMatch(a -> a.id.equals(modifierEntry.id)))
+                for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.stream().anyMatch(a -> a.equals(modifierEntry.id)))
                         .toList()) {
                     if (suit.visible) {
                         Integer integer = pv.SuitsNum.get(suit);
@@ -843,7 +843,7 @@ public class ModifierHandle {
     public static List<MoConfig> Foundmoconfigs = new ArrayList<>();
     public static List<WashingMaterials> materialsList = new ArrayList<>();
     public static Map<String, ModifierEntry> modifierEntryMap = new HashMap<>();
-    public static Map<ModifierEntry, List<String>> EEMatchQueue = new HashMap<>();
+    public static Map<String, List<String>> EEMatchQueue = new HashMap<>();
     public static List<String> cantWashItemIds = new ArrayList<>();
     public static Map<ItemSelector, List<ModifierInstant>> itemsDefaultEntry = new HashMap<>();
     public static List<String> onlyCanRefreshPointEntryItemIds = new ArrayList<>();
@@ -866,7 +866,7 @@ public class ModifierHandle {
             for (String s : v) {
                 for (ExSuit exSuit1 : ExSuitHandle.FindExSuit(s)) {
                     exSuit1.addEntry(k);
-                    LOGGER.debug("Add Entry:" + k.id + " To ExSuit:" + exSuit1.id);
+                    LOGGER.debug("Add Entry:" + k + " To ExSuit:" + exSuit1.id);
                 }
             }
 
@@ -1254,13 +1254,17 @@ public class ModifierHandle {
         modifierEntry.cantSelect = itemObject.has("cantSelect") && itemObject.get("cantSelect").getAsBoolean();
         modifierEntry.localDescription = itemObject.has("localDescription") ? itemObject.get("localDescription").getAsString() : "";
         modifierEntry.icon = itemObject.has("icon") ? itemObject.get("icon").getAsString() : "";
+        modifierEntry.source = itemObject.has("source") ? itemObject.get("source").getAsString() : moconfig.getSource();
+
 
         if (itemObject.has("exsuit")) {
             List<String> exss = new ArrayList<>();
             for (JsonElement exsuit : itemObject.get("exsuit").getAsJsonArray()) {
                 exss.add(exsuit.getAsString());
             }
-            EEMatchQueue.put(modifierEntry, exss);
+            if (ModifierHandle.EEMatchQueue.containsKey(modifierEntry.id)) {
+                ModifierHandle.EEMatchQueue.get(modifierEntry.id).addAll(exss);
+            }else ModifierHandle.EEMatchQueue.put(modifierEntry.id, exss);
         }
         if (!modifierEntry.isRandom) modifierEntry.RandomNum = 0;
         LOGGER.debug(modifierEntry.id + " weight " + modifierEntry.weight);
@@ -1270,6 +1274,13 @@ public class ModifierHandle {
                 modifierEntry.modifierItemSelector.addOnlyWashItem(item.getAsString());
             });
         }
+        if (itemObject.has("entityTypes")) {
+            JsonArray OnlyItems = itemObject.get("entityTypes").getAsJsonArray();
+            OnlyItems.forEach(item -> {
+                modifierEntry.entityTypes.add(item.getAsString());
+            });
+        }
+
         modifierEntry.Slots = new ArrayList<>();
         if (itemObject.has("slots")) {
             JsonArray OnlyItems = itemObject.get("slots").getAsJsonArray();

@@ -53,6 +53,15 @@ public class ModifierEntryDataBuilder {
         entry.icon = icon;
         return this;
     }
+    public ModifierEntryDataBuilder setEntityTypes(List<String> entityTypes) {
+        entry.entityTypes = entityTypes;
+        return this;
+    }
+
+    public ModifierEntryDataBuilder setSource(String source) {
+        entry.source = source;
+        return this;
+    }
 
     public ModifierEntryDataBuilder setOnlyHasThisEntry(boolean OnlyHasThisEntry) {
         entry.OnlyHasThisEntry = OnlyHasThisEntry;
@@ -203,7 +212,16 @@ public class ModifierEntryDataBuilder {
             }
             json.add("OnlyTags", onlyTagsArray);
         }
-
+        {
+            List<String> tags = entry.getModifierItemSelector().getOnlyTags();
+            if (!tags.isEmpty()) {
+                JsonArray TagsArray = new JsonArray();
+                for (String tag : tags) {
+                    TagsArray.add(new JsonPrimitive(tag));
+                }
+                json.add("entityTypes", TagsArray);
+            }
+        }
         List<String> onlyItems = entry.getModifierItemSelector().getOnlyItems();
         if (!onlyItems.isEmpty()) {
             JsonArray onlyItemsArray = new JsonArray();
@@ -227,6 +245,7 @@ public class ModifierEntryDataBuilder {
         if (entry.Expression != null && !entry.Expression.isEmpty()) json.addProperty("Expression", entry.Expression);
         if (entry.icon != null && !entry.icon.isEmpty()) json.addProperty("icon", entry.icon);
         if (entry.RandomNum != 0) json.addProperty("RandomNum", entry.RandomNum);
+
 
         if (!entry.attriGether.isEmpty()) {
             JsonArray attriGetherArray = new JsonArray();
@@ -365,6 +384,8 @@ public class ModifierEntryDataBuilder {
         builder.setNeedFreshValue(tag.getFloat("needFreshValue"));
         builder.setDisplayNameInItemName(tag.getBoolean("displayNameInItemName"));
         builder.setIcon(tag.getString("icon"));
+        builder.setSource(tag.getString("source"));
+
 
         ListTag specialTagsTag = tag.getList("specialTags", 8);
         List<String> specialTags = new ArrayList<>();
@@ -372,6 +393,15 @@ public class ModifierEntryDataBuilder {
             specialTags.add(specialTagsTag.getString(i));
         }
         builder.setSpecialTags(specialTags);
+        {
+            ListTag entityTypesTag = tag.getList("entityTypes", 8);
+            List<String> entityTypesTags = new ArrayList<>();
+            for (int i = 0; i < entityTypesTag.size(); i++) {
+                entityTypesTags.add(entityTypesTag.getString(i));
+            }
+            builder.setEntityTypes(entityTypesTags);
+        }
+
         ListTag typesTag = tag.getList("types", 8);
         List<ItemType> types = new ArrayList<>();
         for (int i = 0; i < typesTag.size(); i++) {

@@ -1,18 +1,132 @@
 package net.exmo.exmodifier.content.suit;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.type.ItemType;
+import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.exmo.exmodifier.util.gether.AttriGetherNormal;
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.*;
 
 public class ExSuit {
+public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
+    // 基础字段
+    .addStringField("id", ExSuit::getId, (obj, id) -> obj.id = id)
+    .addStringField("type",
+        e -> e.type != null ? e.type.name() : "",
+        (e, s) -> e.type = ModifierEntry.StringToType(s))
+    .addStringField("LocalDescription", ExSuit::getLocalDescription, (obj, desc) -> obj.LocalDescription = desc)
+    // 特殊类型处理
+    .addStringListField("entry", ExSuit::getEntry, ExSuit::setEntry)
+    .addBooleanField("visible", ExSuit::isVisible, (obj, visible) -> obj.visible = visible)
+    // 只读字段
+    .addIntField("MaxLevel", ExSuit::getMaxLevel, null)
+        .addBooleanField("newTooltipPage", ExSuit::isNewTooltipPage, ExSuit::setNewTooltipPage)
+        .addBooleanField("hasMobEffect",  ExSuit::isHasMobEffect, (obj, hasMobEffect) -> obj.hasMobEffect = hasMobEffect)
+
+
+    ;
+
     public Map<String,String> setting = new java.util.HashMap<>();
     public boolean hasMobEffect = false;
     public ItemType type;
     public String id;
+
+    public boolean isNewTooltipPage() {
+        return newTooltipPage;
+    }
+
+    public ExSuit setNewTooltipPage(boolean newTooltipPage) {
+        this.newTooltipPage = newTooltipPage;
+        return this;
+    }
+
+    public boolean newTooltipPage;
+
+    public String getLocalDescription() {
+        return LocalDescription;
+    }
+
+    public ExSuit setLocalDescription(String localDescription) {
+        LocalDescription = localDescription;
+        return this;
+    }
+
+    public static ExSerialize<ExSuit> getExSer() {
+        return ExSer;
+    }
+
+    public static void setExSer(ExSerialize<ExSuit> exSer) {
+        ExSer = exSer;
+    }
+
+    public Map<String, String> getSetting() {
+        return setting;
+    }
+
+    public ExSuit setSetting(Map<String, String> setting) {
+        this.setting = setting;
+        return this;
+    }
+
+    public boolean isHasMobEffect() {
+        return hasMobEffect;
+    }
+
+    public ExSuit setHasMobEffect(boolean hasMobEffect) {
+        this.hasMobEffect = hasMobEffect;
+        return this;
+    }
+
+    public ItemType getType() {
+        return type;
+    }
+
+    public ExSuit setType(ItemType type) {
+        this.type = type;
+        return this;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public ExSuit setId(String id) {
+        this.id = id;
+        return this;
+    }
+
+    public int getMaxLevel() {
+        return MaxLevel;
+    }
+
+    public ExSuit setMaxLevel(int maxLevel) {
+        MaxLevel = maxLevel;
+        return this;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public ExSuit setVisible(boolean visible) {
+        this.visible = visible;
+        return this;
+    }
+
+    public Map<String, Float> getItemDamage() {
+        return itemDamage;
+    }
+
+    public ExSuit setItemDamage(Map<String, Float> itemDamage) {
+        this.itemDamage = itemDamage;
+        return this;
+    }
+
     public String LocalDescription ="";
 	public Map<Integer,List<String>> commands = new HashMap<>();
     public int MaxLevel ;
@@ -90,7 +204,7 @@ public class ExSuit {
             return setting.get(key);
         return null;
     }
-    public List<ModifierEntry> entry = new ArrayList<>();
+    public List<String> entry = new ArrayList<>();
     public Map<Integer,List<AttriGetherNormal>> attriGether = new java.util.HashMap<>();
     private   Map<Integer,List<MobEffectInstance> > effect = new java.util.HashMap<>();
     public Map<String,Float> itemDamage = new java.util.HashMap<>();
@@ -123,21 +237,21 @@ public class ExSuit {
         this.MaxLevel =Math.max(Collections.max(attriGether.keySet()), Collections.max(effect.keySet()));
 
     }
-    public ExSuit(String id, List<ModifierEntry> entry, Map<Integer,List< AttriGetherNormal>> attriGether) {
+    public ExSuit(String id, List<String> entry, Map<Integer,List< AttriGetherNormal>> attriGether) {
         this.id = id;
         this.entry = entry;
         this.attriGether = attriGether;
 //        this.MaxLevel = Collections.max(attriGether.keySet());
     }
 
-    public List<ModifierEntry> getEntry() {
+    public List<String> getEntry() {
         return entry;
     }
 
-    public void setEntry(List<ModifierEntry> entry) {
+    public void setEntry(List<String> entry) {
         this.entry = entry;
     }
-    public void addEntry(ModifierEntry modifierEntry){
+    public void addEntry(String modifierEntry){
         this.entry.add(modifierEntry);
     }
 

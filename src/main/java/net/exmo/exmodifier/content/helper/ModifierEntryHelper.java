@@ -29,7 +29,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.*;
 

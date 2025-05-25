@@ -1,5 +1,7 @@
 package net.exmo.exmodifier.content.element;
 
+import net.exmo.exmodifier.util.AbstractReloadListener;
+
 import static net.exmo.exmodifier.util.ExUtil.classToString;
 
 public class DefaultItemPreparableReloadListener extends AbstractReloadListener<DefaultItemElement> {

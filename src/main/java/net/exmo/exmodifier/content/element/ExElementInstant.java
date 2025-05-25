@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 
 public class ExElementInstant {
     public static final ExSerialize<ExElementInstant> EX_SERIALIZE = ExSerialize.create(()-> new ExElementInstant(null,0))
-            .addStringField("id", exElementInstant -> exElementInstant.getElement().getId().toString(),(exElementInstant, s) -> exElementInstant.setElement(ExElementHandle.getExElement(s)))
+            .addStringField("id", exElementInstant -> exElementInstant.getElement().getResId().toString(),(exElementInstant, s) -> exElementInstant.setElement(ExElementHandle.getExElement(s)))
             .addIntField("level", ExElementInstant::getLevel,ExElementInstant::setLevel);
     private ExElement element;
     private int level;
@@ -18,7 +18,7 @@ public class ExElementInstant {
     }
 
     public Component getDesc() {
-        return Component.translatable("modifier.element.%s".formatted(element.getId())).append(Component.literal(" ").append(Component.translatable("exmodifier.element.level",level).withStyle(ChatFormatting.GRAY)));
+        return Component.translatable("modifier.element.%s".formatted(element.getResId())).append(Component.literal(" ").append(Component.translatable("exmodifier.element.level",level).withStyle(ChatFormatting.GRAY)));
     }
     public CompoundTag getData() {
         return data;

@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.modifier;
 
+import com.google.gson.JsonElement;
 import net.exmo.exmodifier.content.selected.ModifierItemSelector;
 import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.suit.ExSuit;
@@ -8,9 +9,10 @@ import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.util.*;
+import net.exmo.exmodifier.util.exSerialize.ExSerClass;
+import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +22,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -35,8 +36,42 @@ import static net.exmo.exmodifier.content.modifier.ModifierHandle.percentAtr;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 import static net.exmo.exmodifier.content.type.ExType.*;
 //@SerialClass
-public class ModifierEntry implements SelectorClass<ModifierItemSelector<ModifierEntry>> {
+public class ModifierEntry implements SelectorClass<ModifierItemSelector<ModifierEntry>> , ExSerClass<ModifierEntry> {
 
+    public static ExSerialize<ModifierEntry> ExSer = ExSerialize.create(ModifierEntry::new)
+            .addStringListField("types",e->e.types.stream().map(ItemType::name).toList(),((modifierEntry, strings) -> modifierEntry.types = strings.stream().map(ModifierEntry::StringToType).toList())).
+            addStringField("id",e->e.id,((modifierEntry, s) -> modifierEntry.id = s))
+            .addStringField("type",(modifierEntry, s) -> modifierEntry.types.add(StringToType(s))).onlyRead()
+            .addBooleanField("cantSelect",e->e.cantSelect,((modifierEntry, aBoolean) -> modifierEntry.cantSelect = aBoolean))
+            .addBooleanField("isRandom",e->e.isRandom,((modifierEntry, aBoolean) -> modifierEntry.isRandom = aBoolean))
+            .addStringField("icon",e->e.icon,((modifierEntry, s) -> modifierEntry.icon = s))
+            .addStringListField("slots",e->e.Slots,((modifierEntry, strings) -> modifierEntry.Slots = strings)).
+            addStringListField("specialTags",e->e.specialTags,((modifierEntry, strings) -> modifierEntry.specialTags = strings)).
+            addStringField("localDescription",e->e.localDescription,((modifierEntry, s) -> modifierEntry.localDescription = s)).
+            addIntField("maxLevel",e->e.maxLevel,((modifierEntry, integer) -> modifierEntry.maxLevel = integer))
+            .addBooleanField("displayNameInItemName",e->e.displayNameInItemName,((modifierEntry, aBoolean) -> modifierEntry.displayNameInItemName = aBoolean))
+            .addStringField("curiosType",e->e.curiosType,((modifierEntry, s) -> modifierEntry.curiosType = s))
+            .addBooleanField("OnlyHasThisEntry",e->e.OnlyHasThisEntry,((modifierEntry, aBoolean) -> modifierEntry.OnlyHasThisEntry = aBoolean))
+            .addFloatField("needFreshValue",e->e.needFreshValue,((modifierEntry, aFloat) -> modifierEntry.needFreshValue = aFloat))
+            .addFloatField("weight",e->e.weight,((modifierEntry, aFloat) -> modifierEntry.weight = aFloat))
+            .addStringListField("tags",e->e.tags.stream().map(TagKey::location).map(ResourceLocation::toString).toList(),((modifierEntry, strings) -> modifierEntry.tags = strings.stream().map(e->ExUtil.createOrGetModifierTagKey(new ResourceLocation(e))).toList()))
+            .addStringField("Expression",e->e.Expression,((modifierEntry, s) -> modifierEntry.Expression = s))
+            .addStringListField("exsuit",ModifierEntry::getExsuit,ModifierEntry::setExsuit)
+            .addSubclass(modifierEntry -> modifierEntry.modifierItemSelector, (modifierEntry, modifierItemSelector) -> modifierEntry.modifierItemSelector = (ModifierItemSelector<ModifierEntry>) modifierItemSelector,ModifierItemSelector.ExSer)
+            .addJsonObjectList("attriGethers",
+                    modifierEntry -> ModifierAttriGether.ExSer.toJson(modifierEntry.attriGether).asList().stream().map(JsonElement::getAsJsonObject).toList(),
+                    (modifierEntry, jsonObjects) -> {
+                        modifierEntry.attriGether = jsonObjects.stream()
+                                .flatMap(jsonObject -> ModifierAttriGether.ExSer.fromJson(jsonObject).stream()) // 关键修改点
+                                .toList();
+                    })
+            .addJsonObjectList("attriGethers",
+                    modifierEntry -> ModifierAttriGether.ExSer.toJson(modifierEntry.attriGether).asList().stream().map(JsonElement::getAsJsonObject).toList(),
+                    (modifierEntry, jsonObjects) -> {
+                        modifierEntry.attriGether = jsonObjects.stream()
+                                .flatMap(jsonObject -> ModifierAttriGether.ExSer.fromJson(jsonObject).stream()) // 关键修改点
+                                .toList();
+                    }).onlyRead();
     public static final ResourceKey<Registry<ModifierEntry>> MODIFIER_KEY = ResourceKey.createRegistryKey( ResourceLocation.tryBuild(MODID,"modifier_entry"));
     public static final TagKey<ModifierEntry> defaultTag = TagKey.create(MODIFIER_KEY, new ResourceLocation(MODID, "refresh_default"));
     public Map<String, String> setting = new HashMap<>();
@@ -44,6 +79,22 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public boolean cantSelect = false;
     public boolean isRandom = true;
     public String icon = "";
+    public String source = "";
+    public List<String> entityTypes = new ArrayList<>();
+
+    public List<String> getExsuit() {
+        return exsuit;
+    }
+
+    public ModifierEntry setExsuit(List<String> exsuit) {
+        this.exsuit = exsuit;
+        if (ModifierHandle.EEMatchQueue.containsKey(this.id)) {
+            ModifierHandle.EEMatchQueue.get(this.id).addAll(exsuit);
+        }else ModifierHandle.EEMatchQueue.put(this.id, exsuit);
+        return this;
+    }
+
+    public List<String> exsuit = new ArrayList<>();
     public List<TagKey<ModifierEntry>> tags = new ArrayList<>();
     public boolean OnlyHasThisEntry = false;
     public String localDescription = "";
@@ -55,7 +106,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public String curiosType = "";
     public boolean displayNameInItemName = false;
     public String id;
-    public String Expression = "";
+    public String Expression = ""; //todo 这个没用
     public int RandomNum = 0;
     public ModifierItemSelector<ModifierEntry> modifierItemSelector = new ModifierItemSelector<ModifierEntry>();
     public List<ModifierAttriGether> attriGether = new java.util.ArrayList<>();
@@ -100,6 +151,9 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
                 ", cantSelect=" + cantSelect +
                 ", isRandom=" + isRandom +
                 ", icon='" + icon + '\'' +
+                ", source='" + source + '\'' +
+                ", entityTypes=" + entityTypes +
+                ", exsuit=" + exsuit +
                 ", tags=" + tags +
                 ", OnlyHasThisEntry=" + OnlyHasThisEntry +
                 ", localDescription='" + localDescription + '\'' +
@@ -356,6 +410,11 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
         return id;
     }
 
+    @Override
+    public ResourceLocation getResId() {
+        return ResourceLocation.isValidNamespace(getId()) ? new ResourceLocation(getId()) : new ResourceLocation(MODID, getId());
+    }
+
     public boolean hasSpecialEffect(SpecialEffect specialEffect) {
         return specialTags.contains(specialEffect.id());
     }
@@ -430,11 +489,17 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
                     list.add(Component.translatable("modifier.entry.tag").append(tags.get(0).toString()));
 
             }
+            list.add(Component.translatable("modifier.entry.source"));
             return list;
 
     }
 
     public boolean hasDefaultTag() {
         return tags.stream().anyMatch(tagKey -> tagKey.toString().equals(defaultTag.toString()));
+    }
+
+    @Override
+    public ExSerialize<ModifierEntry> getExSerialize() {
+        return (ExSer);
     }
 }

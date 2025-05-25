@@ -2,7 +2,6 @@ package net.exmo.exmodifier.content.element;
 
 import com.google.common.cache.Cache;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.difficult.ExDifficultHelper;
@@ -77,11 +76,11 @@ public class ExElementHandle {
         }
     }
     public static void registryExElement(ExElement exElement) {
-        exElements.put(exElement.getId(), exElement);
+        exElements.put(exElement.getResId(), exElement);
         for (ElementAttributeName elementAttributeName : ElementAttributeName.values()){
-            DynamicAttributeRegister.registerDynamicAttribute(new DynamicAttribute(new elementAttributeSer(exElement.getId().toString(),elementAttributeName.name).gather(),new DynamicAttribute.range(0,Double.MAX_VALUE,0)));
+            DynamicAttributeRegister.registerDynamicAttribute(new DynamicAttribute(new elementAttributeSer(exElement.getResId().toString(),elementAttributeName.name).gather(),new DynamicAttribute.range(0,Double.MAX_VALUE,0)));
         }
-        Exmodifier.LOGGER.info("Registry ExElement: " + exElement.getId());
+        Exmodifier.LOGGER.info("Registry ExElement: " + exElement.getResId());
     }
 
     public static ExElement getExElement(ResourceLocation id) {
@@ -318,7 +317,7 @@ public class ExElementHandle {
                 if (!elementHelper.getElements().isEmpty()) {
                     for (ExElementInstant armorElement : elementHelper.getElements()) {
                         float elementResist = armorElement.getElement().getRestrain().getOrDefault(
-                                attackElement.getElement().getId().toString(), 1f);
+                                attackElement.getElement().getResId().toString(), 1f);
                         // 调整抗性系数为更平缓的增长
                         float resistance = (float) (Math.log1p(armorElement.getLevel() / 500.0) // 基数从1000改为500
                                 * elementResist * 0.12f); // 系数从0.15降为0.12
@@ -507,7 +506,7 @@ public class ExElementHandle {
                     Map<String, Float> restrain = exElementInstant.getElement().getRestrain();
                     if (el.getElement()==null) return;
                     if (restrain==null) restrain = new HashMap<>();
-                    Float baseMultiplier = restrain .getOrDefault(el.getElement().getId().toString(), 1f);
+                    Float baseMultiplier = restrain .getOrDefault(el.getElement().getResId().toString(), 1f);
 //                    float dominanceEffect = (float) Math.pow(Math.pow(
 //                            baseMultiplier,
 //                            dominance_power + (float) Math.log1p(attackerLevel / 5000.0)
@@ -567,7 +566,7 @@ public class ExElementHandle {
                                 最终伤害: %.1f → %.1f
                                 """,
                                 result.version,
-                                exElementInstant.getElement().getId(), el.getElement().getId(), baseMultiplier,
+                                exElementInstant.getElement().getResId(), el.getElement().getResId(), baseMultiplier,
                                 result.dominanceEffect,
                                 result.attackIntensity, result.defenseIntensity, result.ratio,
                                 result.formulaDesc,

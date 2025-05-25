@@ -1,7 +1,5 @@
 package net.exmo.exmodifier.network;
 
-import net.exmo.exmodifier.compat.DamageNumberCompatData;
-import net.exmo.exmodifier.content.element.ExElement;
 import net.exmo.exmodifier.content.element.ExElementEntityData;
 import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.content.element.ExElementInstant;
@@ -14,10 +12,10 @@ import java.util.function.Supplier;
 
 public record SyncEntityElementMessage(UUID uuid, ExElementInstant exElementInstant) {
     public static void encode(SyncEntityElementMessage msg, FriendlyByteBuf buffer) {
-        if (msg.exElementInstant.getElement() ==null || msg.exElementInstant.getElement().getId() == null)return;
+        if (msg.exElementInstant.getElement() ==null || msg.exElementInstant.getElement().getResId() == null)return;
         CompoundTag compoundTag = new CompoundTag();
         compoundTag.putInt("Level", msg.exElementInstant.getLevel());
-        compoundTag.putString("ID", msg.exElementInstant.getElement().getId().toString());
+        compoundTag.putString("ID", msg.exElementInstant.getElement().getResId().toString());
         compoundTag.putString("UUID",msg.uuid.toString());
 
         buffer.writeNbt(compoundTag);

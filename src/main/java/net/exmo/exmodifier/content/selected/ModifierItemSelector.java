@@ -2,6 +2,7 @@ package net.exmo.exmodifier.content.selected;
 
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.selector.BaseItemSelector;
+import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
@@ -11,7 +12,13 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ModifierItemSelector<T> extends BaseItemSelector<T> {
-    protected  List<String> OnlyWashItems = new ArrayList<>();
+    public static ExSerialize<Object> ExSer = ExSerialize.create(ModifierItemSelector::new)
+        .addStringListField("onlyWashItems", 
+            e -> ((ModifierItemSelector) e).OnlyWashItems,
+            (modifierItemSelector, strings) -> ((ModifierItemSelector) modifierItemSelector).OnlyWashItems = strings)
+        .marge(BaseItemSelector.ExSer); // 合并基类序列化配置
+
+    protected List<String> OnlyWashItems = new ArrayList<>();
 
     // 添加单个元素的方法
     public T addOnlyWashItem(String item) {

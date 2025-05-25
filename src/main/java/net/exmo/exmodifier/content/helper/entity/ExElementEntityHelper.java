@@ -3,7 +3,6 @@ package net.exmo.exmodifier.content.helper.entity;
 import net.exmo.exmodifier.content.element.ExElement;
 import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.content.element.ExElementInstant;
-import net.exmo.exmodifier.content.helper.ExElementHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.LivingEntity;
@@ -59,7 +58,7 @@ public class ExElementEntityHelper extends BaseEntityHelper{
         AtomicInteger level = new AtomicInteger(exElementInstant.getLevel());
 
         elementInstants.forEach(x -> {
-            if (x.getElement().getId().equals(exElementInstant.getElement().getId())) {
+            if (x.getElement().getResId().equals(exElementInstant.getElement().getResId())) {
                 level.set(exElementInstant.getLevel() + x.getLevel());
             }
         });
@@ -80,7 +79,7 @@ public class ExElementEntityHelper extends BaseEntityHelper{
         ListTag elementsNbt = getElementsNbt();
         for (int i = 0; i < elementsNbt.size(); i++) {
             CompoundTag tag1 = elementsNbt.getCompound(i);
-            if (tag1.getString(EEID).equals(exElementInstant.getElement().getId().toString())) {
+            if (tag1.getString(EEID).equals(exElementInstant.getElement().getExSerialize().toString())) {
                 elementsNbt.remove(i);
                 break;
 
@@ -90,14 +89,14 @@ public class ExElementEntityHelper extends BaseEntityHelper{
     }
 
     public ExElementEntityHelper addExElement(ExElementInstant exElementInstant, boolean gather){
-        if (exElementInstant.getElement()==null||exElementInstant.getElement().getId() == null) return this;
+        if (exElementInstant.getElement()==null||exElementInstant.getElement().getResId() == null) return this;
         if (!ValidMainNbt()) createMainNbt();
         createElementNbt();
         if (gather) {
             if (gatherElement(exElementInstant)) return this;
         }
         CompoundTag tag1 = new CompoundTag();
-        tag1.putString(EEID, exElementInstant.getElement().getId().toString());
+        tag1.putString(EEID, exElementInstant.getElement().getResId().toString());
         tag1.putInt("Level", exElementInstant.getLevel());
         ListTag modifiersList = getElementsNbt();
         modifiersList.add(tag1);

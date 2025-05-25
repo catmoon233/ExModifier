@@ -58,7 +58,7 @@ public class Config {
             .define("ENTRY_COLOR", true);
     public static final ForgeConfigSpec.BooleanValue ENTRY_FOLD = BUILDER
             .comment("Enable ENTRY FOLD")
-            .define("ENTRY_FOLD", true);
+            .define("ENTRY_FOLD", false);
     public static final ForgeConfigSpec.BooleanValue ENTRY_UNDER_LINE = BUILDER
             .comment("Enable ENTRY LINE")
             .define("ENTRY_LINE", true);

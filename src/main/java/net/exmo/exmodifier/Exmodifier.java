@@ -18,6 +18,8 @@ import net.exmo.exmodifier.network.sync.element.ClearElementMessage;
 import net.exmo.exmodifier.network.sync.element.SyncElementMessage;
 import net.exmo.exmodifier.network.sync.modifier.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.sync.modifier.SyncModifierEntryMessage;
+import net.exmo.exmodifier.network.sync.suit.ClearExSuitMessage;
+import net.exmo.exmodifier.network.sync.suit.SyncExSuitMessage;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
@@ -189,7 +191,8 @@ public class Exmodifier {
        registerMessage(ClearDefaultEntityElementMessage.class);
        registerMessage(SyncDefaultItemElementMessage.class);
        registerMessage(ClearDefaultItemElementMessage.class);
-
+       registerMessage(ClearExSuitMessage.class);
+       registerMessage(SyncExSuitMessage.class);
        registerMessage(ClearDefaultEntityElementMessage.class);
         ITEMS.register(modEventBus);
         try {

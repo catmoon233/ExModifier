@@ -33,9 +33,7 @@ public class ExConfig {
                 try (FileReader reader = new FileReader(configFile.toFile())) {
                     Gson gson = new Gson();
 
-                    JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
-
-                    return jsonObject;
+                    return gson.fromJson(reader, JsonObject.class);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -50,10 +48,9 @@ public class ExConfig {
         try {
             Gson gson = new Gson();
             String json = IOUtils.toString(stream, StandardCharsets.UTF_8);
-            JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
-            return jsonObject;
+            return gson.fromJson(json, JsonObject.class);
         } catch (IOException e) {
-            Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
+            getError("Error while reading config file : not exists");
         }
         return null;
     }
@@ -61,17 +58,22 @@ public class ExConfig {
         try {
                 return jsonObject.entrySet();
         }catch (Exception e){
-            Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
+            getError("Error while reading config file : not exists");
         }
         return null;
     }
+
+    private static void getError(String s) {
+        Exmodifier.LOGGER.Logger.error(s);
+    }
+
     public JsonElement readSetting(String key) {
         try {
 
 
             return jsonObject.get(key);
         }catch (Exception e){
-            Exmodifier.LOGGER.Logger.error("Error while reading config file : not exists");
+            getError("Error while reading config file : not exists");
         }
         return null;
     }
@@ -94,9 +96,12 @@ public class ExConfig {
         try {
             return obj.get(key).getAsJsonObject();
         }catch (Exception e){
-            Exmodifier.LOGGER.Logger.error("Error while getting JsonObject from config file");
+            getError("Error while getting JsonObject from config file");
             return null;
         }
     }
 
+    public String getSource() {
+        return configFile.toString();
+    }
 }

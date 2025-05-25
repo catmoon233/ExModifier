@@ -12,7 +12,6 @@ import net.exmo.exmodifier.init.RegisterOther;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -25,10 +24,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EnchantmentTableBlock;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.List;
@@ -198,7 +195,7 @@ public class EmbeddedMenu extends AbstractContainerMenu {
 
                     ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(input);
 
-                if (modifierEntryHelper.getModifierEntries().stream().map(e->e.getModifierEntry().getId()).toList().contains(modifierID)){
+                if (modifierEntryHelper.getModifierEntries().stream().map(e->e.getModifierEntry().getResId()).toList().contains(modifierID)){
 
                         if(modifierEntryHelper.getModifierEntryLevel(modifierID)>=EntryItem.getModifierLevel(itemstack1)){
                             for (int i = 0; i < 3; i++)

@@ -1,14 +1,16 @@
-package net.exmo.exmodifier.content.element;
+package net.exmo.exmodifier.content.suit;
 
+import net.exmo.exmodifier.content.element.DefaultEntityElement;
+import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.util.AbstractReloadListener;
 
 import static net.exmo.exmodifier.util.ExUtil.classToString;
 
-public class DefaultEntityPreparableReloadListener extends AbstractReloadListener<DefaultEntityElement> {
+public class ExSuitPreparableReloadListener extends AbstractReloadListener<DefaultEntityElement> {
 
-    public DefaultEntityPreparableReloadListener() {
-        super("default_entity_elements", 
-            "loading default entity elements data...",
+    public ExSuitPreparableReloadListener() {
+        super("suit",
+            "loading ex suit data...",
             DefaultEntityElement.SERIALIZER::fromJson,
             (key, element) -> {
                 if (!element.getEntityTypeString().isEmpty()) {
