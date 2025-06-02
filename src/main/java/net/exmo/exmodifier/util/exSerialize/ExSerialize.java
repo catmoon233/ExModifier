@@ -90,6 +90,24 @@ public class ExSerialize<T> {
                 getter
         );
     }
+
+    // 新增Integer-List<String> Map字段支持
+    public ExSerialize<T> addIntStringListMapField(String name, BiConsumer<T, Map<Integer, List<String>>> setter) {
+        return addIntStringListMapField(name, t -> Collections.emptyMap(), setter);
+    }
+
+    public ExSerialize<T> addIntStringListMapField(String name,
+                                              Function<T, Map<Integer, List<String>>> getter,
+                                              BiConsumer<T, Map<Integer, List<String>>> setter) {
+        return addField(name,
+            json -> parseIntListStringMap(json.getAsJsonObject()),
+            setter,
+            tag -> parseNbtIntListStringMap((CompoundTag) tag),
+            (nbt, value) -> serializeNbtIntListStringMap(nbt, name, value),
+            getter
+        );
+    }
+
     // 基础类型字段
     public ExSerialize<T> addStringField(String name, BiConsumer<T, String> setter) {
         return addStringField(name, t -> null, setter);
@@ -533,10 +551,12 @@ public class ExSerialize<T> {
         return list;
     }
 
-    private void serializeNbtStringList(CompoundTag parent, String name, List<String> list) {
+    private CompoundTag serializeNbtStringList(CompoundTag parent, String name, List<String> list) {
         ListTag listTag = new ListTag();
         list.forEach(s -> listTag.add(StringTag.valueOf(s)));
         parent.put(name, listTag);
+        return parent;
+
     }
 
     private List<JsonObject> parseNbtJsonObjectList(ListTag listTag) {
@@ -635,6 +655,29 @@ public class ExSerialize<T> {
     private void serializeNbtIntStringMap(CompoundTag parent, String name, Map<Integer, String> map) {
         CompoundTag mapTag = new CompoundTag();
         map.forEach((k, v) -> mapTag.putString(k.toString(), v));
+        parent.put(name, mapTag);
+    }
+
+    // 新增Map<Integer, List<String>>解析方法
+    private Map<Integer, List<String>> parseIntListStringMap(JsonObject json) {
+        return json.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> Integer.parseInt(e.getKey()),
+                        e -> parseStringList(e.getValue().getAsJsonArray())
+                ));
+    }
+
+    private Map<Integer, List<String>> parseNbtIntListStringMap(CompoundTag tag) {
+        return tag.getAllKeys().stream()
+                .collect(Collectors.toMap(
+                        k -> Integer.parseInt(k),
+                        k -> parseNbtStringList(tag.getList(k, 8))
+                ));
+    }
+
+    private void serializeNbtIntListStringMap(CompoundTag parent, String name, Map<Integer, List<String>> map) {
+        CompoundTag mapTag = new CompoundTag();
+        map.forEach((k, v) -> mapTag.put(k.toString(), serializeNbtStringList(new CompoundTag(), "list", v)));
         parent.put(name, mapTag);
     }
     // endregion

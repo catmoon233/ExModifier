@@ -454,6 +454,7 @@ public class ExElementHandle {
                 }
                 if (elements.isEmpty()) elements =List.of(new ExElementInstant(exElements.get(ResourceLocation.tryParse("exmodifier:normal")), ExDifficultHelper.getElementLevel(livingEntity)));
                 ExElementInstant exElementInstant = elements.get(0);
+                if (exElementInstant==null)return;
                 LivingEntity target = event.getEntity();
                 ExElementEntityHelper exElementEntityHelper = ExElementEntityHelper.of(target);
                 List<ExElementInstant> exElementInstants = exElementEntityHelper.getExElementInstants();
@@ -503,7 +504,8 @@ public class ExElementHandle {
                     float armorResistance = getArmorResistance(target, exElementInstant);
 
                     // 压制效果计算保持不变...
-                    Map<String, Float> restrain = exElementInstant.getElement().getRestrain();
+                    if (exElementInstant.getElement()==null)return;
+                    Map<String, Float> restrain = exElementInstant.getElement()==null ? new HashMap<>() : exElementInstant.getElement().getRestrain();
                     if (el.getElement()==null) return;
                     if (restrain==null) restrain = new HashMap<>();
                     Float baseMultiplier = restrain .getOrDefault(el.getElement().getResId().toString(), 1f);

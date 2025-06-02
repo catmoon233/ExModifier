@@ -53,6 +53,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -189,18 +190,17 @@ public class ModifierHandle {
         public static List<Component> GenSuitInfo(Player player, ModifierEntry modifierEntry) {
             if (player == null) return null;
             List<Component> tooltips = new ArrayList<>();
-            if (ExSuitHandle.LoadExSuit.entrySet().stream().anyMatch(e -> e.getValue().entry.stream().anyMatch(a -> a.equals(modifierEntry.id)))) {
+            var list = ExSuitHandle.LoadExSuit.entrySet().stream().filter(e -> modifierEntry.exsuits.contains(e.getKey())).map(Map.Entry::getValue).toList();
+            if (!list.isEmpty()) {
                 ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
                 if (!Config.compact_tooltip) tooltips.add(Component.translatable("modifier.entry.suit"));
 
-                for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.stream().anyMatch(a -> a.equals(modifierEntry.id)))
-                        .toList()) {
+                for (ExSuit suit : list){
                     if (suit.visible) {
-                        Integer integer = pv.SuitsNum.get(suit);
-                        if (integer == null) integer = 0;
-                        tooltips.add(Component.translatable("modifier.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.CountMaxLevelAndGet() + ")")));
+                        Integer integer = pv.SuitsNum.getOrDefault(suit.id,0);
+                        tooltips.add(Component.translatable("modifier.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.getMaxLevel() + ")")));
                         if (!suit.LocalDescription.isEmpty())
-                            tooltips.add(Component.translatable(suit.LocalDescription));
+                            tooltips.addAll(TooltipUtil.sprit(Component.translatable(suit.LocalDescription)));
 
                         //.append(Component.translatable("modifier.entry.suit.color"))
                     }
@@ -237,7 +237,7 @@ public class ModifierHandle {
                 if (!modifierEntry.localDescription.isEmpty())
                 //        if (Screen.hasShiftDown())
                 {
-                    tooltips.add(Component.translatable(modifierEntry.localDescription));
+                    tooltips.addAll(TooltipUtil.sprit(Component.translatable(modifierEntry.localDescription)));
 
                 }
 
@@ -870,13 +870,8 @@ public class ModifierHandle {
 
     public static void EEMatchQueueHandle() {
         EEMatchQueue.forEach((k, v) -> {
-            for (String s : v) {
-                for (ExSuit exSuit1 : ExSuitHandle.FindExSuit(s)) {
-                    exSuit1.addEntry(k);
-                    LOGGER.debug("Add Entry:" + k + " To ExSuit:" + exSuit1.id);
-                }
-            }
-
+                ModifierEntry modifierEntry1 = modifierEntryMap.get(k);
+                modifierEntry1.exsuits.addAll(v);
         });
         EEMatchQueue = new HashMap<>();
     }
@@ -991,12 +986,24 @@ public class ModifierHandle {
             for (MoConfig moconfig : Foundlvconfigs) {
                 processLevelMoConfigEntries(moconfig);
             }
-
-            // 读取套装配置
             Foundlvconfigs = listFilesFromZipFile(zipFile, ExSuitHandle.ConfigPath.getFileName());
-            for (MoConfig moconfig : Foundlvconfigs) {
-                ExSuitHandle.processMoConfigEntries(moconfig);
-            }
+            List<MoConfig> foundlvconfigs = Foundlvconfigs;
+            zipFunction.suit().add(
+                    () -> {
+                        // 读取套装配置
+                        try {
+
+
+
+                            for (MoConfig moconfig : foundlvconfigs) {
+                            ExSuitHandle.processMoConfigEntries(moconfig);
+                        }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
+
 
             // 读取物品品质配置
             Foundlvconfigs = listFilesFromZipFile(zipFile, ItemQualityHandle.ItemsQualityConfigPath.getFileName());
@@ -1010,9 +1017,11 @@ public class ModifierHandle {
             }
             //读取默认元素
             Foundlvconfigs = listFilesFromZipFile(zipFile, ExElementHandle.DefaultElementConfigPath.getFileName());
+            List<MoConfig> foundlvconfigs1 = Foundlvconfigs;
             zipFunction.elementDefault().add(
                     () -> {
-                            for (MoConfig moconfig : Foundlvconfigs) {
+
+                        for (MoConfig moconfig : foundlvconfigs1) {
                                 try {
                                     ExElementHandle.processMoConfigEntries2(moconfig);
                                 } catch (FileNotFoundException e) {
@@ -1026,10 +1035,12 @@ public class ModifierHandle {
 
             //读取默认元素
             Foundlvconfigs = listFilesFromZipFile(zipFile, ExElementHandle.DefaultEntityElementConfigPath.getFileName());
+            List<MoConfig> foundlvconfigs2 = Foundlvconfigs;
             zipFunction.elementDefault().add(
                     () -> {
                         try {
-                            for (MoConfig moconfig : Foundlvconfigs) {
+
+                            for (MoConfig moconfig : foundlvconfigs2) {
                                 ExElementHandle.processMoConfigEntries3(moconfig);
                             }
                         } catch (IOException e) {
@@ -1076,7 +1087,9 @@ public class ModifierHandle {
 
             List<ModifierInstant> modifierEntries = new ArrayList<>();
             for (var entryA : entries) {
-                modifierEntries.add(ModifierHandle.modifierEntryMap.get(entryA.getA()).toInstant(entryA.getB()));
+                ModifierEntry modifierEntry = ModifierHandle.modifierEntryMap.get(entryA.getA());
+                if  (modifierEntry == null) continue;
+                modifierEntries.add(modifierEntry.toInstant(entryA.getB()));
             }
             ItemSelector itemSelector = null;
             if (jsonObject.has("itemSelector")) {
@@ -1252,6 +1265,7 @@ public class ModifierHandle {
         }
         modifierEntry.types = types;
         boolean autoTypeId =itemObject.has("autoTypeId") ? itemObject.get("autoTypeId").getAsBoolean() : moconfig.autoTypeId;
+        if (autoTypeId) modifierEntry.autoId = true;
         modifierEntry.id = autoTypeId ?  affString + key : key;
         modifierEntry.isRandom = itemObject.has("isRandom") && itemObject.get("isRandom").getAsBoolean();
         modifierEntry.OnlyHasThisEntry = itemObject.has("OnlyHasThisEntry") && itemObject.get("OnlyHasThisEntry").getAsBoolean();

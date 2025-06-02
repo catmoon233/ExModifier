@@ -50,10 +50,12 @@ public class ZipHandle {
         }
 
     }
-    public record ZipFunction(List<Runnable> elementDefault, List<Runnable> defaultEntry, List<ConfigPackInfo> configPacks) {
+    public record ZipFunction(List<Runnable> elementDefault, List<Runnable> defaultEntry, List<ConfigPackInfo> configPacks,List<Runnable> suit) {
         public ZipFunction() {
-            this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         }
+
+
     }
 
     public static ZipFunction init() throws IOException {

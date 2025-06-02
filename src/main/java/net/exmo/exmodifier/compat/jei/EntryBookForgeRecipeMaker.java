@@ -1,14 +1,9 @@
 package net.exmo.exmodifier.compat.jei;
 
-import io.redspace.ironsspellbooks.api.registry.SchoolRegistry;
-import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
-import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
-import io.redspace.ironsspellbooks.api.spells.ISpellContainer;
-import io.redspace.ironsspellbooks.api.spells.SchoolType;
-import io.redspace.ironsspellbooks.item.InkItem;
-import io.redspace.ironsspellbooks.jei.ScrollForgeRecipe;
-import io.redspace.ironsspellbooks.registries.ItemRegistry;
-import io.redspace.ironsspellbooks.util.ModTags;
+
+
+
+
 import mezz.jei.api.recipe.vanilla.IVanillaRecipeFactory;
 import mezz.jei.api.runtime.IIngredientManager;
 import net.exmo.exmodifier.Exmodifier;
@@ -31,12 +26,7 @@ import java.util.stream.Stream;
  * - Upgrade item:   item + upgrade orb =
  **/
 public final class EntryBookForgeRecipeMaker {
-    private record FocusToSchool(Item item, SchoolType schoolType) {
-        public FocusToSchool(Item item, SchoolType schoolType) {
-            this.item = item;
-            this.schoolType = schoolType;
-        }
-    }
+
 
     private EntryBookForgeRecipeMaker() {
         //private constructor prevents anyone from instantiating this class
@@ -73,9 +63,5 @@ public final class EntryBookForgeRecipeMaker {
         return entryBookForgeRecipeStream.toList();
     }
 
-    private static ItemStack getScrollStack(AbstractSpell spell, int spellLevel) {
-        var scrollStack = new ItemStack(ItemRegistry.SCROLL.get());
-        ISpellContainer.createScrollContainer(spell, spellLevel, scrollStack);
-        return scrollStack;
-    }
+
 }

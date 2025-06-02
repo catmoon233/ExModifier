@@ -1,12 +1,6 @@
 package net.exmo.exmodifier.compat.jei;
 
-import io.redspace.ironsspellbooks.IronsSpellbooks;
-import io.redspace.ironsspellbooks.config.ServerConfigs;
-import io.redspace.ironsspellbooks.jei.AlchemistCauldronJeiRecipe;
-import io.redspace.ironsspellbooks.jei.JeiPlugin;
-import io.redspace.ironsspellbooks.jei.ScrollForgeRecipe;
-import io.redspace.ironsspellbooks.registries.BlockRegistry;
-import io.redspace.ironsspellbooks.registries.ItemRegistry;
+
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -21,6 +15,7 @@ import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.EntryItem;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.WashingMaterials;
+import net.exmo.exmodifier.util.ExUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -108,20 +103,23 @@ public class EntryBookForgeRecipeCategory implements IRecipeCategory<EntryBookFo
         ) {
             List<WashingMaterials> list = ModifierHandle.materialsList
                     .stream()
-                    .filter(entry -> entry.ItemId.equals(ForgeRegistries.ITEMS.getKey(leftStack.get().getItem()).toString())).toList();
+                    .filter(entry -> entry.ItemId.equals(ExUtil.getItemID(leftStack.get()))).toList();
             if (!list.isEmpty()) {
 
                 WashingMaterials washingMaterials1 = list.get(0);
-                var inputText = Component.translatable("exmodifier.container.refresh.cost", washingMaterials1.CostExp);
+                var inputText = Component.translatable("exmodifier.container.refresh.cost").append(String.valueOf(washingMaterials1.CostExp));
 
                 var font = Minecraft.getInstance().font;
                 int y = (getHeight() / 2)-1;
                 int x = (getWidth() - font.width(inputText)) * 3 / 4;
-                guiGraphics.drawString(font, inputText, x, y, Color.green.getRGB());
+                guiGraphics.pose().pushPose();
+                guiGraphics.pose().scale(0.5f, 0.5f, 0);
+                int x1 = x/2;
+                guiGraphics.drawString(font, inputText, x1, y, Color.green.getRGB());
                // guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.chance",EntryItem.CommonEvent.df.format(EntryItem.getModifierChance(right.get()))), x, y-8, Color.CYAN.getRGB());
-                guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.rarity",washingMaterials1.rarity), x, y+8, Color.magenta.getRGB());
-                guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.needCount",washingMaterials1.NeedCount), x, y+16, Color.yellow.getRGB());
-
+                guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.rarity").append(String.valueOf(washingMaterials1.rarity)), x1, (y+8)/2, Color.magenta.getRGB());
+                guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.needCount").append(String.valueOf(washingMaterials1.NeedCount)), x1, (y+16)/2, Color.yellow.getRGB());
+                 guiGraphics.pose().popPose();
             }
         }
         IRecipeCategory.super.draw(recipe, recipeSlotsView, guiGraphics, mouseX, mouseY);

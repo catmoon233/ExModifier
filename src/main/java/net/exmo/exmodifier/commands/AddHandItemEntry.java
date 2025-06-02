@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.commands;
 
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,6 +11,7 @@ import dev.shadowsoffire.placebo.reload.DynamicHolder;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.content.element.ExElementInstant;
+import net.exmo.exmodifier.content.event.MainEvent;
 import net.exmo.exmodifier.content.helper.ExElementHelper;
 import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
@@ -25,8 +27,10 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.SlotArgument;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.commands.ItemCommands;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -103,6 +107,40 @@ public class AddHandItemEntry {
 
             }catch (Exception e){
                 e.printStackTrace();
+            }
+            return 0;
+        })))));
+        event.getDispatcher().register(Commands.literal("exmo-damageboost").requires(s -> s.hasPermission(4)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
+            float level = FloatArgumentType.getFloat(arguments, "amount");
+            MainEvent.CommonEvent.damageBoost  = level;
+            MainEvent.CommonEvent.hasDamageBoost = true;
+            return 0;
+        })));
+        event.getDispatcher().register(Commands.literal("exmo-damageboost-amount").requires(s -> s.hasPermission(4)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
+             float level = FloatArgumentType.getFloat(arguments, "amount");
+              MainEvent.CommonEvent.damageNumber = level;
+              MainEvent.CommonEvent.hasDamageNumber = true;
+            return 0;
+        })));
+        event.getDispatcher().register(Commands.literal("exmo-damageboost-add").requires(s -> s.hasPermission(4)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
+            float level = FloatArgumentType.getFloat(arguments, "amount");
+            MainEvent.CommonEvent.damageBoost  += level;
+            MainEvent.CommonEvent.hasDamageBoost = true;
+            return 0;
+        })));
+        event.getDispatcher().register(Commands.literal("exmo-damageboost-amount-add").requires(s -> s.hasPermission(4)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
+             float level = FloatArgumentType.getFloat(arguments, "amount");
+              MainEvent.CommonEvent.damageNumber += level;
+              MainEvent.CommonEvent.hasDamageNumber = true;
+            return 0;
+        })));
+        event.getDispatcher().register(Commands.literal("exmo-cooldown").requires(s -> s.hasPermission(4)).then(Commands.argument("entity",EntityArgument.entities()).then(Commands.argument("slot", SlotArgument.slot()).then(Commands.argument("int", IntegerArgumentType.integer()).executes(arguments -> {
+            int level = IntegerArgumentType.getInteger(arguments, "amount");
+            var slot  = SlotArgument.getSlot(arguments, "slot");
+             for (var e : EntityArgument.getEntities(arguments, "entity")) {
+                if (e instanceof Player player) {
+                    player.getCooldowns().addCooldown(player.getInventory().getItem(slot).getItem(), level);
+                }
             }
             return 0;
         })))));

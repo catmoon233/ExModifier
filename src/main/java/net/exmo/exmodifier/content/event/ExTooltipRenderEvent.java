@@ -56,7 +56,7 @@ public class ExTooltipRenderEvent {
 //
 //        event.setY(event.getY() + totalHeight); // 下移原tooltip
         // 渲染所有额外组件
-        int currentY = event.getY() ;
+        int currentY = event.getTooltipPositioner().positionTooltip(g.guiWidth(), g.guiHeight(), event.getX(), event.getY(),  0, 0).y() ;
         int lineH = event.getComponents().size() * font.lineHeight;
         if (event.getY() + lineH > event.getScreenHeight()){
             currentY -= event.getScreenHeight() - lineH - event.getY();

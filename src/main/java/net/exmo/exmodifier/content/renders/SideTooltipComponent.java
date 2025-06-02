@@ -1,5 +1,7 @@
 package net.exmo.exmodifier.content.renders;
 
+import net.exmo.exmodifier.util.ExUtil;
+import net.exmo.exmodifier.util.TooltipUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -43,14 +45,18 @@ public class SideTooltipComponent extends TooltipComponent {
 
         AtomicInteger yOffset = new AtomicInteger();
         components.forEach(component -> {
-            gui.drawString(
-                    font,
-                    component,
-                    adjustedX +2 , // 右侧留空5像素
-                    baseY + yOffset.getAndAdd(font.lineHeight),
-                    0xFFFFFF,
-                    false
+            TooltipUtil.sprit( component).forEach(
+                    component1 ->
+                            gui.drawString(
+                                    font,
+                                    component1,
+                                    adjustedX +2 , // 右侧留空5像素
+                                    baseY + yOffset.getAndAdd(font.lineHeight),
+                                    0xFFFFFF,
+                                    false
+                            )
             );
+
         });
         gui.pose().popPose();
     }

@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.event;
 
 import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.events.ExAfterArmorChange;
 import net.exmo.exmodifier.events.ExSuitApplyOnChangeEvent;
 
@@ -98,7 +99,11 @@ public class AppointConditionDamage {
         if (!exAfterArmorChange.isSuitOperate){
             Player player = (Player) exAfterArmorChange.event.getEntity();
             ExModifiervaV.PlayerVariables vars = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
-            for (ExSuit exSuit : vars.Suits){
+            for (ExSuit exSuit : vars.SuitsNum.keySet().stream()
+                    .map(ExSuitHandle::FindExSuit)
+                    .filter(Objects::nonNull)
+                    .flatMap(List::stream)
+                    .toList()) {
                 Operate(exSuit,player);
 //                ExSuitHandle.FindExSuit(exSuit).forEach(suit -> {
 //                    Operate(suit,player);

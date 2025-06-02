@@ -89,6 +89,11 @@ public class ModifierEntryDataBuilder {
         return this;
     }
 
+    public ModifierEntryDataBuilder setAutoId(boolean autoId) {
+        entry. autoId = autoId;
+        return this;
+    }
+
     public ModifierEntryDataBuilder setType(List<ItemType> type) {
         entry.types = type;
         return this;
@@ -116,6 +121,10 @@ public class ModifierEntryDataBuilder {
 
     public ModifierEntryDataBuilder setNeedFreshValue(float needFreshValue) {
         entry.needFreshValue = needFreshValue;
+        return this;
+    }
+    public ModifierEntryDataBuilder setExsuit(List<String> strings){
+        entry.exsuits =  strings;
         return this;
     }
 
@@ -178,6 +187,7 @@ public class ModifierEntryDataBuilder {
         if (entry.curiosType != null && !entry.curiosType.isEmpty()) json.addProperty("curiosType", entry.curiosType);
         if (entry.isCuriosEntry) json.addProperty("isCuriosEntry", true);
         if (entry.displayNameInItemName) json.addProperty("displayNameInItemName", true);
+        if (entry.autoId) json.addProperty("autoId", true);
         if (entry.needFreshValue != 0.0f) json.addProperty("needFreshValue", entry.needFreshValue);
 
         if (!entry.specialTags.isEmpty()) {
@@ -211,6 +221,16 @@ public class ModifierEntryDataBuilder {
                 onlyTagsArray.add(new JsonPrimitive(tag));
             }
             json.add("OnlyTags", onlyTagsArray);
+        }
+        {
+            List<String> tags = entry.exsuits;
+            if (!tags.isEmpty()) {
+                JsonArray TagsArray = new JsonArray();
+                for (String tag : tags) {
+                    TagsArray.add(new JsonPrimitive(tag));
+                }
+                json.add("exsuits", TagsArray);
+            }
         }
         {
             List<String> tags = entry.getModifierItemSelector().getOnlyTags();
@@ -300,6 +320,15 @@ public class ModifierEntryDataBuilder {
         return json;
     }
 
+    // 新增辅助方法用于简化ListTag的创建
+    private ListTag createStringListTag(List<String> strings) {
+        ListTag listTag = new ListTag();
+        for (String str : strings) {
+            listTag.add(StringTag.valueOf(str));
+        }
+        return listTag;
+    }
+
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putFloat("weight", entry.weight);
@@ -314,48 +343,31 @@ public class ModifierEntryDataBuilder {
         tag.putBoolean("isCuriosEntry", entry.isCuriosEntry);
         tag.putBoolean("displayNameInItemName", entry.displayNameInItemName);
         tag.putFloat("needFreshValue", entry.needFreshValue);
+        tag.putBoolean("autoId", entry.autoId);
 
-        ListTag specialTagsTag = new ListTag();
-        for (String tagStr : entry.specialTags) {
-            specialTagsTag.add(StringTag.valueOf(tagStr));
-        }
-        tag.put("specialTags", specialTagsTag);
-        ListTag slotsTags = new ListTag();
-        for (String tagStr : entry.Slots) {
-            slotsTags.add(StringTag.valueOf(tagStr));
-        }
-        tag.put("slotsTags", slotsTags);
+        // 修改后的代码片段使用辅助方法
+        tag.put("specialTags", createStringListTag(entry.specialTags));
+        tag.put("slotsTags", createStringListTag(entry.Slots));
+        
+        // 优化tags字段处理：原手工循环创建ListTag
+        tag.put("tags", createStringListTag(
+            entry.tags.stream()
+                .map(tagKey -> tagKey.location().toString())
+                .toList()
+        ));
 
-        ListTag tags = new ListTag();
-        for (var tagStr : entry.tags) {
-            tags.add(StringTag.valueOf(tagStr.location().toString()));
-        }
-        tag.put("tags", tags);
+        tag.put("OnlyTags", createStringListTag(entry.getModifierItemSelector().getOnlyTags()));
+        tag.put("exsuits", createStringListTag(entry.exsuits));
+        
+        // 优化types字段处理：原手工循环创建ListTag  
+        tag.put("types", createStringListTag(
+            entry.types.stream()
+                .map(ItemType::name)
+                .toList()
+        ));
 
-        ListTag onlyTagsTag = new ListTag();
-        for (String tagStr : entry.getModifierItemSelector().getOnlyTags()) {
-            onlyTagsTag.add(StringTag.valueOf(tagStr));
-        }
-        tag.put("OnlyTags", onlyTagsTag);
-
-        ListTag typesTag = new ListTag();
-        for (var tagStr : entry.types) {
-            typesTag.add(StringTag.valueOf(tagStr.name()));
-        }
-        tag.put("types", typesTag);
-
-        ListTag onlyItemsTag = new ListTag();
-        for (String itemStr : entry.getModifierItemSelector().getOnlyItems()) {
-            onlyItemsTag.add(StringTag.valueOf(itemStr));
-        }
-        tag.put("OnlyItems", onlyItemsTag);
-
-        ListTag onlyWashItemsTag = new ListTag();
-        for (String itemStr : entry.getModifierItemSelector().getOnlyWashItems()) {
-            onlyWashItemsTag.add(StringTag.valueOf(itemStr));
-        }
-        tag.put("OnlyWashItems", onlyWashItemsTag);
-
+        tag.put("OnlyItems", createStringListTag(entry.getModifierItemSelector().getOnlyItems()));
+        tag.put("OnlyWashItems", createStringListTag(entry.getModifierItemSelector().getOnlyWashItems()));
 
         tag.putString("id", entry.id);
         tag.putString("Expression", entry.Expression);
@@ -382,9 +394,11 @@ public class ModifierEntryDataBuilder {
         builder.setCuriosType(tag.getString("curiosType"));
         builder.setIsCuriosEntry(tag.getBoolean("isCuriosEntry"));
         builder.setNeedFreshValue(tag.getFloat("needFreshValue"));
+
         builder.setDisplayNameInItemName(tag.getBoolean("displayNameInItemName"));
         builder.setIcon(tag.getString("icon"));
         builder.setSource(tag.getString("source"));
+        builder.setAutoId(tag.getBoolean("autoId"));
 
 
         ListTag specialTagsTag = tag.getList("specialTags", 8);
@@ -412,7 +426,6 @@ public class ModifierEntryDataBuilder {
         for (net.minecraft.nbt.Tag value : tags) {
             builder.addTag(ExUtil.createOrGetModifierTagKey(ResourceLocation.tryParse(value.getAsString())));
         }
-
         ListTag onlyTagsTag = tag.getList("OnlyTags", 8);
         List<String> onlyTags = new ArrayList<>();
         for (int i = 0; i < onlyTagsTag.size(); i++) {
@@ -440,6 +453,13 @@ public class ModifierEntryDataBuilder {
             onlyWashItems.add(onlyWashItemsTag.getString(i));
         }
         builder.setOnlyWashItems(onlyWashItems);
+
+        ListTag exSuitsTag = tag.getList("exsuits", 8);
+        List<String> exSuits = new ArrayList<>();
+        for (int i = 0; i < exSuitsTag.size(); i++) {
+            exSuits.add(exSuitsTag.getString(i));
+        }
+        builder.setExsuit(exSuits);
 
 
         builder.setId(tag.getString("id"));

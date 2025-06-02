@@ -41,23 +41,27 @@ public class ExSuitHandle {
     public static Map<String, ExSuit> LoadExSuit = new java.util.HashMap<>();
     public static ExSuit FoundAllTypeSuitById(String id){
 
+        ModifierEntry  modifierEntry = ModifierHandle.findModifierEntry(id);
         for (ExSuit exSuit : LoadExSuit.values()){
-            if (exSuit.entry.stream().anyMatch(entry -> entry.equals(id))){
+            if (modifierEntry.exsuits .contains(exSuit.id)){
                 return exSuit;
             }
         }
         return null;
 
     }
+    public static List<ExSuit> FindExSuitFromEntry(String id){
+       return LoadExSuit.values().stream().filter(exSuit -> ModifierHandle.findModifierEntry(id).exsuits.contains(exSuit.id)).toList();
+    }
     public static List<ExSuit> FindExSuit(String id){
         List<ExSuit> exSuits = new ArrayList<>();
         for (ExSuit exSuit : LoadExSuit.values()){
-            if (exSuit.type == ExType.ALL.get()) {
-                if (exSuit.entry.stream().anyMatch(entry -> entry.substring(2).equals(id.substring(2)))) {
-                    Exmodifier.LOGGER.debug("Found About ExSuit: " + exSuit.id);
-                    exSuits.add(exSuit);
-                }
-            }else
+//            if (exSuit.type == ExType.ALL.get()) {
+//                if (exSuit.entry.stream().anyMatch(entry -> entry.substring(2).equals(id.substring(2)))) {
+//                    Exmodifier.LOGGER.debug("Found About ExSuit: " + exSuit.id);
+//                    exSuits.add(exSuit);
+//                }
+//            }else
                 {
                     if (exSuit.id.equals(id)) {
                         Exmodifier.LOGGER.debug("Found About ExSuit: " + exSuit.id);
@@ -70,27 +74,27 @@ public class ExSuitHandle {
     }
     public static void addSuitLevel(Player player,ExSuit s,int amount){
         player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-            if (capability.SuitsNum.containsKey(s)){
-                capability.SuitsNum.put(s,capability.SuitsNum.get(s)+amount);
+            if (capability.SuitsNum.containsKey(s.id)){
+                capability.SuitsNum.put(s.id,capability.SuitsNum.get(s.id)+amount);
             }else {
-                capability.SuitsNum.put(s,amount);
+                capability.SuitsNum.put(s.id,amount);
             }
             capability.syncPlayerVariables(player);
         });
     }
-    public static boolean hasSuitByID(Player player,String id){
-        AtomicBoolean flag = new AtomicBoolean(false);
-        player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-            for (ExSuit exSuit : capability.Suits){
-                if (exSuit.id.equals(id)){
-                    flag.set(true);
-                    break;
-                }
-            }
-        });
-        return flag.get();
-
-    }
+//    public static boolean hasSuitByID(Player player,String id){
+//        AtomicBoolean flag = new AtomicBoolean(false);
+//        player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+//            for (ExSuit exSuit : capability.Suits){
+//                if (exSuit.id.equals(id)){
+//                    flag.set(true);
+//                    break;
+//                }
+//            }
+//        });
+//        return flag.get();
+//
+//    }
     public int getPlayerLevel(Player player){
         return player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).map(capability -> capability.SuitsNum.values().stream().mapToInt(Integer::intValue).sum()).orElse(0);
     }
@@ -99,11 +103,11 @@ public class ExSuitHandle {
     }
     public static void RemoveSuitLevel(Player player,ExSuit s,int amount){
         player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-            if (capability.SuitsNum.containsKey(s)){
-                if (capability.SuitsNum.get(s)==amount){
-                    capability.SuitsNum.remove(s);
+            if (capability.SuitsNum.containsKey(s.id)){
+                if (capability.SuitsNum.get(s.id)==amount){
+                    capability.SuitsNum.remove(s.id);
                 }else {
-                    capability.SuitsNum.put(s,capability.SuitsNum.get(s)-amount);
+                    capability.SuitsNum.put(s.id,capability.SuitsNum.get(s.id)-amount);
                 }
             }
             capability.syncPlayerVariables(player);
@@ -111,22 +115,22 @@ public class ExSuitHandle {
     }
     public static void SetSuitLevel(Player player,ExSuit s,int level){
         player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-            if (capability.SuitsNum.containsKey(s)){
-                capability.SuitsNum.put(s,level);
+            if (capability.SuitsNum.containsKey(s.id)){
+                capability.SuitsNum.put(s.id,level);
             }else {
-                capability.SuitsNum.put(s,level);
+                capability.SuitsNum.put(s.id,level);
             }
             capability.syncPlayerVariables(player);
         });
     }
     public static Integer GetSuitLevel(Player player,ExSuit s){
-        return player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).map(capability -> capability.SuitsNum.getOrDefault(s, 0)).orElse(0);
+        return player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).map(capability -> capability.SuitsNum.getOrDefault(s.id, 0)).orElse(0);
     }
     public static void registerExSuit(ExSuit exSuit){
         LoadExSuit.put(exSuit.id,exSuit);
         Exmodifier.LOGGER.info("Registered ExSuit: "+ exSuit);
     }
-    public static Path ConfigPath = FMLPaths.GAMEDIR.get().resolve("config/exmo/suit");
+    public static Path ConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/suit");
     public static List<MoConfig> FoundSuitConfigs = new ArrayList<>();
     public static void readConfig() throws IOException {
 
@@ -150,39 +154,50 @@ public class ExSuitHandle {
         JsonObject itemObject = itemElement.getAsJsonObject();
         ExSuit exSuit = new ExSuit();
         String string = moconfig.type.name();
+        String key1 = entry.getKey();
+        String key2 = string.substring(0, 2) + key1;
         if (moconfig.type== ExType.ALL.get()){
             for (ItemType type : ExTypeHandle.itemTypes.values()){
-                String key = type.name().toString().substring(0, 2) + entry.getKey();
+                String key = type.name().substring(0, 2) + key1;
                 // Exmodifier.LOGGER.debug("匹配中: "+key);
                 ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(key);
-                if (entry1 != null) {
-                    exSuit.addEntry(entry1.id);
-                    Exmodifier.LOGGER.debug("Add About ModifierEntry: "+entry1.id +" in "+entry.getKey());
+                if (entry1 != null && entry1.autoId) {
+                    entry1.exsuits.add(key2);
+                    Exmodifier.LOGGER.debug("Add About ModifierEntry: "+entry1.id +" in "+ key1);
                 }
+            }
+            ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(key1);
+            if (entry1 != null && entry1.autoId) {
+                entry1.exsuits.add(key2);
+                Exmodifier.LOGGER.debug("Add About ModifierEntry: "+entry1.id +" in "+ key1);
             }
         }
         else {
-            ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(string.substring(0, 2) + entry.getKey());
-            if (entry1 != null) {
-                exSuit.addEntry(entry1.id);
+            ModifierEntry entry1 = ModifierHandle.modifierEntryMap.get(key2);
+            if (entry1 != null &&  entry1.autoId) {
+                entry1.exsuits.add( key2);
                 Exmodifier.LOGGER.debug("Found About ModifierEntry: "+entry1.id);
-            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + string.substring(0,2) + entry.getKey());
-
+            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + string.substring(0,2) + key1);
+            ModifierEntry entry2 = ModifierHandle.modifierEntryMap.get( key1);
+            if (entry2 != null) {
+                entry2.exsuits.add( key2);
+                Exmodifier.LOGGER.debug("Found About ModifierEntry: "+entry2.id);
+            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + key1);
         }
-        if (exSuit.entry.isEmpty()) {
-            if (moconfig.type!= ExType.ALL.get()) {
-                Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + string.substring(0, 2) + entry.getKey());
-            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found any one about: " + entry.getKey());
-            return;
-        }
+//        if (exSuit.entry.isEmpty()) {
+//            if (moconfig.type!= ExType.ALL.get()) {
+//                Exmodifier.LOGGER.Logger.error("No ModifierEntry Found: " + string.substring(0, 2) + key1);
+//            }else Exmodifier.LOGGER.Logger.error("No ModifierEntry Found any one about: " + key1);
+//            return;
+//        }
         exSuit.type = moconfig.type;
-        exSuit.id = string.substring(0,2) + entry.getKey();
+        exSuit.id = key2;
         if (itemObject.has("visible"))exSuit.visible= itemObject.get("visible").getAsBoolean();
         if (itemObject.has("newTooltipPage"))exSuit.newTooltipPage= itemObject.get("newTooltipPage").getAsBoolean();
         if (itemObject.has("LocalDescription"))exSuit.LocalDescription= itemObject.get("LocalDescription").getAsString();
         // if (itemObject.has("trigger")) exSuit.MainTrigger = StringToTrigger(itemObject.get("trigger").getAsString());
         if (itemObject.has("excludeArmorInHand"))exSuit.setting.put("excludeArmorInHand", String.valueOf(itemObject.get("excludeArmorInHand").getAsBoolean()));
-        for (int i = 1; i <= 16; i++) {
+        for (int i = 0; i <= 16; i++) {
             if (itemObject.has(i + "")) {
                 JsonObject suitObj = itemObject.getAsJsonObject(i + "");
                 ExSuit.Trigger trigger = suitObj.has("trigger") ?  StringToTrigger(suitObj.get("trigger").getAsString()) : ExSuit.MainTrigger;
@@ -192,7 +207,7 @@ public class ExSuitHandle {
                         exSuit.setLevelEffects(i, processEffects(moconfig, exSuit, suitObj.getAsJsonObject("effect")));
                     }
                 }else {
-                    Exmodifier.LOGGER.debug("No effect Found: " + string.substring(0,2) + entry.getKey());
+                    Exmodifier.LOGGER.debug("No effect Found: " + string.substring(0,2) + key1);
                 }
                 if (suitObj.has("commands")) {
                     JsonArray commands = suitObj.getAsJsonArray("commands");
@@ -205,7 +220,7 @@ public class ExSuitHandle {
 
                     }
                 }else {
-                    Exmodifier.LOGGER.debug("No command Found: " + string.substring(0,2) + entry.getKey());
+                    Exmodifier.LOGGER.debug("No command Found: " + string.substring(0,2) + key1);
                 }
                 if (suitObj.has("attrGethers")) {
                     if (suitObj.getAsJsonObject("attrGethers") != null) {
@@ -215,6 +230,7 @@ public class ExSuitHandle {
 
             }
         }
+        exSuit.CountMaxLevelAndGet();
         entries.add(exSuit);
     }
 

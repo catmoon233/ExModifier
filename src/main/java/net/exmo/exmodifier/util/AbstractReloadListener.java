@@ -124,10 +124,13 @@ public abstract class AbstractReloadListener<T> extends SimplePreparableReloadLi
             if (zipFunction!=null) {
                 zipFunction.elementDefault().forEach(Runnable::run);
                 zipFunction.defaultEntry().forEach(Runnable::run);
+                zipFunction.suit().forEach(Runnable::run);
             }
             ModifierHandle.EEMatchQueueHandle();
             LanguageLoader.load(LanguageLoader.LANGUAGES_FILE_PATH);
             clearReadTempData();
+            loadedCount .set(0);
+             totalCount.set(0);
             MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
             if (currentServer != null) {
                 sendUpdatedModifiersToClients(currentServer);

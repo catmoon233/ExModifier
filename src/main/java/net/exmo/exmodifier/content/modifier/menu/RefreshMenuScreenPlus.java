@@ -28,6 +28,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.*;
 import net.minecraft.network.chat.Component;
@@ -41,6 +42,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.*;
@@ -192,7 +194,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     }
 
     public void addPage(String title, Consumer<RefreshMenuScreenPlus> contentInitializer) {
-        pages.add(new Page(Component.literal(title), contentInitializer));
+        pages.add(new Page(Component.translatable(title), contentInitializer));
     }
 
     @Override
@@ -323,6 +325,8 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             renderable.render(guiGraphics, mouseX, mouseY, partialTick);
         }
         this.hoveredSlot = null;
+        toRenderTooltipList.forEach(toRenderTooltip -> toRenderTooltip.runnable.run());
+        toRenderTooltipList.clear();
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate((float) i, (float) j, 0.0F);
         this.renderLabels(guiGraphics, mouseX, mouseY);
@@ -338,10 +342,13 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 button.setExpandProgress(progress);
             }
         }
+
         guiGraphics.pose().popPose();
         RenderSystem.enableDepthTest();
     }
 
+    public record ToRenderTooltip(Runnable runnable){}
+    public List<ToRenderTooltip> toRenderTooltipList= new  ArrayList<>();
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float v, int i, int i1) {
 
@@ -621,10 +628,16 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     if (isHovered) {
                         ItemStack selectedItemStack1 = RefreshMenuScreenPlus.this.selectedItemStack;
                         if (!selectedItemStack1.isEmpty()) {
-                            gg.pose().pushPose();
-                            gg.pose().translate(0, 0, 2100);
-                            gg.renderTooltip(RefreshMenuScreenPlus.this.font, selectedItemStack1, p_93658_, p_93659_);
-                            gg.pose().popPose();
+                            RefreshMenuScreenPlus.this.toRenderTooltipList.add(
+                                   new ToRenderTooltip(
+                                           ()->{
+                                               gg.pose().pushPose();
+                                               gg.pose().translate(0, 0, 2100);
+                                               gg.renderTooltip(RefreshMenuScreenPlus.this.font, selectedItemStack1, p_93658_, p_93659_);
+                                               gg.pose().popPose();
+                                           }
+                                   )
+                            );
                         }
                     }
                     super.render(gg, p_93658_, p_93659_, p_93660_);
@@ -789,7 +802,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 renderItemInSlot(guiGraphics, selectedRefreshItem,
                         materialButton.getX(), materialButton.getY(),
                         materialButton.getWidth(), materialButton.getHeight());
-                guiGraphics.renderItemDecorations(font, selectedRefreshItem, materialButton.getX(), materialButton.getY());
+
             }
 
         }
@@ -823,12 +836,39 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     guiGraphics.pose().translate(0.0F, 0.0F, 200.0F);
                     guiGraphics.drawString(font, s, itemX + 19 - 2 - font.width(s), itemY + 6 + 3, 16777215, true);
                 }
+               renderItemDecorationsWithoutCount(guiGraphics,font, selectedRefreshItem, materialButton.getX(), materialButton.getY());
             } finally {
                 guiGraphics.pose().popPose();
             }
         }
 
+        public  void renderItemDecorationsWithoutCount( GuiGraphics guiGraphics,Font p_282005_, ItemStack p_283349_, int p_282641_, int p_282146_) {
+            if (!p_283349_.isEmpty()) {
+                guiGraphics.pose().pushPose();
 
+
+                if (p_283349_.isBarVisible()) {
+                    int l = p_283349_.getBarWidth();
+                    int i = p_283349_.getBarColor();
+                    int j = p_282641_ + 2;
+                    int k = p_282146_ + 13;
+                    guiGraphics.fill(RenderType.guiOverlay(), j, k, j + 13, k + 2, -16777216);
+                    guiGraphics.fill(RenderType.guiOverlay(), j, k, j + l, k + 1, i | -16777216);
+                }
+
+                Minecraft minecraft1 = RefreshMenuScreenPlus.this.minecraft;
+                LocalPlayer localplayer = minecraft1.player;
+                float f = localplayer == null ? 0.0F : localplayer.getCooldowns().getCooldownPercent(p_283349_.getItem(), minecraft1.getFrameTime());
+                if (f > 0.0F) {
+                    int i1 = p_282146_ + Mth.floor(16.0F * (1.0F - f));
+                    int j1 = i1 + Mth.ceil(16.0F * f);
+                    guiGraphics.fill(RenderType.guiOverlay(), p_282641_, i1, p_282641_ + 16, j1, Integer.MAX_VALUE);
+                }
+
+                guiGraphics.pose().popPose();
+                net.minecraftforge.client.ItemDecoratorHandler.of(p_283349_).render(guiGraphics, p_282005_, p_283349_, p_282641_, p_282146_);
+            }
+        }
         @Override
         public List<? extends GuiEventListener> children() {
             return List.of(itemButton, materialButton, refreshButton, infoButton);
@@ -1377,9 +1417,9 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
                 if (isMouseOverSlot((int) mouseX, (int) mouseY, slotX, slotY)) {
                     selected = index;
-                    if (button == 0) {
-                        //    putItem();
-                    }
+//                    if (button == 0) {
+//                            putItem();
+//                    }
                     showContextMenu((int) mouseX, (int) mouseY);
                     return true;
                 }

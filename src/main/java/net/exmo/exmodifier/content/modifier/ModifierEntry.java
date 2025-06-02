@@ -56,7 +56,6 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
             .addFloatField("weight",e->e.weight,((modifierEntry, aFloat) -> modifierEntry.weight = aFloat))
             .addStringListField("tags",e->e.tags.stream().map(TagKey::location).map(ResourceLocation::toString).toList(),((modifierEntry, strings) -> modifierEntry.tags = strings.stream().map(e->ExUtil.createOrGetModifierTagKey(new ResourceLocation(e))).toList()))
             .addStringField("Expression",e->e.Expression,((modifierEntry, s) -> modifierEntry.Expression = s))
-            .addStringListField("exsuit",ModifierEntry::getExsuit,ModifierEntry::setExsuit)
             .addSubclass(modifierEntry -> modifierEntry.modifierItemSelector, (modifierEntry, modifierItemSelector) -> modifierEntry.modifierItemSelector = (ModifierItemSelector<ModifierEntry>) modifierItemSelector,ModifierItemSelector.ExSer)
             .addJsonObjectList("attriGethers",
                     modifierEntry -> ModifierAttriGether.ExSer.toJson(modifierEntry.attriGether).asList().stream().map(JsonElement::getAsJsonObject).toList(),
@@ -81,7 +80,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public String icon = "";
     public String source = "";
     public List<String> entityTypes = new ArrayList<>();
-    public List<String> exsuit = new ArrayList<>();
+//    public List<String> exsuit = new ArrayList<>();
     public List<TagKey<ModifierEntry>> tags = new ArrayList<>();
     public boolean OnlyHasThisEntry = false;
     public String localDescription = "";
@@ -94,23 +93,25 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public boolean displayNameInItemName = false;
     public String id;
     public String Expression = ""; //todo 这个没用
+    public List<String>  exsuits = new ArrayList<>();
     public int RandomNum = 0;
     public ModifierItemSelector<ModifierEntry> modifierItemSelector = new ModifierItemSelector<ModifierEntry>();
     public List<ModifierAttriGether> attriGether = new java.util.ArrayList<>();
     public  List<String> specialTags = new ArrayList<>();
+    public boolean autoId = false;
 
 
-    public List<String> getExsuit() {
-        return exsuit;
-    }
-
-    public ModifierEntry setExsuit(List<String> exsuit) {
-        this.exsuit = exsuit;
-        if (ModifierHandle.EEMatchQueue.containsKey(this.id)) {
-            ModifierHandle.EEMatchQueue.get(this.id).addAll(exsuit);
-        }else ModifierHandle.EEMatchQueue.put(this.id, exsuit);
-        return this;
-    }
+//    public List<String> getExsuit() {
+//        return exsuit;
+//    }
+//
+//    public ModifierEntry setExsuit(List<String> exsuit) {
+//        this.exsuit = exsuit;
+//        if (ModifierHandle.EEMatchQueue.containsKey(this.id)) {
+//            ModifierHandle.EEMatchQueue.get(this.id).addAll(exsuit);
+//        }else ModifierHandle.EEMatchQueue.put(this.id, exsuit);
+//        return this;
+//    }
 
     public ModifierEntry(String id) {
         this.id = id;
@@ -152,7 +153,6 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
                 ", icon='" + icon + '\'' +
                 ", source='" + source + '\'' +
                 ", entityTypes=" + entityTypes +
-                ", exsuit=" + exsuit +
                 ", tags=" + tags +
                 ", OnlyHasThisEntry=" + OnlyHasThisEntry +
                 ", localDescription='" + localDescription + '\'' +
@@ -173,12 +173,14 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     }
 
     public String getDescriptionId(){
-        return  "modifier.entry." + id.substring(2);
+        return autoId ?  " modifier.entry."+id.substring(2) : "modifier.entry." + id;
     }
     public static String getDescriptionId(String id){
-        return  "modifier.entry." + id.substring(2);
+        return  "modifier.entry." + id;
     }
-
+    public static String getAutoDescriptionId(String id){
+        return  "modifier.entry." + id.substring( 2);
+    }
 
 
 
@@ -449,7 +451,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
             }
             boolean hasSuit = false;
 
-            for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> exSuit.entry.contains(this))
+            for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> this.exsuits.contains(exSuit.id))
                     .toList()) {
                 if (suit.visible) {
                     if (!hasSuit) {

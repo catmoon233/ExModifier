@@ -9,4 +9,7 @@ public class TooltipUtil {
     public static List<Component> sprit(MutableComponent component){
         return component.toFlatList();
     }
+    public static List<Component> sprit(Component component){
+        return component.toFlatList();
+    }
 }

@@ -3,14 +3,21 @@ package net.exmo.exmodifier.content.suit;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.modifier.ModifierAttriGether;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.type.ItemType;
+import net.exmo.exmodifier.util.NBTCounterUtil;
 import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.exmo.exmodifier.util.gether.AttriGetherNormal;
+import net.minecraft.nbt.*;
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static net.exmo.exmodifier.Exmodifier.GSON;
 
 public class ExSuit {
 public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
@@ -21,13 +28,72 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
         (e, s) -> e.type = ModifierEntry.StringToType(s))
     .addStringField("LocalDescription", ExSuit::getLocalDescription, (obj, desc) -> obj.LocalDescription = desc)
     // 特殊类型处理
-    .addStringListField("entry", ExSuit::getEntry, ExSuit::setEntry)
     .addBooleanField("visible", ExSuit::isVisible, (obj, visible) -> obj.visible = visible)
     // 只读字段
-    .addIntField("MaxLevel", ExSuit::getMaxLevel, null)
+    .addIntField("MaxLevel", ExSuit::getMaxLevel, ExSuit::setMaxLevel)
         .addBooleanField("newTooltipPage", ExSuit::isNewTooltipPage, ExSuit::setNewTooltipPage)
         .addBooleanField("hasMobEffect",  ExSuit::isHasMobEffect, (obj, hasMobEffect) -> obj.hasMobEffect = hasMobEffect)
         .addIntStringMapField("effectLocalDescription", ExSuit::getEffectLocalDescription, ExSuit::setEffectLocalDescription)
+         .addIntStringMapField("commands", 
+                exSuit -> exSuit.getCommands().entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> String.join("=-;-=", e.getValue()))),
+                (exSuit, commands) -> exSuit.commands = commands.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> Arrays.asList(e.getValue().split("=-;-="))))
+        )
+        .addIntStringMapField("triggers",
+                exSuit -> exSuit.getTriggers().entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> e.getValue().toString())),
+                (exSuit, triggers) -> exSuit.triggers = triggers.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> ExSuit.StringToTrigger(e.getValue())))
+        )
+        .addIntStringMapField( "attriGether",
+                exSuit -> exSuit.getAttriGether().entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> e.getValue().stream()
+                                        .map(ag -> ag.toNbt().toString())
+                                        .collect(Collectors.joining(";"))  // 使用分号连接字符串
+                        )),
+                (exSuit, attriGethers) -> exSuit.attriGether = attriGethers.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> Arrays.stream(e.getValue().split(";"))  // 使用分号拆分字符串
+                                        .map(a-> {
+                                            try {
+                                                return AttriGetherNormal.fromNbt(TagParser.parseTag(a));
+                                            } catch (CommandSyntaxException ex) {
+                                                throw new RuntimeException(ex);
+                                            }
+                                        })
+                                        .collect(Collectors.toList())
+                        ))
+        )
+        .addStringMapField("setting",ExSuit::getSetting,ExSuit::setSetting)
+        .addIntStringMapField( "effect",
+                exSuit -> exSuit.getEffect().entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> e.getValue().stream()
+                                        .map(ExSuit::getEffectString)
+                                        .collect(Collectors.joining(";"))  // 修改为用分号连接字符串
+                        )),
+                (exSuit, attriGethers) -> exSuit.effect = attriGethers.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> Arrays.stream(e.getValue().split(";"))  // 修改为用分号拆分字符串
+                                        .map(ExSuit::getEffectFromString)
+                                        .collect(Collectors.toList())
+                        ))
+        )
+
 
 
     ;
@@ -36,6 +102,7 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
     public boolean hasMobEffect = false;
     public ItemType type;
     public String id;
+
 
     public boolean isNewTooltipPage() {
         return newTooltipPage;
@@ -180,7 +247,6 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
                 ", visible=" + visible +
                 ", MainTrigger=" + MainTrigger +
                 ", triggers=" + triggers +
-                ", entry=" + entry +
                 ", attriGether=" + attriGether +
                 ", effect=" + effect +
                 ", itemDamage=" + itemDamage +
@@ -216,7 +282,7 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
             return setting.get(key);
         return null;
     }
-    public List<String> entry = new ArrayList<>();
+    //public List<String> entry = new ArrayList<>();
     public Map<Integer,List<AttriGetherNormal>> attriGether = new java.util.HashMap<>();
     private   Map<Integer,List<MobEffectInstance> > effect = new java.util.HashMap<>();
     public Map<String,Float> itemDamage = new java.util.HashMap<>();
@@ -224,6 +290,18 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
 
     }
 
+    public static String getEffectString(MobEffectInstance mobEffectInstance){
+        String asString = mobEffectInstance.save(new CompoundTag()).getAsString();
+        return asString;
+    }
+    public static MobEffectInstance getEffectFromString(String effectString){
+        try {
+            return MobEffectInstance.load((TagParser.parseTag(effectString)));
+        } catch (CommandSyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
     public int CountMaxLevelAndGet() {
         int maxLevel = 0;
 
@@ -249,23 +327,14 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
         this.MaxLevel =Math.max(Collections.max(attriGether.keySet()), Collections.max(effect.keySet()));
 
     }
-    public ExSuit(String id, List<String> entry, Map<Integer,List< AttriGetherNormal>> attriGether) {
+    public ExSuit(String id, Map<Integer,List< AttriGetherNormal>> attriGether) {
         this.id = id;
-        this.entry = entry;
         this.attriGether = attriGether;
 //        this.MaxLevel = Collections.max(attriGether.keySet());
     }
 
-    public List<String> getEntry() {
-        return entry;
-    }
 
-    public void setEntry(List<String> entry) {
-        this.entry = entry;
-    }
-    public void addEntry(String modifierEntry){
-        this.entry.add(modifierEntry);
-    }
+
 
     public Map<Integer, List<MobEffectInstance>> getEffect() {
         return effect;

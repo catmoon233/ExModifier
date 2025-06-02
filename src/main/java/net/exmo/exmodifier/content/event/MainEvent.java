@@ -36,6 +36,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.*;
 //import net.minecraftforge.client.eventC.MovementInputUpdateEvent;
 
@@ -223,7 +225,7 @@ public class MainEvent {
             Player player = (Player) event.getEntity();
             player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
 
-                Map<ExSuit, Integer> map = capability.SuitsNum;
+                Map<String, Integer> map = capability.SuitsNum;
                 capability.SuitsNum = map.entrySet().stream()
                         .collect(Collectors.toMap(
                                 Map.Entry::getKey,
@@ -238,8 +240,13 @@ public class MainEvent {
 
         }
 
+        public static float damageBoost = 1;
+        public static float damageNumber = 0;
+        public static boolean hasDamageBoost = false;
+        public static boolean hasDamageNumber = false;
         public static void ApplySuitEffect(Player player, ExSuit.Trigger trigger) {
             if (player == null) return;
+            if (player. level().isClientSide)return;
             // Retrieve player capability once and exit early if not present
             player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
                 List<MobEffectInstance> mobEffectsToAdd = new ArrayList<>();
@@ -260,9 +267,17 @@ public class MainEvent {
                     commandSourceStack = null;
                 }
 
-                for (ExSuit suit : capability.Suits) {
-                    if (suit == null) continue;
-                    int suitLevel = ExSuitHandle.GetSuitLevel(player, suit);
+                Map<String, Integer> suitsNum = capability.SuitsNum;
+                for (var entry : suitsNum.entrySet()) {
+                    String suitId = entry.getKey();
+                    int suitLevel = entry.getValue();
+                    ExSuit suit = ExSuitHandle.LoadExSuit.get(suitId);
+                    if (suit == null) {
+                        suitsNum.remove( suitId);
+                        capability.SuitsNum =  suitsNum;
+                        capability.syncPlayerVariables(player);
+                        continue;
+                    }
                     for (int level = 1; level <= suitLevel; level++) {
                         //事件触发器在此 !!!!!!!!!!!!!!!!!!!
                         if (suit.getTriggers().get(level) != trigger) continue;
@@ -277,6 +292,22 @@ public class MainEvent {
                                         command = command.replace("$(hurtentity)", string);
                                     }
                                 }
+                                if (cheekEvent.livingHurtEvent !=null) {
+                                    if (hasDamageBoost) {
+                                        //获取其后的数值
+                                        cheekEvent.livingHurtEvent.setAmount((float) (cheekEvent.livingHurtEvent.getAmount() * damageBoost));
+                                         damageBoost = 1;
+                                        hasDamageBoost = false;
+
+                                    }
+                                    if (hasDamageNumber) {
+                                        //获取其后的数值
+                                        cheekEvent.livingHurtEvent.setAmount((float) (cheekEvent.livingHurtEvent.getAmount() + damageNumber));
+                                        damageNumber = 0;
+                                        hasDamageBoost = false;
+
+                                    }
+                                }
                                 command = command.replace("$(level)", finalLevel + "");
                                 player.getServer().getCommands().performPrefixedCommand(commandSourceStack, command);
 
@@ -285,7 +316,7 @@ public class MainEvent {
 
                         // Add MobEffects if present for the current suit level
                         List<MobEffectInstance> effects = suit.getEffect().get(level);
-                        if (effects != null) {
+                           if (effects != null) {
                             effects.stream()
                                     .filter(Objects::nonNull)
                                     .forEach(mobEffectInstance -> {
@@ -316,6 +347,7 @@ public class MainEvent {
 
         @Mod.EventBusSubscriber
         public static class cheekEvent {
+            private static LivingHurtEvent livingHurtEvent;
             @SubscribeEvent
             public static void PlayerHurtAndAttack(LivingHurtEvent event) {
                 if (event.getSource().is(DamageTypes.GENERIC_KILL))return;
@@ -324,7 +356,9 @@ public class MainEvent {
                     eventParameters.add(new EventParameter<>("amount", event.getAmount()));
                     eventParameters.add(new EventParameter<>("max_health", player.getAttributeValue(Attributes.MAX_HEALTH)));
                     addx(player, eventParameters, "ON_HURT");
+                    livingHurtEvent = event;
                     ApplySuitEffect(player, ExSuit.Trigger.ON_HURT);
+                    livingHurtEvent = null;
                 }
                 if ((event.getSource().getEntity() instanceof Player player)) {
                     List<EventParameter<?>> eventParameters = new ArrayList<>();
@@ -333,7 +367,9 @@ public class MainEvent {
                     addx(player, eventParameters, "ATTACK");
                     if (event.getEntity() != null)
                         player.getPersistentData().putString("hurtentity-uuid", event.getEntity().getUUID().toString());
+                    livingHurtEvent = event;
                     ApplySuitEffect(player, ExSuit.Trigger.ATTACK);
+                    livingHurtEvent = null;
                     player.getPersistentData().putString("hurtentity-uuid", "null");
                 }
             }
@@ -583,7 +619,7 @@ public class MainEvent {
                 String modifier = modifierEntries.get(i).id;
                 if (modifier.isEmpty()) continue;
                 List<String> founds = new ArrayList<>();
-                List<ExSuit> suits = ExSuitHandle.FindExSuit(modifier);
+                List<ExSuit> suits = ExSuitHandle.FindExSuitFromEntry(modifier);
                 for (ExSuit suit : suits) {
                     if (founds.contains(suit.id)) continue;
                     founds.add(suit.id);
@@ -625,19 +661,19 @@ public class MainEvent {
                     }
                     ExSuitApplyOnChangeEvent event = new ExSuitApplyOnChangeEvent(player, suit, i, effectType);
                     MinecraftForge.EVENT_BUS.post(event);
-                    player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-                        List<ExSuit> suitsList = capability.Suits;
-                        if (suitsList != null) {
-                            if (suitLevel > 0 && !suitsList.contains(suit)) {
-                                suitsList.add(suit);
-                            } else if (suitLevel <= 0) {
-                                suitsList.remove(suit);
-                            }
-                            suitsList.removeIf(suit1 -> !ExSuitHandle.LoadExSuit.containsValue(suit1));
-                            capability.Suits = suitsList;
-                            capability.syncPlayerVariables(player);
-                        }
-                    });
+//                    player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+//                        Map<String, Integer> suitsNum = capability.SuitsNum;
+//                        if (suitsNum != null) {
+//                            if (suitLevel > 0 && !suitsNum.containsKey(suit.id)) {
+//
+//                            } else if (suitLevel <= 0) {
+//                                suitsList.remove(suit);
+//                            }
+//                            suitsList.removeIf(suit1 -> !ExSuitHandle.LoadExSuit.containsValue(suit1));
+//                            capability.Suits = suitsList;
+//                            capability.syncPlayerVariables(player);
+//                        }
+//                    });
 
                 }
             }
@@ -668,6 +704,8 @@ public class MainEvent {
             ExElementHandle.init3();
             init.elementDefault().forEach(Runnable::run);
             init.defaultEntry().forEach(Runnable::run);
+            init.suit() .forEach(Runnable::run);
+
             ModifierHandle.EEMatchQueueHandle();
             LanguageLoader.load(LanguageLoader.LANGUAGES_FILE_PATH);
             clearReadTempData();

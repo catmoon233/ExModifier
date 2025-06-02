@@ -3,10 +3,15 @@ package net.exmo.exmodifier.util;
 import com.google.common.base.CaseFormat;
 import net.exmo.exmodifier.content.dynamicAttributes.DynamicAttribute;
 import net.exmo.exmodifier.content.dynamicAttributes.DynamicAttributeRegister;
+import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
+import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -17,7 +22,26 @@ import java.util.Map;
 
 public class ExUtil {
 
+    public static boolean hasSpecialEffect(SpecialEffect effect, Player player){
+        for (var eq : player.getInventory().armor){
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(eq).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    return  true;
+                }
+            }
+        }
+        return false;
+    }
+    public static boolean hasSpecialEffect(SpecialEffect effect, Player player, EquipmentSlot equipmentSlot){
 
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(player.getItemBySlot(equipmentSlot)).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    return  true;
+                }
+            }
+
+        return false;
+    }
     static HashMap<ResourceLocation, TagKey<ModifierEntry>> _IT = new HashMap<>();
     public static TagKey<ModifierEntry> createOrGetModifierTagKey(ResourceLocation key) {
         if (_IT.containsKey(key)) {

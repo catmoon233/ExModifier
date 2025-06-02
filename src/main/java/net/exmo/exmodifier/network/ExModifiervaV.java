@@ -79,7 +79,7 @@ public class ExModifiervaV {
             PlayerVariables original = ((PlayerVariables) event.getOriginal().getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables()));
             PlayerVariables clone = ((PlayerVariables) event.getEntity().getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables()));
             clone.Sitemstack = original.Sitemstack;
-            clone.Suits = original.Suits;
+//            clone.Suits = original.Suits;
             if (!event.isWasDeath())
             {
                 clone.craftIndex = original.craftIndex;
@@ -281,8 +281,8 @@ public class ExModifiervaV {
     }
 
     public static class PlayerVariables {
-        public  List<ExSuit> Suits = new ArrayList<>();
-        public Map<ExSuit, Integer> SuitsNum = new HashMap<>();
+        //public  List<String> Suits = new ArrayList<>();
+        public Map<String, Integer> SuitsNum = new HashMap<>();
         public Map<String, Float> itemsDamage = new HashMap<>();
         public Map<String,String> syncContent = new HashMap<>();
         public List<AttriGetherEffectInstance> attriGetherEffectInstances = new ArrayList<>();
@@ -298,13 +298,13 @@ public class ExModifiervaV {
             CompoundTag nbt = new CompoundTag();
             nbt.putInt("craftIndex", craftIndex);
             nbt.put("Sitemstack", Sitemstack.save(new CompoundTag()));
-            ListTag ExsuitListTag = new ListTag();
-            for (ExSuit value : Suits) {
-                if (value != null) {
-                    ExsuitListTag.add(StringTag.valueOf(value.id));
-                }
-            }
-            nbt.put("Suits", ExsuitListTag);
+//            ListTag ExsuitListTag = new ListTag();
+//            for (ExSuit value : Suits) {
+//                if (value != null) {
+//                    ExsuitListTag.add(StringTag.valueOf(value.id));
+//                }
+//            }
+//            nbt.put("Suits", ExsuitListTag);
 
             ListTag EFListTag = new ListTag();
             for (AttriGetherEffectInstance value : attriGetherEffectInstances) {
@@ -315,14 +315,17 @@ public class ExModifiervaV {
             nbt.put("attriGetherEffectInstances", EFListTag);
 
             CompoundTag SuitsNuma = new CompoundTag();
-            for (Map.Entry<ExSuit, Integer> entry : SuitsNum.entrySet()) {
+            for (Map.Entry<String, Integer> entry : SuitsNum.entrySet()) {
+                if (entry.getValue()==0) {
+                    continue;
+                }
                 if (entry==null){
                     continue;
                 }
                 if (entry.getKey()==null){
                     continue;
                 }
-                SuitsNuma.putString(entry.getKey().id, entry.getValue().toString());
+                SuitsNuma.putString(entry.getKey(), entry.getValue().toString());
             }
             nbt.put("SuitsNum", SuitsNuma);
 
@@ -345,11 +348,11 @@ public class ExModifiervaV {
             craftIndex = nbt.getInt("craftIndex");
             Sitemstack = ItemStack.of(nbt.getCompound("Sitemstack"));
             ListTag ExSuitListTag = nbt.getList("Suits", 8);
-            List<ExSuit> SuitsList = new ArrayList<>();
-            for (int i = 0; i < ExSuitListTag.size(); ++i) {
-                SuitsList.add(ExSuitHandle.LoadExSuit.get(ExSuitListTag.getString(i)));
-            }
-            Suits = SuitsList;
+//            List<ExSuit> SuitsList = new ArrayList<>();
+//            for (int i = 0; i < ExSuitListTag.size(); ++i) {
+//                SuitsList.add(ExSuitHandle.LoadExSuit.get(ExSuitListTag.getString(i)));
+//            }
+//            Suits = SuitsList;
 
             ListTag EFListTag = nbt.getList("attriGetherEffectInstances", 10);
             List<AttriGetherEffectInstance> EFList = new ArrayList<>();
@@ -361,7 +364,7 @@ public class ExModifiervaV {
             CompoundTag SuitsNuma = nbt.getCompound("SuitsNum");
             for (String key : SuitsNuma.getAllKeys()) {
                 String value = SuitsNuma.getString(key);
-                SuitsNum.put(ExSuitHandle.LoadExSuit.get(key), Integer.parseInt(value));
+                SuitsNum.put(key, Integer.parseInt(value));
             }
 
             CompoundTag syncContenta = nbt.getCompound("syncContent");
@@ -401,7 +404,7 @@ public class ExModifiervaV {
                     PlayerVariables variables = ((PlayerVariables) Minecraft.getInstance().player.getCapability(PLAYER_VARIABLES_CAPABILITY, null).orElse(new PlayerVariables()));
                     variables.Sitemstack = message.data.Sitemstack;
                     variables.craftIndex = message.data.craftIndex;
-                    variables.Suits = message.data.Suits;
+//                    variables.Suits = message.data.Suits;
                     variables.SuitsNum = message.data.SuitsNum;
                     variables.attriGetherEffectInstances = message.data.attriGetherEffectInstances;
                     variables.itemsDamage = message.data.itemsDamage;
