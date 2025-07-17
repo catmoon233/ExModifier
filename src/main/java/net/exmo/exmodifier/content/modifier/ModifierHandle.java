@@ -26,6 +26,7 @@ import net.exmo.exmodifier.network.sync.defaultItemElement.ClearDefaultEntityEle
 import net.exmo.exmodifier.network.sync.defaultItemElement.SyncDefaultEntityElementMessage;
 import net.exmo.exmodifier.network.sync.element.ClearElementMessage;
 import net.exmo.exmodifier.network.sync.element.SyncElementMessage;
+import net.exmo.exmodifier.network.sync.lang.LangMessage;
 import net.exmo.exmodifier.network.sync.modifier.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.ExModifiervaV;
 import net.exmo.exmodifier.network.sync.modifier.SyncModifierEntryMessage;
@@ -53,7 +54,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -70,6 +70,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -106,11 +107,15 @@ public class ModifierHandle {
     }
 
     public static void sendElementToClient(ExElement e, ServerPlayer player) {
+        if (!Config.ELEMENT_SYSTEM.get())return;
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncElementMessage(e));
     }
 
     public static void sendDefaultEntityElementToClient(DefaultEntityElement e, ServerPlayer player) {
         PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new SyncDefaultEntityElementMessage(e));
+    }
+    public static void sendLangMessageToClient(LangMessage.LangMessageHandler e, ServerPlayer player) {
+        PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new LangMessage(e));
     }
 
     public static void sendDefaultItemElementToClient(DefaultItemElement e, ServerPlayer player) {
@@ -411,7 +416,7 @@ public class ModifierHandle {
         public static void RandomEntry(ItemStack stack, WeightedUtil<String> weightedUtil, EquipmentSlot[] slot, int refreshments) {
             int numAddedModifiers = 0;
 
-            List<ModifierAttriGether> finalAttriGethers = new ArrayList<>();
+
             // Set<String> appliedModifiers = new HashSet<>();
             List<ModifierEntry> modifierEntries = new ArrayList<>();
             if (weightedUtil.weights.size() < refreshments) refreshments = weightedUtil.weights.size();
@@ -419,12 +424,14 @@ public class ModifierHandle {
             while (numAddedModifiers < refreshments) {
                 ModifierEntry modifierEntry = modifierEntryMap.get(weightedUtil.selectRandomKeyBasedOnWeights());
                 if (modifierEntries.contains(modifierEntry)) continue;
-                LOGGER.debug("add entry: " + modifierEntry.id);
-                modifierEntries.add(modifierEntry);
                 if (modifierEntry == null) {
                     LOGGER.debug("exElement is null");
                     continue;
                 }
+                LOGGER.debug("add entry: " + modifierEntry.id);
+
+                modifierEntries.add(modifierEntry);
+                List<ModifierAttriGether> finalAttriGethers = new ArrayList<>();
 
                 // if (!appliedModifiers.contains(exElement.Id)) {
                 LOGGER.debug("add entry start: " + modifierEntry.id);
@@ -488,8 +495,26 @@ public class ModifierHandle {
                                 .filter(e -> {
                                     if (e.getValue().weight == 0) return false;
                                     var modifier = e.getValue();
+                                    AtomicBoolean only = new AtomicBoolean(false);
                                     boolean hasWashItem = materialsList.stream()
-                                            .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
+                                            .anyMatch(m -> {
+                                                if ( m.ItemId.equals(washItem)){
+                                                    if (m.OnlyHasWashEntry) only.set(true);
+                                                    return true;
+                                                }
+                                                return false;
+                                            });
+                                    boolean washPd = false;
+                                    if (modifier.modifierItemSelector.getOnlyWashItems().isEmpty() ){
+                                        if (!only.get()) {
+                                            washPd = true;
+                                        }
+                                    }else {
+                                        if (modifier.modifierItemSelector.getOnlyWashItems().contains(washItem)){
+                                            washPd = true;
+                                        }
+                                    }
+
 
                                     return !ModifierEntryHelper.of(stack).getModifierEntriesB().contains(modifier) &&
                                             modifier.containItemType(type) &&
@@ -497,8 +522,8 @@ public class ModifierHandle {
                                             modifier.modifierItemSelector.containItem(stack) &&
                                             !modifier.cantSelect &&
                                             (modifier.Slots.isEmpty()) &&
-                                            (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
-                                            (modifier.modifierItemSelector.getOnlyWashItems().isEmpty() || modifier.modifierItemSelector.getOnlyWashItems().contains(washItem) || hasWashItem);
+                                            (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&washPd;
+                                            //(modifier.modifierItemSelector.getOnlyWashItems().isEmpty() || modifier.modifierItemSelector.getOnlyWashItems().contains(washItem) || hasWashItem);
                                 })
                                 .collect(Collectors.toMap(
                                         Map.Entry::getKey,
@@ -759,8 +784,26 @@ public class ModifierHandle {
                     modifierEntryMap.entrySet().stream()
                             .filter(e -> {
                                 var modifier = e.getValue();
+                                AtomicBoolean only = new AtomicBoolean(false);
                                 boolean hasWashItem = materialsList.stream()
-                                        .anyMatch(m -> m.ItemId.equals(washItem) && !m.OnlyHasWashEntry);
+                                        .anyMatch(m -> {
+                                           if ( m.ItemId.equals(washItem)){
+                                                 if (m.OnlyHasWashEntry) only.set(true);
+                                               return true;
+                                           }
+                                           return false;
+                                        });
+                               boolean washPd = false;
+                                if (modifier.modifierItemSelector.getOnlyWashItems().isEmpty() ){
+                                    if (!only.get()) {
+                                        washPd = true;
+                                    }
+                                    }else {
+                                    if (modifier.modifierItemSelector.getOnlyWashItems().contains(washItem)){
+                                        washPd = true;
+                                    }
+                                }
+
 
                                 return modifier.types.contains(ExType.CURIOS.get()) &&
                                         (curiosType.contains(modifier.curiosType) || "ALL".equals(modifier.curiosType)) &&
@@ -769,7 +812,8 @@ public class ModifierHandle {
                                         !modifier.cantSelect &&
                                         (modifier.Slots.isEmpty()) &&
                                         (modifier.needFreshValue == 0 || modifier.needFreshValue <= rarity) &&
-                                        (modifier.modifierItemSelector.getOnlyWashItems().isEmpty() || modifier.modifierItemSelector.getOnlyWashItems().contains(washItem) || hasWashItem);
+                                        washPd;
+                                      //  (modifier.modifierItemSelector.getOnlyWashItems().isEmpty() || modifier.modifierItemSelector.getOnlyWashItems().contains(washItem));
                             })
                             .collect(Collectors.toMap(
                                     Map.Entry::getKey,
@@ -855,6 +899,14 @@ public class ModifierHandle {
     public static Map<ItemSelector, List<ModifierInstant>> itemsDefaultEntry = new HashMap<>();
     public static List<String> onlyCanRefreshPointEntryItemIds = new ArrayList<>();
 
+    public static void registerWashingMaterials(WashingMaterials washingMaterials) {
+        if (materialsList.stream().anyMatch(e ->e.ItemId.contains(washingMaterials.ItemId))){
+            LOGGER.info("WashingMaterials:" + washingMaterials.ItemId + "already exits");
+        }else{
+            materialsList.add(washingMaterials);
+            LOGGER.info("RegisterWashingMaterials:" + washingMaterials.ItemId);
+        }
+    }
     public static void RegisterModifierEntry(ModifierEntry modifierEntry) {
         var type = modifierEntry.types;
         if (!hasBootsConfig) if (type.contains(ExType.BOOTS.get())) hasBootsConfig = true;
@@ -892,9 +944,12 @@ public class ModifierHandle {
 
                 MoConfig washingMaterialsConfig = new MoConfig(WashingMaterialsConfigPath);
 
+                List<WashingMaterials> washingMaterials = new ArrayList<>();
                 for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
-                    processWashingMaterialEntry(entry);
+                    processWashingMaterialEntry(entry,washingMaterials);
+
                 }
+                washingMaterials.forEach(ModifierHandle::registerWashingMaterials);
             }
             // 读取物品默认条目配置
             if (Files.exists(ItemsDefaultEntryConfigPath)) {
@@ -945,9 +1000,11 @@ public class ModifierHandle {
             if (wash != null) {
                 MoConfig washingMaterialsConfig = new MoConfig(Path.of(zipFile.getName(), WashingConfigFilePath), zipFile.getInputStream(wash));
 
+                List<WashingMaterials> list = new ArrayList<>();
                 for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
-                    processWashingMaterialEntry(entry);
+                    processWashingMaterialEntry(entry,list);
                 }
+                list.forEach(ModifierHandle::registerWashingMaterials);
             }
             Foundmoconfigs = listFilesFromZipFile(zipFile, ConfigPath.getFileName());
             for (MoConfig moconfig : Foundmoconfigs) {
@@ -1104,7 +1161,7 @@ public class ModifierHandle {
     }
 
     // 处理洗涤材料条目
-    private static void processWashingMaterialEntry(Map.Entry<String, JsonElement> entry) {
+    public static void processWashingMaterialEntry(Map.Entry<String, JsonElement> entry,List<WashingMaterials> materialsList1) {
         if (!entry.getValue().isJsonObject()) {
             return;
         }
@@ -1165,7 +1222,7 @@ public class ModifierHandle {
                     materials.OnlyTags.add(item.getAsString());
                 });
             }
-            materialsList.add(materials);
+            materialsList1.add(materials);
             LOGGER.debug("WashingMaterials: " + materials.ItemId + " additionEntry: " + materials.additionEntry + " rarity: " + materials.rarity);
         } catch (Exception e) {
             LOGGER.error("Error processing WashingMaterial entry: " + entry.getKey(), e);
@@ -1203,7 +1260,29 @@ public class ModifierHandle {
             JsonObject jsonObject = JsonParser.parseString(read).getAsJsonObject();
             // 创建 MoConfig 对象并设置属性
             MoConfig moconfig = new MoConfig(Path.of(""));
+            moconfig.jsonObject = jsonObject;
+            if (jsonObject.has("isList") && jsonObject.get("isList").getAsBoolean()){
+                if (moconfig.readSetting("type")!=null){
+                    moconfig.type = ModifierEntry.StringToType(moconfig.readSetting("type").getAsString());
+                }
+                JsonElement group = moconfig.readSetting("group");
+                if (group!=null){
+                    moconfig.group = group.getAsString();
+                }else moconfig.group = "exmodifier_tab";
+
+                if (moconfig.type == ExType.CURIOS.get() &&moconfig.readSetting("type").getAsString().length()>6)moconfig.CuriosType=moconfig.readSetting("type").getAsString().substring(7);
+
+                for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+                    try {
+                        processModifierEntry(moconfig, entry.getKey(), entry.getValue(), entries);
+                    } catch (Exception e) {
+                        LOGGER.error("Error processing modifier entry: " + entry.getKey(), e);
+                    }
+                }
+                return;
+            }
             moconfig.type = ModifierEntry.StringToType(jsonObject.get("type").getAsString());
+            moconfig.group =jsonObject.get("group").getAsString();
             moconfig.autoTypeId = jsonObject.get("autoTypeId").getAsBoolean();
             // moconfig.CuriosType = jsonObject.get("CuriosType").getAsString();
 
@@ -1272,15 +1351,20 @@ public class ModifierHandle {
 
         modifierEntry.RandomNum = itemObject.has("RandomNum") ? itemObject.get("RandomNum").getAsInt() : 0;
         modifierEntry.maxLevel = itemObject.has("maxLevel") ? itemObject.get("maxLevel").getAsInt() : 1;
+        modifierEntry.iconSize = itemObject.has("iconSize") ? itemObject.get("iconSize").getAsInt() : 0;
         modifierEntry.weight = itemObject.has("weight") ? itemObject.get("weight").getAsFloat() : 1.0f;
         modifierEntry.needFreshValue = itemObject.has("needFreshValue") ? itemObject.get("needFreshValue").getAsFloat() : 0.0F;
         modifierEntry.cantSelect = itemObject.has("cantSelect") && itemObject.get("cantSelect").getAsBoolean();
         modifierEntry.localDescription = itemObject.has("localDescription") ? itemObject.get("localDescription").getAsString() : "";
         modifierEntry.icon = itemObject.has("icon") ? itemObject.get("icon").getAsString() : "";
         modifierEntry.source = itemObject.has("source") ? itemObject.get("source").getAsString() : moconfig.getSource();
-
-
-        if (itemObject.has("exsuit")) {
+        if (itemObject.has("group")){
+            modifierEntry.group  = itemObject.get("group").getAsString();
+        }else {
+            if (!moconfig.group.isEmpty()) modifierEntry.group = moconfig.group;
+            else modifierEntry.group = "exmodifier_tab";
+        }
+            if (itemObject.has("exsuit")) {
             List<String> exss = new ArrayList<>();
             for (JsonElement exsuit : itemObject.get("exsuit").getAsJsonArray()) {
                 exss.add(exsuit.getAsString());
@@ -1314,7 +1398,15 @@ public class ModifierHandle {
         if (itemObject.has("specialTags")) {
             JsonArray OnlyItems = itemObject.get("specialTags").getAsJsonArray();
             OnlyItems.forEach(item -> {
-                modifierEntry.specialTags.add(item.getAsString());
+
+                if (item.isJsonObject()){
+                    JsonObject asJsonObject = item.getAsJsonObject();
+                    String asString = asJsonObject.get("id").getAsString();
+                    modifierEntry.specialTags.add(asString);
+                    modifierEntry.specialTagSetting.put(asString,asJsonObject);
+                }else {
+                    modifierEntry.specialTags.add(item.getAsString());
+                }
             });
         }
         if (itemObject.has("tags")) {

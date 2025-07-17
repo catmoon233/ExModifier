@@ -20,6 +20,7 @@ import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.resources.ZipHandle;
 import net.exmo.exmodifier.events.*;
 import net.exmo.exmodifier.network.ExModifiervaV;
+import net.exmo.exmodifier.network.sync.lang.LangMessage;
 import net.exmo.exmodifier.util.*;
 import net.exmo.exmodifier.util.gether.AttriGetherNormal;
 
@@ -606,6 +607,7 @@ public class MainEvent {
         private static boolean handleStack(Player player, ItemStack stack, EntityAttrUtil.WearOrTake effectType) {
             if (player == null) return false;
             boolean flag = false;
+            if (stack.isEmpty() &&  effectType == WEAR) return false;
             //  if (!hasAttr(stack)) return false;
 
             CompoundTag tag = stack.getTag();
@@ -728,9 +730,11 @@ public class MainEvent {
 //            if (init != null) {
 //                init.run();
 //            }
-
             event.addListener(new ExSuitPreparableReloadListener());
+            event.addListener(new WashingMaterialsPreparableReloadListener());
+
             event.addListener(new ModifierPreparableReloadListener());
+
             event.addListener(new ElementPreparableReloadListener());
             event.addListener(new DefaultEntityPreparableReloadListener());
             event.addListener(new DefaultItemPreparableReloadListener());
@@ -742,34 +746,59 @@ public class MainEvent {
         public static void playJoinServer(PlayerEvent.PlayerLoggedInEvent event) {
             Player entity = event.getEntity();
             if (!entity.level().isClientSide()) {
+                DataCache dataCache = DataCache.create();
                 ModifierHandle.sendClearDataToClient((ServerPlayer) entity);
-                sendExmoServerDataToServerPlayer((ServerPlayer) entity);
+
+                sendExmoServerDataToServerPlayer((ServerPlayer) entity, dataCache);
             }
         }
     }
 
-    public static void sendExmoServerDataToServerPlayer(ServerPlayer entity) {
+    public static record DataCache(
+            List<ExSuit> exSuits,
+            List<ModifierEntry> modifierEntries,
+            List<ExElement> exElements,
+            List<DefaultItemElement> defaultItemElements,
+            List<DefaultEntityElement> defaultEntityElements,
+            LangMessage.LangMessageHandler langMessageHandler
+
+    ) {
+        public static DataCache create() {
+            return new DataCache(
+                    new ArrayList<>(ExSuitHandle.LoadExSuit.values()),
+                    new ArrayList<>(ModifierHandle.modifierEntryMap.values()),
+                    new ArrayList<>(ExElementHandle.exElements.values()),
+                    new ArrayList<>(ExElementHandle.elementDefaultMap.values()),
+                    new ArrayList<>(ExElementHandle.elementDefaultMap2.values()),
+                    new LangMessage.LangMessageHandler(LanguageLoader.LANGUAGES)
+            );
+        }
+    }
+    public static void sendExmoServerDataToServerPlayer(ServerPlayer entity,DataCache dataCache) {
         // 使用副本遍历以避免 ConcurrentModificationException
-        List<ExSuit> exSuits = new ArrayList<>(ExSuitHandle.LoadExSuit.values());
+        List<ExSuit> exSuits = dataCache.exSuits();
         for (ExSuit exSuit : exSuits) {
             ModifierHandle.sendExSuitToClient(exSuit, entity);
         }
-        List<ModifierEntry> modifierEntries = new ArrayList<>(ModifierHandle.modifierEntryMap.values());
+        List<ModifierEntry> modifierEntries = dataCache.modifierEntries();
         for (ModifierEntry modifierEntry : modifierEntries) {
             ModifierHandle.sendModifierEntryToClient(modifierEntry, entity);
         }
-        List<ExElement> exElements = new ArrayList<>(ExElementHandle.exElements.values());
+        List<ExElement> exElements = dataCache.exElements();
         for (ExElement exElement : exElements) {
             ModifierHandle.sendElementToClient(exElement, entity);
         }
-        List<DefaultItemElement> defaultItemElements = new ArrayList<>(ExElementHandle.elementDefaultMap.values());
+        List<DefaultItemElement> defaultItemElements = dataCache.defaultItemElements();
         for (var e : defaultItemElements) {
             ModifierHandle.sendDefaultItemElementToClient(e, entity);
         }
-        List<DefaultEntityElement> defaultEntityElements = new ArrayList<>(ExElementHandle.elementDefaultMap2.values());
+        List<DefaultEntityElement> defaultEntityElements = dataCache.defaultEntityElements();
         for (var e : defaultEntityElements) {
             ModifierHandle.sendDefaultEntityElementToClient(e, entity);
         }
+        LangMessage.LangMessageHandler langMessageHandler = dataCache.langMessageHandler;
+        ModifierHandle.sendLangMessageToClient(langMessageHandler, entity);
+
 
     }
 

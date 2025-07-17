@@ -27,6 +27,10 @@ public class Config {
             .comment("Number of allowed entries to add")
             .defineInRange("canAddEntry", 2, 0, Integer.MAX_VALUE);
 
+    public static final ForgeConfigSpec.BooleanValue ELEMENT_SYSTEM = BUILDER
+            .comment("ELEMENT_SYSTEM")
+            .define("ELEMENT_SYSTEM", false);
+
     public static final ForgeConfigSpec.BooleanValue DEBUG = BUILDER
             .comment("Enable debug mode")
             .define("Debug", false);

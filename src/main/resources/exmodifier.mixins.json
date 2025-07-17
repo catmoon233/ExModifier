@@ -15,17 +15,15 @@
     "LivingSwingAction",
     "TableCraftMixin",
     "TestMixin"
-
   ],
   "client": [
+    "DamageNumberCompat",
     "ItemStackClientMixin",
     "LanguageMixin",
-    "DamageNumberCompat",
-
-    "ToolTipMixin",
     "ModScreenMixin",
     "RenderItemMixin",
-    "TableCraftScreenMixin"
+    "TableCraftScreenMixin",
+    "ToolTipMixin"
   ],
   "injectors": {
     "defaultRequire": 1

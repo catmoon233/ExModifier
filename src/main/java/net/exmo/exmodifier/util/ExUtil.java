@@ -19,6 +19,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class ExUtil {
 
@@ -26,6 +27,50 @@ public class ExUtil {
         for (var eq : player.getInventory().armor){
             for (ModifierEntry modifierEntry : ModifierEntryHelper.of(eq).getModifierEntriesB()) {
                 if (modifierEntry.hasSpecialEffect(effect)) {
+                    return  true;
+                }
+            }
+        }
+        return false;
+    }
+    public static boolean hasSpecialEffect(String effect, Player player){
+        for (var eq : player.getInventory().armor){
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(eq).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    return  true;
+                }
+            }
+        }
+        return false;
+    }
+    public static boolean ifHasSpecialEffect(SpecialEffect effect, Player player, Consumer<ModifierEntry> consumer){
+        for (var eq : player.getInventory().armor){
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(eq).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    consumer.accept(modifierEntry);
+                    return  true;
+                }
+            }
+        }
+        return false;
+    }
+    public static boolean ifHasSpecialEffect(String effect, Player player, Consumer<ModifierEntry> consumer){
+        for (var eq : player.getInventory().armor){
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(eq).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    consumer.accept(modifierEntry);
+                    return  true;
+                }
+            }
+        }
+        return false;
+    }
+    public static boolean ifHasSpecialEffectAll(String effect, Player player, Consumer<ModifierEntry> consumer){
+        for (var eq : EquipmentSlot.values()){
+            var item = player.getItemBySlot(eq);
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(item).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    consumer.accept(modifierEntry);
                     return  true;
                 }
             }
@@ -42,6 +87,53 @@ public class ExUtil {
 
         return false;
     }
+    public static boolean hasSpecialEffect(String effect, Player player, EquipmentSlot equipmentSlot){
+
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(player.getItemBySlot(equipmentSlot)).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    return  true;
+                }
+            }
+
+        return false;
+    }
+    public static boolean ifHasSpecialEffect(SpecialEffect effect, Player player, EquipmentSlot equipmentSlot,Consumer<ModifierEntry> consumer){
+
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(player.getItemBySlot(equipmentSlot)).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    consumer.accept(modifierEntry);
+                    return  true;
+                }
+            }
+
+        return false;
+    }
+    public static boolean ifHasSpecialEffect(SpecialEffect effect, Player player,Consumer<ModifierEntry> consumer, EquipmentSlot... equipmentSlot){
+
+        for (var e : equipmentSlot) {
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(player.getItemBySlot(e)).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    consumer.accept(modifierEntry);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+    public static boolean ifHasSpecialEffect(String effect, Player player, EquipmentSlot equipmentSlot,Consumer<ModifierEntry> consumer){
+
+            for (ModifierEntry modifierEntry : ModifierEntryHelper.of(player.getItemBySlot(equipmentSlot)).getModifierEntriesB()) {
+                if (modifierEntry.hasSpecialEffect(effect)) {
+                    consumer.accept(modifierEntry);
+                    return  true;
+                }
+            }
+
+        return false;
+    }
+
+
     static HashMap<ResourceLocation, TagKey<ModifierEntry>> _IT = new HashMap<>();
     public static TagKey<ModifierEntry> createOrGetModifierTagKey(ResourceLocation key) {
         if (_IT.containsKey(key)) {
@@ -103,3 +195,4 @@ public class ExUtil {
         return getAttributeID(attribute.get());
     }
 }
+

@@ -13,6 +13,8 @@ import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.init.RegisterOther;
+import net.exmo.exmodifier.util.ExUtil;
+import net.exmo.exmodifier.util.TooltipUtil;
 import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -122,7 +124,7 @@ public class ExJeiPlugin implements IModPlugin {
         lc.add(Component.translatable("modifier.entry.level").append(String.valueOf(EntryItem.getModifierLevel(stack))));
         lc.add(Component.translatable("modifier.entry.maxlevel").append(String.valueOf(modifierEntry.maxLevel)));
 
-        if (!modifierEntry.localDescription.isEmpty()) lc.add(Component.translatable("modifier.entry.desc").append(Component.translatable(modifierEntry.localDescription)));
+        if (!modifierEntry.localDescription.isEmpty()) lc.addAll(TooltipUtil.sprit(Component.translatable("modifier.entry.desc").append(Component.translatable(modifierEntry.localDescription))));
         if (!modifierEntry.Slots.isEmpty()) {
             if (modifierEntry.Slots.size() == 1) {
                 lc.add(Component.translatable("modifier.entry.slot").append(Component.translatable("modifier.slot." + modifierEntry.Slots.get(0))));

@@ -134,6 +134,10 @@ public class ExConfigHandle {
                 if (moconfig.readSetting("type")!=null){
                     moconfig.type = ModifierEntry.StringToType(moconfig.readSetting("type").getAsString());
                 }
+                if (moconfig.readSetting("group")!=null){
+                    moconfig.group = (moconfig.readSetting("group").getAsString());
+                }
+                else moconfig.group = "exmodifier_tab";
                 if (moconfig.type == ExType.CURIOS.get() &&moconfig.readSetting("type").getAsString().length()>6)moconfig.CuriosType=moconfig.readSetting("type").getAsString().substring(7);
                 moconfigs.add(moconfig);
                 Exmodifier.LOGGER.debug("Found Config: Type:" + moconfig.type + " Path:" + moconfig.configFile+" "  +moconfig.type +" CuriosType:"+moconfig.CuriosType);
@@ -158,6 +162,7 @@ public class ExConfigHandle {
                 moconfig.type = ModifierEntry.StringToType(moconfig.readSetting("type").getAsString());
             }
             if (moconfig.type == ExType.CURIOS.get() &&moconfig.readSetting("type").getAsString().length()>6)moconfig.CuriosType=moconfig.readSetting("type").getAsString().substring(7);
+
             moconfigs.add(moconfig);
             Exmodifier.LOGGER.debug("Found Config: Type:" + moconfig.type + " Path:" + moconfig.configFile+" "  +moconfig.type +" CuriosType:"+moconfig.CuriosType);
         }

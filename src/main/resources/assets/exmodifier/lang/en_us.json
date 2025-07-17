@@ -18,6 +18,8 @@
   "exmodifier.refresh_not_enough": "§7The quantity of items does not meet the requirements",
   "modifier.entry.suit": "Suits:",
   "modifier.entry.maxlevel": "§7Max Level: ",
+  "filter.negorerouse.exmodifier_tab": "§7default",
+
   "modifier.entry.desc": "§7Description: ",
   "modifier.entry": "§7Entry:",
   "modifier.entry.UNKNOWN": "§7Unknown",
@@ -32,6 +34,7 @@
   "modifier.entry.only_tags": "Only Tags:",
   "modifier.entry.need_fresh_value": "Need fresh value:",
   "attribute.exmodifier.dig_speed": "dig speed",
+  "item.exmodifier.entry_item_empty": "§7 Empty Entry Book",
 
   "modifier.entry.only_has_this_entry": "Only has this Entry in item",
   "modifier.entry.weight": "weight:",
@@ -111,6 +114,8 @@
   "exmodifier.quality.q2D": "§8From Ancient Times",
   "item.exmodifier.entry_item": "§6Recast Book",
   "modifier.entry.level": "§7Current Entry Book Level: §6",
-  "modifier.entry.slot": "§7Slot:"
+  "modifier.entry.slot": "§7Slot:",
+  "exmodifier.cooldown.end": "%s cooldown over",
+  "gui.exmodifier.refresh_fail_limit": "Refresh fail . cause : entry count limit"
 
 }

@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.content.element;
 
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.difficult.ExDifficultHelper;
 import net.exmo.exmodifier.content.helper.entity.ExElementEntityHelper;
@@ -26,6 +27,7 @@ public class ExElementEntityData {
     public static Map<EntityType<?>,defAttribute> defaultEntityAttributes = new HashMap<>();
     public record defAttribute(double MaxHealth, double AttackDamage){}
     public static ExElementInstant getOrAskElement(UUID uuid) {
+        if (!Config.ELEMENT_SYSTEM.get())return null;
         ExElementInstant exElementInstant = null;
         if (ELEMENT_ENTITY_DATA.containsKey(uuid)) {
             exElementInstant = ELEMENT_ENTITY_DATA.get(uuid);
@@ -63,7 +65,7 @@ public class ExElementEntityData {
                 if (ExElementHandle.elementDefaultMap2.containsKey(livingEntity.getType())) {
                     exElementInstant = new ArrayList<>(ExElementHandle.elementDefaultMap2.get(livingEntity.getType())
                             .exElementInstants().stream()
-                            .map(exElementInstant1 -> exElementInstant1.multiply((float) ExDifficultHelper.getElementLevelMulti(livingEntity)))
+                            .map(exElementInstant1 -> exElementInstant1)
                             .toList());  // 添加ArrayList包装
                 } else {
                     exElementInstant = new ArrayList<>();

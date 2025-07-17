@@ -11,6 +11,7 @@ import java.nio.file.Path;
 public class MoConfig extends ExConfig {
     public ItemType type = ExType.UNKNOWN.get();
     public String CuriosType = "";
+    public String group = "";
     public boolean autoTypeId = false;
     public MoConfig(Path configFile) throws FileNotFoundException {
         super(configFile);

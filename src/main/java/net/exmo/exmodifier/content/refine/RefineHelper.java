@@ -65,7 +65,7 @@ public class RefineHelper extends ExHelper {
         List<ItemQuality> qualityEntries = ItemQualityHelper.of(stack).getQualityEntries();
         if ((!qualityEntries.isEmpty() && qualityEntries.stream().anyMatch(itemQuality -> itemQuality.refineNeedSameStar)) ||Config.refine_system)
             if (RefineHelper.of(stack).getRefineLevel() != getRefineLevel()) exCanRefineEvent.canRefine  = false;
-        return exCanRefineEvent.canRefine && getRefineLevel()<getRefineMaxLevel();
+        return exCanRefineEvent.canRefine && getRefineLevel()<getRefineMaxLevel() ;
     }
     public  ExAttributeModifier getRefineModifier(int add) {
         ItemQualityHelper itemQualityHelper = new ItemQualityHelper(itemStack);

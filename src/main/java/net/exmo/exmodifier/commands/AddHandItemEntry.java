@@ -135,7 +135,7 @@ public class AddHandItemEntry {
             return 0;
         })));
         event.getDispatcher().register(Commands.literal("exmo-cooldown").requires(s -> s.hasPermission(4)).then(Commands.argument("entity",EntityArgument.entities()).then(Commands.argument("slot", SlotArgument.slot()).then(Commands.argument("int", IntegerArgumentType.integer()).executes(arguments -> {
-            int level = IntegerArgumentType.getInteger(arguments, "amount");
+            int level = IntegerArgumentType.getInteger(arguments, "int");
             var slot  = SlotArgument.getSlot(arguments, "slot");
              for (var e : EntityArgument.getEntities(arguments, "entity")) {
                 if (e instanceof Player player) {
@@ -157,6 +157,7 @@ public class AddHandItemEntry {
 
             }catch (Exception e){
                 e.printStackTrace();
+
             }
             return 0;
         })))));

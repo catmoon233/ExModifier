@@ -3,6 +3,7 @@
   "subtract": "-",
   "percent": "%",
   " : ": " : ",
+  "exmodifier.cooldown.end": "§7%s §e已冷却结束",
   "modifier.attri.¦": " §7¦ ",
   "modifier.entry.suit.color": "§6",
   "config.jade.plugin_exmodifier.element": "极墨元素插件",
@@ -18,6 +19,8 @@
   "exmodifier.refresh_not_enough": "§c物品数量未达到要求",
   "modifier.entry.suit": "§7套装:",
   "modifier.entry.maxlevel": "§7最高等级：",
+  "filter.negorerouse.exmodifier_tab": "§7默认",
+  "gui.exmodifier.refresh_fail_limit": "§4重铸失败 原因:词条数量达到上限",
   "modifier.entry.desc": "§7描述：",
   "modifier.entry": "§7词条:",
   "modifier.entry.UNKNOWN": "§7未知",
@@ -109,6 +112,7 @@
   "exmodifier.quality.q2": "§d§l神秘",
   "exmodifier.quality.q2D": "§8来自远古",
   "item.exmodifier.entry_item": "§6重铸书",
+  "item.exmodifier.entry_item_empty": "§7空的重铸书",
   "modifier.entry.level": "§7当前词条书的等级: §6 ",
   "modifier.entry.slot": "§7槽位："
 }

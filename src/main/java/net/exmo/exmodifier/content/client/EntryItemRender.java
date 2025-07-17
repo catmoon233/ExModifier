@@ -7,6 +7,7 @@ import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -26,13 +27,13 @@ public class EntryItemRender implements IItemDecorator {
 
     private final Map<String, TextAnimState> textAnimStates = new HashMap<>();
 
-    private String getStyledSubstring(String text, int visibleStart, int length) {
+    private static String getStyledSubstring(String text, int visibleStart, int length) {
         StringBuilder result = new StringBuilder();
         int totalVisible = (int) text.chars().filter(c -> c != '§').count() / 2;
         if (totalVisible == 0) return text;
 
-        // 创建样式代码映射表
-        Map<Integer, String> activeStyles = new HashMap<>();
+        // 改为使用List存储所有激活的样式代码
+        java.util.List<String> activeStyles = new java.util.ArrayList<>();
         int visibleCount = 0;
         int i = 0;
 
@@ -41,18 +42,18 @@ public class EntryItemRender implements IItemDecorator {
             if (text.charAt(i) == '§') {
                 if (i + 1 < text.length()) {
                     String styleCode = text.substring(i, i + 2);
-                    // 记录当前生效的样式
-                    activeStyles.put(visibleCount, styleCode);
+                    // 添加样式到列表（不再覆盖）
+                    activeStyles.add(styleCode);
                     i += 2;
                 } else {
                     i++;
                 }
             } else {
-                // 应用最近的样式代码
+                // 应用所有激活的样式代码
                 if (visibleCount >= visibleStart) {
-
-                    String style = activeStyles.values().stream().findFirst().orElse("");
-                    result.append(style);
+                    for (String style : activeStyles) {
+                        result.append(style);
+                    }
                 }
                 if (visibleCount >= visibleStart && visibleCount < visibleStart + length) {
                     result.append(text.charAt(i));
@@ -77,7 +78,8 @@ public class EntryItemRender implements IItemDecorator {
         if (modifierEntry != null && !modifierEntry.icon.isEmpty()) {
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(0, 0, 200);
-            guiGraphics.blit(new ResourceLocation(modifierEntry.icon), xOffset, yOffset, 16, 16, 0, 0, 16, 16, 16, 16);
+            if (modifierEntry.iconSize == 0) guiGraphics.blit(new ResourceLocation(modifierEntry.icon), xOffset, yOffset, 16, 16, 0, 0, 16, 16, 16, 16);
+            else guiGraphics.blit(new ResourceLocation(modifierEntry.icon), xOffset, yOffset, 0,0, modifierEntry.iconSize, modifierEntry.iconSize, modifierEntry.iconSize, modifierEntry.iconSize, modifierEntry.iconSize, modifierEntry.iconSize);
             guiGraphics.pose().popPose();
         }
 

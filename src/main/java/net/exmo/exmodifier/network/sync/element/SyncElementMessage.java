@@ -1,4 +1,5 @@
 package net.exmo.exmodifier.network.sync.element;
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.element.ExElement;
 import net.exmo.exmodifier.content.element.ExElementHandle;
@@ -24,6 +25,8 @@ public record SyncElementMessage(ExElement exElement) {
 
     public static void handle(SyncElementMessage msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
+            if (!Config.ELEMENT_SYSTEM.get())return;
+
             // Handle the received message
             ExElement element = msg.exElement();
             // Process the exElement as needed

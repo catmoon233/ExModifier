@@ -18,7 +18,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
+
+import static net.exmo.exmodifier.content.modifier.ModifierHandle.materialsList;
 
 /**
  * - Upgrade scroll: (scroll level x) + (scroll level x) = (scroll level x+1)
@@ -33,7 +36,7 @@ public final class EntryBookForgeRecipeMaker {
     }
 
     public static List<EntryBookForgeRecipe> getRecipes(IVanillaRecipeFactory vanillaRecipeFactory, IIngredientManager ingredientManager) {
-        var material = ModifierHandle.materialsList;
+        var material = materialsList;
 
 
         Stream<EntryBookForgeRecipe> entryBookForgeRecipeStream = Exmodifier.generateModifierItemStacks().stream()
@@ -48,9 +51,28 @@ public final class EntryBookForgeRecipeMaker {
 
                     material.forEach(material1 -> {
                         var string = material1.ItemId;
-                        if (modifierEntry.getModifierItemSelector().getOnlyWashItems().contains(string) || modifierEntry.getModifierItemSelector().getOnlyWashItems().isEmpty()) {
-                            inputs.add(ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(string)).getDefaultInstance());
-                            outputs.add(item);
+                            AtomicBoolean only = new AtomicBoolean(false);
+                            boolean hasWashItem = materialsList.stream()
+                                    .anyMatch(m -> {
+                                        if ( m.ItemId.equals(material1.ItemId)){
+                                            if (m.OnlyHasWashEntry) only.set(true);
+                                            return true;
+                                        }
+                                        return false;
+                                    });
+                            boolean washPd = false;
+                            if (modifierEntry.modifierItemSelector.getOnlyWashItems().isEmpty() ){
+                                if (!only.get()) {
+                                    washPd = true;
+                                }
+                            }else {
+                                if (modifierEntry.modifierItemSelector.getOnlyWashItems().contains(material1.ItemId)){
+                                    washPd = true;
+                                }
+                            }
+                            if (washPd){
+                                inputs.add(ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(string)).getDefaultInstance());
+                                outputs.add(item);
 //                            inputs1.add(material1);
 //                            ints.add((int) material1.CostExp);
                         }

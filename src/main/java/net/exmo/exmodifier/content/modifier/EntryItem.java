@@ -3,6 +3,7 @@ package net.exmo.exmodifier.content.modifier;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.content.type.ItemType;
+import net.exmo.exmodifier.util.TooltipUtil;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -76,8 +77,10 @@ public class EntryItem extends Item {
                         lc.add(Component.translatable("modifier.entry.maxlevel").append(String.valueOf(modifierEntry.maxLevel)));
 
 
-                        if (!modifierEntry.localDescription.isEmpty())
-                            lc.add(Component.translatable("modifier.entry.desc").append(Component.translatable(modifierEntry.localDescription)));
+                        if (!modifierEntry.localDescription.isEmpty()) {
+                            lc.add(Component.translatable("modifier.entry.desc"));
+                            lc.addAll(TooltipUtil.sprit(Component.translatable(modifierEntry.localDescription)));
+                        }
                         if (!modifierEntry.Slots.isEmpty()) {
                             if (modifierEntry.Slots.size() == 1) {
                                 lc.add(Component.translatable("modifier.entry.slot").append(Component.translatable("modifier.slot." + modifierEntry.Slots.get(0))));

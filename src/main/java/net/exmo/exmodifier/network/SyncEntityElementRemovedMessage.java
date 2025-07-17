@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.network;
 
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.content.element.ExElementEntityData;
 import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.content.element.ExElementInstant;
@@ -28,6 +29,8 @@ public record SyncEntityElementRemovedMessage(UUID uuid) {
 
     public static void handle(SyncEntityElementRemovedMessage msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(()->{
+            if (!Config.ELEMENT_SYSTEM.get())return;
+
             ExElementEntityData.ELEMENT_ENTITY_DATA.remove(msg.uuid);
         });
         ctx.get().setPacketHandled(true);

@@ -62,6 +62,7 @@ public class EntryBookForgeRecipeCategory implements IRecipeCategory<EntryBookFo
         return background;
     }
 
+
     @Override
     public IDrawable getIcon() {
         return icon;
@@ -107,18 +108,18 @@ public class EntryBookForgeRecipeCategory implements IRecipeCategory<EntryBookFo
             if (!list.isEmpty()) {
 
                 WashingMaterials washingMaterials1 = list.get(0);
-                var inputText = Component.translatable("exmodifier.container.refresh.cost").append(String.valueOf(washingMaterials1.CostExp));
+                //var inputText = Component.translatable("exmodifier.container.refresh.cost").append(String.valueOf(washingMaterials1.CostExp));
 
                 var font = Minecraft.getInstance().font;
-                int y = (getHeight() / 2)-1;
-                int x = (getWidth() - font.width(inputText)) * 3 / 4;
+                int y = (getHeight() -8)/4*3;
+                int x = (getWidth() - 6) /4*3;
                 guiGraphics.pose().pushPose();
-                guiGraphics.pose().scale(0.5f, 0.5f, 0);
+                guiGraphics.pose().scale(0.75f, 0.75f, 0);
                 int x1 = x/2;
-                guiGraphics.drawString(font, inputText, x1, y, Color.green.getRGB());
+               // guiGraphics.drawString(font, inputText, x1, y, Color.green.getRGB());
                // guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.chance",EntryItem.CommonEvent.df.format(EntryItem.getModifierChance(right.get()))), x, y-8, Color.CYAN.getRGB());
-                guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.rarity").append(String.valueOf(washingMaterials1.rarity)), x1, (y+8)/2, Color.magenta.getRGB());
-                guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.needCount").append(String.valueOf(washingMaterials1.NeedCount)), x1, (y+16)/2, Color.yellow.getRGB());
+                guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.rarity").append(String.valueOf(washingMaterials1.rarity)), x1, (y+8), Color.magenta.getRGB());
+                guiGraphics.drawString(font, Component.translatable("exmodifier.container.refresh.cost.needCount").append(String.valueOf(washingMaterials1.NeedCount)), x1, (y+16), Color.yellow.getRGB());
                  guiGraphics.pose().popPose();
             }
         }

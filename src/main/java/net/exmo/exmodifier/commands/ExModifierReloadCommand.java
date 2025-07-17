@@ -12,7 +12,7 @@ import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.event.MainEvent;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
-import net.exmo.exmodifier.content.modifier.ModifierPreparableReloadListener;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -106,8 +106,9 @@ public class ExModifierReloadCommand {
     public static void sendUpdatedModifiersToClients(MinecraftServer server) {
         if (server != null && server.getPlayerList() != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                MainEvent.DataCache dataCache = MainEvent.DataCache.create();
                 ModifierHandle.sendClearDataToClient(player);
-                sendExmoServerDataToServerPlayer(player);
+                sendExmoServerDataToServerPlayer(player, dataCache);
             }
         }
     }

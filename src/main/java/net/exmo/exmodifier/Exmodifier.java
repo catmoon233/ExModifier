@@ -2,20 +2,24 @@ package net.exmo.exmodifier;
 
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
+import mod.arcomit.emberthral.client.creativefilter.Filter;
+import mod.arcomit.emberthral.client.creativefilter.FilterManager;
 import net.exmo.exmodifier.compat.ApothCompat;
 import net.exmo.exmodifier.content.attributeEffect.modern.EffectSyncPacket;
-import net.exmo.exmodifier.content.client.EntryItemRender;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
+import net.exmo.exmodifier.events.ExCustomTabEvent;
 import net.exmo.exmodifier.init.RegisterOther;
 import net.exmo.exmodifier.network.*;
 import net.exmo.exmodifier.network.sync.defaultEntityElement.ClearDefaultItemElementMessage;
 import net.exmo.exmodifier.network.sync.defaultEntityElement.SyncDefaultItemElementMessage;
 import net.exmo.exmodifier.network.sync.defaultItemElement.ClearDefaultEntityElementMessage;
 import net.exmo.exmodifier.network.sync.defaultItemElement.SyncDefaultEntityElementMessage;
+
 import net.exmo.exmodifier.network.sync.element.ClearElementMessage;
 import net.exmo.exmodifier.network.sync.element.SyncElementMessage;
+import net.exmo.exmodifier.network.sync.lang.LangMessage;
 import net.exmo.exmodifier.network.sync.modifier.ClearModifierEntryMessage;
 import net.exmo.exmodifier.network.sync.modifier.SyncModifierEntryMessage;
 import net.exmo.exmodifier.network.sync.suit.ClearExSuitMessage;
@@ -29,14 +33,14 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.MinecraftForge;
 
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -51,17 +55,17 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.IndexedMessageCodec;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
-import web.RealTimeWebServer;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -95,6 +99,8 @@ public class Exmodifier {
             Logger.error(s, e);
         }
     }
+    public static List<Filter> itemGroups = new ArrayList<>();
+
 
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
@@ -102,6 +108,7 @@ public class Exmodifier {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
     public static final RegistryObject<Item> ENTRY_ITEM = ITEMS.register("entry_item", () -> new EntryItem(new Item.Properties()));
+    public static final RegistryObject<Item> ENTRY_ITEM_EMPTY = ITEMS.register("entry_item_empty", () -> new EntryItemEmpty(new Item.Properties()));
     public static ItemStack TabIcon;
 
     public final static RegistryObject<CreativeModeTab> ExModifierTab = CREATIVE_MODE_TABS.register("exmodifier_tab", () -> CreativeModeTab.builder()
@@ -111,7 +118,7 @@ public class Exmodifier {
             .displayItems((parameters, output) -> {
             }).build());
 
-    private static ItemStack getTabIcon() {
+    public static ItemStack getTabIcon() {
         TabIcon = ENTRY_ITEM.get().getDefaultInstance();
         TabIcon.setHoverName(Component.translatable("modifier.entry.example"));
         TabIcon.getOrCreateTag().putString("modifier_id", "example");
@@ -157,6 +164,7 @@ public class Exmodifier {
 
             // 注册消息
             PACKET_HANDLER.registerMessage(messageID++, messageClass, encoder, decoder, messageConsumer);
+            LOGGER.Logger.debug("Registered message: " + messageClass.getSimpleName() + " with ID: " + messageID);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("Failed to find required methods in message class", e);
         }
@@ -165,27 +173,25 @@ public class Exmodifier {
     public Exmodifier() throws Exception {
 
     //    RealTimeWebServer.main(new String[]{""});
-
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, String.valueOf(FMLPaths.CONFIGDIR.get().resolve("exmo/exmodifier.toml")));
         long time_start = System.currentTimeMillis();
         // Register the setup method for modloading
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        PACKET_HANDLER.registerMessage(messageID++, SyncModifierEntryMessage.class, SyncModifierEntryMessage::encode, SyncModifierEntryMessage::decode, SyncModifierEntryMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, ClearModifierEntryMessage.class, ClearModifierEntryMessage::encode, ClearModifierEntryMessage::decode, ClearModifierEntryMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, RefreshItemMessage.class, RefreshItemMessage::encode, RefreshItemMessage::decode, RefreshItemMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, ChangeRefreshMenuTextListMessage.class, ChangeRefreshMenuTextListMessage::encode, ChangeRefreshMenuTextListMessage::decode, ChangeRefreshMenuTextListMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, PlayerRefreshScreenOverMessageMessage.class, PlayerRefreshScreenOverMessageMessage::encode, PlayerRefreshScreenOverMessageMessage::decode, PlayerRefreshScreenOverMessageMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, RefreshCraftContentMessage.class, RefreshCraftContentMessage::encode, RefreshCraftContentMessage::decode, RefreshCraftContentMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, DamageNumberCompatMessage.class, DamageNumberCompatMessage::encode, DamageNumberCompatMessage::decode, DamageNumberCompatMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, DamageNumberColorCompatMessage.class, DamageNumberColorCompatMessage::encode, DamageNumberColorCompatMessage::decode, DamageNumberColorCompatMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, SyncEntityElementMessage.class, SyncEntityElementMessage::encode, SyncEntityElementMessage::decode, SyncEntityElementMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, SyncEntityElementRemovedMessage.class, SyncEntityElementRemovedMessage::encode, SyncEntityElementRemovedMessage::decode, SyncEntityElementRemovedMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, AskSyncEntityElementMessage.class, AskSyncEntityElementMessage::encode, AskSyncEntityElementMessage::decode, AskSyncEntityElementMessage::handle);
-        PACKET_HANDLER.registerMessage(messageID++, RefineItemMessage.class, RefineItemMessage::encode, RefineItemMessage::decode, RefineItemMessage::handle);
+        registerMessage(SyncModifierEntryMessage.class);
+        registerMessage(ClearModifierEntryMessage.class);
+        registerMessage(RefreshItemMessage.class);
+        registerMessage(ChangeRefreshMenuTextListMessage.class);
+        registerMessage(PlayerRefreshScreenOverMessageMessage.class);
+        registerMessage(RefreshCraftContentMessage.class);
+        registerMessage(DamageNumberCompatMessage.class);
+        registerMessage(DamageNumberColorCompatMessage.class);
+        registerMessage(SyncEntityElementMessage.class);
+        registerMessage(SyncEntityElementRemovedMessage.class);
+        registerMessage(AskSyncEntityElementMessage.class);
+        registerMessage(RefineItemMessage.class);
         PACKET_HANDLER.registerMessage(messageID++, EffectSyncPacket.class,
                 EffectSyncPacket::encode, EffectSyncPacket::new,
-                EffectSyncPacket::handle);
-
-       registerMessage(SyncElementMessage.class);
+                EffectSyncPacket::handle);       registerMessage(SyncElementMessage.class);
        registerMessage(ClearElementMessage.class);
        registerMessage(SyncDefaultEntityElementMessage.class);
        registerMessage(ClearDefaultEntityElementMessage.class);
@@ -194,6 +200,7 @@ public class Exmodifier {
        registerMessage(ClearExSuitMessage.class);
        registerMessage(SyncExSuitMessage.class);
        registerMessage(ClearDefaultEntityElementMessage.class);
+       registerMessage(LangMessage.class);
         ITEMS.register(modEventBus);
         try {
             init(null);
@@ -212,7 +219,7 @@ public class Exmodifier {
         RegisterOther.EffectAbout.REGISTRY.register(modEventBus);
         RegisterOther.BlockAbout.REGISTRY.register(modEventBus);
         RegisterOther.ItemAbout.REGISTRY.register(modEventBus);
-        modEventBus.addListener(this::AddToTab);
+        modEventBus.addListener(EventPriority.HIGH,this::AddToTab);
         if (ModList.get().isLoaded("attributeslib")) {
             MinecraftForge.EVENT_BUS.addListener(new ApothCompat()::SkinAttr);
         }
@@ -223,7 +230,7 @@ public class Exmodifier {
         long time_end = System.currentTimeMillis();
 
         RegisterOther.EventAbout.init();
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, String.valueOf(FMLPaths.CONFIGDIR.get().resolve("exmo/exmodifier.toml")));
+
 //    for (EventC<? extends LivingEvent> v : RegisterOther.EventAbout.EVENT_C_LIST.itemTypes()){
 //
 //            EventCI<? extends LivingEvent> eventCI = new EventCI<>(v);
@@ -236,6 +243,7 @@ public class Exmodifier {
         LOGGER.info("Mod loaded in " + (time_end - time_start) + "ms");
     }
 
+
     public void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
@@ -245,20 +253,91 @@ public class Exmodifier {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        // Some preinit code
-//        LOGGER.info("HELLO FROM PREINIT");
-//        LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
+        ExCustomTabEvent event1 = new ExCustomTabEvent();
+        MinecraftForge.EVENT_BUS.post(event1);
+        event1.addTab("exmodifier_tab", getTabIcon());
+      //  FilterManager.registerTabFilters(ExModifierTab.get(),itemGroups.toArray(new Filter[]{}));
     }
 
     private void AddToTab(BuildCreativeModeTabContentsEvent event) {
+
+
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(RegisterOther.ItemAbout.Refresh_Table);
             event.accept(RegisterOther.ItemAbout.Embedded_Table);
         }
-        if (event.getTab() == ExModifierTab.get()) {
-            List<ItemStack> modifierItemStacks = generateModifierItemStacks();
-            modifierItemStacks.forEach(event::accept);
+
+        if (event.getTab().equals(ExModifierTab.get())){
+            var list = generateModifierItemStacks();
+            list.forEach(event::accept);
         }
+//        if (event.getTab()==ExModifierTab.get()) {
+//
+//            // 1. 获取FilterManager的Class对象
+//
+//            event.accept(RegisterOther.ItemAbout.Refresh_Table);
+//            event.accept(RegisterOther.ItemAbout.Embedded_Table);
+//            try {
+//                Class<?> clazz = FilterManager.class;
+//                Field field = clazz.getDeclaredField("TAB_FILTER_MAP");
+//                field.setAccessible(true);
+//                @SuppressWarnings("unchecked")
+//                Map<CreativeModeTab, List<Filter>> tabFilterMap =
+//                        (Map<CreativeModeTab, List<Filter>>) field.get(null);
+//                if (tabFilterMap != null){
+//                    tabFilterMap.get(ExModifierTab.get()).clear();
+//                    itemGroups.forEach(filter -> tabFilterMap.get(ExModifierTab.get()).add(new Filter(filter.getName(), filter.getIcon())));
+//                    field.set(null, tabFilterMap);
+//
+//                }
+//
+//            }catch (Exception e){}
+//            AtomicReference<List<ItemStack>> modifierItemStacks = new AtomicReference<>(generateModifierItemStacks());
+//
+//
+//            Runnable runnable = () -> {
+//                modifierItemStacks.get().forEach(e->{
+//                    ModifierEntry modifierEntry = ModifierHandle.findModifierEntry(EntryItem.getModifierID(e));
+//                    if (modifierEntry!=null){
+//                        String group = modifierEntry.group;
+////                        if (group.equals("exmodifier_tab")) event.accept(e);
+////                        else
+//                        {
+////                            if (itemGroups.stream().noneMatch(itemGroup -> itemGroup.getName().equals(group))){
+////                                Item item = itemMap.get(group);
+////                                if (item==null){
+////                                    item  = ENTRY_ITEM.get();
+////                                }
+////                                ItemStack defaultInstance = item.getDefaultInstance();
+////                                Filter e1 = new Filter(group, defaultInstance);
+////                                itemGroups.add(e1);
+////                                e1.accept( item);
+////                            }else {
+//                                var itemGroupList = itemGroups.stream().filter(itemGroup -> itemGroup.getName().equals(group)).toList();
+//                                itemGroupList.forEach(a->{
+//                                    a.accept(e);
+//                                });
+//                      //      }
+//                        }
+//                    }
+//                });
+//
+//            };
+//            runnable.run();
+////            if (modifierItemStacks.get().isEmpty()){
+////                queueServerWork(50,()->{
+////                     modifierItemStacks.set(generateModifierItemStacks());
+////                    runnable.run();
+////                });
+////            }else
+//
+//        }
+//            modifierItemStacks.forEach(e->{
+//                ModifierEntry modifierEntry = ModifierHandle.findModifierEntry(EntryItem.getModifierID(e));
+//                if (modifierEntry != null){
+//                   if (modifierEntry.group.equals(event.getTabKey().location().getPath())) event.accept(e);
+//                }
+//            });
     }
     private static final Collection<AbstractMap.SimpleEntry<Runnable, Integer>> workQueue = new ConcurrentLinkedQueue<>();
 

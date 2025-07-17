@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.modifier;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import net.exmo.exmodifier.content.selected.ModifierItemSelector;
 import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.suit.ExSuit;
@@ -24,10 +25,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Exmodifier.MODID;
@@ -73,7 +71,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
                     }).onlyRead();
     public static final ResourceKey<Registry<ModifierEntry>> MODIFIER_KEY = ResourceKey.createRegistryKey( ResourceLocation.tryBuild(MODID,"modifier_entry"));
     public static final TagKey<ModifierEntry> defaultTag = TagKey.create(MODIFIER_KEY, new ResourceLocation(MODID, "refresh_default"));
-    public Map<String, String> setting = new HashMap<>();
+    public Map<String, JsonObject> specialTagSetting = new HashMap<>();
     public float weight;
     public boolean cantSelect = false;
     public boolean isRandom = true;
@@ -85,12 +83,14 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public boolean OnlyHasThisEntry = false;
     public String localDescription = "";
     public int maxLevel = 1;
+    public int iconSize = 0;
     public List<String> Slots = new ArrayList<>();
     public List<ItemType> types = new ArrayList<>();
     public boolean isCuriosEntry = false;
     public float needFreshValue = 0;
     public String curiosType = "";
     public boolean displayNameInItemName = false;
+    public String group = "exmodifier_tab";
     public String id;
     public String Expression = ""; //todo 这个没用
     public List<String>  exsuits = new ArrayList<>();
@@ -113,6 +113,44 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
 //        return this;
 //    }
 
+    public JsonObject getSpecialTagSetting(String id) {
+        return specialTagSetting.get(id);
+    }
+    public JsonObject getSpecialTagSetting(SpecialEffect specialEffect) {
+        return specialTagSetting.get(specialEffect.id());
+    }
+    public Optional<JsonElement> getSpecialTagSetting(SpecialEffect specialEffect, String s) {
+        return Optional.ofNullable(specialTagSetting.get(specialEffect.id()).get(s));
+    }
+    public Optional<JsonElement> getSpecialTagSetting(String id,String s) {
+        return Optional.ofNullable(specialTagSetting.get(id).get(s));
+    }
+
+    public float getSpecialTagSettingFloatOrDefault(String id,String s,float defaultValue) {
+        JsonObject jsonObject = specialTagSetting.get(id);
+        if (jsonObject==null) return defaultValue;
+        Optional<JsonElement> jsonElement = Optional.ofNullable(jsonObject.get(s));
+        return jsonElement.map(JsonElement::getAsFloat).orElse(defaultValue);
+    }
+    public int getSpecialTagSettingFloatOrDefault(String id,String s,int defaultValue) {
+        JsonObject jsonObject = specialTagSetting.get(id);
+        if (jsonObject==null) return defaultValue;
+        Optional<JsonElement> jsonElement = Optional.ofNullable(jsonObject.get(s));
+        return jsonElement.map(JsonElement::getAsInt).orElse(defaultValue);
+    }
+
+    public double getSpecialTagSettingDoubleOrDefault(String id,String s,double defaultValue) {
+        JsonObject jsonObject = specialTagSetting.get(id);
+        if (jsonObject==null) return defaultValue;
+        Optional<JsonElement> jsonElement = Optional.ofNullable(jsonObject.get(s));
+        return jsonElement.map(JsonElement::getAsDouble).orElse(defaultValue);
+    }
+    public String getSpecialTagSettingStringOrDefault(String id,String s,String defaultValue) {
+        JsonObject jsonObject = specialTagSetting.get(id);
+        if (jsonObject==null) return defaultValue;
+        Optional<JsonElement> jsonElement = Optional.ofNullable(jsonObject.get(s));
+        return jsonElement.map(JsonElement::getAsString).orElse(defaultValue);
+    }
     public ModifierEntry(String id) {
         this.id = id;
     }
@@ -146,7 +184,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     @Override
     public String toString() {
         return "ModifierEntry{" +
-                "setting=" + setting +
+                "setting=" + specialTagSetting +
                 ", weight=" + weight +
                 ", cantSelect=" + cantSelect +
                 ", isRandom=" + isRandom +
@@ -418,6 +456,9 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
 
     public boolean hasSpecialEffect(SpecialEffect specialEffect) {
         return specialTags.contains(specialEffect.id());
+    }
+    public boolean hasSpecialEffect(String specialEffect) {
+        return specialTags.contains(specialEffect);
     }
 
     public List<Component> GenerateItemTooltip() {

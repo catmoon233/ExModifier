@@ -129,6 +129,7 @@ public abstract class AbstractReloadListener<T> extends SimplePreparableReloadLi
             ModifierHandle.EEMatchQueueHandle();
             LanguageLoader.load(LanguageLoader.LANGUAGES_FILE_PATH);
             clearReadTempData();
+
             loadedCount .set(0);
              totalCount.set(0);
             MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();

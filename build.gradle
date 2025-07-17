@@ -28,6 +28,7 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 minecraft {
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     // The mappings can be changed at any time and must be in the following format.
     // Channel:   Version:
     // official   MCVersion             Official field/method names from Mojang mapping files
@@ -169,7 +170,7 @@ dependencies {
 //    implementation fg.deobf("curse.maven:lendercataclysm-551586:6501448")
  //   implementation fg.deobf("curse.maven:lionfish-api-1001614:5922047")
     /* other minecraft dependencies are here */
-    implementation fg.deobf("curse.maven:inventory-hud-forge-357540:5639966")
+    implementation fg.deobf(("curse.maven:inventory-hud-forge-357540:5639966") )
     // compile against the JEI API but do not include it at runtime
   //  compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}"))
     // at runtime, use the full JEI jar for Forge
@@ -180,6 +181,9 @@ dependencies {
         jarJar.ranged(it, "[0.2.0,)")
     }
     implementation fg.deobf("curse.maven:caelus-308989:5281700")
+    implementation fg.deobf(jarJar("mod.arcomit:emberthral:1.0.1")){
+        jarJar.ranged(it, "[1.0.0,)")
+    }
     //runtimeOnly fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6069384")
 
     //implementation fg.deobf("curse.maven:curios-309927:5680164")
@@ -204,6 +208,7 @@ dependencies {
     implementation fg.deobf("curse.maven:modernfix-790626:6548605")
     implementation fg.deobf("curse.maven:in-control-257356:5932870")
     implementation fg.deobf("curse.maven:mutil-351914:4824501")
+    implementation fg.deobf("curse.maven:jei-238222:6600311")
     implementation((fg.deobf("dev.xkmc.l2damagetracker:l2damagetracker:0.3.7")))
     implementation fg.deobf("curse.maven:classic-bars-317642:5134370")
     implementation fg.deobf("curse.maven:l2-complements-758349:6435103")
@@ -265,32 +270,7 @@ minecraft {
         }
     }
 }
-repositories {
-    maven {
-        // location of the maven that hosts JEI files
-        name = "Progwml6 maven"
-        url = "https://dvs1.progwml6.com/files/maven/"
-    }
-    maven {
-        // location of a maven mirror for JEI files, as a fallback
-        name = "ModMaven"
-        url = "https://modmaven.dev"
-    }
-}
 
-dependencies {
-    compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:15.2.0.27")
-    compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:15.2.0.27")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.2.0.27")
-}
-minecraft {
-    runs {
-        client {
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-        }
-    }
-}
 repositories {
     maven {
         url = "https://maven.blamejared.com"

@@ -1,9 +1,6 @@
 package net.exmo.exmodifier.content.modifier;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
@@ -18,9 +15,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ModifierEntryDataBuilder {
 
@@ -58,6 +53,10 @@ public class ModifierEntryDataBuilder {
         return this;
     }
 
+    public ModifierEntryDataBuilder setSpecialTagSetting(Map<String, JsonObject> setting) {
+        entry.specialTagSetting = setting;
+        return this;
+    }
     public ModifierEntryDataBuilder setSource(String source) {
         entry.source = source;
         return this;
@@ -113,6 +112,10 @@ public class ModifierEntryDataBuilder {
         entry.isCuriosEntry = isCuriosEntry;
         return this;
     }
+    public ModifierEntryDataBuilder setIconSize(int iconSize) {
+        entry.iconSize = iconSize;
+        return this;
+    }
 
     public ModifierEntryDataBuilder setDisplayNameInItemName(boolean displayNameInItemName) {
         entry.displayNameInItemName = displayNameInItemName;
@@ -133,6 +136,11 @@ public class ModifierEntryDataBuilder {
         return this;
     }
 
+    public ModifierEntryDataBuilder setGroup(String group) {
+        entry.group = group;
+        return this;
+    }
+
     public ModifierEntryDataBuilder setOnlyTags(List<String> onlyTags) {
         entry.getModifierItemSelector().setOnlyTags(onlyTags);
         return this;
@@ -144,7 +152,7 @@ public class ModifierEntryDataBuilder {
     }
 
     public ModifierEntryDataBuilder setOnlyWashItems(List<String> onlyWashItems) {
-        entry.getModifierItemSelector().setOnlyItems(onlyWashItems);
+        entry.getModifierItemSelector().addOnlyWashItems(onlyWashItems);
         return this;
     }
 
@@ -184,11 +192,14 @@ public class ModifierEntryDataBuilder {
         if (entry.localDescription != null && !entry.localDescription.isEmpty())
             json.addProperty("localDescription", entry.localDescription);
         if (entry.maxLevel != 1) json.addProperty("maxLevel", entry.maxLevel);
+        if (entry.iconSize != 0) json.addProperty("iconSize", entry.iconSize);
         if (entry.curiosType != null && !entry.curiosType.isEmpty()) json.addProperty("curiosType", entry.curiosType);
         if (entry.isCuriosEntry) json.addProperty("isCuriosEntry", true);
         if (entry.displayNameInItemName) json.addProperty("displayNameInItemName", true);
         if (entry.autoId) json.addProperty("autoId", true);
         if (entry.needFreshValue != 0.0f) json.addProperty("needFreshValue", entry.needFreshValue);
+        if (!Objects.equals(entry.group, "exmodifier_tab")) json.addProperty("group", entry.group);
+
 
         if (!entry.specialTags.isEmpty()) {
             JsonArray specialTagsArray = new JsonArray();
@@ -196,6 +207,13 @@ public class ModifierEntryDataBuilder {
                 specialTagsArray.add(new JsonPrimitive(tag));
             }
             json.add("specialTags", specialTagsArray);
+        }
+        if (!entry.specialTagSetting.isEmpty()) {
+            JsonArray specialTagSettingArray = new JsonArray();
+             entry.specialTagSetting.forEach((tag, jsonObject) -> {
+                 specialTagSettingArray.add(jsonObject);
+                     });
+            json.add("specialTagSetting", specialTagSettingArray);
         }
         if (!entry.tags.isEmpty()) {
             JsonArray tagsArray = new JsonArray();
@@ -338,6 +356,7 @@ public class ModifierEntryDataBuilder {
         tag.putString("localDescription", entry.localDescription);
         tag.putString("icon", entry.icon);
         tag.putInt("maxLevel", entry.maxLevel);
+        tag.putInt("iconSize", entry.iconSize);
         //tag.putString("type", entry.type.name());
         tag.putString("curiosType", entry.curiosType);
         tag.putBoolean("isCuriosEntry", entry.isCuriosEntry);
@@ -345,8 +364,16 @@ public class ModifierEntryDataBuilder {
         tag.putFloat("needFreshValue", entry.needFreshValue);
         tag.putBoolean("autoId", entry.autoId);
 
+
+        tag.putString("group",  entry.group);
         // 修改后的代码片段使用辅助方法
         tag.put("specialTags", createStringListTag(entry.specialTags));
+        // 新增specialTagSetting序列化逻辑
+        List<String> specialTagSettingStrings = new ArrayList<>();
+        for (Map.Entry<String, JsonObject> entry : entry.specialTagSetting.entrySet()) {
+            specialTagSettingStrings.add(entry.getKey() + ":::" + entry.getValue().toString());
+        }
+        tag.put("specialTagSetting", createStringListTag(specialTagSettingStrings));
         tag.put("slotsTags", createStringListTag(entry.Slots));
         
         // 优化tags字段处理：原手工循环创建ListTag
@@ -393,12 +420,14 @@ public class ModifierEntryDataBuilder {
         // builder.setType(ModifierEntry.StringToType(tag.getString("type")));
         builder.setCuriosType(tag.getString("curiosType"));
         builder.setIsCuriosEntry(tag.getBoolean("isCuriosEntry"));
+        builder.setIconSize(tag.getInt("iconSize"));
         builder.setNeedFreshValue(tag.getFloat("needFreshValue"));
 
         builder.setDisplayNameInItemName(tag.getBoolean("displayNameInItemName"));
         builder.setIcon(tag.getString("icon"));
         builder.setSource(tag.getString("source"));
         builder.setAutoId(tag.getBoolean("autoId"));
+        builder.setGroup(tag.getString("group"));
 
 
         ListTag specialTagsTag = tag.getList("specialTags", 8);
@@ -465,6 +494,21 @@ public class ModifierEntryDataBuilder {
         builder.setId(tag.getString("id"));
         builder.setExpression(tag.getString("Expression"));
         builder.setRandomNum(tag.getInt("RandomNum"));
+
+        // 处理specialTagSetting反序列化
+        ListTag specialTagSettingTag = tag.getList("specialTagSetting", 8);
+        Map<String, JsonObject> specialTagSetting = new HashMap<>();
+        for (int i = 0; i < specialTagSettingTag.size(); i++) {
+            String[] parts = specialTagSettingTag.getString(i).split(":::", 2);
+            if (parts.length == 2) {
+                try {
+                    specialTagSetting.put(parts[0], new Gson().fromJson(parts[1], JsonObject.class));
+                } catch (JsonSyntaxException e) {
+                    // 日志记录或异常处理
+                }
+            }
+        }
+        builder.setSpecialTagSetting(specialTagSetting);
 
         ListTag attriGetherTag = tag.getList("attriGether", 10);
         for (int i = 0; i < attriGetherTag.size(); i++) {

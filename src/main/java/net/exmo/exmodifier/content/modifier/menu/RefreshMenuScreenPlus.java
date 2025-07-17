@@ -973,10 +973,10 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 guiGraphics.pose().popPose();
             }
 
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(0, 0, 500);
+//            guiGraphics.pose().pushPose();
+//            guiGraphics.pose().translate(0, 0, 500);
             renderTooltip(guiGraphics, mouseX, mouseY);
-            guiGraphics.pose().popPose();
+    //        guiGraphics.pose().popPose();
         }
 
         private void setupClipRegion(GuiGraphics guiGraphics) {
@@ -1089,7 +1089,10 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
         private void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
             if (hoveredIndex != -1 && entries.get(hoveredIndex).tooltips != null) {
-                guiGraphics.renderTooltip(font, entries.get(hoveredIndex).tooltips, ItemStack.EMPTY.getTooltipImage(), mouseX, mouseY);
+                toRenderTooltipList.add(new ToRenderTooltip(()->{
+                     guiGraphics.renderTooltip(font, entries.get(hoveredIndex).tooltips, ItemStack.EMPTY.getTooltipImage(), mouseX, mouseY);
+
+                }));
             }
         }
 

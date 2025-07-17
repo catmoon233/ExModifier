@@ -76,24 +76,48 @@ public class ExType {
             new ItemSelector(null,null,null, ItemSelector.CompareType.TAG, List.of(
             Tags.Items.ARMORS_HELMETS
     )
-    ));
+    ))
+            .addItemSelector(
+            new ItemSelector(
+                    (e ,v)->{
+                        if (e.getEquipmentSlot()==EquipmentSlot.HEAD) v.set(true);
+                    }
+            )).build();;
     public static ExType CHESTPLATE = new ExType("CHESTPLATE",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(
                     Tags.Items.ARMORS_CHESTPLATES
     )
-    ),EquipmentSlot.CHEST);
+    ),EquipmentSlot.CHEST)
+            .addItemSelector(
+            new ItemSelector(
+                    (e ,v)->{
+                        if (e.getEquipmentSlot()==EquipmentSlot.CHEST) v.set(true);
+                    }
+            )).build();
     public static ExType LEGGINGS = new ExType("LEGGINGS",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(
                     Tags.Items.ARMORS_LEGGINGS
     )
     ),EquipmentSlot.LEGS
-    );
+    )
+            .addItemSelector(
+                    new ItemSelector(
+                            (e ,v)->{
+                                if (e.getEquipmentSlot()==EquipmentSlot.LEGS) v.set(true);
+                            }
+                    )).build();;
     public static ExType BOOTS = new ExType("BOOTS",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(
                     Tags.Items.ARMORS_BOOTS
     )
     ),EquipmentSlot.FEET
-    );
+    )
+            .addItemSelector(
+                    new ItemSelector(
+                            (e ,v)->{
+                                if (e.getEquipmentSlot()==EquipmentSlot.FEET) v.set(true);
+                            }
+                    )).build();;
     public static ExType TOOL = new ExType("TOOL",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(
                     Tags.Items.TOOLS

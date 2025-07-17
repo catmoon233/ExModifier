@@ -49,33 +49,34 @@ public class ModifierEntryHelper extends ExHelper {
 
         public static ItemStack applyRefreshEffect(Player player, ItemStack inputItem, ItemStack washItem) {
             if (inputItem.isEmpty() || washItem.isEmpty()) return ItemStack.EMPTY;
-
-            ItemStack result = inputItem;
-            boolean effectApplied = false;
-
-            // 处理洗涤材料逻辑
-            for (WashingMaterials material : ModifierHandle.materialsList) {
-                if (material.item.equals(washItem.getItem()) && washItem.getCount() >= material.NeedCount) {
-                    if (!checkMaterialConditions(result, material)) continue;
-
-                    ModifierEntryHelper modifierHelper = ModifierEntryHelper.of(result);
-                    processExistingEntries(modifierHelper, material.getKeepEntries());
-
-                    int finalRarity = calculateFinalRarity(material);
-                    applyNewEntries(player, result, material, finalRarity);
-                    processItemLevels(result, material);
-                    washItem.shrink(material.NeedCount);
-                    effectApplied = handleRefreshEvents(player, inputItem, washItem, result, material);
-                    break;
-                }
-            }
-
-            // 处理词条物品逻辑
-            if (!effectApplied && washItem.getItem() instanceof EntryItem) {
-                effectApplied = handleEntryItem(player, result, washItem);
-
-            }
             if (player instanceof ServerPlayer serverPlayer) {
+
+                ItemStack result = inputItem;
+                boolean effectApplied = false;
+
+                // 处理洗涤材料逻辑
+                for (WashingMaterials material : ModifierHandle.materialsList) {
+                    if (material.item.equals(washItem.getItem()) && washItem.getCount() >= material.NeedCount) {
+                        if (!checkMaterialConditions(result, material)) continue;
+
+                        ModifierEntryHelper modifierHelper = ModifierEntryHelper.of(result);
+
+                        processExistingEntries(modifierHelper, material.getKeepEntries());
+
+                        int finalRarity = calculateFinalRarity(material);
+                        applyNewEntries(player, result, material, finalRarity);
+                        processItemLevels(result, material);
+                        washItem.shrink(material.NeedCount);
+                        effectApplied = handleRefreshEvents(player, inputItem, washItem, result, material);
+                        break;
+                    }
+                }
+
+                // 处理词条物品逻辑
+                if (!effectApplied && washItem.getItem() instanceof EntryItem) {
+                    effectApplied = handleEntryItem(player, result, washItem);
+
+                }
                 PlayerRefreshScreenOverMessageMessage message1;
                 if (effectApplied) {
                     message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refresh_success"));
@@ -83,9 +84,11 @@ public class ModifierEntryHelper extends ExHelper {
                     message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refresh_fail"));
                 }
                 Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> serverPlayer), message1);
-            }
 
-            return effectApplied ? cleanupTags(result) : ItemStack.EMPTY;
+
+                return effectApplied ? cleanupTags(result) : ItemStack.EMPTY;
+            }
+            return ItemStack.EMPTY;
         }
 
 
@@ -160,7 +163,14 @@ public class ModifierEntryHelper extends ExHelper {
 
             ModifierEntryHelper helper = ModifierEntryHelper.of(result);
             ModifierEntry entry = ((EntryItem) washItem.getItem()).getModifierEntry(washItem);
-
+            if (player instanceof ServerPlayer serverPlayer) {
+                if (helper.getModifierEntriesSize() >= Config.canAddEntry) {
+                    PlayerRefreshScreenOverMessageMessage message1;
+                    message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refresh_fail_limit"));
+                    Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> serverPlayer), message1);
+                    return false;
+                }
+            }
             if (helper.getModifierEntryLevel(entry.id) >= entry.maxLevel) return false;
 
             CompoundTag tag = result.getOrCreateTag();
@@ -244,9 +254,9 @@ public class ModifierEntryHelper extends ExHelper {
             addModifierEntry(modifierEntry.lock(), true, false, modifierEntry);
         }
         removeAllEntry(true);
-        for (ModifierInstant modifierEntry : getModifierEntries()) {
-            modifierEntry.unlock();
-        }
+        List<ModifierInstant> modifierEntries = getModifierEntries().stream().map(ModifierInstant::unlock).toList();
+        removeAllEntrySkinLock( true,List.of());
+        modifierEntries.forEach(e->addModifierEntry(e,true,false));
         item_old_number_cache.clear();
         return this;
     }
@@ -254,6 +264,16 @@ public class ModifierEntryHelper extends ExHelper {
     public ModifierEntryHelper removeAllEntry(boolean removeAttribute, List<TagKey<ModifierEntry>> onlyTags) {
         for (ModifierInstant modifierInstant : getModifierEntries()) {
             if (!modifierInstant.isLock() && (onlyTags.isEmpty() || onlyTags.stream().anyMatch(tag -> modifierInstant.getModifierEntry().tags.contains(tag)))) {
+                removeModifierEntry(modifierInstant, removeAttribute);
+
+            }
+        }
+        //    getMainNbt().put(MES, new ListTag());
+        return this;
+    }
+    public ModifierEntryHelper removeAllEntrySkinLock(boolean removeAttribute, List<TagKey<ModifierEntry>> onlyTags) {
+        for (ModifierInstant modifierInstant : getModifierEntries()) {
+            if ( (onlyTags.isEmpty() || onlyTags.stream().anyMatch(tag -> modifierInstant.getModifierEntry().tags.contains(tag)))) {
                 removeModifierEntry(modifierInstant, removeAttribute);
 
             }

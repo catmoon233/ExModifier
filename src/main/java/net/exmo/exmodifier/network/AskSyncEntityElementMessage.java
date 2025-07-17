@@ -1,6 +1,8 @@
 package net.exmo.exmodifier.network;
 
+import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
+import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.content.element.ExElementInstant;
 import net.exmo.exmodifier.content.helper.entity.ExElementEntityHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -11,6 +13,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -31,13 +34,17 @@ public record AskSyncEntityElementMessage(UUID uuid) {
     public static void handle(AskSyncEntityElementMessage msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(
                 () -> {
+                    if (!Config.ELEMENT_SYSTEM.get())return;
+                    if (ExElementHandle.exElements.size() <=1)return;
                     ServerPlayer sender = ctx.get().getSender();
                     AtomicReference<ExElementInstant> exElementInstant = new AtomicReference<>();
                     sender.level().
                             getEntities(sender, new AABB(sender.getX()-50,sender.getY()-50,sender.getZ()-50,sender.getX()+50,sender.getY()+50,sender.getZ()+50)).stream().filter(
                                     entity ->entity.getUUID().equals(msg.uuid)
                             ).findFirst().ifPresent(entity -> {
-                                exElementInstant.set(ExElementEntityHelper.of(((LivingEntity) entity)).getExElementInstants().get(0));
+                                List<ExElementInstant> exElementInstants = ExElementEntityHelper.of(((LivingEntity) entity)).getExElementInstants();
+                                if (exElementInstants.isEmpty())return;
+                                exElementInstant.set(exElementInstants.get(0));
 
                             });
                     if (exElementInstant.get() == null) return;
