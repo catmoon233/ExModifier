@@ -295,7 +295,8 @@ public class Exmodifier {
                     ModifierEntry modifierEntry = ModifierHandle.findModifierEntry(EntryItem.getModifierID(e));
                     if (modifierEntry != null) {
                         String group = modifierEntry.group;
-                        //if (group.equals("exmodifier_tab")) event.accept(e);
+                        event.accept(e);
+                        //if (group.equals("exmodifier_tab"))
                         //else
                         {
                             if (itemGroups.stream().noneMatch(itemGroup -> itemGroup.getName().equals(group))) {
