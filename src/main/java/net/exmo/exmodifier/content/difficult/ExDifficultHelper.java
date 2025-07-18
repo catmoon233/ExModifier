@@ -2,8 +2,8 @@ package net.exmo.exmodifier.content.difficult;
 
 import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
-import net.exmo.exmodifier.compat.L2HostilityCompat;
 import net.exmo.exmodifier.content.element.ExElementEntityData;
+import net.exmo.exmodifier_compat.compat.L2HostilityCompat;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;

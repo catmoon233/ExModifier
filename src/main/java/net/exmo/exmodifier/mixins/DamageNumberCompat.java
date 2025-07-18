@@ -2,7 +2,8 @@ package net.exmo.exmodifier.mixins;
 
 import cc.xypp.damage_number.client.DamageRender;
 import cc.xypp.damage_number.data.DamageListItem;
-import net.exmo.exmodifier.compat.DamageNumberCompatData;
+
+import net.exmo.exmodifier_compat.compat.DamageNumberCompatData;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.apache.commons.lang3.tuple.Pair;

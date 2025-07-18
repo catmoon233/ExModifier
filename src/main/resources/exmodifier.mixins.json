@@ -6,8 +6,6 @@
   "refmap": "exmodifier.refmap.json",
   "mixins": [
     "AbstractArrowMixin",
-    "ChangeDurability",
-    "ChangeDurabilityBar",
     "DigSpeedMixin",
     "ItemCombinerMenuMixin",
     "ItemMixin",

@@ -22,7 +22,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.Exmodifier.MODID;
-import static se.mickelus.mutil.data.deserializer.ResourceLocationDeserializer.deserialize;
 
 public abstract class ModifierEntryDataProvider implements DataProvider {
     private String MODID = "exmodifier";

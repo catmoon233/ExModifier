@@ -1,6 +1,6 @@
 package net.exmo.exmodifier.network;
 
-import net.exmo.exmodifier.compat.DamageNumberCompatData;
+import net.exmo.exmodifier_compat.compat.DamageNumberCompatData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;

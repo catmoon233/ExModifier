@@ -2,9 +2,10 @@ package net.exmo.exmodifier;
 
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
-import mod.arcomit.emberthral.client.creativefilter.Filter;
-import mod.arcomit.emberthral.client.creativefilter.FilterManager;
-import net.exmo.exmodifier.compat.ApothCompat;
+
+
+import mod.arcomit.emberthral.client.filter.Filter;
+import mod.arcomit.emberthral.client.filter.FilterManager;
 import net.exmo.exmodifier.content.attributeEffect.modern.EffectSyncPacket;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
@@ -25,6 +26,7 @@ import net.exmo.exmodifier.network.sync.modifier.SyncModifierEntryMessage;
 import net.exmo.exmodifier.network.sync.suit.ClearExSuitMessage;
 import net.exmo.exmodifier.network.sync.suit.SyncExSuitMessage;
 import net.exmo.exmodifier.util.WeightedUtil;
+import net.exmo.exmodifier_compat.compat.ApothCompat;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.nbt.ListTag;
@@ -99,6 +101,7 @@ public class Exmodifier {
             Logger.error(s, e);
         }
     }
+
     public static List<Filter> itemGroups = new ArrayList<>();
 
 
@@ -111,6 +114,7 @@ public class Exmodifier {
     public static final RegistryObject<Item> ENTRY_ITEM_EMPTY = ITEMS.register("entry_item_empty", () -> new EntryItemEmpty(new Item.Properties()));
     public static ItemStack TabIcon;
 
+    private static Map<String, Item> itemIconMap = new HashMap<>();
     public final static RegistryObject<CreativeModeTab> ExModifierTab = CREATIVE_MODE_TABS.register("exmodifier_tab", () -> CreativeModeTab.builder()
             .icon(Exmodifier::getTabIcon)
             .withSearchBar()
@@ -172,7 +176,7 @@ public class Exmodifier {
 
     public Exmodifier() throws Exception {
 
-    //    RealTimeWebServer.main(new String[]{""});
+        //    RealTimeWebServer.main(new String[]{""});
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, String.valueOf(FMLPaths.CONFIGDIR.get().resolve("exmo/exmodifier.toml")));
         long time_start = System.currentTimeMillis();
         // Register the setup method for modloading
@@ -191,16 +195,17 @@ public class Exmodifier {
         registerMessage(RefineItemMessage.class);
         PACKET_HANDLER.registerMessage(messageID++, EffectSyncPacket.class,
                 EffectSyncPacket::encode, EffectSyncPacket::new,
-                EffectSyncPacket::handle);       registerMessage(SyncElementMessage.class);
-       registerMessage(ClearElementMessage.class);
-       registerMessage(SyncDefaultEntityElementMessage.class);
-       registerMessage(ClearDefaultEntityElementMessage.class);
-       registerMessage(SyncDefaultItemElementMessage.class);
-       registerMessage(ClearDefaultItemElementMessage.class);
-       registerMessage(ClearExSuitMessage.class);
-       registerMessage(SyncExSuitMessage.class);
-       registerMessage(ClearDefaultEntityElementMessage.class);
-       registerMessage(LangMessage.class);
+                EffectSyncPacket::handle);
+        registerMessage(SyncElementMessage.class);
+        registerMessage(ClearElementMessage.class);
+        registerMessage(SyncDefaultEntityElementMessage.class);
+        registerMessage(ClearDefaultEntityElementMessage.class);
+        registerMessage(SyncDefaultItemElementMessage.class);
+        registerMessage(ClearDefaultItemElementMessage.class);
+        registerMessage(ClearExSuitMessage.class);
+        registerMessage(SyncExSuitMessage.class);
+        registerMessage(ClearDefaultEntityElementMessage.class);
+        registerMessage(LangMessage.class);
         ITEMS.register(modEventBus);
         try {
             init(null);
@@ -219,10 +224,8 @@ public class Exmodifier {
         RegisterOther.EffectAbout.REGISTRY.register(modEventBus);
         RegisterOther.BlockAbout.REGISTRY.register(modEventBus);
         RegisterOther.ItemAbout.REGISTRY.register(modEventBus);
-        modEventBus.addListener(EventPriority.HIGH,this::AddToTab);
-        if (ModList.get().isLoaded("attributeslib")) {
-            MinecraftForge.EVENT_BUS.addListener(new ApothCompat()::SkinAttr);
-        }
+        modEventBus.addListener(EventPriority.HIGH, this::AddToTab);
+
         RegisterOther.MenuAbout.REGISTRY.register(modEventBus);
         RegisterOther.BlockEntityAbout.REGISTRY.register(modEventBus);
         // Register ourselves for server and other game events we are interested in
@@ -256,7 +259,7 @@ public class Exmodifier {
         ExCustomTabEvent event1 = new ExCustomTabEvent();
         MinecraftForge.EVENT_BUS.post(event1);
         event1.addTab("exmodifier_tab", getTabIcon());
-      //  FilterManager.registerTabFilters(ExModifierTab.get(),itemGroups.toArray(new Filter[]{}));
+        //  FilterManager.registerTabFilters(ExModifierTab.get(),itemGroups.toArray(new Filter[]{}));
     }
 
     private void AddToTab(BuildCreativeModeTabContentsEvent event) {
@@ -267,71 +270,68 @@ public class Exmodifier {
             event.accept(RegisterOther.ItemAbout.Embedded_Table);
         }
 
-        if (event.getTab().equals(ExModifierTab.get())){
+        if (event.getTab().equals(ExModifierTab.get())) {
+
             var list = generateModifierItemStacks();
-            list.forEach(event::accept);
+            list.forEach(e -> {
+                ModifierEntry entry = ModifierHandle.findModifierEntry(EntryItem.getModifierID(e));
+                if (entry != null) {
+
+                }
+            });
         }
-//        if (event.getTab()==ExModifierTab.get()) {
-//
-//            // 1. 获取FilterManager的Class对象
-//
-//            event.accept(RegisterOther.ItemAbout.Refresh_Table);
-//            event.accept(RegisterOther.ItemAbout.Embedded_Table);
-//            try {
-//                Class<?> clazz = FilterManager.class;
-//                Field field = clazz.getDeclaredField("TAB_FILTER_MAP");
-//                field.setAccessible(true);
-//                @SuppressWarnings("unchecked")
-//                Map<CreativeModeTab, List<Filter>> tabFilterMap =
-//                        (Map<CreativeModeTab, List<Filter>>) field.get(null);
-//                if (tabFilterMap != null){
-//                    tabFilterMap.get(ExModifierTab.get()).clear();
-//                    itemGroups.forEach(filter -> tabFilterMap.get(ExModifierTab.get()).add(new Filter(filter.getName(), filter.getIcon())));
-//                    field.set(null, tabFilterMap);
-//
-//                }
-//
-//            }catch (Exception e){}
-//            AtomicReference<List<ItemStack>> modifierItemStacks = new AtomicReference<>(generateModifierItemStacks());
-//
-//
-//            Runnable runnable = () -> {
-//                modifierItemStacks.get().forEach(e->{
-//                    ModifierEntry modifierEntry = ModifierHandle.findModifierEntry(EntryItem.getModifierID(e));
-//                    if (modifierEntry!=null){
-//                        String group = modifierEntry.group;
-////                        if (group.equals("exmodifier_tab")) event.accept(e);
-////                        else
-//                        {
-////                            if (itemGroups.stream().noneMatch(itemGroup -> itemGroup.getName().equals(group))){
-////                                Item item = itemMap.get(group);
-////                                if (item==null){
-////                                    item  = ENTRY_ITEM.get();
-////                                }
-////                                ItemStack defaultInstance = item.getDefaultInstance();
-////                                Filter e1 = new Filter(group, defaultInstance);
-////                                itemGroups.add(e1);
-////                                e1.accept( item);
-////                            }else {
-//                                var itemGroupList = itemGroups.stream().filter(itemGroup -> itemGroup.getName().equals(group)).toList();
-//                                itemGroupList.forEach(a->{
-//                                    a.accept(e);
-//                                });
-//                      //      }
-//                        }
-//                    }
+        if (event.getTab() == ExModifierTab.get()) {
+
+            // 1. 获取FilterManager的Class对象
+
+            event.accept(RegisterOther.ItemAbout.Refresh_Table);
+            event.accept(RegisterOther.ItemAbout.Embedded_Table);
+            LinkedHashSet<Filter> filters = FilterManager.filterTabMap.get(ExModifierTab.get());
+            if (filters != null) filters.clear();
+            FilterManager.filterTabMap.put(ExModifierTab.get(), filters);
+            AtomicReference<List<ItemStack>> modifierItemStacks = new AtomicReference<>(generateModifierItemStacks());
+            {
+                modifierItemStacks.get().forEach(e -> {
+                    ModifierEntry modifierEntry = ModifierHandle.findModifierEntry(EntryItem.getModifierID(e));
+                    if (modifierEntry != null) {
+                        String group = modifierEntry.group;
+                        if (group.equals("exmodifier_tab")) event.accept(e);
+                        else {
+                            if (itemGroups.stream().noneMatch(itemGroup -> itemGroup.getName().equals(group))) {
+                                Item item = itemIconMap.get(group);
+                                if (item == null) {
+                                    item = ENTRY_ITEM.get();
+                                }
+                                ItemStack defaultInstance = item.getDefaultInstance();
+                                Filter e1 = new Filter(group, defaultInstance, null, ExModifierTab.getId());
+                                itemGroups.add(e1);
+                                e1.getFilteredItems().add(defaultInstance);
+                            } else {
+                                var itemGroupList = itemGroups.stream().filter(itemGroup -> itemGroup.getName().equals(group)).toList();
+                                itemGroupList.forEach(a -> {
+                                    a.getFilteredItems().add(e);
+                                });
+                            }
+                        }
+                    }
+                });
+
+
+                FilterManager.filterTabMap.put(ExModifierTab.get(), new LinkedHashSet<>(itemGroups));
+                FilterManager.filterTabMap.forEach((k, v) -> {
+                    if (k == ExModifierTab.get()) v.forEach(Filter::loadItems);
+                });
+            }
+            ;
+
+//            if (modifierItemStacks.get().isEmpty()){
+//                queueServerWork(50,()->{
+//                     modifierItemStacks.set(generateModifierItemStacks());
+//                    runnable.run();
 //                });
-//
-//            };
-//            runnable.run();
-////            if (modifierItemStacks.get().isEmpty()){
-////                queueServerWork(50,()->{
-////                     modifierItemStacks.set(generateModifierItemStacks());
-////                    runnable.run();
-////                });
-////            }else
-//
-//        }
+//            }else
+
+        }
 //            modifierItemStacks.forEach(e->{
 //                ModifierEntry modifierEntry = ModifierHandle.findModifierEntry(EntryItem.getModifierID(e));
 //                if (modifierEntry != null){
@@ -339,12 +339,14 @@ public class Exmodifier {
 //                }
 //            });
     }
+
     private static final Collection<AbstractMap.SimpleEntry<Runnable, Integer>> workQueue = new ConcurrentLinkedQueue<>();
 
     public static void queueServerWork(int tick, Runnable action) {
         if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER)
             workQueue.add(new AbstractMap.SimpleEntry<>(action, tick));
     }
+
     @SubscribeEvent
     public void tick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
@@ -358,6 +360,7 @@ public class Exmodifier {
             workQueue.removeAll(actions);
         }
     }
+
     // 新增方法：生成 Modifier 的 ItemStack 列表
     public static List<ItemStack> generateModifierItemStacks() {
         List<ItemStack> itemStacks = new ArrayList<>();
@@ -365,7 +368,7 @@ public class Exmodifier {
 
         for (ItemType type : ExTypeHandle.itemTypes.values()) {
             weights.put(type.name(), new WeightedUtil<>(modifierEntryMap.entrySet().stream().filter(e -> {
-                return e.getValue().types.contains(type);
+                return e.getValue().types.contains(type) && !e.getValue().cantSelect;
             }).collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().weight))));
         }
 
@@ -403,7 +406,6 @@ public class Exmodifier {
     private void processIMC(final InterModProcessEvent event) {
 
     }
-
 
 
     public static <T> void addNetworkMessage(Class<T> messageType, BiConsumer<T, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
