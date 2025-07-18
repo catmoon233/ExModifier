@@ -295,8 +295,9 @@ public class Exmodifier {
                     ModifierEntry modifierEntry = ModifierHandle.findModifierEntry(EntryItem.getModifierID(e));
                     if (modifierEntry != null) {
                         String group = modifierEntry.group;
-                        if (group.equals("exmodifier_tab")) event.accept(e);
-                        else {
+                        //if (group.equals("exmodifier_tab")) event.accept(e);
+                        //else
+                        {
                             if (itemGroups.stream().noneMatch(itemGroup -> itemGroup.getName().equals(group))) {
                                 Item item = itemIconMap.get(group);
                                 if (item == null) {
@@ -304,8 +305,9 @@ public class Exmodifier {
                                 }
                                 ItemStack defaultInstance = item.getDefaultInstance();
                                 Filter e1 = new Filter(group, defaultInstance, null, ExModifierTab.getId());
+                                e1.getFilteredItems().add(e);
                                 itemGroups.add(e1);
-                                e1.getFilteredItems().add(defaultInstance);
+
                             } else {
                                 var itemGroupList = itemGroups.stream().filter(itemGroup -> itemGroup.getName().equals(group)).toList();
                                 itemGroupList.forEach(a -> {
