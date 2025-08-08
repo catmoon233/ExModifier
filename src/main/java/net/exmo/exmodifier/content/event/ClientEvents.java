@@ -8,12 +8,18 @@ import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.refine.RefineHelper;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import oshi.util.tuples.Pair;
@@ -21,6 +27,7 @@ import oshi.util.tuples.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static net.exmo.exmodifier.Exmodifier.ENTRY_ITEM;
 
@@ -33,8 +40,46 @@ public class ClientEvents {
             event.register(ENTRY_ITEM.get(), new EntryItemRender());
         }
     }
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void tooltipFixer(ItemTooltipEvent event){
+        if (TooltipFixer.isFixing){
+            TooltipFixer.isFixing = false;
+
+
+            ArrayList<Integer> fixList = new ArrayList<>();
+            TooltipFixer.fixList.forEach(equipmentSlot -> {
+                AtomicInteger index = new AtomicInteger(0);
+                event.getToolTip().forEach(
+                        component -> {
+
+                            var contents = component.getContents();
+                            if (contents instanceof TranslatableContents m){
+                                if (m.getKey().equals("item.modifiers." + equipmentSlot.getName())){
+                                    fixList.add(index.get());
+                                }
+                            }
+                            index.getAndIncrement();
+                        }
+                );
+            });
+            try {
+                fixList.forEach(
+                        a->{
+                            event.getToolTip().remove((a -1));
+                            event.getToolTip().remove((a -1));
+
+                        }
+                );
+            }catch (Exception e){
+                Exmodifier.LOGGER.error("fix error", e);
+            }
+
+            TooltipFixer.fixList.clear();
+        }
+    }
     @SubscribeEvent
     public static void TooltipChange(ItemTooltipEvent event) {
+
         ItemStack itemStack = event.getItemStack();
         if (itemStack.getTag() != null) {
             // if (!CuriosUtil.isCuriosItem(event.getItemStack())) {

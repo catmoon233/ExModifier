@@ -5,10 +5,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
+@Cancelable
 @Mod.EventBusSubscriber
 public class ExLivingHurtEvent extends LivingEvent {
     public static float  amountA = 0 ;
@@ -77,6 +78,11 @@ public class ExLivingHurtEvent extends LivingEvent {
         ExLivingHurtEvent.MutiAmount = 1;
         ExLivingHurtEvent.TotalAmount = 1;
         ExLivingHurtEvent.amountB = 0;
+        if (event.isCanceled()){
+            event.setCanceled(true);
+
+        }
+
     }
 
     public LivingHurtEvent getLivingHurtEvent() {

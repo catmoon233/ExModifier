@@ -1442,12 +1442,12 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                     new ActionButton("gui.exmodifier.refresh_menu.selected", b -> {
                         putItem();
 
-                        SystemToast.add(new ToastComponent(Minecraft.getInstance()),
+                        SystemToast.add(Minecraft.getInstance().getToasts(),
                                 SystemToast.SystemToastIds.PACK_COPY_FAILURE, Component.literal("使用操作"), Component.literal("选择物品"));
                         contextMenu = null;
                     }),
                     new ActionButton("gui.exmodifier.refresh_menu.look", b ->
-                            SystemToast.add(new ToastComponent(Minecraft.getInstance()), SystemToast.SystemToastIds.PACK_COPY_FAILURE, Component.literal("使用操作"), Component.literal("使用物品"))
+                            SystemToast.add(Minecraft.getInstance().getToasts(), SystemToast.SystemToastIds.PACK_COPY_FAILURE, Component.literal("使用操作"), Component.literal("使用物品"))
                     )
             ));
         }

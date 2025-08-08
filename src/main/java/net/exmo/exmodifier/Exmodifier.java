@@ -82,6 +82,7 @@ public class Exmodifier {
     public static final Gson GSON = new Gson();
     // Directly reference a slf4j logger
     public static final String MODID = "exmodifier";
+    public static Random random = new Random();
 
     // public static final Logger LOGGER = LogUtils.getLogger();
     public static class LOGGER {
@@ -321,9 +322,9 @@ public class Exmodifier {
 
 
                 FilterManager.filterTabMap.put(ExModifierTab.get(), new LinkedHashSet<>(itemGroups));
-                FilterManager.filterTabMap.forEach((k, v) -> {
-                    if (k == ExModifierTab.get()) v.forEach(Filter::loadItems);
-                });
+//                FilterManager.filterTabMap.forEach((k, v) -> {
+//                    if (k == ExModifierTab.get()) v.forEach(Filter::loadItems);
+//                });
             }
             ;
 

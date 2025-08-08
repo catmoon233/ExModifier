@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.modifier;
 
 import com.google.gson.*;
+import com.mojang.datafixers.util.Pair;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
@@ -138,6 +139,10 @@ public class ModifierEntryDataBuilder {
 
     public ModifierEntryDataBuilder setGroup(String group) {
         entry.group = group;
+        return this;
+    }
+    public ModifierEntryDataBuilder setRandomLevel(Pair<Integer, Integer> randomLevel) {
+        entry.randomLevel = randomLevel;
         return this;
     }
 
@@ -279,6 +284,11 @@ public class ModifierEntryDataBuilder {
         }
 
 
+        if (entry.randomLevel!=null) {
+            json.addProperty("randomLevel1", entry.randomLevel.getFirst());
+            json.addProperty("randomLevel2", entry.randomLevel.getSecond());
+        }
+
         if (entry.id != null && !entry.id.isEmpty()) json.addProperty("id", entry.id.substring(2));
         if (entry.Expression != null && !entry.Expression.isEmpty()) json.addProperty("Expression", entry.Expression);
         if (entry.icon != null && !entry.icon.isEmpty()) json.addProperty("icon", entry.icon);
@@ -364,6 +374,10 @@ public class ModifierEntryDataBuilder {
         tag.putFloat("needFreshValue", entry.needFreshValue);
         tag.putBoolean("autoId", entry.autoId);
 
+        if (entry.randomLevel != null) {
+            tag.putInt("randomLevel1", entry.randomLevel.getFirst());
+            tag.putInt("randomLevel2", entry.randomLevel.getSecond());
+        }
 
         tag.putString("group",  entry.group);
         // 修改后的代码片段使用辅助方法
@@ -428,6 +442,9 @@ public class ModifierEntryDataBuilder {
         builder.setSource(tag.getString("source"));
         builder.setAutoId(tag.getBoolean("autoId"));
         builder.setGroup(tag.getString("group"));
+        int randomLevel2 = tag.getInt("randomLevel2");
+        int randomLevel1 = tag.getInt("randomLevel1");
+        if (randomLevel1 != 0 && randomLevel2 != 0) builder.setRandomLevel(Pair.of(randomLevel1, randomLevel2));
 
 
         ListTag specialTagsTag = tag.getList("specialTags", 8);

@@ -193,38 +193,54 @@ public static void init(FMLCommonSetupEvent event){
                 //    if (getPlayerAttriGetherAmplifier(player, getById(new ResourceLocation("exmodifier","angry")))<10) addAttriGetherEffect(new AttriGetherEffectInstance(200, getById(new ResourceLocation("exmodifier", "angry")), 1, true), player);
             }
         }
+        private static final Map<UUID, ServerBossEvent> BOSS_BAR_CACHE = new HashMap<>();
+
         @SubscribeEvent
         public static void PlayerTick(TickEvent.PlayerTickEvent event) {
             Player player = event.player;
-            if (player.level().isClientSide)return;
-            player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-                List<AttriGetherEffectInstance> attriGetherEffectInstances = capability.attriGetherEffectInstances;
-                List<AttriGetherEffectInstance> toMove = new ArrayList<>();
-                for (AttriGetherEffectInstance _set : attriGetherEffectInstances) {
-                    _set.setDuration(_set.getDuration() - 1);
-                    ServerBossEvent bossBar = findBossBar(_set.getUuid());
-                    if (bossBar != null) {
-                        bossBar.setProgress(_set.getDuration() / (float) _set.getStartDuration());
-                    }
-                    if (_set.getDuration() <= 0) {
-                        toMove.add(_set);
-                        if (bossBar != null){
-                            removeBossBar(_set.getUuid());
-                            bossBar.setVisible(false);
-                            bossBar.removeAllPlayers();
+            if (player.level().isClientSide) return;
 
+            player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+                List<AttriGetherEffectInstance> effects = capability.attriGetherEffectInstances;
+                if (effects.isEmpty()) return;  // 提前返回空列表
+
+                boolean needsSync = false;
+                Iterator<AttriGetherEffectInstance> iterator = effects.iterator();
+
+                while (iterator.hasNext()) {
+                    AttriGetherEffectInstance effect = iterator.next();
+                    int newDuration = effect.getDuration() - 1;
+                    effect.setDuration(newDuration);  // 直接更新值
+
+                    // 优化：使用缓存查找BossBar
+                    ServerBossEvent bossBar = BOSS_BAR_CACHE.get(effect.getUuid());
+
+                    if (bossBar != null) {
+                        // 仅当进度变化>1%时更新（减少不必要的渲染）
+                        float newProgress = newDuration / (float) effect.getStartDuration();
+                        if (Math.abs(bossBar.getProgress() - newProgress) > 0.01f) {
+                            bossBar.setProgress(newProgress);
                         }
                     }
 
-
+                    if (newDuration <= 0) {
+                        // 立即处理移除逻辑
+                        if (bossBar != null) {
+                            bossBar.setVisible(false);
+                            bossBar.removeAllPlayers();
+                            BOSS_BAR_CACHE.remove(effect.getUuid());  // 更新缓存
+                        }
+                        removeAttriGetherEffect(effect, player);
+                        iterator.remove();  // 直接移除元素
+                        needsSync = true;
+                    }
                 }
-               for (AttriGetherEffectInstance _effect : toMove) {
-                   attriGetherEffectInstances.remove(_effect);
-                   removeAttriGetherEffect(_effect, player);
-               }
-                capability.syncPlayerVariables(player);
-            });
 
+                // 条件同步：仅在发生变更时同步
+                if (needsSync || !effects.isEmpty()) {
+                    capability.syncPlayerVariables(player);
+                }
+            });
         }
     }
 }

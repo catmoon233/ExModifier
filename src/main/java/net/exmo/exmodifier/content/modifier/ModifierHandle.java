@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.exmo.exmodifier.Config;
+import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.client.LanguageLoader;
 import net.exmo.exmodifier.content.element.DefaultEntityElement;
 import net.exmo.exmodifier.content.element.DefaultItemElement;
@@ -78,6 +79,7 @@ import java.util.zip.ZipFile;
 import static net.exmo.exmodifier.Exmodifier.*;
 import static net.exmo.exmodifier.content.client.LanguageLoader.putLanguage;
 import static net.exmo.exmodifier.content.level.ItemLevelHandle.*;
+
 import static net.exmo.exmodifier.util.ExConfigHandle.*;
 import static net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT;
 
@@ -438,7 +440,12 @@ public class ModifierHandle {
                 //  appliedModifiers.add(exElement.Id);
                 weightedUtil.removeKey(modifierEntry.id);
                 ItemInfo itemInfo = new ItemInfo(stack);
-                ModifierInstant modifierInstant = new ModifierInstant(modifierEntry, 1);
+
+                int level = 1;
+                if (modifierEntry.randomLevel!=null){
+                    level = random.nextInt(modifierEntry.randomLevel.getFirst(), modifierEntry.randomLevel.getSecond());
+                }
+                ModifierInstant modifierInstant = new ModifierInstant(modifierEntry, level);
                 itemInfo.getModifierEntryHelper().addModifierEntry(modifierInstant, false, true);
                 //   stack.getOrCreateTag().putString("exmodifier_armor_modifier_applied" + numAddedModifiers, exElement.Id);
                 numAddedModifiers++;
@@ -1328,6 +1335,10 @@ public class ModifierHandle {
         }
         if (itemObject.has("displayNameInItemName")) {
             modifierEntry.displayNameInItemName = itemObject.get("displayNameInItemName").getAsBoolean();
+        }
+        if (itemObject.has("randomLevel")){
+            JsonArray randomLevel = itemObject.get("randomLevel").getAsJsonArray();
+            modifierEntry.randomLevel =  new com.mojang.datafixers.util.Pair<>(randomLevel.get(0).getAsInt(),randomLevel.get(1).getAsInt());
         }
         if (types.contains(ExType.CURIOS.get())) {
             modifierEntry.isCuriosEntry = true;

@@ -2,6 +2,8 @@ package net.exmo.exmodifier.content.modifier;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import com.mojang.datafixers.util.Pair;
 import net.exmo.exmodifier.content.selected.ModifierItemSelector;
 import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.suit.ExSuit;
@@ -93,6 +95,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     public String group = "exmodifier_tab";
     public String id;
     public String Expression = ""; //todo 这个没用
+    public Pair<Integer, Integer> randomLevel;
     public List<String>  exsuits = new ArrayList<>();
     public int RandomNum = 0;
     public ModifierItemSelector<ModifierEntry> modifierItemSelector = new ModifierItemSelector<ModifierEntry>();
