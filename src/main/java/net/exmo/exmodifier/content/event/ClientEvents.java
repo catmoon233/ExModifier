@@ -25,6 +25,7 @@ import net.minecraftforge.fml.common.Mod;
 import oshi.util.tuples.Pair;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,43 +41,40 @@ public class ClientEvents {
             event.register(ENTRY_ITEM.get(), new EntryItemRender());
         }
     }
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void tooltipFixer(ItemTooltipEvent event){
-        if (TooltipFixer.isFixing){
-            TooltipFixer.isFixing = false;
+//    @SubscribeEvent(priority = EventPriority.LOWEST)
+//    public static void tooltipFixer(ItemTooltipEvent event) {
+//        if (TooltipFixer.isFixing) {
+//            TooltipFixer.isFixing = false;
+//
+//            ArrayList<Integer> fixList = new ArrayList<>();
+//            TooltipFixer.fixList.forEach(equipmentSlot -> {
+//                List<Component> toolTip = event.getToolTip();
+//                for (int i = 0; i < toolTip.size(); i++) {
+//                    Component component = toolTip.get(i);
+//                    var contents = component.getContents();
+//                    if (contents instanceof TranslatableContents m) {
+//                        if (m.getKey().equals("item.modifiers." + equipmentSlot.getName())) {
+//                            fixList.add(i);
+//                        }
+//                    }
+//                }
+//            });
+//
+//            try {
+//                Collections.sort(fixList, Collections.reverseOrder());
+//                for (Integer index : fixList) {
+//                    if (index >= 0 && index < event.getToolTip().size()) {
+//                        event.getToolTip().remove(index);
+//                    }
+//                }
+//            } catch (Exception e) {
+//                Exmodifier.LOGGER.error("fix error", e);
+//            }
+//
+//            TooltipFixer.fixList.clear();
+//        }
+//    }
 
-
-            ArrayList<Integer> fixList = new ArrayList<>();
-            TooltipFixer.fixList.forEach(equipmentSlot -> {
-                AtomicInteger index = new AtomicInteger(0);
-                event.getToolTip().forEach(
-                        component -> {
-
-                            var contents = component.getContents();
-                            if (contents instanceof TranslatableContents m){
-                                if (m.getKey().equals("item.modifiers." + equipmentSlot.getName())){
-                                    fixList.add(index.get());
-                                }
-                            }
-                            index.getAndIncrement();
-                        }
-                );
-            });
-            try {
-                fixList.forEach(
-                        a->{
-                            event.getToolTip().remove((a -1));
-                            event.getToolTip().remove((a -1));
-
-                        }
-                );
-            }catch (Exception e){
-                Exmodifier.LOGGER.error("fix error", e);
-            }
-
-            TooltipFixer.fixList.clear();
-        }
-    }
     @SubscribeEvent
     public static void TooltipChange(ItemTooltipEvent event) {
 

@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @author canyuesama
+ */
 public class ExType {
     public static List<String> defaultTypes = new ArrayList<>();
     public ExType(String name,ItemSelector itemSelector,EquipmentSlot... equipmentSlots){
@@ -76,11 +79,11 @@ public class ExType {
             new ItemSelector(null,null,null, ItemSelector.CompareType.TAG, List.of(
             Tags.Items.ARMORS_HELMETS
     )
-    ))
+    ),EquipmentSlot.HEAD)
             .addItemSelector(
             new ItemSelector(
                     (e ,v)->{
-                        if (e.getEquipmentSlot()==EquipmentSlot.HEAD) v.set(true);
+                        if (e.getEquipmentSlot()==EquipmentSlot.HEAD|| (e.getItem() instanceof ArmorItem a && a.getType()== ArmorItem.Type.HELMET)) v.set(true);
                     }
             )).build();;
     public static ExType CHESTPLATE = new ExType("CHESTPLATE",new ItemSelector(
@@ -91,7 +94,7 @@ public class ExType {
             .addItemSelector(
             new ItemSelector(
                     (e ,v)->{
-                        if (e.getEquipmentSlot()==EquipmentSlot.CHEST) v.set(true);
+                        if (e.getEquipmentSlot()==EquipmentSlot.CHEST || (e.getItem() instanceof ArmorItem a && a.getType()== ArmorItem.Type.CHESTPLATE)) v.set(true);
                     }
             )).build();
     public static ExType LEGGINGS = new ExType("LEGGINGS",new ItemSelector(
@@ -103,7 +106,7 @@ public class ExType {
             .addItemSelector(
                     new ItemSelector(
                             (e ,v)->{
-                                if (e.getEquipmentSlot()==EquipmentSlot.LEGS) v.set(true);
+                                if (e.getEquipmentSlot()==EquipmentSlot.LEGS|| (e.getItem() instanceof ArmorItem a && a.getType()== ArmorItem.Type.LEGGINGS)) v.set(true);
                             }
                     )).build();;
     public static ExType BOOTS = new ExType("BOOTS",new ItemSelector(
@@ -115,7 +118,7 @@ public class ExType {
             .addItemSelector(
                     new ItemSelector(
                             (e ,v)->{
-                                if (e.getEquipmentSlot()==EquipmentSlot.FEET) v.set(true);
+                                if (e.getEquipmentSlot()==EquipmentSlot.FEET|| (e.getItem() instanceof ArmorItem a && a.getType()== ArmorItem.Type.BOOTS)) v.set(true);
                             }
                     )).build();;
     public static ExType TOOL = new ExType("TOOL",new ItemSelector(

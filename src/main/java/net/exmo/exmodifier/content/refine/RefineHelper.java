@@ -15,12 +15,14 @@ import net.exmo.exmodifier.util.ItemAttrUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -64,7 +66,7 @@ public class RefineHelper extends ExHelper {
         MinecraftForge.EVENT_BUS.post(exCanRefineEvent);
         List<ItemQuality> qualityEntries = ItemQualityHelper.of(stack).getQualityEntries();
         if ((!qualityEntries.isEmpty() && qualityEntries.stream().anyMatch(itemQuality -> itemQuality.refineNeedSameStar)) ||Config.refine_system)
-            if (RefineHelper.of(stack).getRefineLevel() != getRefineLevel()) exCanRefineEvent.canRefine  = false;
+            if ( Config.refine_need_same_star&&RefineHelper.of(stack).getRefineLevel() != getRefineLevel() ) exCanRefineEvent.canRefine  = false;
         return exCanRefineEvent.canRefine && getRefineLevel()<getRefineMaxLevel() ;
     }
     public  ExAttributeModifier getRefineModifier(int add) {
@@ -77,7 +79,7 @@ public class RefineHelper extends ExHelper {
         if(ValidMainNbt())
         {
             int refine = getMainNbt().getInt("refine");
-            EquipmentSlot[] equipmentSlot = getEquipmentSlot(itemStack);
+            //EquipmentSlot[] equipmentSlot = getEquipmentSlot(itemStack);
             for (var slot : ModifierEntry.getType(itemStack).stream().map(ItemType::equipmentSlot)
                     .toArray(EquipmentSlot[][]::new)){
                 for (EquipmentSlot slot1 : slot) {
@@ -92,8 +94,7 @@ public class RefineHelper extends ExHelper {
     }
 
     private static Attribute getAttribute() {
-        Attribute attribute = ExUtil.getAttribute(Config.refine_attribute);
-        return attribute;
+        return ForgeRegistries.ATTRIBUTES.getValue(ResourceLocation.tryParse(Config.refine_attribute));
     }
 
     public RefineHelper removeRefine(boolean removeAttribute,int remove){

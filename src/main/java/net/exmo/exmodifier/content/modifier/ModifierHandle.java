@@ -1276,6 +1276,10 @@ public class ModifierHandle {
                 if (group!=null){
                     moconfig.group = group.getAsString();
                 }else moconfig.group = "exmodifier_tab";
+                JsonElement autoTypeId = moconfig.readSetting("autoTypeId");
+                if (autoTypeId!=null){
+                    moconfig.autoTypeId = autoTypeId.getAsBoolean();
+                }
 
                 if (moconfig.type == ExType.CURIOS.get() &&moconfig.readSetting("type").getAsString().length()>6)moconfig.CuriosType=moconfig.readSetting("type").getAsString().substring(7);
 

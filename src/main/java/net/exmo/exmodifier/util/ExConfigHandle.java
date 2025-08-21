@@ -1,5 +1,6 @@
 package net.exmo.exmodifier.util;
 
+import com.google.gson.JsonElement;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
@@ -136,6 +137,10 @@ public class ExConfigHandle {
                 }
                 if (moconfig.readSetting("group")!=null){
                     moconfig.group = (moconfig.readSetting("group").getAsString());
+                }
+                JsonElement autoTypeId = moconfig.readSetting("autoTypeId");
+                if (autoTypeId!=null){
+                    moconfig.autoTypeId = autoTypeId.getAsBoolean();
                 }
                 else moconfig.group = "exmodifier_tab";
                 if (moconfig.type == ExType.CURIOS.get() &&moconfig.readSetting("type").getAsString().length()>6)moconfig.CuriosType=moconfig.readSetting("type").getAsString().substring(7);

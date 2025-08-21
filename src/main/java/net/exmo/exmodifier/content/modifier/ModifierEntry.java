@@ -214,7 +214,7 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
     }
 
     public String getDescriptionId(){
-        return autoId ?  " modifier.entry."+id.substring(2) : "modifier.entry." + id;
+        return autoId ?  "modifier.entry."+id.substring(2) : "modifier.entry." + id;
     }
     public static String getDescriptionId(String id){
         return  "modifier.entry." + id;

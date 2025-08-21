@@ -3,6 +3,7 @@ package net.exmo.exmodifier.content.element;
 import net.exmo.exmodifier.util.exSerialize.ExSerClass;
 import net.exmo.exmodifier.util.exSerialize.ExSerialize;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -10,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ExElement implements ExSerClass {
-    private ResourceLocation id;
+    private ResourceLocation id = new ResourceLocation("exmodifier:null");
     private String CustomLocation ="";
 
     public float getParticleScale() {
@@ -22,8 +23,8 @@ public class ExElement implements ExSerClass {
         return this;
     }
 
-    private float ParticleScale = 0.2f;
-    private ParticleType<?> simpleParticleType;
+    private float ParticleScale = 0f;
+    private ParticleType<?> simpleParticleType = ParticleTypes.CRIT;
     public static final ExSerialize<ExElement> EX_SERIALIZE = ExSerialize.create(()-> new ExElement(new ResourceLocation("exmodifier:null")))
             .withAutoId((e)->e.getResId().toString(),(e, id) -> e.setId(new ResourceLocation(id)))
             .addResourceLocationField("id", ExElement::getResId,ExElement::setId)
@@ -64,7 +65,7 @@ public class ExElement implements ExSerClass {
         return this;
     }
 
-    private ResourceLocation iconTexture;
+    private ResourceLocation iconTexture = new ResourceLocation("exmodifier:null");
     private int color =0;
     private Map<String,Float> Restrain = new HashMap<>();
 

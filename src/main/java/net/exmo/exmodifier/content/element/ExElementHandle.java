@@ -463,7 +463,7 @@ public class ExElementHandle {
                 if (livingEntity.level() instanceof ServerLevel serverLevel) {
                     if (exElementInstant.getElement() != null) {
 
-                        if (exElementInstant.getElement().getSimpleParticleType() != null) {
+                        if (exElementInstant.getElement().getSimpleParticleType() != null && exElementInstant.getElement().getParticleScale()!=0) {
 
                             ParticleType<?> simpleParticleType = exElementInstant.getElement().getSimpleParticleType();
                             if (simpleParticleType != null) {

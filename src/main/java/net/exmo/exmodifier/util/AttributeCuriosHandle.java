@@ -167,10 +167,11 @@ public class AttributeCuriosHandle {
                         event.getToolTip().add(component);
                     }
                 }
-                RenderCustomCuriosAttributes(event);
 
 
-        }else RenderCustomCuriosAttributes(event);
+
+        }
+            RenderCustomCuriosAttributes(event);
             }
 
 
