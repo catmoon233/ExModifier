@@ -15,7 +15,6 @@
     "TestMixin"
   ],
   "client": [
-    "DamageNumberCompat",
     "ItemStackClientMixin",
     "LanguageMixin",
     "ModScreenMixin",

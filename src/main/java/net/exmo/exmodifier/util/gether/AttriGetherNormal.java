@@ -41,7 +41,7 @@ public class AttriGetherNormal extends AttrGether {
     }
 
     public List<String> getOnlyItems() {
-        return OnlyItems;
+        return OnlyItems == null ? new ArrayList<>() : OnlyItems;
     }
 
     public AttriGetherNormal setOnlyItems(List<String> onlyItems) {
