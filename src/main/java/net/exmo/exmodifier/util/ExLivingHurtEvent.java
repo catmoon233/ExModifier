@@ -60,7 +60,7 @@ public class ExLivingHurtEvent extends LivingEvent {
     }
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void LivingHurtEventA(LivingHurtEvent event) {
-        event.setAmount( ExLivingHurtEvent.getMutiAmountA()*event.getAmount()*getTotalAmount()-ExLivingHurtEvent.getAmountB());
+        event.setAmount(( ExLivingHurtEvent.getMutiAmountA()*event.getAmount())*getTotalAmount()-ExLivingHurtEvent.getAmountB());
 
     }
 

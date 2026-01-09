@@ -196,7 +196,7 @@ dependencies {
    // runtimeOnly fg.deobf("curse.maven:cloth-config-348521:4973441")
  //   implementation fg.deobf("curse.maven:apotheosis-313970:5642736")
  //   implementation fg.deobf("curse.maven:placebo-283644:5414631")
-    implementation fg.deobf("curse.maven:damage-number-998849:5538112")
+    implementation fg.deobf("curse.maven:damage-number-998849:7060656")
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
   //  implementation fg.deobf("curse.maven:apothic-attributes-898963:5634071")
     //runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.1")
@@ -217,10 +217,10 @@ dependencies {
   //  implementation fg.deobf("curse.maven:l2-complements-758349:6435103")
     implementation fg.deobf("curse.maven:jade-324717:6271651")
 
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}"))
   //  implementation fg.deobf("curse.maven:l2hostility-909207:6497957")
     runtimeOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}"))
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime

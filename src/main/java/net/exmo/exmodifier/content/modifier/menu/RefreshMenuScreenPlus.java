@@ -137,7 +137,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
         });
 
-        if (Config.refine_system) addPage("精炼", screen -> {
+        if (Config.refine_system) addPage("升星", screen -> {
             screen.addRenderableWidget(new ImageWidget(80, this.topPos - 20, this.width - 160, this.imageHeight, MENU_TEXTURE));
             screen.addRenderableWidget(new RefreshWidget(100, this.topPos + 20, this.width / 3, this.imageHeight - 60, MENU_TEXTURE));
             ;

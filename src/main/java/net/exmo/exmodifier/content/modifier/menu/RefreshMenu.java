@@ -124,7 +124,7 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
             if (orCreateTag.getInt("modifier_refresh_add") != 0) {
 
                 MinecraftForge.EVENT_BUS.post(new ExRefreshEvent(p_39790_, orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getString("wash_item")));
-                if (!CuriosUtil.isCuriosItem2(p_39791_))
+                if (!CuriosUtil.isCuriosItem2(p_39791_,false))
                     ModifierHandle.CommonEvent.RandomEntry(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"),orCreateTag.getInt("keepEntries"));
                 else
                     RandomEntryCurios(p_39791_, orCreateTag.getInt("modifier_refresh_rarity"), orCreateTag.getInt("modifier_refresh_add"), orCreateTag.getString("wash_item"));

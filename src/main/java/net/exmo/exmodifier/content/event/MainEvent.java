@@ -10,6 +10,8 @@ import net.exmo.exmodifier.content.helper.*;
 import net.exmo.exmodifier.content.level.ItemLevelHandle;
 import net.exmo.exmodifier.content.modifier.*;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
+import net.exmo.exmodifier.content.refine.RefineHandle;
+import net.exmo.exmodifier.content.refine.RefineItemRecordPreparableReloadListener;
 import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.slot.ModifierSlotHandle;
 import net.exmo.exmodifier.content.suit.ExSuit;
@@ -541,7 +543,7 @@ public class MainEvent {
 //                    }
 //                }
 
-                if (CuriosUtil.isCuriosItem2(toStack)) {
+                if (CuriosUtil.isCuriosItem2(toStack,false)) {
                     if (toStack.getTag() == null || modifierEntryHelper.getModifierEntriesSize() <= 0) {
                         RandomEntryCurios(toStack, 0, refresh_time, "none");
                     }
@@ -704,6 +706,7 @@ public class MainEvent {
 
             ExElementHandle.init2();
             ExElementHandle.init3();
+            RefineHandle.init();
             init.elementDefault().forEach(Runnable::run);
             init.defaultEntry().forEach(Runnable::run);
             init.suit() .forEach(Runnable::run);
@@ -737,6 +740,7 @@ public class MainEvent {
 
             event.addListener(new ElementPreparableReloadListener());
             event.addListener(new DefaultEntityPreparableReloadListener());
+            event.addListener(new RefineItemRecordPreparableReloadListener());
             event.addListener(new DefaultItemPreparableReloadListener());
 
 

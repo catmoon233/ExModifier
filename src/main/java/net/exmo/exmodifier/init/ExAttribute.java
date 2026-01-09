@@ -240,15 +240,18 @@ public class ExAttribute {
                     }
                 }
                 if (attacker != null && attacker.getAttributes().hasAttribute(ExAttribute.FIREWORK_DAMAGE.get())) {
-                    double multiplier = attacker.getAttributeValue(ExAttribute.FIREWORK_DAMAGE.get());
-                    FinallyDanage = ((float) (multiplier * FinallyDanage));
+                    if (event.getSource().is(DamageTypes.FIREWORKS)) {
+                        double multiplier = attacker.getAttributeValue(ExAttribute.FIREWORK_DAMAGE.get());
+                        FinallyDanage = ((float) (multiplier * FinallyDanage));
+                    }
                 }
             }
 
             if (entity.getAttributes().hasAttribute(ExAttribute.DEFENSE.get())) {
                 double v = entity.getAttributeValue(ExAttribute.DEFENSE.get());
-                FinallyDanage = (float) (FinallyDanage * Math.round(100 * (100 / (v - 1 + 100))) * 0.01);
-
+                if (v!=0) {
+                    FinallyDanage = (float) (FinallyDanage * Math.round(100 * (100 / (v - 1 + 100))) * 0.01);
+                }
 
             }
             if (entity.getAttributes().hasAttribute(ExAttribute.INJURY_FREE.get())) {

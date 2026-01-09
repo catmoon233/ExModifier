@@ -118,7 +118,7 @@ public class ModifierEntryHelper extends ExHelper {
 
         private static void applyNewEntries(Player player, ItemStack result, WashingMaterials material, int rarity) {
             if (material.additionEntry > 0) {
-                if (CuriosUtil.isCuriosItem2(result)) {
+                if (CuriosUtil.isCuriosItem2(result,false)) {
                     RandomEntryCurios(result, rarity, material.additionEntry, material.ItemId);
                 } else {
                     ModifierHandle.CommonEvent.RandomEntry(
@@ -292,7 +292,7 @@ public class ModifierEntryHelper extends ExHelper {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack itemBySlot = e.getItemBySlot(slot);
             if (itemBySlot.isEmpty()) continue;
-            if (!CuriosUtil.isCuriosItem2(itemBySlot)) {
+            if (!CuriosUtil.isCuriosItem2(itemBySlot,false)) {
                 ModifierEntryHelper modifierEntryHelper = new ModifierEntryHelper(itemBySlot);
                 level += modifierEntryHelper.getModifierEntryLevel(entryID);
 
@@ -306,7 +306,7 @@ public class ModifierEntryHelper extends ExHelper {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack itemBySlot = e.getItemBySlot(slot);
             if (itemBySlot.isEmpty()) continue;
-            if (!CuriosUtil.isCuriosItem2(itemBySlot)) {
+            if (!CuriosUtil.isCuriosItem2(itemBySlot,false)) {
                 ModifierEntryHelper modifierEntryHelper = new ModifierEntryHelper(itemBySlot);
                 level += modifierEntryHelper.getSubModifierEntryLevel(entryID);
 
@@ -515,8 +515,8 @@ public class ModifierEntryHelper extends ExHelper {
 
             List<ModifierAttriGether> addTo = selectModifierAttributes(modifierInstant.getModifierEntry());
 
-            if (CuriosUtil.isCuriosItem2(this.itemStack))
-                applyModifiersCurios(itemStack, addTo, CuriosUtil.getSlotsFromItemstack(itemStack), oldInstant);
+            if (CuriosUtil.isCuriosItem2(this.itemStack,false))
+                applyModifiersCurios(itemStack, addTo, CuriosUtil.getSlotsFromItemstack(itemStack,false), oldInstant);
             else applyModifiers(itemStack, addTo, getEquipmentSlot(itemStack), modifierInstant, oldInstant);
         }
         return this;
@@ -548,7 +548,7 @@ public class ModifierEntryHelper extends ExHelper {
             }
         }
         if (removeAttribute) {
-            if (CuriosUtil.isCuriosItem2(itemStack)) {
+            if (CuriosUtil.isCuriosItem2(itemStack,false)) {
                 for (ModifierAttriGether modifierAttriGether : modifierInstant.getModifierEntry().attriGether) {
                     if (modifierAttriGether.attribute != null)
                         CuriosUtil.removeAttributeModifierAffix(itemStack, ExUtil.getAttributeID(modifierAttriGether.attribute).toString(), modifierAttriGether.modifier.getName());
@@ -633,7 +633,7 @@ public class ModifierEntryHelper extends ExHelper {
             if (stack.getTag() == null) return;
             if (stack.getTag().getInt("exmodifier_armor_modifier_applied") == 0) return;
             //  List<ItemType> types = ModifierEntry.getType(stack);
-            List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
+            List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack,false);
             List<ModifierEntry> hasAttriGether = getEntrysFromItemStack_old(stack);
             for (int i = 0; i < hasAttriGether.size(); i++) {
                 ModifierEntry modifierAttriGether = hasAttriGether.get(i);

@@ -88,9 +88,9 @@ CuriosUtil {
         }
         return attrGethers;
     }
-    public static List<String> getSlotsFromItemstack(ItemStack itemStack) {
+    public static List<String> getSlotsFromItemstack(ItemStack itemStack,boolean isClient) {
 //        if (CuriosUtil.isCuriosItem(itemStack)) {
-            Set<String> curioTags = CuriosApi.getItemStackSlots(itemStack,false).keySet();
+            Set<String> curioTags = CuriosApi.getItemStackSlots(itemStack,isClient).keySet();
 //            for (String s : curioTags) Exmodifier.LOGGER.debug("curio slot: "+s);
             return new ArrayList<>(curioTags);
 //        }
@@ -101,8 +101,8 @@ CuriosUtil {
     public static boolean isCuriosItem(ItemStack itemStack){
         return CuriosApi.getCurio(itemStack).isPresent();
     }
-    public static boolean isCuriosItem2(ItemStack itemStack){
-        return !getSlotsFromItemstack(itemStack).isEmpty();
+    public static boolean isCuriosItem2(ItemStack itemStack,boolean isClient){
+        return !getSlotsFromItemstack(itemStack,isClient).isEmpty();
     }
 //    public static void addAttributeModifier(ItemStack itemStack, AttriGether attriGether, String slot){
 //        CuriosUtil.addAttributeModifier(itemStack, ExUtil.getAttributeID(attriGether.attribute).toString(), attriGether.modifier.getAmount(), attriGether.modifier.getOperation().toValue(), slot);

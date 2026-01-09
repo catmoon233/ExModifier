@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.MoConfig;
+import net.exmo.exmodifier.events.ExRegisterExType;
 import net.exmo.exmodifier.util.ExConfigHandle;
 import net.exmo.exmodifier.util.ItemSelector;
 import net.minecraft.nbt.CompoundTag;
@@ -13,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -66,6 +68,7 @@ public class ExTypeHandle {
         for (ItemType itemType : entries){
             registerItemType(itemType);
         }
+        MinecraftForge.EVENT_BUS.post(new ExRegisterExType());
     }
 
     public static void processItemType(MoConfig moconfig, Map.Entry<String, JsonElement> entry, List<ItemType> entries) {

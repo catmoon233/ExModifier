@@ -439,6 +439,7 @@ public class ExElementHandle {
         }
         @SubscribeEvent(priority = EventPriority.LOW)
         public static void onHurtOver(LivingDamageEvent event) {
+            if (!Config.ELEMENT_SYSTEM.get())return;
             if (event.getSource().is(DamageTypes.GENERIC_KILL)) return;
             Entity entity = event.getSource().getEntity();
             if (entity instanceof LivingEntity livingEntity) {

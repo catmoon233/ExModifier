@@ -260,7 +260,7 @@ public class ModifierHandle {
 //                    if (modifierAttriGether.IsAutoEquipmentSlot){
 //                        slot = ModifierEntry.TypeToEquipmentSlot(ModifierEntry.getType(itemStack));
 //                    }
-                        boolean isCurios = CuriosUtil.isCuriosItem2(itemStack);
+                        boolean isCurios = CuriosUtil.isCuriosItem2(itemStack,true);
                         List<AttrGether> attributeModifiersAffix = CuriosUtil.getAttributeModifiersAffix(itemStack);
                         boolean b = isCurios && attributeModifiersAffix.stream().noneMatch(attriGether -> attriGether.attributeModifier.getName().equals(attributemodifier.getName()));
                         if (
@@ -786,7 +786,7 @@ public class ModifierHandle {
                 stack.getTag().remove("modifier_refresh");
 
             }
-            List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack);
+            List<String> curiosType = CuriosUtil.getSlotsFromItemstack(stack,false);
             WeightedUtil<String> weightedUtil = new WeightedUtil<>(
                     modifierEntryMap.entrySet().stream()
                             .filter(e -> {
@@ -1615,7 +1615,7 @@ public class ModifierHandle {
     public static EquipmentSlot getEquipmentSlot(JsonObject attrGetherObj) {
         if (attrGetherObj.has("slot")) {
             String slotStr = attrGetherObj.get("slot").getAsString();
-            if (!slotStr.equals("auto")) {
+            if (!"auto".equals(slotStr)) {
                 return ExConfigHandle.getEquipmentSlot(slotStr);
             }
         }

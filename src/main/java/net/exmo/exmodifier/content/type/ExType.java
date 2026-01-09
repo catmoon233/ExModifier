@@ -127,6 +127,14 @@ public class ExType {
     )
         ),EquipmentSlot.MAINHAND
     );
+//    public static ExType FOOD = new ExType("FOOD",new ItemSelector(
+//            (itemStack, atomicBoolean) -> {
+//                if (itemStack.getItem().){
+//                    atomicBoolean.set(true);
+//                }
+//            }
+//    ));
+
 
     public static ExType FISHING_ROD = new ExType("FISHING_ROD",new ItemSelector(
             null,null,null, ItemSelector.CompareType.TAG, List.of(

@@ -64,6 +64,14 @@ public class RefineHelper extends ExHelper {
         boolean canRefine = stack.getItem() == itemStack.getItem();
         ExCanRefineEvent exCanRefineEvent = new ExCanRefineEvent(itemStack,stack,canRefine,this);
         MinecraftForge.EVENT_BUS.post(exCanRefineEvent);
+        
+        // 检查消耗品的最小星级要求
+        ResourceLocation consumeItemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        RefineItemRecord record = RefineHandle.getRefineItem(consumeItemId);
+        if (record != null && getRefineLevel() < record.getNeedMinStar()) {
+            exCanRefineEvent.canRefine = false;
+        }
+        
         List<ItemQuality> qualityEntries = ItemQualityHelper.of(stack).getQualityEntries();
         if ((!qualityEntries.isEmpty() && qualityEntries.stream().anyMatch(itemQuality -> itemQuality.refineNeedSameStar)) ||Config.refine_system)
             if ( Config.refine_need_same_star&&RefineHelper.of(stack).getRefineLevel() != getRefineLevel() ) exCanRefineEvent.canRefine  = false;
@@ -176,6 +184,42 @@ public class RefineHelper extends ExHelper {
                     .withStyle(ChatFormatting.YELLOW);
         }
         return null;
+    }
+    
+    public int getRefineSuccessChance(ItemStack consumeItem) {
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(consumeItem.getItem());
+        RefineItemRecord record = RefineHandle.getRefineItem(itemId);
+        
+        if (record != null) {
+            return record.getChance();
+        }
+        
+        // 如果没有特定配置，默认返回100（总是成功）
+        return 100;
+    }
+    
+    public int getRefineMaxBoostStar(ItemStack consumeItem) {
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(consumeItem.getItem());
+        RefineItemRecord record = RefineHandle.getRefineItem(itemId);
+        
+        if (record != null) {
+            return record.getMaxBoostStar();
+        }
+        
+        // 如果没有特定配置，返回配置文件中的默认值
+        return Config.max_refine;
+    }
+    
+    public int getRefineNeedMinStar(ItemStack consumeItem) {
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(consumeItem.getItem());
+        RefineItemRecord record = RefineHandle.getRefineItem(itemId);
+        
+        if (record != null) {
+            return record.getNeedMinStar();
+        }
+        
+        // 如果没有特定配置，默认返回0（无最低星级要求）
+        return 0;
     }
 
 }

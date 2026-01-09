@@ -4,10 +4,11 @@ import net.exmo.exmodifier.util.gether.AttrGether;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.Event;
 
 import java.util.List;
-
 public class ExCuriosAttributeTooltipEvent extends Event {
 
     public Player player;
