@@ -62,19 +62,20 @@ public class RefineHelper extends ExHelper {
     }
     public boolean canRefine(ItemStack stack){
         boolean canRefine = stack.getItem() == itemStack.getItem();
+        canRefine = Config.CAN_USE_SAME_ITEM_REFINE.get();
         ExCanRefineEvent exCanRefineEvent = new ExCanRefineEvent(itemStack,stack,canRefine,this);
         MinecraftForge.EVENT_BUS.post(exCanRefineEvent);
-        
-        // 检查消耗品的最小星级要求
-        ResourceLocation consumeItemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
-        RefineItemRecord record = RefineHandle.getRefineItem(consumeItemId);
-        if (record != null && getRefineLevel() < record.getNeedMinStar()) {
-            exCanRefineEvent.canRefine = false;
-        }
-        
+
+
+
         List<ItemQuality> qualityEntries = ItemQualityHelper.of(stack).getQualityEntries();
         if ((!qualityEntries.isEmpty() && qualityEntries.stream().anyMatch(itemQuality -> itemQuality.refineNeedSameStar)) ||Config.refine_system)
             if ( Config.refine_need_same_star&&RefineHelper.of(stack).getRefineLevel() != getRefineLevel() ) exCanRefineEvent.canRefine  = false;
+        ResourceLocation consumeItemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        RefineItemRecord record = RefineHandle.getRefineItem(consumeItemId);
+        if (record != null ) {
+            exCanRefineEvent.canRefine = true;
+        }
         return exCanRefineEvent.canRefine && getRefineLevel()<getRefineMaxLevel() ;
     }
     public  ExAttributeModifier getRefineModifier(int add) {

@@ -99,6 +99,9 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue AUTO_WEAPON_ELEMENT = BUILDER
             .comment("AUTO_WEAPON_ELEMENT")
             .define("AUTO_WEAPON_ELEMENT", false);
+    public static final ForgeConfigSpec.BooleanValue CAN_USE_SAME_ITEM_REFINE = BUILDER
+            .comment("CAN_USE_SAME_ITEM_REFINE")
+            .define("CAN_USE_SAME_ITEM_REFINE", false);
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
 

@@ -230,7 +230,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
     public List<ItemStack> filterItems3(List<ItemStack> items) {
         return items.stream()
-                .filter(item -> !item.isEmpty() && item != this.selectedItemStack && RefineHelper.of(item).canRefine(this.selectedItemStack))
+                .filter(item -> !item.isEmpty() && item != this.selectedItemStack && RefineHelper.of(selectedRefreshItem).canRefine(item))
                 .toList();
     }
 
@@ -826,7 +826,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                 if (count != 1) {
                     Optional<WashingMaterials> first = ModifierHandle.materialsList.stream().filter(m -> m.ItemId.equals(ExUtil.getItemID(stack))).findFirst();
                     boolean present = first.isPresent();
-                    int needCount = present ? first.get().NeedCount : 1;
+                    int needCount =RefreshMenuScreenPlus.this.currentPage == 1 ? 1 : present ? first.get().NeedCount : 1;
                     String s = "";
                     if (needCount > count) {
                         s = "§4" + count + "/" + needCount;

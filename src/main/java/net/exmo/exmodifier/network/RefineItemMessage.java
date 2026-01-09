@@ -40,28 +40,46 @@ public record RefineItemMessage(int refreshItem, int toRefreshItem) {
             ItemStack toRefreshItem = player.getInventory().getItem(msg.toRefreshItem); // 目标物品
             RefineHelper refineHelper = RefineHelper.of(toRefreshItem);
             boolean b = refineHelper.canRefine(refineItem);
-            
+            boolean chanceFail = false;
+            boolean maxFail = false;
             PlayerRefreshScreenOverMessageMessage message1;
             if (b){
                 ResourceLocation refineItemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(refineItem.getItem());
                 RefineItemRecord record = net.exmo.exmodifier.content.refine.RefineHandle.getRefineItem(refineItemId);
-                
+
                 boolean success = true;
-                if (record != null) {
+                if (record != null && refineHelper.getRefineLevel() >= record.getMaxBoostStar()) {
+                    success = false;
+                    maxFail = true;
+                }
+                if (record !=null && record.getNeedMinStar() > refineHelper.getRefineLevel()){
+                    success = false;
+                    maxFail = true;
+                }
+                if (success && record != null) {
                     int chance = record.getChance();
                     success = net.minecraft.util.RandomSource.createNewThreadLocalInstance().nextInt(100) < chance;
+                    if (!success){
+                        refineItem.shrink(1);
+                        chanceFail = true;
+
+                    }
                 }
                 
                 if (success) {
-                    if (record != null && refineHelper.getRefineLevel() >= record.getMaxBoostStar()) {
-                        message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_fail"));
-                    } else {
                         refineHelper.addRefine(true,1);
                         message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_success"));
                         refineItem.shrink(1);
-                    }
+
                 } else {
-                    message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_fail"));
+                    if (chanceFail) {
+                        message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_fail_chance"));
+                    }else  if (maxFail){
+                        message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_fail_max"));
+                    }
+                    else {
+                        message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_fail"));
+                    }
                 }
             }else {
                 message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_fail"));

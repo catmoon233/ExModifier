@@ -1,8 +1,12 @@
 package net.exmo.exmodifier.content.refine;
 
 import net.exmo.exmodifier.util.exSerialize.ExSerialize;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public final class RefineItemRecord {
@@ -94,6 +98,16 @@ public final class RefineItemRecord {
     @Override
     public int hashCode() {
         return Objects.hash(item, maxBoostStar, chance, needMinStar);
+    }
+
+    public List<Component> getDescriptionComponents() {
+        List<Component> list = new ArrayList<>();
+        list.add(Component.empty());
+        list.add(Component.translatable("exmodifier.refine.description.title").withStyle(ChatFormatting.GOLD));
+        list.add(Component.translatable("exmodifier.refine.description.max_boost_star", maxBoostStar).withStyle(ChatFormatting.AQUA));
+        list.add(Component.translatable("exmodifier.refine.description.success_chance", chance).withStyle(ChatFormatting.GREEN));
+        list.add(Component.translatable("exmodifier.refine.description.need_min_star", needMinStar).withStyle(ChatFormatting.YELLOW));
+        return list;
     }
 
     @Override

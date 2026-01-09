@@ -116,6 +116,24 @@
   "modifier.entry.level": "§7Current Entry Book Level: §6",
   "modifier.entry.slot": "§7Slot:",
   "exmodifier.cooldown.end": "%s cooldown over",
-  "gui.exmodifier.refresh_fail_limit": "Refresh fail . cause : entry count limit"
+  "gui.exmodifier.refresh_fail_limit": "Refresh fail . cause : entry count limit",
+  "exmodifier.refine.description.title": "§6Refinement Material Information:",
+  "exmodifier.refine.description.max_boost_star": "§bMaximum Enhancement Stars: %s",
+  "exmodifier.refine.description.success_chance": "§aSuccess Chance: %s%%",
+  "exmodifier.refine.description.need_min_star": "§eMinimum Star Requirement: %s",
+  "exmodifier.refine.description.tip": "§7press shift to show this refine infos",
+  "exmodifier.washing_materials.description.title": "§6Washing Materials Information:",
+  "exmodifier.washing_materials.description.rarity": "§dRarity: %s",
+  "exmodifier.washing_materials.description.cost_exp": "§aCost Experience: %s",
+  "exmodifier.washing_materials.description.need_count": "§bRequired Count: %s",
+  "exmodifier.washing_materials.description.min_random_time": "§eMin Random Time: %s",
+  "exmodifier.washing_materials.description.max_random_time": "§cMax Random Time: %s",
+  "exmodifier.washing_materials.description.addition_entry": "§6Additional Entries: %s",
+  "exmodifier.washing_materials.description.keep_entries": "§7Keep Entries: %s",
+  "exmodifier.washing_materials.description.only_types": "§9Only Types: %s",
+  "exmodifier.washing_materials.description.only_tags": "§5Only Tags: %s",
+  "exmodifier.washing_materials.description.only_items": "§3Only Items: %s",
+  "exmodifier.washing_materials.description.only_has_wash_entry": "§4Only Wash Entry Items",
+  "exmodifier.washing_materials.description.tip": "§7Press shift to show washing materials info"
 
 }

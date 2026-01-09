@@ -8,6 +8,7 @@ import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.RefreshContainItemHandle;
 import net.exmo.exmodifier.content.modifier.RefreshContainTagHandle;
 import net.exmo.exmodifier.content.quality.ItemQualityHandle;
+import net.exmo.exmodifier.content.refine.RefineHandle;
 import net.exmo.exmodifier.content.resources.ZipHandle;
 import net.exmo.exmodifier.content.selected.BaseItemSelected;
 import net.exmo.exmodifier.content.slot.ModifierSlotHandle;
@@ -121,6 +122,7 @@ public abstract class AbstractReloadListener<T> extends SimplePreparableReloadLi
 
             ExElementHandle.init2();
             ExElementHandle.init3();
+            RefineHandle.init();
             if (zipFunction!=null) {
                 zipFunction.elementDefault().forEach(Runnable::run);
                 zipFunction.defaultEntry().forEach(Runnable::run);
