@@ -43,24 +43,19 @@ public record RefineItemMessage(int refreshItem, int toRefreshItem) {
             
             PlayerRefreshScreenOverMessageMessage message1;
             if (b){
-                // 获取消耗品的精炼记录
                 ResourceLocation refineItemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(refineItem.getItem());
                 RefineItemRecord record = net.exmo.exmodifier.content.refine.RefineHandle.getRefineItem(refineItemId);
                 
                 boolean success = true;
                 if (record != null) {
-                    // 使用随机数判断是否成功
                     int chance = record.getChance();
                     success = net.minecraft.util.RandomSource.createNewThreadLocalInstance().nextInt(100) < chance;
                 }
                 
                 if (success) {
-                    // 检查目标物品当前星级是否已达到该消耗品定义的最大升星数
                     if (record != null && refineHelper.getRefineLevel() >= record.getMaxBoostStar()) {
-                        // 已达到该消耗品允许的最大星级
                         message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_fail"));
                     } else {
-                        // 增加星级
                         refineHelper.addRefine(true,1);
                         message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refine_success"));
                         refineItem.shrink(1);

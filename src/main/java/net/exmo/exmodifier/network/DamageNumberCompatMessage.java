@@ -24,7 +24,7 @@ public record DamageNumberCompatMessage(int color) {
     public static void handle(DamageNumberCompatMessage msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(()->{
             long time = new Date().getTime();
-            while (DamageNumberCompatData.cache.asMap().containsKey(time)) {
+            while (DamageNumberCompatData.cache.containsKey(time)) {
                 time++;
             }
             DamageNumberCompatData.cache.put(time,  msg.color);
