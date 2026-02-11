@@ -69,6 +69,10 @@ public class ItemQualityHandle {
 //            for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
 //                processItemsQualityConfigEntry(entry);
 //            }
+        }else {
+            //创建文件夹
+            Files.createDirectories(ItemsQualityConfigPath);
+
         }
 
     }

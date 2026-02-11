@@ -186,6 +186,7 @@ public class AttributeCuriosHandle {
     }
 
     public static void handleCurios(CurioChangeEvent event) {
+        if (!(event.getEntity() instanceof Player))return;
         if (event.getFrom().getItem() instanceof AttributeCurios a) {
             if (attributeCurios.contains(a)) {
                 if (a.attrGethers !=null) {

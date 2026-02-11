@@ -25,21 +25,33 @@ public class ExConfig {
     public Path getConfigFile() {
         return configFile;
     }
+    
+    /**
+     * 检查并创建配置文件所在目录
+     * @throws IOException 如果创建目录失败
+     */
+    private void createConfigDirectoryIfNeeded() throws IOException {
+        Path parentDir = configFile.getParent();
+        if (parentDir != null && !Files.exists(parentDir)) {
+            Files.createDirectories(parentDir);
+            Exmodifier.LOGGER.Logger.info("自动创建配置目录: " + parentDir.toString());
+        }
+    }
     public JsonObject read() throws FileNotFoundException {
         try {
-
-
+            // 自动创建配置文件所在目录
+            createConfigDirectoryIfNeeded();
+            
             if (Files.exists(configFile)) {
                 try (FileReader reader = new FileReader(configFile.toFile())) {
                     Gson gson = new Gson();
-
                     return gson.fromJson(reader, JsonObject.class);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
-        }catch (Exception e){
-
+        } catch (Exception e) {
+            getError("读取配置文件时出错: " + e.getMessage());
             return null;
         }
         return null;

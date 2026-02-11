@@ -5,7 +5,7 @@ import java.util.*;
 
 //by canyuesama
 public class WeightedUtil<T> {
-    private final Map<T, Float> weights;
+    public final Map<T, Float> weights;
     private final List<T> keys;
     private  List<Float> cumulativeWeights;
     private float totalWeight;
