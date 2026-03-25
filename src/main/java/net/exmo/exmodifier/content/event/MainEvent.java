@@ -177,30 +177,7 @@ public class MainEvent {
         }
 
         public static Pair<List<Component>, Integer> EntryInfoTooltip(ItemStack stack, List<Component> tooltip, Player player) {
-            if (stack.getTag() != null) {
-                ModifierEntryHelper modifierEntryHelper = ModifierEntryHelper.of(stack);
-                if (stack.getTag().getBoolean("UNKNOWN")) {
-                    tooltip.add(Component.translatable("null"));
-                    tooltip.add(Component.translatable("modifier.entry.UNKNOWN"));
-                } else {
-                    if (modifierEntryHelper.getModifierEntriesSize() > 0) {
-
-
-                        for (ModifierInstant modifierEntry : new ItemInfo(stack).getModifierEntryHelper().getModifierEntries()) {
-                            if (modifierEntry.getSlot().isPresent()) continue;
-                            // Exmodifier.LOGGER.debug("modifier Id:" + exElement.Id);
-                            if (!Config.compact_tooltip) tooltip.add(Component.translatable("null"));
-                            tooltip.addAll(generateEntryTooltip(modifierEntry, player, stack, false));
-
-                        }
-                    }
-                    if (stack.getTag().getBoolean("can_add_max"))
-                        tooltip.add(Component.translatable("modifier.entry.can_add_max"));
-
-                }
-            }
-
-            return new Pair<>(tooltip, tooltip.size());
+            return EntryTooltipHelper.appendEntryInfo(stack, tooltip, player);
         }
 
 
@@ -841,4 +818,3 @@ public class MainEvent {
         FoundDefaultElementConfigs.clear();
     }
 }
-
