@@ -193,8 +193,11 @@ public class ModifierHandle {
 
     @Mod.EventBusSubscriber
     public static class CommonEvent {
-
         public static List<Component> GenSuitInfo(Player player, ModifierEntry modifierEntry) {
+            return GenSuitInfo(player, modifierEntry,false);
+
+        }
+        public static List<Component> GenSuitInfo(Player player, ModifierEntry modifierEntry,boolean showSuitDec) {
             if (player == null) return null;
             List<Component> tooltips = new ArrayList<>();
             var list = ExSuitHandle.FindExSuitFromEntry(modifierEntry.id);
@@ -208,7 +211,9 @@ public class ModifierHandle {
                         tooltips.add(Component.translatable("modifier.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.getMaxLevel() + ")")));
                         if (!suit.LocalDescription.isEmpty())
                             tooltips.addAll(TooltipUtil.sprit(Component.translatable(suit.LocalDescription)));
+                        if (showSuitDec){
 
+                        }
                         //.append(Component.translatable("modifier.entry.suit.color"))
                     }
                 }
@@ -217,8 +222,11 @@ public class ModifierHandle {
             }
             return tooltips;
         }
-
         public static List<Component> generateEntryTooltip(ModifierInstant modifierEntryInstant, Player player, ItemStack itemStack, boolean skinFold) {
+            return generateEntryTooltip(modifierEntryInstant, player, itemStack, skinFold,false);
+
+        }
+        public static List<Component> generateEntryTooltip(ModifierInstant modifierEntryInstant, Player player, ItemStack itemStack, boolean skinFold,boolean showSuitEffect) {
             List<Component> tooltips = new ArrayList<>();
             ModifierEntry modifierEntry = modifierEntryInstant.getModifierEntry();
             int level = modifierEntryInstant.getLevel();
@@ -249,7 +257,7 @@ public class ModifierHandle {
                 }
 
                 if (foldFlag || skinFold) {
-                    tooltips.addAll(GenSuitInfo(player, modifierEntry));
+                    tooltips.addAll(GenSuitInfo(player, modifierEntry,showSuitEffect));
                     for (ModifierAttriGether modifierAttriGether : modifierEntry.attriGether) {
                         ExAttributeModifier attributemodifier = modifierAttriGether.getModifier();
                         Attribute attribute = modifierAttriGether.getAttribute();
