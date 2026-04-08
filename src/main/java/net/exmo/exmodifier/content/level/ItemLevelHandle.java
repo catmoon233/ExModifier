@@ -15,6 +15,7 @@ import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.events.ExItemUpEvent;
 import net.exmo.exmodifier.events.ExLevelRegistryEvent;
 import net.exmo.exmodifier.util.*;
+import net.exmo.exmodifier.util.module.ExDataModule;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -35,13 +36,42 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.getEquipmentSlot;
 
-public class ItemLevelHandle {
+public class ItemLevelHandle extends ExDataModule<String, ItemLevel> {
+
+    public static final ItemLevelHandle INSTANCE = new ItemLevelHandle();
+
+    private ItemLevelHandle() {
+        super("ItemLevel");
+    }
+
+    @Override
+    protected Path getConfigPath() {
+        return FMLPaths.CONFIGDIR.get().resolve("exmo/ItemLevel");
+    }
+
+    @Override
+    protected void processEntry(String entryKey, JsonObject json, MoConfig moConfig) {
+        // 委托给已有的 processItemLevel
+        List<ItemLevel> entries = new ArrayList<>();
+        processItemLevel(moConfig, Map.entry(entryKey, (JsonElement) json), entries);
+    }
+
+    @Override
+    public void processMoConfig(MoConfig moConfig) {
+        // 使用已有的完整逻辑
+        try {
+            processLevelMoConfigEntries(moConfig);
+        } catch (FileNotFoundException e) {
+            Exmodifier.LOGGER.error("Error processing ItemLevel config: " + moConfig.configFile, e);
+        }
+    }
     @Mod.EventBusSubscriber
     public static class CommonEvent{
         @SubscribeEvent
@@ -91,13 +121,22 @@ public class ItemLevelHandle {
             }
         }
     }
-    public static List<MoConfig> Foundlvconfigs = new ArrayList<>();
-    public static final Path LEVEL_CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve("exmo/ItemLevel");
-    public static Map<String, ItemLevel> ItemLevels = new java.util.HashMap<>();
+    // region 兼容旧API
+    /** @deprecated 使用 INSTANCE.foundConfigs */
+    @Deprecated public static List<MoConfig> Foundlvconfigs = INSTANCE.foundConfigs;
+    /** @deprecated 使用 INSTANCE.getConfigPath() */
+    @Deprecated public static final Path LEVEL_CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve("exmo/ItemLevel");
+    /** @deprecated 使用 INSTANCE.getAll() */
+    @Deprecated public static Map<String, ItemLevel> ItemLevels = INSTANCE.registry;
+
     public static void RegistryItemLevel(ItemLevel itemLevel){
-        ItemLevels.put(itemLevel.getId(), itemLevel);
-        Exmodifier.LOGGER.debug("Registry ItemLevel: " + itemLevel.id);
+        INSTANCE.register(itemLevel.getId(), itemLevel);
     }
+
+    public static void readConfig() throws IOException {
+        INSTANCE.load();
+    }
+    // endregion
     public static void contaiff(ItemStack stack, int rarity , int refreshnumber, List<ItemType> type)  {
         Exmodifier.LOGGER.debug("ItemLevelRefresh: " + stack.getDescriptionId() + " " + type);
 

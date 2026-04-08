@@ -1,28 +1,37 @@
 package net.exmo.exmodifier.content.helper.entity;
 
+import net.exmo.exmodifier.util.module.ExEntityNbtAccessor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 
-import javax.swing.text.html.parser.Entity;
-
-public class BaseEntityHelper {
-    public static final String EXMO_NBT = "exmo_nbt";
+/**
+ * Entity Helper基类 - 现在继承ExEntityNbtAccessor，提供统一的NBT访问方法。
+ * 所有Entity子类Helper都可以使用 getMainNbt(), validMainNbt(), ensureMainNbt(),
+ * getListTag(), addListItem(), removeFirstFromList() 等方法。
+ */
+public class BaseEntityHelper extends ExEntityNbtAccessor {
+    /** @deprecated 使用 persistentData */
+    @Deprecated
     public CompoundTag nbt;
-    public final LivingEntity entity;
 
     public BaseEntityHelper(LivingEntity entity) {
-        this.entity = entity;
+        super(entity);
         this.nbt = entity.getPersistentData();
     }
-    public CompoundTag getMainNbt(){
-        if (nbt==null)return new CompoundTag();
-        return nbt.getCompound(EXMO_NBT);
+
+    // region 向后兼容的旧方法
+
+    /** @deprecated 使用 ensureMainNbt() */
+    @Deprecated
+    public void createMainNbt() {
+        ensureMainNbt();
     }
-    public void createMainNbt(){
-        nbt.put(EXMO_NBT,new CompoundTag());
+
+    /** @deprecated 使用 validMainNbt() */
+    @Deprecated
+    public boolean ValidMainNbt() {
+        return validMainNbt();
     }
-    public boolean ValidMainNbt(){
-        if (nbt==null)return false;
-        return nbt.contains(EXMO_NBT);
-    }
+
+    // endregion
 }

@@ -3,53 +3,64 @@ package net.exmo.exmodifier.content.helper;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.type.ItemType;
+import net.exmo.exmodifier.util.module.ExItemNbtAccessor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.isValidForType;
 import static net.exmo.exmodifier.content.modifier.ModifierHandle.CommonEvent.typeSlotMap;
 
-public class ExHelper {
-    private CompoundTag nbt;
-    public ItemStack itemStack;
-    public static final String EXMO_NBT = "exmo_nbt";
+/**
+ * ItemStack Helper基类 - 现在继承ExItemNbtAccessor，提供统一的NBT访问方法。
+ * 所有子类Helper都可以使用 getMainNbt(), validMainNbt(), ensureMainNbt(),
+ * getListTag(), addListItem(), removeFirstFromList() 等方法。
+ *
+ * 同时保留向后兼容的旧方法名。
+ */
+public class ExHelper extends ExItemNbtAccessor {
 
     public ExHelper(ItemStack itemStack) {
-        this.itemStack = itemStack;
-        this.nbt = itemStack.getTag();
+        super(itemStack);
     }
-    public void createNbt(){
-     nbt = itemStack.getOrCreateTag();
+
+    // region 向后兼容的旧方法（委托到ExItemNbtAccessor）
+
+    /** @deprecated 使用 itemStack.getOrCreateTag() 或 ensureMainNbt() */
+    @Deprecated
+    public void createNbt() {
+        itemStack.getOrCreateTag();
     }
-    public void createMainNbt(){
-        nbt.put(EXMO_NBT,new CompoundTag());
+
+    /** @deprecated 使用 ensureMainNbt() */
+    @Deprecated
+    public void createMainNbt() {
+        ensureMainNbt();
     }
-    public boolean ValidMainNbt(){
-        if (nbt==null)return false;
-        return nbt.contains(EXMO_NBT);
+
+    /** @deprecated 使用 validMainNbt() */
+    @Deprecated
+    public boolean ValidMainNbt() {
+        return validMainNbt();
     }
-    public CompoundTag getMainNbt(){
-        if (nbt==null)return new CompoundTag();
-        return nbt.getCompound(EXMO_NBT);
-    }
-    public EquipmentSlot[] getEquipmentSlot(ItemStack itemStack){
-        if (itemStack.getItem() instanceof ArmorItem armorItem){
+
+    // endregion
+
+    public EquipmentSlot[] getEquipmentSlot(ItemStack itemStack) {
+        if (itemStack.getItem() instanceof ArmorItem armorItem) {
             return new EquipmentSlot[]{armorItem.getEquipmentSlot()};
         }
         Map<ItemType, EquipmentSlot[]> typeEquipmentSlotMap = typeSlotMap();
 
-
         for (Map.Entry<ItemType, EquipmentSlot[]> entry : typeEquipmentSlotMap.entrySet()) {
             ItemType type = entry.getKey();
             EquipmentSlot[] slot = entry.getValue();
-           if ( isValidForType(itemStack, type))return slot;
-    }
+            if (isValidForType(itemStack, type)) return slot;
+        }
         return new EquipmentSlot[]{itemStack.getItem().getEquipmentSlot(itemStack)};
     }
 }

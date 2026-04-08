@@ -26,6 +26,7 @@ import java.util.zip.ZipFile;
 public class ExConfigHandle {
     public static int autoUUID = 0;
     public static int autoName = 0;
+    private static final Set<String> REPORTED_UNKNOWN_OPERATIONS = Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
     public static enum type {
         Operation,
         Attribute,
@@ -38,6 +39,7 @@ public class ExConfigHandle {
     static {
         valueByKey.put(type.Operation, Map.of(
                 "add", AttributeModifier.Operation.ADDITION,
+            "addition", AttributeModifier.Operation.ADDITION,
                 "multiply", AttributeModifier.Operation.MULTIPLY_TOTAL,
                 "multiply_base", AttributeModifier.Operation.MULTIPLY_BASE,
                 "multiply_total", AttributeModifier.Operation.MULTIPLY_TOTAL
@@ -124,7 +126,43 @@ public class ExConfigHandle {
         return (EquipmentSlot) valueByKey.get(type.EquipmentSlot).get(key);
     }
     public static AttributeModifier.Operation getOperation(String key){
-        return (AttributeModifier.Operation) valueByKey.get(type.Operation).get(key);
+        if (key == null) {
+            if (REPORTED_UNKNOWN_OPERATIONS.add("<null>")) {
+                Exmodifier.LOGGER.Logger.warn("Unknown attribute operation: <null>, fallback to ADDITION");
+            }
+            return AttributeModifier.Operation.ADDITION;
+        }
+
+        String normalized = key.trim();
+        if (normalized.isEmpty()) {
+            if (REPORTED_UNKNOWN_OPERATIONS.add("<empty>")) {
+                Exmodifier.LOGGER.Logger.warn("Unknown attribute operation: <empty>, fallback to ADDITION");
+            }
+            return AttributeModifier.Operation.ADDITION;
+        }
+
+        Object mapped = valueByKey.get(type.Operation).get(normalized.toLowerCase(Locale.ROOT));
+        if (mapped instanceof AttributeModifier.Operation operation) {
+            return operation;
+        }
+
+        try {
+            return AttributeModifier.Operation.valueOf(normalized.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        try {
+            AttributeModifier.Operation fromValue = AttributeModifier.Operation.fromValue(Integer.parseInt(normalized));
+            if (fromValue != null) {
+                return fromValue;
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
+        if (REPORTED_UNKNOWN_OPERATIONS.add(normalized)) {
+            Exmodifier.LOGGER.Logger.warn("Unknown attribute operation: '{}', fallback to ADDITION", normalized);
+        }
+        return AttributeModifier.Operation.ADDITION;
     }
     public static List<MoConfig> listFiles(Path directory) throws IOException {
         try (Stream<Path> paths = Files.walk(directory)) {

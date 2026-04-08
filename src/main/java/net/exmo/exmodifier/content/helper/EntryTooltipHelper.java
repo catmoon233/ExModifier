@@ -1,6 +1,7 @@
 package net.exmo.exmodifier.content.helper;
 
 import net.exmo.exmodifier.Config;
+import net.exmo.exmodifier.content.modifier.ModifierInstant;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;

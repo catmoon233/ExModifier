@@ -1,10 +1,8 @@
 package net.exmo.exmodifier.content.element;
 
 import com.google.gson.JsonObject;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.exmo.exmodifier.util.ExRegistryHelper;
 import net.exmo.exmodifier.util.exSerialize.ExSerialize;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -15,7 +13,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class DefaultEntityElement {
-    // 在序列化器配置中添加对 JSON 对象列表的支持
     public static final ExSerialize<DefaultEntityElement> SERIALIZER = ExSerialize.create(() ->
                     new DefaultEntityElement(null, new ArrayList<>()))
             .withAutoId(DefaultEntityElement::getEntityTypeString,DefaultEntityElement::setEntityType)
@@ -27,16 +24,11 @@ public class DefaultEntityElement {
                     DefaultEntityElement::setExElementInstantsString);
 
     private List<JsonObject> getExElementInstantsString() {
-        return  exElementInstants.stream().map(ExElementInstant.EX_SERIALIZE::toSingleJson).toList();
+        return ExRegistryHelper.toJsonObjects(exElementInstants, ExElementInstant.EX_SERIALIZE);
     }
     private void setExElementInstantsString(List<JsonObject> configs) {
-        configs.forEach(config -> {
-            // 解析每个配置对象中的 entries 数组
-            var instants = ExElementInstant.EX_SERIALIZE.fromJsonSingle(
-                    config
-            );
-            exElementInstants.add(instants);
-        });
+        exElementInstants.clear();
+        exElementInstants.addAll(ExRegistryHelper.fromJsonObjects(configs, ExElementInstant.EX_SERIALIZE));
     }
     private void setEntityType(String s) {
         Optional<EntityType<?>> entityType = EntityType.byString(s);

@@ -9,10 +9,14 @@ public class ExAttributeModifier {
     public double amount;
     public AttributeModifier.Operation operation;
 
+    private static AttributeModifier.Operation sanitizeOperation(AttributeModifier.Operation operation) {
+        return operation == null ? AttributeModifier.Operation.ADDITION : operation;
+    }
+
     public ExAttributeModifier(String name, double amount, AttributeModifier.Operation operation) {
         this.name = name;
         this.amount = amount;
-        this.operation = operation;
+        this.operation = sanitizeOperation(operation);
     }
 
 
@@ -35,22 +39,22 @@ public class ExAttributeModifier {
     }
 
     public AttributeModifier.Operation getOperation() {
-        return operation;
+        return sanitizeOperation(operation);
     }
 
     public ExAttributeModifier setOperation(AttributeModifier.Operation operation) {
-        this.operation = operation;
+        this.operation = sanitizeOperation(operation);
         return this;
     }
 
     public AttributeModifier toModifier(UUID uuid){
-        return new AttributeModifier(uuid, name, amount, operation);
+        return new AttributeModifier(uuid, name, amount, getOperation());
     }
     public AttributeModifier toModifier(){
-        return new AttributeModifier( name, amount, operation);
+        return new AttributeModifier( name, amount, getOperation());
     }
     public AttributeModifier toModifierRandomUUID(){
-        return new AttributeModifier( UUID.randomUUID(),name, amount, operation);
+        return new AttributeModifier( UUID.randomUUID(),name, amount, getOperation());
     }
     public static ExAttributeModifier fromModifier(AttributeModifier modifier){
         return new ExAttributeModifier(modifier.getName(),modifier.getAmount(),modifier.getOperation());

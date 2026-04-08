@@ -3,7 +3,6 @@ import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
-import java.util.HashMap;
 import java.util.function.Supplier;
 
 public record ClearModifierEntryMessage() {
@@ -18,7 +17,7 @@ public record ClearModifierEntryMessage() {
 
     public static void handle(ClearModifierEntryMessage msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ModifierHandle.modifierEntryMap = new HashMap<>();
+            ModifierHandle.modifierEntryMap.clear();
         });
         ctx.get().setPacketHandled(true);
     }

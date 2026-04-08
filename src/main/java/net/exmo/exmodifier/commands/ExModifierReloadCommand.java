@@ -106,7 +106,7 @@ public class ExModifierReloadCommand {
     public static void sendUpdatedModifiersToClients(MinecraftServer server) {
         if (server != null && server.getPlayerList() != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                MainEvent.DataCache dataCache = MainEvent.DataCache.create();
+                MainEvent.DataCache dataCache = MainEvent.createDataCache();
                 ModifierHandle.sendClearDataToClient(player);
                 sendExmoServerDataToServerPlayer(player, dataCache);
             }

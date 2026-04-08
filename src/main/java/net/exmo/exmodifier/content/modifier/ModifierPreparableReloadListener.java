@@ -14,7 +14,7 @@ public class ModifierPreparableReloadListener extends AbstractReloadListener<Mod
                 ModifierHandle.processModifierEntry(json.toString(), list);
                 return list;
             },
-            (key, entry) -> ModifierHandle.RegisterModifierEntry(entry)
+            (key, entry) -> ModifierHandle.registerModifierEntry(entry)
         );
     }
 

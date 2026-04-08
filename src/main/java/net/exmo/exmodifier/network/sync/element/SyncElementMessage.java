@@ -31,7 +31,7 @@ public record SyncElementMessage(ExElement exElement) {
             ExElement element = msg.exElement();
             // Process the exElement as needed
             Exmodifier.LOGGER.debug("Received exElement: " + element);
-            ExElementHandle.registryExElement(element);
+            ExElementHandle.registerExElement(element);
         });
         ctx.get().setPacketHandled(true);
     }

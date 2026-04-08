@@ -1,11 +1,9 @@
 
 package net.exmo.exmodifier.network.sync.element;
 import net.exmo.exmodifier.content.element.ExElementHandle;
-import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
-import java.util.HashMap;
 import java.util.function.Supplier;
 
 public record ClearElementMessage() {
@@ -20,7 +18,7 @@ public record ClearElementMessage() {
 
     public static void handle(ClearElementMessage msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ExElementHandle.exElements = new HashMap<>();
+            ExElementHandle.exElements.clear();
         });
         ctx.get().setPacketHandled(true);
     }

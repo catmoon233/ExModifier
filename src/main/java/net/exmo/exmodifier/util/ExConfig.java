@@ -13,9 +13,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 
 public class ExConfig {
    public Path configFile;
@@ -68,11 +68,14 @@ public class ExConfig {
     }
     public Set<Map.Entry<String, JsonElement>> readEntrys() throws FileNotFoundException {
         try {
+                if (jsonObject == null) {
+                    return Collections.emptySet();
+                }
                 return jsonObject.entrySet();
         }catch (Exception e){
             getError("Error while reading config file : not exists");
         }
-        return null;
+        return Collections.emptySet();
     }
 
     private static void getError(String s) {

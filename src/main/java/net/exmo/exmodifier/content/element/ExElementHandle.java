@@ -2,6 +2,7 @@ package net.exmo.exmodifier.content.element;
 
 import com.google.common.cache.Cache;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.difficult.ExDifficultHelper;
@@ -15,7 +16,9 @@ import net.exmo.exmodifier.events.OnElementRegisterEvent;
 import net.exmo.exmodifier.init.ExAttribute;
 import net.exmo.exmodifier.network.DamageNumberCompatMessage;
 import net.exmo.exmodifier.util.ExConfigHandle;
+import net.exmo.exmodifier.util.ExRegistryHelper;
 import net.exmo.exmodifier.util.ItemSelector;
+import net.exmo.exmodifier.util.module.ExDataModule;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.network.chat.Component;
@@ -46,11 +49,48 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ExElementHandle {
-    public static Map<ResourceLocation, ExElement> exElements = new java.util.HashMap<>();
-    public static List<MoConfig> FoundElementConfigs = new ArrayList<>();
-    public static final Path ElementConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/elements/");
-    public static Cache<DamageSource, List<ExElementInstant>> cache = com.google.common.cache.CacheBuilder.newBuilder().build();
+public class ExElementHandle extends ExDataModule<ResourceLocation, ExElement> {
+
+    public static final ExElementHandle INSTANCE = new ExElementHandle();
+
+    private ExElementHandle() {
+        super("Element");
+    }
+
+    @Override
+    protected Path getConfigPath() {
+        return FMLPaths.CONFIGDIR.get().resolve("exmo/elements/");
+    }
+
+    @Override
+    protected void processEntry(String entryKey, JsonObject json, MoConfig moConfig) {
+        // 不使用默认的逐条处理, processMoConfig已覆写
+    }
+
+    @Override
+    public void processMoConfig(MoConfig moConfig) {
+        try {
+            processMoConfigEntries(moConfig);
+        } catch (FileNotFoundException e) {
+            Exmodifier.LOGGER.error("Error processing Element config: " + moConfig.configFile, e);
+        }
+    }
+
+    @Override
+    protected void onPreInit() {
+        super.onPreInit();
+        MinecraftForge.EVENT_BUS.post(new OnElementRegisterEvent());
+    }
+
+    // region 兼容旧API
+    /** @deprecated 使用 INSTANCE.getAll() */
+    @Deprecated public static final Map<ResourceLocation, ExElement> exElements = INSTANCE.registry;
+    /** @deprecated 使用 INSTANCE.foundConfigs */
+    @Deprecated public static final List<MoConfig> FoundElementConfigs = INSTANCE.foundConfigs;
+    /** @deprecated 使用 INSTANCE.getConfigPath() */
+    @Deprecated public static final Path ElementConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/elements/");
+    // endregion
+    public static final Cache<DamageSource, List<ExElementInstant>> cache = com.google.common.cache.CacheBuilder.newBuilder().build();
 
     public static Optional<List<ExElementInstant>> getExElementInstant(DamageSource source) {
         return Optional.ofNullable(cache.getIfPresent(source));
@@ -75,53 +115,44 @@ public class ExElementHandle {
             return new elementAttributeSer(split[0],split[1]);
         }
     }
-    public static void registryExElement(ExElement exElement) {
-        exElements.put(exElement.getResId(), exElement);
+    public static void registerExElement(ExElement exElement) {
+        INSTANCE.register(exElement.getResId(), exElement);
         for (ElementAttributeName elementAttributeName : ElementAttributeName.values()){
             DynamicAttributeRegister.registerDynamicAttribute(new DynamicAttribute(new elementAttributeSer(exElement.getResId().toString(),elementAttributeName.name).gather(),new DynamicAttribute.range(0,Double.MAX_VALUE,0)));
         }
         Exmodifier.LOGGER.info("Registry ExElement: " + exElement.getResId());
     }
 
+    @Deprecated(forRemoval = false)
+    public static void registryExElement(ExElement exElement) {
+        registerExElement(exElement);
+    }
+
     public static ExElement getExElement(ResourceLocation id) {
-        return exElements.get(id);
+        return INSTANCE.get(id);
     }
 
     public static ExElement getExElement(String id) {
-        ExElement exElement = exElements.get(new ResourceLocation(id));
-        return exElement;
+        return INSTANCE.get(ResourceLocation.tryParse(id));
     }
 
     public static Map<ResourceLocation, ExElement> getExElements() {
-        return exElements;
+        return INSTANCE.getAll();
     }
 
 
     public static void init() throws IOException {
-        MinecraftForge.EVENT_BUS.post(new OnElementRegisterEvent());
-        if (Files.exists(ElementConfigPath)) {
-            long startTime = System.nanoTime(); // 记录开始时间
-
-            FoundElementConfigs = ExConfigHandle.listFiles(ElementConfigPath);
-            for (MoConfig moconfig : FoundElementConfigs) {
-                processMoConfigEntries(moconfig);
-            }
-
-            long endTime = System.nanoTime(); // 记录结束时间
-            long duration = endTime - startTime; // 计算持续时间
-            Exmodifier.LOGGER.debug("ReadConfig Quality Over time: " + duration / 1000000 + " ms");
-
-
-        }
+        INSTANCE.load();
     }
 
     public static void processMoConfigEntries(MoConfig moconfig) throws FileNotFoundException {
-        if (moconfig.readEntrys().isEmpty()) {
+        var entries = moconfig.readEntrys();
+        if (entries == null || entries.isEmpty() || moconfig.jsonObject == null) {
             Exmodifier.LOGGER.info("No Element Config Found");
             return;
         }
         var elements = ExElement.EX_SERIALIZE.fromJson(moconfig.jsonObject);
-        elements.forEach(ExElementHandle::registryExElement);
+        elements.forEach(ExElementHandle::registerExElement);
 
 
     }
@@ -154,7 +185,8 @@ public class ExElementHandle {
     }
 
     public static void processMoConfigEntries2(MoConfig moconfig) throws FileNotFoundException {
-        if (moconfig.readEntrys().isEmpty()) {
+        var entries = moconfig.readEntrys();
+        if (entries == null || entries.isEmpty() || moconfig.jsonObject == null) {
             Exmodifier.LOGGER.info("No Default Element Config Found: " + moconfig.configFile);
             return;
         }
@@ -167,7 +199,8 @@ public class ExElementHandle {
     }
 
     public static void processMoConfigEntries3(MoConfig moconfig) throws FileNotFoundException {
-        if (moconfig.readEntrys().isEmpty()) {
+        var entries = moconfig.readEntrys();
+        if (entries == null || entries.isEmpty() || moconfig.jsonObject == null) {
             Exmodifier.LOGGER.info("No Entity Default Element Config Found: " + moconfig.configFile);
             return;
         }

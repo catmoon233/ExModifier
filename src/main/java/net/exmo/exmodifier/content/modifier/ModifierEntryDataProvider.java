@@ -60,7 +60,7 @@ public abstract class ModifierEntryDataProvider implements DataProvider {
                         }));
                     });
             for (ModifierEntry entry : entries) {
-                ModifierHandle.RegisterModifierEntry(entry);
+                ModifierHandle.registerModifierEntry(entry);
             }
         } catch (IOException e) {
             e.printStackTrace();

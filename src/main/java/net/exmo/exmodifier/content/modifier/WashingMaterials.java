@@ -21,7 +21,12 @@ public class WashingMaterials {
         this.keepEntries = keepEntries;
     }
 
+    public void setKeepEntriesFromEnd(boolean keepEntriesFromEnd) {
+        this.keepEntriesFromEnd = keepEntriesFromEnd;
+    }
+
     private int keepEntries = 0;
+    private boolean keepEntriesFromEnd = false;
     public List<ItemType> OnlyTypes = new ArrayList<>();
     public double CostExp =0;
     public int NeedCount =1;
@@ -57,6 +62,10 @@ public class WashingMaterials {
         return keepEntries;
     }
 
+    public boolean isKeepEntriesFromEnd() {
+        return keepEntriesFromEnd;
+    }
+
     public List<Component> getTooltip() {
         List<Component> list = new ArrayList<>();
         list.add(Component.empty());
@@ -72,7 +81,10 @@ public class WashingMaterials {
             list.add(Component.translatable("exmodifier.washing_materials.description.addition_entry", additionEntry).withStyle(ChatFormatting.GOLD));
         }
         if (keepEntries > 0) {
-            list.add(Component.translatable("exmodifier.washing_materials.description.keep_entries", keepEntries).withStyle(ChatFormatting.GRAY));
+            String key = keepEntriesFromEnd
+                    ? "exmodifier.washing_materials.description.keep_entries_from_end"
+                    : "exmodifier.washing_materials.description.keep_entries";
+            list.add(Component.translatable(key, keepEntries).withStyle(ChatFormatting.GRAY));
         }
         if (OnlyTypes != null && !OnlyTypes.isEmpty()) {
             StringBuilder typesStr = new StringBuilder();

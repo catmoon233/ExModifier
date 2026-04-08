@@ -9,7 +9,7 @@ public class OnElementRegisterEvent extends Event {
     }
 
     public OnElementRegisterEvent registerElement(ExElement element){
-        ExElementHandle.registryExElement(element);
+        ExElementHandle.registerExElement(element);
         return  this;
     }
 }

@@ -6,6 +6,7 @@ import net.exmo.exmodifier.content.dynamicAttributes.DynamicAttributeRegister;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
+import net.exmo.exmodifier.content.specialEffects.SpecialEffectHandle;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -18,10 +19,22 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public class ExUtil {
+    public static List<SpecialEffect> getSpecialModifierEntries(LivingEntity entity) {
+        var specialEffects = new java.util.ArrayList<SpecialEffect>();
+        for (var eq : EquipmentSlot.values()) {
+            var item = entity.getItemBySlot(eq);
+            specialEffects.addAll(ModifierEntryHelper.of(item).getModifierEntriesB().stream()
+                    .flatMap(modifierEntry -> modifierEntry.specialTags.stream())
+                    .map(SpecialEffectHandle::getSpecialEffect)
+                    .toList());
+        }
+        return specialEffects;
+    }
 
     public static boolean hasSpecialEffect(SpecialEffect effect, Player player){
         for (var eq : player.getInventory().armor){

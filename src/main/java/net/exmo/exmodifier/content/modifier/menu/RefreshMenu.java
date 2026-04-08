@@ -180,15 +180,19 @@ public class RefreshMenu extends ItemCombinerMenu implements Supplier<Map<Intege
 
                                     modifierEntryHelper = itemInfo.reloadModifierEntryHelper();
                                     if (washingMaterials.additionEntry!=0){
-                                        if (washingMaterials.getKeepEntries()==0) {
+                                        int keepEntries = Math.max(0, washingMaterials.getKeepEntries());
+                                        if (keepEntries == 0) {
                                             modifierEntryHelper.removeAllEntry(true,List.of(ModifierEntry.defaultTag));
                                         }else {
-                                            List<ModifierInstant> modifierEntries = modifierEntryHelper.getModifierEntries();
-                                            for (int i = 1; i <= modifierEntries.size(); i++){
-                                                if (i>washingMaterials.getKeepEntries()){
-                                                    modifierEntryHelper.removeModifierEntry(modifierEntries.get(i-1), true);
-
-
+                                            int totalEntries = modifierEntryHelper.getModifierEntries().size();
+                                            int keepCount = Math.min(keepEntries, totalEntries);
+                                            if (washingMaterials.isKeepEntriesFromEnd()) {
+                                                for (int i = totalEntries - keepCount - 1; i >= 0; i--) {
+                                                    modifierEntryHelper.removeModifierEntryAt(i, true);
+                                                }
+                                            } else {
+                                                for (int i = totalEntries - 1; i >= keepCount; i--) {
+                                                    modifierEntryHelper.removeModifierEntryAt(i, true);
                                                 }
                                             }
                                         }

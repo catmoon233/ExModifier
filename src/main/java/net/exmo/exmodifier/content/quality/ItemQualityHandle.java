@@ -8,22 +8,20 @@ import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
-import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.util.ExConfigHandle;
+import net.exmo.exmodifier.util.ExRegistryHelper;
 import net.exmo.exmodifier.util.ItemSelector;
 import net.exmo.exmodifier.util.WeightedUtil;
+import net.exmo.exmodifier.util.module.ExDataModule;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,88 +29,79 @@ import java.util.stream.Collectors;
 import static net.exmo.exmodifier.Exmodifier.LOGGER;
 
 
-public class ItemQualityHandle {
+public class ItemQualityHandle extends ExDataModule<String, ItemQuality> {
 
-    public static Map<String, ItemQuality> itemQualityMap = new java.util.HashMap<>();
-    public static Map<ItemSelector, ItemQuality> itemDefaultQualityMap = new java.util.HashMap<>();
+    public static final ItemQualityHandle INSTANCE = new ItemQualityHandle();
 
+    /** @deprecated 使用 INSTANCE.getAll() */
+    @Deprecated public static final Map<String, ItemQuality> itemQualityMap = INSTANCE.registry;
+    /** @deprecated 使用 INSTANCE.foundConfigs */
+    @Deprecated public static List<MoConfig> FoundQualityConfigs = INSTANCE.foundConfigs;
+    /** @deprecated 使用 DEFAULT_QUALITY_MODULE.foundConfigs */
+    @Deprecated public static List<MoConfig> FoundDefaultQualityConfigs = new ArrayList<>();
+    public static final Map<ItemSelector, ItemQuality> itemDefaultQualityMap = new java.util.HashMap<>();
 
-    public static final Path ItemsQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/quality/");
-    public static final Path ItemsDefaultQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/defaultQuality/");
-    public static List<MoConfig> FoundQualityConfigs = new ArrayList<>();
-    public static List<MoConfig> FoundDefaultQualityConfigs = new ArrayList<>();
+    // 默认品质模块（第二配置路径）
+    private static final ExDataModule<String, ItemQuality> DEFAULT_QUALITY_MODULE = new ExDataModule<>("DefaultQuality") {
+        @Override
+        protected Path getConfigPath() {
+            return FMLPaths.CONFIGDIR.get().resolve("exmo/defaultQuality/");
+        }
 
-    public static void register(String id, ItemQuality itemQuality){
-        itemQualityMap.put(id, itemQuality);
-        Exmodifier.LOGGER.debug("Register ItemQuality: " + id);
+        @Override
+        protected void processEntry(String entryKey, JsonObject json, MoConfig moConfig) {
+            processItemsDefaultQualityConfigEntry(entryKey, json);
+        }
+    };
+
+    private ItemQualityHandle() {
+        super("Quality");
     }
-    public static List<ItemSelector> getItemSelector(ItemStack stack) {
-        return itemDefaultQualityMap.keySet().stream().filter(entry -> entry.compare(stack)).toList();
+
+    @Override
+    protected Path getConfigPath() {
+        return FMLPaths.CONFIGDIR.get().resolve("exmo/quality/");
     }
+
+    @Override
+    protected void processEntry(String entryKey, JsonObject json, MoConfig moConfig) {
+        processItemsQualityConfigEntry(entryKey, json);
+    }
+
+    @Override
+    protected void onPreInit() {
+        super.onPreInit();
+        itemDefaultQualityMap.clear();
+    }
+    // region 兼容旧API的静态方法
+
+    public static void registerStatic(String id, ItemQuality itemQuality){
+        INSTANCE.register(id, itemQuality);
+    }
+
+    /** @deprecated 使用 INSTANCE.getConfigPath() */
+    @Deprecated public static final Path ItemsQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/quality/");
+    /** @deprecated 使用 DEFAULT_QUALITY_MODULE */
+    @Deprecated public static final Path ItemsDefaultQualityConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/defaultQuality/");
+
     public static void init() throws IOException {
-        if (Files.exists(ItemsQualityConfigPath)) {
-            long startTime = System.nanoTime(); // 记录开始时间
-
-            FoundQualityConfigs = ExConfigHandle.listFiles(ItemsQualityConfigPath);
-            for (MoConfig moconfig : FoundQualityConfigs)
-            {
-                processMoConfigEntries(moconfig);
-            }
-
-
-            long endTime = System.nanoTime(); // 记录结束时间
-            long duration = endTime - startTime; // 计算持续时间
-            Exmodifier.LOGGER.debug("ReadConfig Quality Over time: " + duration / 1000000 + " ms");
-
-//            MoConfig washingMaterialsConfig = new MoConfig(ItemsQualityConfigPath);
-//
-//            for (Map.Entry<String, JsonElement> entry : washingMaterialsConfig.readEntrys()) {
-//                processItemsQualityConfigEntry(entry);
-//            }
-        }else {
-            //创建文件夹
-            Files.createDirectories(ItemsQualityConfigPath);
-
-        }
-
+        INSTANCE.load();
     }
+
     public static void init2() throws IOException {
-        if (Files.exists(ItemsDefaultQualityConfigPath)) {
-            long startTime = System.nanoTime();
-            FoundDefaultQualityConfigs = ExConfigHandle.listFiles(ItemsDefaultQualityConfigPath);
-            for (MoConfig moconfig : FoundDefaultQualityConfigs) {
-                processMoConfigEntries2(moconfig);
-            }
-            long endTime = System.nanoTime();
-            long duration = endTime - startTime;
-            Exmodifier.LOGGER.debug("ReadConfig DefaultQuality Over time: " + duration / 1000000 + " ms");
-        }
-
+        DEFAULT_QUALITY_MODULE.load();
     }
+
     public static void processMoConfigEntries(MoConfig moconfig) throws FileNotFoundException {
-        if(moconfig.readEntrys().isEmpty()){
-            Exmodifier.LOGGER.info("No Quality Config Found :"+moconfig.configFile);
-            return;
-        }
-        for (Map.Entry<String, JsonElement> entry : moconfig.readEntrys()) {
-            processItemsQualityConfigEntry(entry);
-        }
-
-
+        INSTANCE.processMoConfig(moconfig);
     }
+
     public static void processMoConfigEntries2(MoConfig moconfig) throws FileNotFoundException {
-        if(moconfig.readEntrys().isEmpty()){
-            Exmodifier.LOGGER.info("No Default Quality Config Found :"+moconfig.configFile);
-            return;
-        }
-        for (Map.Entry<String, JsonElement> entry : moconfig.readEntrys()) {
-            processItemsDefaultQualityConfigEntry(entry);
-        }
-
-
+        DEFAULT_QUALITY_MODULE.processMoConfig(moconfig);
     }
-    public static class CommonEvent {
 
+    public static List<ItemSelector> getItemSelector(ItemStack stack) {
+        return itemDefaultQualityMap.keySet().stream().filter(entry -> entry != null && entry.compare(stack)).toList();
     }
     public static void contaiff(ItemStack stack, int rarity , int refreshnumber, ItemType type)  {
         Exmodifier.LOGGER.debug("itemQualityRefresh: " + stack.getDescriptionId() + " " + type);
@@ -182,36 +171,21 @@ public class ItemQualityHandle {
             Exmodifier.LOGGER.debug("ItemQualityRefresh: No Type And refresh ALL TYPE");
         }
     }
-    private static void processItemsQualityConfigEntry(Map.Entry<String, JsonElement> entry) {
-        if (!entry.getValue().isJsonObject()) {
-            return;
-        }
+    private static void processItemsQualityConfigEntry(String id, JsonObject jsonObject) {
         try {
-            JsonObject jsonObject = entry.getValue().getAsJsonObject();
-            int rarity = jsonObject.has("rarity") ? jsonObject.get("rarity").getAsInt() : 0;
-            int maxRefine = jsonObject.has("maxRefine") ? jsonObject.get("maxRefine").getAsInt() : 0;
-            float growValue = jsonObject.has("growValue") ? jsonObject.get("growValue").getAsFloat() : 0F;
-            float addRefreshValue = jsonObject.has("addRefreshValue") ? jsonObject.get("addRefreshValue").getAsFloat() : 0F;
-            String id = entry.getKey();
-            String LocalDescription = jsonObject.has("LocalDescription") ? jsonObject.get("LocalDescription").getAsString() : "";
-            List<String> items = new ArrayList<>();
-            List<ModifierEntry> modifierEntries = new ArrayList<>();
-            List<String> materials = new ArrayList<>();
-            if (jsonObject.has("items")) {
-                for (JsonElement item : jsonObject.get("items").getAsJsonArray()) {
-                    items.add(item.getAsString());
-                }
-            }
-            if (jsonObject.has("materials")) {
-                for (JsonElement material : jsonObject.get("materials").getAsJsonArray()){
-                    materials.add(material.getAsString());
-                }
-            }
-            if (jsonObject.has("ModifierEntries")) {
-                for (JsonElement modifier : jsonObject.get("ModifierEntries").getAsJsonArray()){
-                    modifierEntries.add(ModifierHandle.modifierEntryMap.get(modifier.getAsString()));
-                }
-            }
+            int rarity = ExRegistryHelper.getInt(jsonObject, "rarity", 0);
+            int maxRefine = ExRegistryHelper.getInt(jsonObject, "maxRefine", 0);
+            float growValue = ExRegistryHelper.getFloat(jsonObject, "growValue", 0F);
+            float addRefreshValue = ExRegistryHelper.getFloat(jsonObject, "addRefreshValue", 0F);
+            String localDescription = jsonObject.has("LocalDescription") ? jsonObject.get("LocalDescription").getAsString() : "";
+            List<String> items = ExRegistryHelper.getStringList(jsonObject, "items");
+            List<String> materials = ExRegistryHelper.getStringList(jsonObject, "materials");
+            List<ModifierEntry> modifierEntries = ExRegistryHelper.mapJsonArray(
+                    jsonObject,
+                    "ModifierEntries",
+                    modifier -> ModifierHandle.modifierEntryMap.get(modifier.getAsString())
+            ).stream().filter(Objects::nonNull).toList();
+
             ItemQuality itemQuality = new ItemQuality(rarity,id);
             itemQuality.items = items;
             itemQuality.entries = modifierEntries;
@@ -222,24 +196,20 @@ public class ItemQualityHandle {
             itemQuality.ShowModifierComponent =(!jsonObject.has("ShowModifierComponent") || jsonObject.get("ShowModifierComponent").getAsBoolean());
             itemQuality.refineNeedSameStar =(!jsonObject.has("refineNeedSameStar") || jsonObject.get("refineNeedSameStar").getAsBoolean());
             itemQuality.cantRemoveEntry = jsonObject.has("cantRemoveEntry") && jsonObject.get("cantRemoveEntry").getAsBoolean();
-            itemQuality.LocalDescription = LocalDescription;
+            itemQuality.LocalDescription = localDescription;
             itemQuality.autoRefresh = jsonObject.has("autoRefresh") && jsonObject.get("autoRefresh").getAsBoolean();
             itemQuality.isRandom = !jsonObject.has("isRandom") || jsonObject.get("isRandom").getAsBoolean();
             itemQuality.materials = materials;
-            register(id,itemQuality);
+            INSTANCE.register(id,itemQuality);
             LOGGER.debug("Add ItemsQuality: "+id );
 
         }catch (Exception e){
             LOGGER.error("Error reading ItemsDefaultEntry config file", e);
         }
     }
-    private static void processItemsDefaultQualityConfigEntry(Map.Entry<String, JsonElement> entry) {
-        if (!entry.getValue().isJsonObject()) {
-            return;
-        }
+    private static void processItemsDefaultQualityConfigEntry(String key, JsonObject jsonObject) {
         try {
-            JsonObject jsonObject = entry.getValue().getAsJsonObject();
-            ItemQuality itemQuality = itemQualityMap.get(entry.getKey());
+            ItemQuality itemQuality = itemQualityMap.get(key);
             if (jsonObject.has("id")){
                 itemQuality = itemQualityMap.get(jsonObject.get("id").getAsString());
             }
@@ -247,8 +217,8 @@ public class ItemQualityHandle {
             if (jsonObject.has("itemSelector")){
                 itemSelector= ItemSelector.EX_SERIALIZE.fromJsonSingle(jsonObject.get("itemSelector").getAsJsonObject());
             }
-            if (itemSelector!=null) itemDefaultQualityMap.put(itemSelector,itemQuality);
-            LOGGER.debug("Add ItemsDefaultQuality: " +  itemQuality.Id);
+            if (itemSelector!=null && itemQuality != null) itemDefaultQualityMap.put(itemSelector,itemQuality);
+            LOGGER.debug("Add ItemsDefaultQuality: " + (itemQuality != null ? itemQuality.Id : "null"));
 
         }catch (Exception e){
             LOGGER.error("Error reading ItemsDefaultEntry config file", e);

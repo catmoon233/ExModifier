@@ -495,15 +495,13 @@ public class ModifierEntry implements SelectorClass<ModifierItemSelector<Modifie
             }
             boolean hasSuit = false;
 
-            for (ExSuit suit : ExSuitHandle.LoadExSuit.values().stream().filter(exSuit -> this.exsuits.contains(exSuit.id))
+            for (ExSuit suit : ExSuitHandle.FindExSuitFromEntry(this.id).stream().filter(ExSuit::isVisible)
                     .toList()) {
-                if (suit.visible) {
-                    if (!hasSuit) {
-                        list.add(Component.translatable("modifier.entry.suit"));
-                        hasSuit = true;
-                    }
-                    list.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.entry.suit." + suit.id)));
+                if (!hasSuit) {
+                    list.add(Component.translatable("modifier.entry.suit"));
+                    hasSuit = true;
                 }
+                list.add(Component.literal(" §7¦ §r").append(Component.translatable("modifier.entry.suit." + suit.id)));
             }
 
             if (this.types.size() > 1) {

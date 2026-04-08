@@ -28,7 +28,7 @@ public record SyncModifierEntryMessage(ModifierEntry modifierEntry) {
             // Handle the received message
             ModifierEntry modifierEntry = msg.modifierEntry();
             Exmodifier.LOGGER.debug("Received modifierEntry: " + modifierEntry);
-            ModifierHandle.RegisterModifierEntry(modifierEntry);
+            ModifierHandle.registerModifierEntry(modifierEntry);
         });
         ctx.get().setPacketHandled(true);
     }

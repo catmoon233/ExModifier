@@ -1,0 +1,24 @@
+{
+  "comment": "精炼物品配置文件示例",
+  "description": "此文件定义了可以被精炼的物品及其属性",
+  "refine_items": [
+    {
+      "item": "minecraft:diamond",
+      "maxBoostStar": 5,
+      "chance": 75,
+      "needMinStar": 0
+    },
+    {
+      "item": "minecraft:netherite_chestplate",
+      "maxBoostStar": 3,
+      "chance": 50,
+      "needMinStar": 2
+    },
+    {
+      "item": "minecraft:iron_helmet",
+      "maxBoostStar": 4,
+      "chance": 80,
+      "needMinStar": 1
+    }
+  ]
+}

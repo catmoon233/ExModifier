@@ -3,12 +3,12 @@ package net.exmo.exmodifier.content.type;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.serialization.Codec;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.events.ExRegisterExType;
 import net.exmo.exmodifier.util.ExConfigHandle;
 import net.exmo.exmodifier.util.ItemSelector;
+import net.exmo.exmodifier.util.module.ExDataModule;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -22,54 +22,71 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ExTypeHandle {
-    //public static final Codec<ExTypeHandle> CODEC = Codec.unit(ExTypeHandle::new);
-    public  static Map<String, ItemType> itemTypes = new HashMap<>();
-    public static Path ConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/type");
-    public static List<MoConfig> FoundTypeConfigs = new ArrayList<>();
+public class ExTypeHandle extends ExDataModule<String, ItemType> {
 
-    public static void registerItemType(ItemType itemType) {
-        itemTypes.put(itemType.name(), itemType);
-        Exmodifier.LOGGER.debug("Registered Item Type: " + itemType);
-    }
-    public static void readConfig() throws IOException {
-        long startTime = System.nanoTime(); // 记录开始时间
+    public static final ExTypeHandle INSTANCE = new ExTypeHandle();
 
-        FoundTypeConfigs = ExConfigHandle.listFiles(ConfigPath);
-        for (MoConfig moconfig : FoundTypeConfigs)
-        {
-            processItemTypes(moconfig);
-        }
+    /** @deprecated 使用 INSTANCE.getAll() */
+    @Deprecated public static Map<String, ItemType> itemTypes = INSTANCE.registry;
+    /** @deprecated 使用 INSTANCE.foundConfigs */
+    @Deprecated public static List<MoConfig> FoundTypeConfigs = INSTANCE.foundConfigs;
+    /** @deprecated 使用 INSTANCE.getConfigPath() */
+    @Deprecated public static final Path ConfigPath = FMLPaths.CONFIGDIR.get().resolve("exmo/type");
 
-        long endTime = System.nanoTime(); // 记录结束时间
-        long duration = endTime - startTime; // 计算持续时间
-        Exmodifier.LOGGER.debug("ReadConfig Types Over time: " + duration / 1000000 + " ms");
+    private ExTypeHandle() {
+        super("Type");
     }
 
-    public static void processItemTypes(MoConfig moconfig) throws FileNotFoundException {
-        if(moconfig.readEntrys().isEmpty()){
-            Exmodifier.LOGGER.info("No Types Config Found");
-            return;
+    @Override
+    protected void onPreInit() {
+        // Java 静态定义的默认类型（ExType.SWORD 等）在 registry 里只注册一次，
+        // 必须在 clear 前把它们保存下来并在 clear 后复原，否则 reload 后这些类型会消失。
+        java.util.Map<String, ItemType> defaults = new java.util.HashMap<>();
+        for (String name : ExType.defaultTypes) {
+            ItemType t = registry.get(name);
+            if (t != null) defaults.put(name, t);
         }
+        registry.clear();
+        registry.putAll(defaults);
+    }
+
+    @Override
+    protected Path getConfigPath() {
+        return FMLPaths.CONFIGDIR.get().resolve("exmo/type");
+    }
+
+    @Override
+    protected void processEntry(String entryKey, JsonObject json, MoConfig moConfig) {
         List<ItemType> entries = new ArrayList<>();
-        for (Map.Entry<String, JsonElement> entry : moconfig.readEntrys()) {
-            try {
-                Exmodifier.LOGGER.debug("Reading Type Config: " + entry.getKey());
-                processItemType(moconfig, entry, entries);
-                Exmodifier.LOGGER.debug("Reading Type Config Over: " + entry.getKey());
-            } catch (Exception e) {
-                Exmodifier.LOGGER.Logger.error("Error processing Type: " + entry.getKey(), e);
-            }
-        }
-        for (ItemType itemType : entries){
-            registerItemType(itemType);
-        }
+        processItemType(moConfig, Map.entry(entryKey, (JsonElement) json), entries);
+        entries.forEach(t -> register(t.name(), t));
+    }
+
+    @Override
+    protected void onPostInit() {
         MinecraftForge.EVENT_BUS.post(new ExRegisterExType());
     }
+
+    // region 兼容旧API
+
+    public static void registerItemType(ItemType itemType) {
+        INSTANCE.register(itemType.name(), itemType);
+    }
+
+    public static void readConfig() throws IOException {
+        INSTANCE.load();
+    }
+
+    /** @deprecated 使用 INSTANCE.processMoConfig() */
+    @Deprecated
+    public static void processItemTypes(MoConfig moconfig) throws FileNotFoundException {
+        INSTANCE.processMoConfig(moconfig);
+    }
+
+    // endregion
 
     public static void processItemType(MoConfig moconfig, Map.Entry<String, JsonElement> entry, List<ItemType> entries) {
         JsonElement itemElement = entry.getValue();

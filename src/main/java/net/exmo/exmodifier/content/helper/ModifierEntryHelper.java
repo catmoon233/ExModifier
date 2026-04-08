@@ -61,7 +61,7 @@ public class ModifierEntryHelper extends ExHelper {
 
                         ModifierEntryHelper modifierHelper = ModifierEntryHelper.of(result);
 
-                        processExistingEntries(modifierHelper, material.getKeepEntries());
+                        processExistingEntries(modifierHelper, material);
 
                         int finalRarity = calculateFinalRarity(material);
                         applyNewEntries(player, result, material, finalRarity);
@@ -100,13 +100,23 @@ public class ModifierEntryHelper extends ExHelper {
             return material.OnlyTags == null || material.containTag(item);
         }
 
-        private static void processExistingEntries(ModifierEntryHelper helper, int keepEntries) {
+        private static void processExistingEntries(ModifierEntryHelper helper, WashingMaterials material) {
+            int keepEntries = Math.max(0, material.getKeepEntries());
             if (keepEntries == 0) {
                 helper.removeAllEntry(true, List.of(ModifierEntry.defaultTag));
             } else {
                 List<ModifierInstant> entries = helper.getModifierEntries();
-                for (int i = entries.size() - 1; i >= keepEntries; i--) {
-                    helper.removeModifierEntry(entries.get(i), true);
+                int totalEntries = entries.size();
+                int keepCount = Math.min(keepEntries, totalEntries);
+
+                if (material.isKeepEntriesFromEnd()) {
+                    for (int i = totalEntries - keepCount - 1; i >= 0; i--) {
+                        helper.removeModifierEntryAt(i, true);
+                    }
+                } else {
+                    for (int i = totalEntries - 1; i >= keepCount; i--) {
+                        helper.removeModifierEntryAt(i, true);
+                    }
                 }
             }
         }
@@ -557,6 +567,40 @@ public class ModifierEntryHelper extends ExHelper {
             for (ModifierAttriGether modifierAttriGether : modifierInstant.getModifierEntry().attriGether) {
                 for (EquipmentSlot slot : EquipmentSlot.values()) {
                     ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, modifierAttriGether.attribute, modifierAttriGether.modifier, slot);
+                }
+            }
+        }
+        return this;
+    }
+
+    public ModifierEntryHelper removeModifierEntryAt(int index, boolean removeAttribute) {
+        createNbt();
+        if (!ValidMainNbt()) return this;
+
+        ListTag modifiersList = getModifierEntriesNbt();
+        if (index < 0 || index >= modifiersList.size()) return this;
+
+        CompoundTag removedTag = modifiersList.getCompound(index).copy();
+        modifiersList.remove(index);
+
+        if (removeAttribute) {
+            ModifierEntry removedEntry = modifierEntryMap.get(removedTag.getString(MEID));
+            if (removedEntry != null) {
+                if (CuriosUtil.isCuriosItem2(itemStack, false)) {
+                    for (ModifierAttriGether modifierAttriGether : removedEntry.attriGether) {
+                        if (modifierAttriGether.attribute != null) {
+                            CuriosUtil.removeAttributeModifierAffix(
+                                    itemStack,
+                                    ExUtil.getAttributeID(modifierAttriGether.attribute).toString(),
+                                    modifierAttriGether.modifier.getName()
+                            );
+                        }
+                    }
+                }
+                for (ModifierAttriGether modifierAttriGether : removedEntry.attriGether) {
+                    for (EquipmentSlot slot : EquipmentSlot.values()) {
+                        ItemAttrUtil.removeAttributeModifierNoAmout(itemStack, modifierAttriGether.attribute, modifierAttriGether.modifier, slot);
+                    }
                 }
             }
         }

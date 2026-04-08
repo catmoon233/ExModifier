@@ -1,7 +1,5 @@
 package net.exmo.exmodifier.content.modifier.menu;
 
-import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
@@ -10,29 +8,26 @@ import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.WashingMaterials;
 import net.exmo.exmodifier.content.refine.RefineHelper;
+import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.content.suit.ExSuitHandle;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.network.RefineItemMessage;
 import net.exmo.exmodifier.network.RefreshItemMessage;
 import net.exmo.exmodifier.util.ExUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.*;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -42,1135 +37,973 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
-@OnlyIn(value = Dist.CLIENT)
 
+/**
+ * Responsive grayscale reforge/refine UI.
+ * Layout:
+ * - top left: slot panel + compact entry list
+ * - top right: material summary + collapsible entry tag list
+ * - bottom: adaptive inventory rows (blank rows removed)
+ */
+@OnlyIn(Dist.CLIENT)
 public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPlus> implements ContainerListener {
-    private final List<Page> pages = new ArrayList<>();
-    private int currentPage = 0;
+
+    // ======================== Theme (black/white/gray) ========================
+    private static final int COL_BG            = 0xEE161616;
+    private static final int COL_PANEL         = 0xEE252525;
+    private static final int COL_CARD          = 0xEE333333;
+    private static final int COL_BORDER        = 0x60FFFFFF;
+    private static final int COL_ACCENT        = 0xFFF2F2F2;
+    private static final int COL_ACCENT_DIM    = 0x28FFFFFF;
+    private static final int COL_TEXT          = 0xFFF0F0F0;
+    private static final int COL_TEXT_SEC      = 0xFFB4B4B4;
+    private static final int COL_HOVER         = 0x20FFFFFF;
+    private static final int COL_SUCCESS       = 0xFF8BC34A;
+    private static final int COL_DANGER        = 0xFFE57373;
+    private static final int COL_TAB_ACTIVE    = 0xFFFFFFFF;
+    private static final int COL_TAB_INACTIVE  = 0xFF8F8F8F;
+    private static final int COL_SCROLLBAR     = 0x40000000;
+    private static final int COL_SCROLLTHUMB   = 0x90D7D7D7;
+
+    // ======================== Layout constants ========================
+    private static final int MARGIN = 10;
+    private static final int GAP = 8;
+    private static final int TAB_HEIGHT = 24;
+    private static final int TAB_WIDTH = 92;
+    private static final int ITEM_SLOT_SZ = 22;
+    private static final int SCROLLBAR_W = 5;
+
+    private static final int MIN_UI_W = 380;
+    private static final int MAX_UI_W = 560;
+    private static final int MIN_UI_H = 260;
+    private static final int MAX_UI_H = 430;
+
+    // ======================== Core state ========================
     private final Player player;
+    private int currentPage = 0;
     public ItemStack selectedItemStack = ItemStack.EMPTY;
     public ItemStack selectedRefreshItem = ItemStack.EMPTY;
-    public int manageSlot = 0;
-    //0->selectedItemStack
-    //1->selectedRefreshItem
-    // 新增成员变量
-    public ItemListViewer itemListViewer;
-    public Map<Integer, InfoWidget> infoWeiget;
-    private float scrollOffset;
-    private boolean isScrolling;
-    private static final ResourceLocation SLOT_ICON =
-            new ResourceLocation("exmodifier", "textures/gui/slot_icon_0.png");
-    private static final ResourceLocation SLOT_ICON_2 =
-            new ResourceLocation("exmodifier", "textures/gui/slot_icon_2.png");
-    private static final ResourceLocation SLOT_ICON_2_1 =
-            new ResourceLocation("exmodifier", "textures/gui/slot_icon_2_1.png");
-    private static final ResourceLocation SLOT_ICON_1 =
-            new ResourceLocation("exmodifier", "textures/gui/slot_icon_1.png");
-    private static final ResourceLocation WIDGETS_TEXTURE =
-            new ResourceLocation("exmodifier", "textures/gui/backround.png");
-    private static final ResourceLocation WIDGETS_TEXTURE_2 =
-            new ResourceLocation("exmodifier", "textures/gui/backround_2.png");
-    private static final ResourceLocation WIDGETS_TEXTURE_W =
-            new ResourceLocation("exmodifier", "textures/gui/backround_w.png");
-    private static final ResourceLocation WIDGETS_TEXTURE_W2 =
-            new ResourceLocation("exmodifier", "textures/gui/backround_w2.png");
-    private static final ResourceLocation SIMPLE_BUTTON_TEXTURE =
-            new ResourceLocation("exmodifier", "textures/gui/simple_button.png");
-    private static final ResourceLocation SIMPLE_BUTTON_TEXTURE_OVER =
-            new ResourceLocation("exmodifier", "textures/gui/simple_button_over.png");
-    private static final int ITEM_SLOT_SIZE = 20;
-    private final Map<GuiEventListener, Float> hoverProgress = new HashMap<>();
-    private static final ResourceLocation MENU_TEXTURE = new ResourceLocation("exmodifier", "textures/gui/background3.png");
+    public int manageSlot = 0; // 0 = target, 1 = material
 
-    void initPages() {
-        // 添加默认页面（示例）
-        addPage("重铸", screen -> {
-            screen.addRenderableWidget(new ImageWidget(80, this.topPos - 20, this.width - 160, this.imageHeight, MENU_TEXTURE));
-            // screen.addRenderableWidget(new ImageWidget();
-            screen.addRenderableWidget(new RefreshWidget(100, this.topPos + 20, this.width / 3, this.imageHeight - 60, MENU_TEXTURE));
-            // screen.addRenderableWidget(new Widget(100, this.topPos +20, this.width /3, this.imageHeight-60, MENU_TEXTURE))
-            //
-//            screen.addRenderableWidget(new Button.Builder(Component.literal("示例按钮"), b -> {})
-//                    .pos(100, 50)
-//                    .size(100, 20)
-//                    .build());
-//            screen.addRenderableWidget(new StringWidget(100, 80, 100, 20,
-//                    Component.literal("欢迎使用！"), screen.font));
-//            infoWeiget = new infoWeiget(100, 80, 100, 20,
-//                    Component.literal("欢迎使用！"), screen.font);
-            this.itemListViewer = new ItemListViewer(manageSlot == 0 ? filterItems(player.getInventory().items) : filterItems2(player.getInventory().items),
-                    120 + this.width / 3, topPos + 20,
-                    this.width - 160 - this.width / 3 - 40 - 20, imageHeight - 60);
-            // 启用搜索功能
-            itemListViewer.setShowSearchBox(false);
+    // ======================== Layout state ========================
+    private int contentX;
+    private int contentY;
+    private int contentW;
+    private int contentH;
 
+    private int leftColW;
+    private int rightColW;
 
-            // 自定义搜索框外观
-            itemListViewer.setSearchBackground(
-                    WIDGETS_TEXTURE_W,
-                    0x80000000 // 半透明橙色背景
-            );
+    private int topRegionH;
+    private int inventoryY;
+    private int inventoryH;
+    private int inventoryRows;
 
-            textList = new TextListWidget(
-                    List.of(),
-                    100 + 64 + 10, RefreshMenuScreenPlus.this.topPos + 40,
-                    RefreshMenuScreenPlus.this.width / 3 - 82, 45
-            );
-            if (!selectedItemStack.isEmpty()) {
-                textList.entries = getTextEntries();
-                textList.calculateLayout();
-                ;
-            }
-            ;
-            //  RefreshMenuScreenPlus.this.children().removeIf(widget -> widget instanceof TextListWidget);
-            addRenderableWidget(textList);
-            addRenderableWidget(itemListViewer);
+    private int slotPanelH;
+    private int leftEntryY;
+    private int leftEntryH;
 
+    private int materialPanelH;
+    private int tagPanelY;
+    private int tagPanelH;
 
-        });
+    // ======================== Animation state ========================
+    private float tabIndicatorX;
+    private float tabIndicatorTargetX;
+    private float openAnim = 0f;
+    private float pageSlideAnim = 1f;
+    private int slideDir = 1;
+    private long lastTick = System.currentTimeMillis();
 
-        if (Config.refine_system) addPage("升星", screen -> {
-            screen.addRenderableWidget(new ImageWidget(80, this.topPos - 20, this.width - 160, this.imageHeight, MENU_TEXTURE));
-            screen.addRenderableWidget(new RefreshWidget(100, this.topPos + 20, this.width / 3, this.imageHeight - 60, MENU_TEXTURE));
-            ;
-            this.itemListViewer = new ItemListViewer(manageSlot == 0 ? filterItems(player.getInventory().items) : filterItems3(player.getInventory().items),
-                    120 + this.width / 3, topPos + 20,
-                    this.width - 160 - this.width / 3 - 40 - 20, imageHeight - 60);
-            // 启用搜索功能
-            itemListViewer.setShowSearchBox(false);
+    // ======================== Widget refs ========================
+    private SlotPanel slotPanel;
+    private MaterialInfoPanel materialInfoPanel;
+    private EntryListPanel entryListPanel;
+    private EntryTagPanel entryTagPanel;
+    private ModItemListPanel itemListPanel;
 
+    // ======================== Tabs ========================
+    private record TabDef(String langKey) {}
+    private final List<TabDef> tabs = new ArrayList<>();
 
-            // 自定义搜索框外观
-            itemListViewer.setSearchBackground(
-                    WIDGETS_TEXTURE_W,
-                    0x80000000 // 半透明橙色背景
-            );
+    // ======================== Overlay and deferred tooltips ========================
+    private static final Map<Long, Map.Entry<Component, ItemStack>> overlayMap = new HashMap<>();
+    public final List<Runnable> deferredTooltips = new ArrayList<>();
 
-            textList = new TextListWidget(
-                    List.of(),
-                    100 + 64 + 10, RefreshMenuScreenPlus.this.topPos + 40,
-                    RefreshMenuScreenPlus.this.width / 3 - 82, 45
-            );
-            if (!selectedItemStack.isEmpty()) {
-                textList.entries = getTextEntries();
-                textList.calculateLayout();
-                ;
-            }
-            ;
-            //  RefreshMenuScreenPlus.this.children().removeIf(widget -> widget instanceof TextListWidget);
+    // ======================== Particles ========================
+    private static class Particle {
+        float x;
+        float y;
+        float vx;
+        float vy;
+        float life;
+        float maxLife;
+        float size;
+        int color;
+    }
+    private final List<Particle> particles = new ArrayList<>();
+    private final Random rng = new Random();
 
-            addRenderableWidget(itemListViewer);
+    // ======================== Entry model ========================
+    public static class EntryData {
+        final Component title;
+        final Component tagTitle;
+        final List<Component> details;
+        final boolean suitFoldEntry;
 
+        public EntryData(Component title, List<Component> details) {
+            this(title, title, details, false);
+        }
 
-        });
+        public EntryData(Component title, Component tagTitle, List<Component> details, boolean suitFoldEntry) {
+            this.title = title;
+            this.tagTitle = tagTitle == null ? title : tagTitle;
+            this.details = details == null ? List.of() : details;
+            this.suitFoldEntry = suitFoldEntry;
+        }
     }
 
-    public @NotNull List<TextListWidget.Entry> getTextEntries() {
-        List<TextListWidget.Entry> textEntries = ModifierEntryHelper.of(selectedItemStack).getModifierEntries().stream()
-                .map(entry -> {
-                    MutableComponent translatable = Component.translatable(entry.getModifierEntry().getDescriptionId());
-                    if (entry.getLevel() > 1)
-                        translatable.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + entry.getLevel())).withStyle(ChatFormatting.GOLD);
-                    return new TextListWidget.Entry(translatable, ModifierHandle.CommonEvent.generateEntryTooltip(entry, player, selectedItemStack, true));
-                })
-                .collect(Collectors.toList());
-        return textEntries;
-    }
-
-    public RefreshMenuScreenPlus(RefreshMenuPlus p_97874_, Inventory p_97875_, Component p_97876_) {
-        super(p_97874_, p_97875_, p_97876_);
-        this.player = p_97875_.player;
-        this.imageHeight = 250;
-        this.imageWidth = 400;
+    public RefreshMenuScreenPlus(RefreshMenuPlus menu, Inventory inv, Component title) {
+        super(menu, inv, title);
+        this.player = inv.player;
+        this.imageWidth = 440;
+        this.imageHeight = 300;
         overlayMap.clear();
     }
 
-    public void addPage(String title, Consumer<RefreshMenuScreenPlus> contentInitializer) {
-        pages.add(new Page(Component.translatable(title), contentInitializer));
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        float newOffset = (float) (scrollOffset - delta * 0.1);
-        scrollOffset = Mth.clamp(newOffset, 0f, 1f);
-        textList.mouseScrolled(mouseX, mouseY, delta);
-        return true;
-    }
-
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (isScrolling) {
-            float delta = (float) (dragY / (itemListViewer.visibleRowsY * ITEM_SLOT_SIZE));
-            scrollOffset = Mth.clamp(scrollOffset + delta, 0f, 1f);
-            textList.mouseDragged(mouseX, mouseY, button, dragX, dragY);
-            return true;
+    private void buildTabs() {
+        tabs.clear();
+        tabs.add(new TabDef("gui.exmodifier.refreshplus.mode.reforge"));
+        if (Config.refine_system) {
+            tabs.add(new TabDef("gui.exmodifier.refreshplus.mode.refine"));
         }
-        return false;
-    }
-
-    public static List<ItemStack> filterItems(List<ItemStack> items) {
-        return items.stream()
-                .filter(item -> !item.isEmpty() && !ModifierEntry.getType(item).stream().filter(e -> e != ExType.ALL.get()).toList().isEmpty())
-                .toList();
-    }
-
-    public List<ItemStack> filterItems2(List<ItemStack> items) {
-        return items.stream()
-                .filter(item -> item != this.selectedItemStack && !item.isEmpty() && ModifierHandle.materialsList.stream().anyMatch(entry -> entry.ItemId.equals(ExUtil.getItemID(item))) || (item.getItem() instanceof EntryItem && ModifierHandle.modifierEntryMap.containsKey(EntryItem.getModifierID(item))))
-                .toList();
-    }
-
-    public List<ItemStack> filterItems3(List<ItemStack> items) {
-        return items.stream()
-                .filter(item -> !item.isEmpty() && item != this.selectedItemStack && RefineHelper.of(selectedRefreshItem).canRefine(item))
-                .toList();
+        if (tabs.isEmpty()) {
+            tabs.add(new TabDef("gui.exmodifier.refreshplus.mode.reforge"));
+        }
+        currentPage = Mth.clamp(currentPage, 0, tabs.size() - 1);
     }
 
     @Override
-    public void init() {
+    protected void init() {
         super.init();
-        // 在init方法中添加：
-        //List<ItemStack> filteredItems = filterItems(player.getInventory().items);
         clearWidgets();
-        pages.clear();
-        initPages();
+        buildTabs();
 
-        int rightMargin = 80;
-        //   int yStart = this.height / 2 - pages.size() * 15;
-        // 添加标签栏
-        for (int i = 0; i < pages.size(); i++) {
-            final int pageIndex = i;
+        this.imageWidth = Mth.clamp(this.width - 40, MIN_UI_W, MAX_UI_W);
+        this.imageHeight = Mth.clamp(this.height - 40, MIN_UI_H, MAX_UI_H);
+        this.leftPos = (this.width - this.imageWidth) / 2;
+        this.topPos = (this.height - this.imageHeight) / 2;
 
-            Button tabButton = new TabButton(rightMargin, this.topPos + 2 + i * 30, 20, 20,
-                    pages.get(i).title(),
-                    b -> switchPage(pageIndex));
-            addRenderableWidget(tabButton);
+        computeLayout();
+        buildPanels();
+
+        tabIndicatorTargetX = getTabX(currentPage);
+        if (tabIndicatorX == 0f) {
+            tabIndicatorX = tabIndicatorTargetX;
+        }
+        if (openAnim < 0.01f) {
+            openAnim = 0f;
+        }
+    }
+
+    private void computeLayout() {
+        contentX = leftPos + MARGIN;
+        contentY = topPos + MARGIN + TAB_HEIGHT + 6;
+        contentW = imageWidth - MARGIN * 2;
+        contentH = imageHeight - MARGIN * 2 - TAB_HEIGHT - 6;
+
+        leftColW = Mth.clamp((int) (contentW * 0.34f), 140, 220);
+        rightColW = contentW - leftColW - GAP;
+
+        int inventoryCols = Math.max((contentW - 12 - SCROLLBAR_W) / ITEM_SLOT_SZ, 1);
+        int totalItems = getActiveItemSource().size();
+        int neededRows = Math.max(1, Mth.ceil((float) totalItems / inventoryCols));
+
+        int minTopRegion = 140;
+        int inventoryChrome = 28;
+        int maxRowsByHeight = Math.max(1, (contentH - minTopRegion - GAP - inventoryChrome) / ITEM_SLOT_SZ);
+        inventoryRows = Mth.clamp(neededRows, 1, maxRowsByHeight);
+
+        inventoryH = inventoryChrome + inventoryRows * ITEM_SLOT_SZ;
+        topRegionH = contentH - inventoryH - GAP;
+
+        if (topRegionH < minTopRegion) {
+            int deficit = minTopRegion - topRegionH;
+            int dropRows = Mth.ceil((float) deficit / ITEM_SLOT_SZ);
+            inventoryRows = Math.max(1, inventoryRows - dropRows);
+            inventoryH = inventoryChrome + inventoryRows * ITEM_SLOT_SZ;
+            topRegionH = contentH - inventoryH - GAP;
         }
 
-        // 初始化当前页面内容
-        if (!pages.isEmpty()) {
-            pages.get(currentPage).contentInitializer().accept(this);
+        inventoryY = contentY + topRegionH + GAP;
+
+        slotPanelH = Mth.clamp((int) (topRegionH * 0.48f), 94, 136);
+        leftEntryY = contentY + slotPanelH + GAP;
+        leftEntryH = Math.max(48, topRegionH - slotPanelH - GAP);
+
+        materialPanelH = Mth.clamp((int) (topRegionH * 0.36f), 76, 108);
+        tagPanelY = contentY + materialPanelH + GAP;
+        tagPanelH = Math.max(48, topRegionH - materialPanelH - GAP);
+    }
+
+    private void buildPanels() {
+        int rightX = contentX + leftColW + GAP;
+        List<ItemStack> source = getActiveItemSource();
+
+        slotPanel = new SlotPanel(contentX, contentY, leftColW, slotPanelH);
+        entryListPanel = new EntryListPanel(contentX, leftEntryY, leftColW, leftEntryH);
+        materialInfoPanel = new MaterialInfoPanel(rightX, contentY, rightColW, materialPanelH);
+        entryTagPanel = new EntryTagPanel(rightX, tagPanelY, rightColW, tagPanelH);
+        itemListPanel = new ModItemListPanel(contentX, inventoryY, contentW, inventoryH, source, inventoryRows);
+
+        addRenderableWidget(slotPanel);
+        addRenderableWidget(entryListPanel);
+        addRenderableWidget(materialInfoPanel);
+        addRenderableWidget(entryTagPanel);
+        addRenderableWidget(itemListPanel);
+
+        syncEntryPanels();
+    }
+
+    private void rebuildUi() {
+        if (minecraft != null) {
+            init(minecraft, width, height);
         }
+    }
+
+    private int getTabX(int index) {
+        int gap = 6;
+        int totalW = tabs.size() * TAB_WIDTH + Math.max(0, tabs.size() - 1) * gap;
+        int startX = leftPos + (imageWidth - totalW) / 2;
+        return startX + index * (TAB_WIDTH + gap);
+    }
+
+    private List<ItemStack> getActiveItemSource() {
+        List<ItemStack> filtered;
+        if (manageSlot == 0) {
+            filtered = filterEquipItems();
+        } else {
+            filtered = currentPage == 0 ? filterMaterialItems() : filterRefineItems();
+        }
+        if (!filtered.isEmpty()) {
+            return filtered;
+        }
+        // 避免筛选后列表为空导致“背包消失”的观感，回退到基础非空背包列表。
+        return player.getInventory().items.stream().filter(it -> !it.isEmpty() && it != selectedItemStack).toList();
+    }
+
+    private void syncEntryPanels() {
+        List<EntryData> normalEntries = buildModifierEntryList();
+        if (entryListPanel != null) {
+            entryListPanel.refreshEntries(normalEntries);
+        }
+        if (entryTagPanel != null) {
+            List<EntryData> tagEntries = new ArrayList<>(normalEntries);
+            EntryData suitEntry = buildSuitFoldEntry();
+            if (suitEntry != null) {
+                tagEntries.add(suitEntry);
+            }
+            entryTagPanel.refreshEntries(tagEntries);
+        }
+    }
+
+    public @NotNull List<EntryData> buildModifierEntryList() {
+        if (selectedItemStack.isEmpty()) {
+            return List.of();
+        }
+        return ModifierEntryHelper.of(selectedItemStack).getModifierEntries().stream()
+                .map(mi -> {
+                    MutableComponent txt = Component.translatable(mi.getModifierEntry().getDescriptionId());
+                    if (mi.getLevel() > 1) {
+                        txt.append(CommonComponents.SPACE)
+                                .append(Component.translatable("enchantment.level." + mi.getLevel()))
+                                .withStyle(ChatFormatting.GOLD);
+                    }
+                    List<Component> tips = ModifierHandle.CommonEvent.generateEntryTooltip(mi, player, selectedItemStack, true);
+                    Component relatedTag = txt;
+                    if (!mi.getModifierEntry().localDescription.isEmpty()) {
+                        relatedTag = Component.translatable(mi.getModifierEntry().localDescription);
+                    }
+                    return new EntryData(txt, relatedTag, tips, false);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private EntryData buildSuitFoldEntry() {
+        if (selectedItemStack.isEmpty()) {
+            return null;
+        }
+
+        Map<String, ExSuit> suitMap = new LinkedHashMap<>();
+        ModifierEntryHelper.of(selectedItemStack).getModifierEntries().forEach(mi -> {
+            for (String suitId : mi.getModifierEntry().exsuits) {
+                for (ExSuit suit : ExSuitHandle.FindExSuit(suitId)) {
+                    if (suit != null && suit.visible) {
+                        suitMap.putIfAbsent(suit.id, suit);
+                    }
+                }
+            }
+        });
+
+        if (suitMap.isEmpty()) {
+            return null;
+        }
+
+        List<Component> suitDetails = new ArrayList<>();
+        int suitIndex = 0;
+        for (ExSuit suit : suitMap.values()) {
+            int equipped = ExSuitHandle.getPlayerLevelFromExSuitId(player, suit.id);
+            int maxLevel = Math.max(suit.getMaxLevel(), 1);
+
+            MutableComponent suitName = Component.translatable("modifier.entry.suit." + suit.id)
+                    .append(CommonComponents.SPACE)
+                    .append(Component.literal("(" + equipped + "/" + maxLevel + ")").withStyle(ChatFormatting.GOLD));
+            suitDetails.add(suitName);
+
+            if (!suit.LocalDescription.isEmpty()) {
+                suitDetails.add(Component.translatable(suit.LocalDescription));
+            }
+
+            Set<Integer> levelSet = new TreeSet<>();
+            levelSet.addAll(suit.getAttriGether().keySet());
+            levelSet.addAll(suit.getEffect().keySet());
+            levelSet.addAll(suit.getCommands().keySet());
+            levelSet.addAll(suit.getTriggers().keySet());
+            levelSet.addAll(suit.getLevelDescription().keySet());
+            levelSet.addAll(suit.getEffectLocalDescription().keySet());
+            if (levelSet.isEmpty()) {
+                for (int i = 1; i <= maxLevel; i++) {
+                    levelSet.add(i);
+                }
+            }
+
+            for (int level : levelSet) {
+                boolean activated = equipped >= level;
+                Component levelTitle = Component.translatable("gui.exmodifier.refreshplus.suit.level", String.valueOf(level))
+                        .copy()
+                        .withStyle(activated ? ChatFormatting.GREEN : ChatFormatting.GRAY);
+                suitDetails.add(levelTitle);
+
+                String descKey = suit.getLevelDescription().get(level);
+                if ((descKey == null || descKey.isEmpty()) && suit.getEffectLocalDescription().containsKey(level)) {
+                    descKey = suit.getEffectLocalDescription().get(level);
+                }
+                if (descKey != null && !descKey.isEmpty()) {
+                    suitDetails.add(Component.translatable(descKey));
+                }
+            }
+
+            if (suitIndex < suitMap.size() - 1) {
+                suitDetails.add(Component.empty());
+            }
+            suitIndex++;
+        }
+
+        Component suitEntryTitle = Component.translatable("gui.exmodifier.refreshplus.suit.entry");
+        return new EntryData(suitEntryTitle, suitEntryTitle, suitDetails, true);
+    }
+
+    public static List<ItemStack> filterEquipItems() {
+        Player p = Minecraft.getInstance().player;
+        if (p == null) {
+            return List.of();
+        }
+        return p.getInventory().items.stream()
+                .filter(it -> !it.isEmpty() && !ModifierEntry.getType(it).stream()
+                        .filter(e -> e != ExType.ALL.get()).toList().isEmpty())
+                .toList();
+    }
+
+    public List<ItemStack> filterMaterialItems() {
+        return player.getInventory().items.stream()
+                .filter(it -> it != selectedItemStack && !it.isEmpty()
+                        && (ModifierHandle.materialsList.stream()
+                        .anyMatch(m -> m.ItemId.equals(ExUtil.getItemID(it)))
+                        || (it.getItem() instanceof EntryItem
+                        && ModifierHandle.modifierEntryMap.containsKey(EntryItem.getModifierID(it)))))
+                .toList();
+    }
+
+    public List<ItemStack> filterRefineItems() {
+        return player.getInventory().items.stream()
+                .filter(it -> it != selectedItemStack && !it.isEmpty()
+                        && RefineHelper.of(selectedItemStack).canRefine(it))
+                .toList();
+    }
+
+    private int findSlot(ItemStack target, ItemStack exclude) {
+        Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.items.size(); i++) {
+            ItemStack s = inv.items.get(i);
+            if (s == exclude) {
+                continue;
+            }
+            if (!s.isEmpty() && s.getCount() == target.getCount() && ItemStack.isSameItemSameTags(target, s)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void switchPage(int newPage) {
+        if (newPage == currentPage || newPage < 0 || newPage >= tabs.size()) {
+            return;
+        }
+        slideDir = newPage > currentPage ? 1 : -1;
+        pageSlideAnim = 0f;
         currentPage = newPage;
-        init(minecraft, width, height); // 重新初始化界面
+        manageSlot = 0;
+        tabIndicatorTargetX = getTabX(currentPage);
+        rebuildUi();
     }
-
-    private static final Map<Long, Map.Entry<Component, ItemStack>> overlayMap = new HashMap<>();
 
     public static void addOverlay(long time, Component content, ItemStack item) {
         overlayMap.put(time, Map.entry(content, item));
     }
 
+    private static float easeOutCubic(float t) {
+        return 1f - (float) Math.pow(1f - t, 3);
+    }
+
+    private static float lerp(float a, float b, float t) {
+        return a + (b - a) * t;
+    }
+
+    private float deltaTime() {
+        long now = System.currentTimeMillis();
+        float dt = (now - lastTick) / 1000f;
+        lastTick = now;
+        return Math.min(dt, 0.1f);
+    }
+
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(guiGraphics);
+    public void render(GuiGraphics gg, int mouseX, int mouseY, float pt) {
+        renderBackground(gg);
+        float dt = deltaTime();
 
+        openAnim = Math.min(openAnim + dt * 3.4f, 1f);
+        pageSlideAnim = Math.min(pageSlideAnim + dt * 4f, 1f);
+        tabIndicatorX = lerp(tabIndicatorX, tabIndicatorTargetX, dt * 12f);
+        updateParticles(dt);
 
-        int i = this.leftPos;
-        int j = this.topPos;
-        this.renderBg(guiGraphics, partialTick, mouseX, mouseY);
-        RenderSystem.disableDepthTest();
-        Map<Long, Map.Entry<Component, ItemStack>> toRemove = new HashMap<>();
-        overlayMap.forEach((k, v) -> {
-            if (System.currentTimeMillis() - k > 3200) {
-                toRemove.put(k, v);
-            }
-        });
-        toRemove.forEach((k, v) -> overlayMap.remove(k));
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(0.0F, 0.0F, 2000.0F);
-        AtomicInteger line = new AtomicInteger();
+        float easedOpen = easeOutCubic(openAnim);
 
-        overlayMap.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey()) // 按时间戳排序
-                .forEach(entry -> {
-                    //long k = entry.getKey();
-                    ItemStack itemStack = entry.getValue().getValue();
-                    Component content = entry.getValue().getKey();
-                    float p281752 = 1 - ((System.currentTimeMillis() - entry.getKey()) / 3200f);
-                    guiGraphics.setColor(1, 1, 1, p281752);
-                    guiGraphics.drawCenteredString(font, content,
-                            this.width / 2,
-                            (int) (this.height / 5 + (font.lineHeight + 2) * line.get()),
-                            0xFFFFFF);
-                    if (!itemStack.isEmpty()) {
-                        guiGraphics.pose().pushPose();
-                        guiGraphics.pose().scale(0.2f, 0.2f, 0.2f);
-                        guiGraphics.renderItem(itemStack,
-                                (this.width / 2 - 10) * 5,
-                                (int) (this.height / 5 + (font.lineHeight + 2) * line.get()) * 5);
-                        guiGraphics.pose().popPose();
-                    }
-                    guiGraphics.setColor(1, 1, 1, 1);
-                    line.getAndIncrement();
+        gg.pose().pushPose();
+        float scale = 0.86f + 0.14f * easedOpen;
+        float cx = width / 2f;
+        float cy = height / 2f;
+        gg.pose().translate(cx, cy, 0);
+        gg.pose().scale(scale, scale, 1f);
+        gg.pose().translate(-cx, -cy, 0);
 
-                });
-        guiGraphics.pose().popPose();
-        for (Renderable renderable : this.renderables) {
-            if (renderable == null) continue;
-//            if (renderable instanceof TabButton tabButton){
-//                if (pages.get(currentPage).title == tabButton.getMessage())continue;
-//            }
-            renderable.render(guiGraphics, mouseX, mouseY, partialTick);
+        int alpha = (int) (easedOpen * 240);
+        if (alpha > 5) {
+            renderMainPanel(gg, mouseX, mouseY, pt, alpha);
         }
+        gg.pose().popPose();
+
+        renderOverlayNotifications(gg);
+        renderParticles(gg);
+
+        gg.pose().pushPose();
+        gg.pose().translate(0, 0, 3000);
+        deferredTooltips.forEach(Runnable::run);
+        deferredTooltips.clear();
+        gg.pose().popPose();
+    }
+
+    private void renderMainPanel(GuiGraphics gg, int mx, int my, float pt, int alpha) {
+        int px = leftPos;
+        int py = topPos;
+
+        drawSoftShadow(gg, px - 4, py - 4, imageWidth + 8, imageHeight + 8, 8);
+
+        int bgA = Math.min(alpha, 240);
+        gg.fill(px, py, px + imageWidth, py + imageHeight, (bgA << 24) | (COL_BG & 0x00FFFFFF));
+        drawBorder(gg, px, py, imageWidth, imageHeight, COL_BORDER);
+
+        gg.drawString(font, Component.translatable("gui.exmodifier.refreshplus.title"),
+                px + MARGIN + 2, py + 2, COL_TEXT, false);
+
+        renderTabs(gg, mx, my);
+
+        float slideE = easeOutCubic(pageSlideAnim);
+        int slideOff = (int) ((1f - slideE) * 28 * slideDir);
+
+        gg.enableScissor(contentX, contentY, contentX + contentW, contentY + contentH);
+        gg.pose().pushPose();
+        gg.pose().translate(slideOff, 0, 0);
+        for (Renderable r : this.renderables) {
+            if (r != null) {
+                r.render(gg, mx, my, pt);
+            }
+        }
+        gg.pose().popPose();
+        gg.disableScissor();
+
         this.hoveredSlot = null;
-        toRenderTooltipList.forEach(toRenderTooltip -> toRenderTooltip.runnable.run());
-        toRenderTooltipList.clear();
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate((float) i, (float) j, 0.0F);
-        this.renderLabels(guiGraphics, mouseX, mouseY);
+    }
 
+    private void renderTabs(GuiGraphics gg, int mx, int my) {
+        int gap = 6;
+        int totalW = tabs.size() * TAB_WIDTH + Math.max(0, tabs.size() - 1) * gap;
+        int startX = leftPos + (imageWidth - totalW) / 2;
+        int y = topPos + MARGIN;
 
-        // 更新悬停动画
-        for (GuiEventListener widget : this.children()) {
-            if (widget instanceof TabButton button) {
-                float progress = hoverProgress.getOrDefault(button, 0f);
-                boolean isHovered = button.isMouseOver(mouseX, mouseY);
-                progress = Mth.clamp(progress + (isHovered ? 0.1f : -0.1f), 0f, 1f);
-                hoverProgress.put(button, progress);
-                button.setExpandProgress(progress);
+        gg.fill(startX - 6, y - 2, startX + totalW + 6, y + TAB_HEIGHT + 2, COL_PANEL);
+        drawBorder(gg, startX - 6, y - 2, totalW + 12, TAB_HEIGHT + 4, COL_BORDER);
+
+        int indicatorW = TAB_WIDTH - 14;
+        int ix = (int) tabIndicatorX + 7;
+        gg.fill(ix, y + TAB_HEIGHT - 3, ix + indicatorW, y + TAB_HEIGHT - 1, COL_ACCENT);
+
+        for (int i = 0; i < tabs.size(); i++) {
+            int tx = startX + i * (TAB_WIDTH + gap);
+            boolean hovered = mx >= tx && mx < tx + TAB_WIDTH && my >= y && my < y + TAB_HEIGHT;
+            boolean active = i == currentPage;
+
+            gg.fill(tx, y, tx + TAB_WIDTH, y + TAB_HEIGHT, active ? COL_ACCENT_DIM : COL_PANEL);
+            drawBorder(gg, tx, y, TAB_WIDTH, TAB_HEIGHT, active ? COL_ACCENT_DIM : COL_BORDER);
+
+            int col = active ? COL_TAB_ACTIVE : (hovered ? COL_TEXT : COL_TAB_INACTIVE);
+            Component label = Component.translatable(tabs.get(i).langKey);
+            gg.drawString(font, label, tx + (TAB_WIDTH - font.width(label)) / 2,
+                    y + (TAB_HEIGHT - font.lineHeight) / 2, col, false);
+
+            if (hovered && !active) {
+                gg.fill(tx, y, tx + TAB_WIDTH, y + TAB_HEIGHT, COL_HOVER);
+            }
+        }
+    }
+
+    private void renderOverlayNotifications(GuiGraphics gg) {
+        long now = System.currentTimeMillis();
+        overlayMap.entrySet().removeIf(e -> now - e.getKey() > 2800);
+
+        int line = 0;
+        gg.pose().pushPose();
+        gg.pose().translate(0, 0, 2500);
+
+        for (Map.Entry<Long, Map.Entry<Component, ItemStack>> entry : overlayMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey()).toList()) {
+            float life = 1f - (now - entry.getKey()) / 2800f;
+            float fade = Math.min(life * 4f, 1f) * Math.min((1f - life) * 4f + 0.45f, 1f);
+            int a = (int) (fade * 255);
+            if (a <= 0) {
+                continue;
+            }
+
+            Component content = entry.getValue().getKey();
+            ItemStack item = entry.getValue().getValue();
+            int y = (int) (height * 0.18f + line * (font.lineHeight + 6));
+            int textW = font.width(content);
+            int boxW = textW + (item.isEmpty() ? 18 : 34);
+            int x = (width - boxW) / 2;
+
+            gg.fill(x - 8, y - 4, x + boxW + 8, y + font.lineHeight + 5, (a << 24) | 0x00323232);
+            drawBorder(gg, x - 8, y - 4, boxW + 16, font.lineHeight + 9, (a / 3 << 24) | 0x00FFFFFF);
+
+            if (!item.isEmpty()) {
+                gg.pose().pushPose();
+                gg.pose().scale(0.75f, 0.75f, 1f);
+                gg.renderItem(item, (int) (x / 0.75f), (int) ((y - 2) / 0.75f));
+                gg.pose().popPose();
+            }
+            gg.drawString(font, content, x + (item.isEmpty() ? 0 : 18), y, (a << 24) | (COL_TEXT & 0x00FFFFFF), false);
+            line++;
+        }
+        gg.pose().popPose();
+    }
+
+    private void spawnParticles(float cx, float cy, int count, int color) {
+        for (int i = 0; i < count; i++) {
+            Particle p = new Particle();
+            p.x = cx;
+            p.y = cy;
+            p.vx = (rng.nextFloat() - 0.5f) * 80f;
+            p.vy = (rng.nextFloat() - 0.5f) * 80f - 25f;
+            p.maxLife = 0.45f + rng.nextFloat() * 0.5f;
+            p.life = p.maxLife;
+            p.size = 1.3f + rng.nextFloat() * 1.8f;
+            p.color = color;
+            particles.add(p);
+        }
+    }
+
+    private void updateParticles(float dt) {
+        particles.removeIf(p -> p.life <= 0f);
+        for (Particle p : particles) {
+            p.life -= dt;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vy += 75f * dt;
+        }
+    }
+
+    private void renderParticles(GuiGraphics gg) {
+        for (Particle p : particles) {
+            float alpha = Math.max(p.life / p.maxLife, 0f);
+            int a = (int) (easeOutCubic(alpha) * 190);
+            if (a <= 0) {
+                continue;
+            }
+            int size = (int) (p.size * (0.5f + alpha * 0.6f));
+            gg.fill((int) p.x, (int) p.y, (int) p.x + size, (int) p.y + size,
+                    (a << 24) | (p.color & 0x00FFFFFF));
+        }
+    }
+
+    private static void drawBorder(GuiGraphics gg, int x, int y, int w, int h, int color) {
+        gg.fill(x, y, x + w, y + 1, color);
+        gg.fill(x, y + h - 1, x + w, y + h, color);
+        gg.fill(x, y, x + 1, y + h, color);
+        gg.fill(x + w - 1, y, x + w, y + h, color);
+    }
+
+    private static void drawRoundedRect(GuiGraphics gg, int x, int y, int w, int h, int color) {
+        gg.fill(x + 1, y, x + w - 1, y + h, color);
+        gg.fill(x, y + 1, x + 1, y + h - 1, color);
+        gg.fill(x + w - 1, y + 1, x + w, y + h - 1, color);
+    }
+
+    private void drawSoftShadow(GuiGraphics gg, int x, int y, int w, int h, int blur) {
+        for (int i = blur; i >= 1; i--) {
+            int a = (int) (11f * (1f - (float) i / blur));
+            gg.fill(x - i, y - i, x + w + i, y + h + i, (a << 24));
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int button) {
+        int tabY = topPos + MARGIN;
+        for (int i = 0; i < tabs.size(); i++) {
+            int tx = getTabX(i);
+            if (mx >= tx && mx < tx + TAB_WIDTH && my >= tabY && my < tabY + TAB_HEIGHT) {
+                switchPage(i);
+                spawnParticles((float) (tx + TAB_WIDTH / 2), tabY + TAB_HEIGHT - 2, 10, 0xFFFFFF);
+                return true;
             }
         }
 
-        guiGraphics.pose().popPose();
-        RenderSystem.enableDepthTest();
-    }
-
-    public record ToRenderTooltip(Runnable runnable){}
-    public List<ToRenderTooltip> toRenderTooltipList= new  ArrayList<>();
-    @Override
-    protected void renderBg(GuiGraphics guiGraphics, float v, int i, int i1) {
-
-    }
-
-    @Override
-    protected void renderLabels(GuiGraphics p_281635_, int p_282681_, int p_283686_) {
-
+        for (GuiEventListener child : this.children()) {
+            if (child.mouseClicked(mx, my, button)) {
+                this.setFocused(child);
+                if (button == 0) {
+                    this.setDragging(true);
+                }
+                return true;
+            }
+        }
+        return super.mouseClicked(mx, my, button);
     }
 
     @Override
-    protected void renderTooltip(GuiGraphics p_283594_, int p_282171_, int p_281909_) {
-        super.renderTooltip(p_283594_, p_282171_, p_281909_);
+    public boolean mouseScrolled(double mx, double my, double delta) {
+        for (GuiEventListener child : this.children()) {
+            if (child.isMouseOver(mx, my) && child instanceof AbstractContainerEventHandler ace) {
+                if (ace.mouseScrolled(mx, my, delta)) {
+                    return true;
+                }
+            }
+        }
+        return super.mouseScrolled(mx, my, delta);
     }
+
+    @Override
+    public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) {
+        for (GuiEventListener child : this.children()) {
+            if (child instanceof AbstractContainerEventHandler ace) {
+                if (ace.mouseDragged(mx, my, btn, dx, dy)) {
+                    return true;
+                }
+            }
+        }
+        return super.mouseDragged(mx, my, btn, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(double mx, double my, int btn) {
+        for (GuiEventListener child : this.children()) {
+            if (child instanceof AbstractContainerEventHandler ace) {
+                ace.mouseReleased(mx, my, btn);
+            }
+        }
+        return super.mouseReleased(mx, my, btn);
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics gg, float pt, int mx, int my) {}
+
+    @Override
+    protected void renderLabels(GuiGraphics gg, int mx, int my) {}
+
+    @Override
+    protected void renderTooltip(GuiGraphics gg, int mx, int my) {}
 
     public Player getPlayer() {
         return player;
     }
 
     @Override
-    public void slotChanged(AbstractContainerMenu abstractContainerMenu, int i, ItemStack itemStack) {
-
-    }
+    public void slotChanged(AbstractContainerMenu m, int slot, ItemStack stack) {}
 
     @Override
-    public void dataChanged(AbstractContainerMenu abstractContainerMenu, int i, int i1) {
+    public void dataChanged(AbstractContainerMenu m, int id, int val) {}
 
-    }
-
-    @Override
-    public boolean isMouseOver(double x, double y) {
-        textList.isMouseOver(x, y);
-        return super.isMouseOver(x, y);
-    }
-
-    @Override
-    public boolean mouseReleased(double p_97812_, double p_97813_, int p_97814_) {
-        textList.mouseReleased(p_97812_, p_97813_, p_97814_);
-        return super.mouseReleased(p_97812_, p_97813_, p_97814_);
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int p_97750_) {
-        textList.mouseClicked(mouseX, mouseY, p_97750_);
-        if (itemListViewer != null && itemListViewer.contextMenu != null) {
-            if (itemListViewer.contextMenu.isMouseOver(mouseX, mouseY)) {
-                itemListViewer.contextMenu.clickContextMenuButton(mouseX, mouseY);
-            }
-        }
-        // 关闭上下文菜单
-        if (itemListViewer != null && itemListViewer.contextMenu != null && !itemListViewer.contextMenu.isMouseOver(mouseX, mouseY)) {
-            itemListViewer.contextMenu = null;
-        }
-        for (GuiEventListener guiEventListener : this.children()) {
-            if (guiEventListener instanceof RefreshWidget refreshWidget) {
-                refreshWidget.mouseClicked(mouseX, mouseY, p_97750_);
-            }
-        }
-        if (itemListViewer != null) {
-            for (GuiEventListener guiEventListener : itemListViewer.children()) {
-
-                if (guiEventListener instanceof ItemListViewer.ActionButton actionButton) {
-                    if (guiEventListener.mouseClicked(mouseX, mouseY, p_97750_)) {
-                        actionButton.onPress();
-
-                        return true;
-                    }
-                }
-            }
-        }
-        if (clickActionM(mouseX, mouseY, p_97750_, this.children())) return true;
-        return super.mouseClicked(mouseX, mouseY, p_97750_);
-    }
-
-    private boolean clickActionM(double mouseX, double mouseY, int p_97750_, List<? extends GuiEventListener> children) {
-        for (GuiEventListener guiEventListener : children) {
-            if (guiEventListener instanceof AbstractButton) {
-                if (guiEventListener.mouseClicked(mouseX, mouseY, p_97750_)) {
-                    this.setFocused(guiEventListener);
-                    if (p_97750_ == 0) {
-                        this.setDragging(true);
-                    }
-
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    // 自定义标签按钮类
-    private class TabButton extends Button {
-        private float expandProgress = 0f;
-        private final int baseX;
-
-        public TabButton(int rightX, int y, int width, int height, Component message, OnPress onPress) {
-            super(rightX - 20, y, 20, height, message, onPress, DEFAULT_NARRATION);
-            this.baseX = rightX; // 记录右侧基准位置
-        }
-
-        void setExpandProgress(float progress) {
-            this.expandProgress = progress;
-            // 动态调整位置和宽度
-            this.setWidth((int) Mth.lerp(progress, 20, 80));
-            this.setX(baseX - this.getWidth());
-        }
-
-        public int getColor() {
-            if (expandProgress > 0) {
-                return Color.lightGray.getRGB();
-            }
-            if (currentPage == getIndex() + 1) {
-                return Color.gray.getRGB();
-            } else {
-                return Color.DARK_GRAY.getRGB();
-            }
-        }
-
-        @Override
-        public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            // 动态背景
-            guiGraphics.fill(getX(), getY(), getX() + getWidth(), getY() + height, getColor());
-            //0x80000000 | Mth.hsvToRgb(currentPage == getIndex() ? 0.6f : 0.3f, 0.6f, 0.8f));
-
-            // 文字渲染（带展开动画）
-            int textWidth = font.width(getMessage());
-            float textAlpha = Mth.clamp(expandProgress * 3f, 0f, 1f); // 更快的文字渐现
-
-            int textX = getX() + (getWidth() - textWidth) / 2;
-            int textY = getY() + (height - 8) / 2;
-
-            guiGraphics.drawString(font, getMessage(),
-                    textX, textY,
-                    0xFFFFFF | ((int) (textAlpha * 255) << 24),
-                    false);
-        }
-
-        private int getIndex() {
-            return (getY() - (height / 2 - pages.size() * 15)) / 30;
-        }
-    }
-
-    // 页面数据结构
-    private record Page(Component title, Consumer<RefreshMenuScreenPlus> contentInitializer) {
-    }
-
-    public TextListWidget textList = new TextListWidget(List.of(), 0, 0, 0, 0);
-
-    // 自定义按钮类
-    private class ExSlotButton extends AbstractButton {
-        private final ResourceLocation normalTexture;
-        private final ResourceLocation pressTexture;
-        private final int textureWidth;
-        private final int textureHeight;
-        private final int slotIndex;
-
-        public ExSlotButton(int x, int y, int width, int height,
-                            ResourceLocation normalTexture, ResourceLocation pressTexture, int textureWidth, int textureHeight,
-                            int slotIndex, Runnable onPress) {
-            super(x, y, width, height, Component.empty());
-            this.normalTexture = normalTexture;
-            this.pressTexture = pressTexture;
-            this.textureWidth = textureWidth;
-            this.textureHeight = textureHeight;
-            this.slotIndex = slotIndex;
-            this.onPress = onPress;
-
-        }
-
-        private ExSlotButton setComponent(Component component) {
-            this.setMessage(component);
-            return this;
-        }
-
-        private final Runnable onPress;
-
-        @Override
-        public void onPress() {
-            onPress.run();
-        }
-
-        @Override
-        public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-
-            // 绘制背景纹理
-            guiGraphics.blit(manageSlot == slotIndex ? pressTexture : normalTexture,
-                    getX(), getY(),
-                    0, 0,
-                    width, height,
-                    textureWidth, textureHeight);
-
-            // 绘制文本
-            int textX = getX() + (width - font.width(getMessage())) / 2;
-            int textY = getY() + (height - 8) / 2;
-            guiGraphics.drawString(font, getMessage(), textX, textY, 0xFFFFFF);
-            // 选中效果（半透明覆盖层）
-//            if (manageSlot == slotIndex) {
-//                guiGraphics.fill(getX(), getY(),
-//                        getX() + width, getY() + height,
-//                        0x80808080);
-//            }
-
-            // 悬停效果（可选）
-            if (isHovered()) {
-                guiGraphics.fill(getX(), getY(),
-                        getX() + width, getY() + height,
-                        0x20FFFFFF);
-            }
-        }
-
-        @Override
-        protected void updateWidgetNarration(NarrationElementOutput output) {
-            output.add(NarratedElementType.TITLE, Component.translatable("narration.exmodifier.button.slot_" + slotIndex));
-        }
-    }
-
-    //重铸组件
-    private class RefreshWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+    // ====================================================================
+    // Slot panel (left-top)
+    // ====================================================================
+    public class SlotPanel extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
         private final int x;
         private final int y;
-        private final int width;
-        private final int height;
-        private final ResourceLocation menuTexture;
+        private final int w;
+        private final int h;
 
-        private final ExSlotButton itemButton;
-        private final ExSlotButton refreshButton;
-        private final ExSlotButton infoButton;
-        private final ExSlotButton materialButton;
+        private final int tgtX;
+        private final int tgtY;
+        private final int tgtW;
+        private final int tgtH;
 
-        public int findSlotMatchingItemS(ItemStack stack, Inventory inventory) {
-            for (int i = 0; i < inventory.items.size(); ++i) {
-                ItemStack itemStack = inventory.items.get(i);
-                if (itemStack == RefreshMenuScreenPlus.this.selectedRefreshItem) continue;
-                if (!itemStack.isEmpty() && itemStack.getCount() == stack.getCount() && ItemStack.isSameItemSameTags(stack, itemStack)) {
-                    return i;
-                }
-            }
+        private final int matX;
+        private final int matY;
+        private final int matW;
+        private final int matH;
 
-            return -1;
-        }
+        private final int exeX;
+        private final int exeY;
+        private final int exeW;
+        private final int exeH;
 
-        public int findSlotMatchingItemM(ItemStack stack, Inventory inventory) {
-            for (int i = 0; i < inventory.items.size(); ++i) {
-                ItemStack itemStack = inventory.items.get(i);
-                if (itemStack == RefreshMenuScreenPlus.this.selectedItemStack) continue;
-                if (!itemStack.isEmpty() && itemStack.getCount() == stack.getCount() && ItemStack.isSameItemSameTags(stack, itemStack)) {
-                    return i;
-                }
-            }
+        private final int infX;
+        private final int infY;
+        private final int infW;
+        private final int infH;
 
-            return -1;
-        }
+        private float targetHover = 0f;
+        private float materialHover = 0f;
+        private float execHover = 0f;
+        private float infoHover = 0f;
+        private long lastRender = System.currentTimeMillis();
 
-        public RefreshWidget(int x, int y, int w, int h, ResourceLocation menuTexture) {
+        public SlotPanel(int x, int y, int w, int h) {
             this.x = x;
             this.y = y;
-            this.width = w;
-            this.height = h;
-            this.menuTexture = menuTexture;
+            this.w = w;
+            this.h = h;
 
-            // 初始化按钮（带4x缩放）
-            int baseButtonSize = 16;
-            int scaledSize = baseButtonSize * 4;
-            this.itemButton = new ExSlotButton(
-                    x + 2, y + 2,
-                    scaledSize, scaledSize,
-                    WIDGETS_TEXTURE, WIDGETS_TEXTURE_2, scaledSize, scaledSize,
-                    0,
-                    () -> {
-                        manageSlot = 0;
-                        RefreshMenuScreenPlus.this.itemListViewer.items =
-                                filterItems(getMinecraft().player.getInventory().items);
-                    }
-            ) {
-                @Override
-                public void render(GuiGraphics gg, int p_93658_, int p_93659_, float p_93660_) {
-                    if (isHovered) {
-                        ItemStack selectedItemStack1 = RefreshMenuScreenPlus.this.selectedItemStack;
-                        if (!selectedItemStack1.isEmpty()) {
-                            RefreshMenuScreenPlus.this.toRenderTooltipList.add(
-                                   new ToRenderTooltip(
-                                           ()->{
-                                               gg.pose().pushPose();
-                                               gg.pose().translate(0, 0, 2100);
-                                               gg.renderTooltip(RefreshMenuScreenPlus.this.font, selectedItemStack1, p_93658_, p_93659_);
-                                               gg.pose().popPose();
-                                           }
-                                   )
-                            );
-                        }
-                    }
-                    super.render(gg, p_93658_, p_93659_, p_93660_);
-                }
-            };
-            int baseButtonSize2Y = 24;
-            int baseButtonSize2X = (w - 45) / 2;
+            int slotSize = Math.min((w - 18) / 2, 48);
+            int slotY = y + 18;
 
-            this.refreshButton = new ExSlotButton(
-                    x + 20, y + h - baseButtonSize2Y - 16,
-                    baseButtonSize2X, baseButtonSize2Y,
-                    WIDGETS_TEXTURE_W, WIDGETS_TEXTURE_W2, baseButtonSize2X, baseButtonSize2Y,
-                    -1,
-                    () -> {
-                        if (currentPage == 0) {
-                            RefreshItemMessage msg = new RefreshItemMessage(
-                                    findSlotMatchingItemM(selectedRefreshItem, player.getInventory()),
-                                    findSlotMatchingItemS(selectedItemStack, player.getInventory())
-                            );
-                            Exmodifier.PACKET_HANDLER.sendToServer(msg);
-                        } else if (currentPage == 1) {
-                            RefineItemMessage msg = new RefineItemMessage(
-                                    findSlotMatchingItemM(selectedRefreshItem, player.getInventory()),
-                                    findSlotMatchingItemS(selectedItemStack, player.getInventory())
-                            );
-                            Exmodifier.PACKET_HANDLER.sendToServer(msg);
-                        }
+            tgtX = x + 6;
+            tgtY = slotY;
+            tgtW = slotSize;
+            tgtH = slotSize;
 
-                    }
-            ).setComponent(currentPage == 1 ? Component.translatable("gui.exmodifier.refresh_2") : Component.translatable("gui.exmodifier.refresh_0"));
-            this.infoButton = new ExSlotButton(
-                    x + 20 + baseButtonSize2X + 5, y + h - baseButtonSize2Y - 16,
-                    baseButtonSize2X, baseButtonSize2Y,
-                    WIDGETS_TEXTURE_W, WIDGETS_TEXTURE_W2, baseButtonSize2X, baseButtonSize2Y,
-                    -1,
-                    () -> {
-                        //todo 重铸信息
-                    }
-            ).setComponent(currentPage == 1 ? Component.translatable("gui.exmodifier.refresh_3") : Component.translatable("gui.exmodifier.refresh_1"));
+            matX = tgtX + slotSize + 6;
+            matY = slotY;
+            matW = slotSize;
+            matH = slotSize;
 
+            int btnY = slotY + slotSize + 8;
+            int btnW = (w - 16) / 2;
+            exeX = x + 6;
+            exeY = btnY;
+            exeW = btnW;
+            exeH = 18;
 
-            int materialBtnWidth = width - 40;
-            int materialBtnHeight = 40;
-            this.materialButton = new ExSlotButton(
-                    x + 20, y + scaledSize + 24, // 64 + 20 with scaling
-                    materialBtnWidth, materialBtnHeight,
-                    WIDGETS_TEXTURE_W, WIDGETS_TEXTURE_W2, materialBtnWidth, materialBtnHeight,
-                    1,
-                    () -> {
-                        manageSlot = 1;
-                        if (currentPage == 0) {
-                            RefreshMenuScreenPlus.this.itemListViewer.items =
-                                    filterItems2(getMinecraft().player.getInventory().items);
-                        } else if (currentPage == 1) {
-                            RefreshMenuScreenPlus.this.itemListViewer.items =
-                                    filterItems3(getMinecraft().player.getInventory().items);
-                        }
-                    }
-            );
+            infX = exeX + btnW + 4;
+            infY = btnY;
+            infW = btnW;
+            infH = 18;
         }
 
         @Override
-        public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            // 渲染主背景
-            guiGraphics.blit(menuTexture,
-                    x, y,
-                    0, 0,
-                    width, height,
-                    width, height);
+        public void render(GuiGraphics gg, int mx, int my, float pt) {
+            long now = System.currentTimeMillis();
+            float dt = Math.min((now - lastRender) / 1000f, 0.1f);
+            lastRender = now;
 
-            // 渲染按钮
-            itemButton.render(guiGraphics, mouseX, mouseY, partialTick);
-            materialButton.render(guiGraphics, mouseX, mouseY, partialTick);
-            refreshButton.render(guiGraphics, mouseX, mouseY, partialTick);
-            infoButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            drawRoundedRect(gg, x, y, w, h, COL_CARD);
+            drawBorder(gg, x, y, w, h, COL_BORDER);
+            gg.drawString(font, Component.translatable("gui.exmodifier.refreshplus.summary.mode")
+                            .append(CommonComponents.SPACE)
+                            .append(Component.translatable(tabs.get(currentPage).langKey)),
+                    x + 6, y + 4, COL_TEXT_SEC, false);
 
+            boolean tgtHov = mx >= tgtX && mx < tgtX + tgtW && my >= tgtY && my < tgtY + tgtH;
+            boolean matHov = mx >= matX && mx < matX + matW && my >= matY && my < matY + matH;
+            boolean exeHov = mx >= exeX && mx < exeX + exeW && my >= exeY && my < exeY + exeH;
+            boolean infHov = mx >= infX && mx < infX + infW && my >= infY && my < infY + infH;
 
-            // 渲染选中物品
-            renderSelectedItem(guiGraphics);
+            targetHover = lerp(targetHover, tgtHov ? 1f : 0f, dt * 10f);
+            materialHover = lerp(materialHover, matHov ? 1f : 0f, dt * 10f);
+            execHover = lerp(execHover, exeHov ? 1f : 0f, dt * 10f);
+            infoHover = lerp(infoHover, infHov ? 1f : 0f, dt * 10f);
 
-            // 渲染材料槽内容
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(-5, 0, 0);
-            renderMaterialSlot(guiGraphics);
-            guiGraphics.pose().popPose();
+            renderSlotArea(gg, tgtX, tgtY, tgtW, tgtH, selectedItemStack,
+                    manageSlot == 0, targetHover,
+                    Component.translatable("gui.exmodifier.refreshplus.slot.target"), mx, my);
+            renderSlotArea(gg, matX, matY, matW, matH, selectedRefreshItem,
+                    manageSlot == 1, materialHover,
+                    Component.translatable("gui.exmodifier.refreshplus.slot.material"), mx, my);
+
+            renderButton(gg, exeX, exeY, exeW, exeH,
+                    Component.translatable("gui.exmodifier.refreshplus.action.execute"),
+                    COL_ACCENT, execHover, COL_BG);
+            renderButton(gg, infX, infY, infW, infH,
+                    Component.translatable("gui.exmodifier.refreshplus.action.info"),
+                    COL_TEXT_SEC, infoHover, COL_TEXT);
+
+            Component hint = manageSlot == 0
+                    ? Component.translatable("gui.exmodifier.refreshplus.hint.target")
+                    : Component.translatable("gui.exmodifier.refreshplus.hint.material");
+            List<FormattedCharSequence> lines = font.split(hint, w - 12);
+            int textY = exeY + exeH + 4;
+            for (int i = 0; i < lines.size() && textY + font.lineHeight < y + h - 2; i++) {
+                gg.drawString(font, lines.get(i), x + 6, textY, COL_TEXT_SEC, false);
+                textY += font.lineHeight;
+            }
         }
 
-        private void renderSelectedItem(GuiGraphics guiGraphics) {
-            if (!selectedItemStack.isEmpty()) {
-                guiGraphics.pose().pushPose();
-                try {
-                    // 4倍缩放渲染
-                    guiGraphics.pose().translate(2, 2, 2);
-                    guiGraphics.pose().scale(4, 4, 0);
-                    guiGraphics.renderItem(selectedItemStack, x / 4, y / 4);
-                    guiGraphics.renderItemDecorations(font, selectedItemStack, x / 4, y / 4);
-                } finally {
-                    guiGraphics.pose().popPose();
+        private void renderSlotArea(GuiGraphics gg, int sx, int sy, int sw, int sh,
+                                    ItemStack stack, boolean active, float hover,
+                                    Component label, int mx, int my) {
+            gg.fill(sx, sy, sx + sw, sy + sh, COL_PANEL);
+            if (active) {
+                gg.fill(sx, sy, sx + sw, sy + sh, COL_ACCENT_DIM);
+            }
+            if (hover > 0.01f) {
+                gg.fill(sx, sy, sx + sw, sy + sh, ((int) (hover * 32) << 24) | 0x00FFFFFF);
+            }
+            drawBorder(gg, sx, sy, sw, sh, active ? COL_ACCENT : COL_BORDER);
+
+            if (!stack.isEmpty()) {
+                int ox = sx + (sw - 16) / 2;
+                int oy = sy + (sh - 16) / 2;
+                gg.renderItem(stack, ox, oy);
+                gg.renderItemDecorations(font, stack, ox, oy);
+
+                if (mx >= sx && mx < sx + sw && my >= sy && my < sy + sh) {
+                    final int fmx = mx;
+                    final int fmy = my;
+                    deferredTooltips.add(() -> gg.renderTooltip(font, stack, fmx, fmy));
                 }
-
-                // 渲染物品名称（带自动截断）
-
-            }
-            renderItemLabel(guiGraphics, selectedItemStack);
-        }
-
-        private void renderItemLabel(GuiGraphics guiGraphics, ItemStack stack) {
-            Component text = stack.isEmpty() ? Component.translatable("gui.exmodifier.refresh_empty") : stack.getHoverName();
-            int maxWidth = (int) ((width - 64 - 12) / 1.75);
-
-            FormattedText trimmed = font.substrByWidth(text, maxWidth);
-            Component displayText = Component.literal(trimmed.getString())
-                    .withStyle(text.getStyle());
-
-            if (font.width(text) > maxWidth) {
-                displayText = Component.empty()
-                        .append(displayText)
-                        .append(Component.literal("...").withStyle(Style.EMPTY));
-            }
-
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().scale(1.75f, 1.75f, 0);
-            guiGraphics.drawString(
-                    font,
-                    displayText,
-                    (int) ((x + 64 + 10) / 1.75),
-                    (int) ((y + 2) / 1.75),
-                    0xFFFFFF,
-                    false
-            );
-            guiGraphics.pose().popPose();
-            if (currentPage == 1) {
-                if (!RefreshMenuScreenPlus.this.selectedItemStack.isEmpty()) {
-                    Component refineTooltip = RefineHelper.of(selectedItemStack).getRefineTooltip(true);
-                    if (refineTooltip != null) {
-                        guiGraphics.pose().pushPose();
-                        guiGraphics.pose().translate(0, 15, 0);
-                        guiGraphics.pose().scale(1.5f, 1.5f, 0);
-                        guiGraphics.drawString(font,
-                                refineTooltip,
-                                (int) ((x + 64 + 10) / 1.5),
-                                (int) ((y + 2) / 1.5),
-                                Color.YELLOW.getRGB(),
-                                false
-                        );
-                        guiGraphics.pose().popPose();
-                    }
-                }
-            }
-        }
-
-        private void renderMaterialSlot(GuiGraphics guiGraphics) {
-            if (selectedRefreshItem.isEmpty()) {
-
-                Component text = Component.translatable(
-                        "gui.exmodifier.refresh.select_" + (manageSlot == 1 ? 0 : 1) + currentPage);
-                int textWidth = font.width(text);
-                int centerX = materialButton.getX() + (materialButton.getWidth() - textWidth) / 2 + 6;
-                int centerY = materialButton.getY() + (materialButton.getHeight() - 8) / 2;
-                guiGraphics.drawString(font, text, centerX, centerY, 0xFFFFFF);
             } else {
-                renderItemInSlot(guiGraphics, selectedRefreshItem,
-                        materialButton.getX(), materialButton.getY(),
-                        materialButton.getWidth(), materialButton.getHeight());
-
-            }
-
-        }
-
-        private void renderItemInSlot(GuiGraphics guiGraphics, ItemStack stack,
-                                      int x, int y, int width, int height) {
-            guiGraphics.pose().pushPose();
-            try {
-                float scale = 1.5f;
-                guiGraphics.pose().scale(scale, scale, 0);
-
-
-                int itemX = (int) ((x + (width - 16) / 2) / scale);
-                int itemY = (int) ((y + (height - 16) / 2) / scale);
-                // 绘制物品槽
-                guiGraphics.blit(SLOT_ICON_1, itemX - 2, itemY - 2,
-                        0, 0, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE);
-                guiGraphics.renderItem(stack, itemX, itemY);
-                //guiGraphics.renderItemDecorations(font, stack, itemX, itemY);
-                int count = stack.getCount();
-                if (count != 1) {
-                    Optional<WashingMaterials> first = ModifierHandle.materialsList.stream().filter(m -> m.ItemId.equals(ExUtil.getItemID(stack))).findFirst();
-                    boolean present = first.isPresent();
-                    int needCount =RefreshMenuScreenPlus.this.currentPage == 1 ? 1 : present ? first.get().NeedCount : 1;
-                    String s = "";
-                    if (needCount > count) {
-                        s = "§4" + count + "/" + needCount;
-                    } else {
-                        s = "§a" + count + "/" + needCount;
-                    }
-                    guiGraphics.pose().translate(0.0F, 0.0F, 200.0F);
-                    guiGraphics.drawString(font, s, itemX + 19 - 2 - font.width(s), itemY + 6 + 3, 16777215, true);
-                }
-               renderItemDecorationsWithoutCount(guiGraphics,font, selectedRefreshItem, materialButton.getX(), materialButton.getY());
-            } finally {
-                guiGraphics.pose().popPose();
+                String text = font.plainSubstrByWidth(label.getString(), sw - 6);
+                gg.drawString(font, text, sx + (sw - font.width(text)) / 2,
+                        sy + (sh - font.lineHeight) / 2, COL_TEXT_SEC, false);
             }
         }
 
-        public  void renderItemDecorationsWithoutCount( GuiGraphics guiGraphics,Font p_282005_, ItemStack p_283349_, int p_282641_, int p_282146_) {
-            if (!p_283349_.isEmpty()) {
-                guiGraphics.pose().pushPose();
+        private void renderButton(GuiGraphics gg, int bx, int by, int bw, int bh,
+                                  Component text, int baseColor, float hover, int textColor) {
+            int h = (int) (hover * 26);
+            int r = Math.min(((baseColor >> 16) & 0xFF) + h, 255);
+            int g = Math.min(((baseColor >> 8) & 0xFF) + h, 255);
+            int b = Math.min((baseColor & 0xFF) + h, 255);
+            int fill = 0xFF000000 | (r << 16) | (g << 8) | b;
 
-
-                if (p_283349_.isBarVisible()) {
-                    int l = p_283349_.getBarWidth();
-                    int i = p_283349_.getBarColor();
-                    int j = p_282641_ + 2;
-                    int k = p_282146_ + 13;
-                    guiGraphics.fill(RenderType.guiOverlay(), j, k, j + 13, k + 2, -16777216);
-                    guiGraphics.fill(RenderType.guiOverlay(), j, k, j + l, k + 1, i | -16777216);
-                }
-
-                Minecraft minecraft1 = RefreshMenuScreenPlus.this.minecraft;
-                LocalPlayer localplayer = minecraft1.player;
-                float f = localplayer == null ? 0.0F : localplayer.getCooldowns().getCooldownPercent(p_283349_.getItem(), minecraft1.getFrameTime());
-                if (f > 0.0F) {
-                    int i1 = p_282146_ + Mth.floor(16.0F * (1.0F - f));
-                    int j1 = i1 + Mth.ceil(16.0F * f);
-                    guiGraphics.fill(RenderType.guiOverlay(), p_282641_, i1, p_282641_ + 16, j1, Integer.MAX_VALUE);
-                }
-
-                guiGraphics.pose().popPose();
-                net.minecraftforge.client.ItemDecoratorHandler.of(p_283349_).render(guiGraphics, p_282005_, p_283349_, p_282641_, p_282146_);
+            drawRoundedRect(gg, bx, by, bw, bh, fill);
+            String title = text.getString();
+            if (font.width(title) > bw - 8) {
+                title = font.plainSubstrByWidth(title, bw - 12) + "..";
             }
-        }
-        @Override
-        public List<? extends GuiEventListener> children() {
-            return List.of(itemButton, materialButton, refreshButton, infoButton);
+            gg.drawString(font, title, bx + (bw - font.width(title)) / 2,
+                    by + (bh - font.lineHeight) / 2, textColor, false);
         }
 
-        @Override
-        public NarrationPriority narrationPriority() {
-            return NarrationPriority.HOVERED;
-        }
-
-        @Override
-        public void updateNarration(NarrationElementOutput output) {
-            output.add(NarratedElementType.TITLE, Component.translatable("gui.exmodifier.refresh.widget"));
-        }
-    }
-
-    // 其他必要方法
-
-    // 在RefreshMenuScreenPlus类中添加内部类
-    public class TextListWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
-        public static class Entry {
-            private final Component text;
-            private final List<Component> tooltips;
-
-            public Entry(Component text, List<Component> tooltips) {
-                this.text = text;
-                this.tooltips = tooltips;
-            }
-        }
-
-        // 样式参数
-        private static final int ENTRY_SPACING = 2;
-        private static final int SCROLLBAR_WIDTH = 6;
-        private static final int HIGHLIGHT_COLOR = 0x80808080;
-        private static final int BACKGROUND_COLOR = 0x80000000;
-
-        public List<Entry> entries;
-        private final List<Integer> entryHeights = new ArrayList<>();
-        private final Rectangle bounds;
-        private int scrollOffset;
-        private boolean isScrolling;
-        private int totalContentHeight;
-        private int visibleItemCount;
-        private int selectedIndex = -1;
-        private int hoveredIndex = -1;
-
-        public TextListWidget(List<Entry> entries, int x, int y, int width, int height) {
-            this.entries = new ArrayList<>(entries);
-            this.bounds = new Rectangle(x, y, width, height);
-            calculateLayout();
-        }
-
-        public void calculateLayout() {
-            entryHeights.clear();
-            totalContentHeight = 0;
-
-            for (Entry entry : entries) {
-                int height = font.wordWrapHeight(entry.text, getContentWidth()) + ENTRY_SPACING;
-                entryHeights.add(height);
-                totalContentHeight += height;
-            }
-
-            visibleItemCount = calculateVisibleItemCount();
-        }
-
-        private int getContentWidth() {
-            return bounds.width - SCROLLBAR_WIDTH - 4;
-        }
-
-        private int calculateVisibleItemCount() {
-            int count = 0;
-            int currentHeight = 0;
-            for (Integer h : entryHeights) {
-                if (currentHeight + h > bounds.height) break;
-                currentHeight += h;
-                count++;
-            }
-            return Math.max(count, 1);
-        }
-
-        private void enableScissor(float x0, float y0, float x1, float y1) {
-            Window window = Minecraft.getInstance().getWindow();
-            int screenHeight = window.getScreenHeight();
-            int scissorX = (int) (x0 * window.getGuiScale());
-            int scissorY = (int) (screenHeight - (y1 * window.getGuiScale()));
-            int scissorWidth = (int) ((x1 - x0) * window.getGuiScale());
-            int scissorHeight = (int) ((y1 - y0) * window.getGuiScale());
-            RenderSystem.enableScissor(scissorX, scissorY, scissorWidth, scissorHeight);
-        }
-
-        @Override
-        public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            guiGraphics.pose().pushPose();
-
-            try {
-                renderBackground(guiGraphics);
-                enableScissor(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height);
-                renderEntries(guiGraphics, mouseX, mouseY);
-                RenderSystem.disableScissor();
-                renderScrollBar(guiGraphics);
-            } finally {
-                guiGraphics.pose().popPose();
-            }
-
-//            guiGraphics.pose().pushPose();
-//            guiGraphics.pose().translate(0, 0, 500);
-            renderTooltip(guiGraphics, mouseX, mouseY);
-    //        guiGraphics.pose().popPose();
-        }
-
-        private void setupClipRegion(GuiGraphics guiGraphics) {
-            guiGraphics.enableScissor(
-                    bounds.x, bounds.y,
-                    bounds.x + bounds.width,
-                    bounds.y + bounds.height
-            );
-        }
-
-        private void renderBackground(GuiGraphics guiGraphics) {
-            guiGraphics.fill(
-                    bounds.x, bounds.y,
-                    bounds.x + bounds.width,
-                    bounds.y + bounds.height,
-                    BACKGROUND_COLOR
-            );
-        }
-
-        private void renderEntries(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-            int renderY = bounds.y - scrollOffset;
-            hoveredIndex = -1;
-
-            for (int i = 0; i < entries.size(); i++) {
-                Entry entry = entries.get(i);
-                int entryHeight = entryHeights.get(i);
-
-                if (renderY + entryHeight < bounds.y) {
-                    renderY += entryHeight;
-                    continue;
-                }
-
-                if (renderY > bounds.y + bounds.height) break;
-
-                // 高亮逻辑
-                if (i == selectedIndex) {
-                    renderEntryHighlight(guiGraphics, renderY, entryHeight);
-                }
-
-                // 文字渲染
-                guiGraphics.drawWordWrap(
-                        font, entry.text,
-                        bounds.x + 2, renderY + 1,
-                        getContentWidth(),
-                        0xFFFFFF
-                );
-
-                // 检测悬停
-                if (isMouseOverEntry(mouseX, mouseY, renderY, entryHeight)) {
-                    hoveredIndex = i;
-                }
-
-                renderY += entryHeight;
-            }
-        }
-
-        private void renderEntryHighlight(GuiGraphics guiGraphics, int yPos, int height) {
-            guiGraphics.fill(
-                    bounds.x + 1, yPos,
-                    bounds.x + bounds.width - SCROLLBAR_WIDTH - 1,
-                    yPos + height,
-                    HIGHLIGHT_COLOR
-            );
-        }
-
-        private void renderScrollBar(GuiGraphics guiGraphics) {
-            if (totalContentHeight <= bounds.height) {
-                // 渲染完整滑块（无需滚动条时）
-                int fullBarHeight = bounds.height;
-                int fullBarY = bounds.y;
-
-                // 轨道背景（完整滑块样式）
-                guiGraphics.fill(
-                        bounds.x + bounds.width - SCROLLBAR_WIDTH, bounds.y,
-                        bounds.x + bounds.width, bounds.y + bounds.height,
-                        0x40000000 // 半透明灰色
-                );
-
-                // 滑块（完整高度）
-                guiGraphics.fill(
-                        bounds.x + bounds.width - SCROLLBAR_WIDTH, fullBarY,
-                        bounds.x + bounds.width, fullBarY + fullBarHeight,
-                        0x80808080 // 半透明浅灰色
-                );
+        private void showSummaryOverlay() {
+            long now = System.currentTimeMillis();
+            if (selectedItemStack.isEmpty() || selectedRefreshItem.isEmpty()) {
+                addOverlay(now,
+                        Component.translatable("gui.exmodifier.refreshplus.toast.need_select"),
+                        ItemStack.EMPTY);
                 return;
             }
-
-            // 原有滚动条渲染逻辑保持不变
-            int scrollHeight = (int) ((float) bounds.height / totalContentHeight * bounds.height);
-            scrollHeight = Mth.clamp(scrollHeight, 10, bounds.height);
-
-            int scrollY = bounds.y + (int) ((float) scrollOffset / totalContentHeight * bounds.height);
-            scrollY = Mth.clamp(scrollY, bounds.y, bounds.y + bounds.height - scrollHeight);
-
-            // 轨道
-            guiGraphics.fill(
-                    bounds.x + bounds.width - SCROLLBAR_WIDTH, bounds.y,
-                    bounds.x + bounds.width, bounds.y + bounds.height,
-                    0x40000000
-            );
-
-            // 滑块
-            guiGraphics.fill(
-                    bounds.x + bounds.width - SCROLLBAR_WIDTH, scrollY,
-                    bounds.x + bounds.width, scrollY + scrollHeight,
-                    0x80808080
-            );
-        }
-
-
-        private void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-            if (hoveredIndex != -1 && entries.get(hoveredIndex).tooltips != null) {
-                toRenderTooltipList.add(new ToRenderTooltip(()->{
-                     guiGraphics.renderTooltip(font, entries.get(hoveredIndex).tooltips, ItemStack.EMPTY.getTooltipImage(), mouseX, mouseY);
-
-                }));
-            }
-        }
-
-        @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (!isMouseOver(mouseX, mouseY)) return false;
-
-            if (isMouseOverScrollBar(mouseX)) {
-                isScrolling = true;
-                return true;
-            }
-
-            selectedIndex = getEntryAtPosition(mouseX, mouseY);
-            return selectedIndex != -1;
-        }
-
-        // 其他输入处理方法保持不变
-        @Override
-        public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-            if (isMouseOver(mouseX, mouseY)) {
-                scrollOffset = (int) Mth.clamp(
-                        scrollOffset - (delta > 0 ? 20 : -20),
-                        0,
-                        Math.max(totalContentHeight - bounds.height, 0)
-                );
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-            if (isScrolling) {
-                double ratio = (mouseY - bounds.y) / bounds.height;
-                scrollOffset = (int) Mth.clamp(
-                        ratio * totalContentHeight,
-                        0,
-                        totalContentHeight - bounds.height
-                );
-                return true;
-            }
-            return false;
-        }
-
-        // 辅助方法
-        private boolean isMouseOverEntry(double mouseX, double mouseY, int entryY, int entryHeight) {
-            return mouseX >= bounds.x && mouseX <= bounds.x + bounds.width - SCROLLBAR_WIDTH &&
-                    mouseY >= entryY && mouseY <= entryY + entryHeight;
-        }
-
-        private int getEntryAtPosition(double mouseX, double mouseY) {
-            if (!isMouseOver(mouseX, mouseY)) return -1;
-
-            int contentY = (int) (mouseY - bounds.y) + scrollOffset;
-            int accumulatedHeight = 0;
-            for (int i = 0; i < entries.size(); i++) {
-                int entryHeight = entryHeights.get(i);
-                if (contentY >= accumulatedHeight && contentY < accumulatedHeight + entryHeight) {
-                    return i;
+            if (currentPage == 0) {
+                Optional<WashingMaterials> mat = ModifierHandle.materialsList.stream()
+                        .filter(m -> m.ItemId.equals(ExUtil.getItemID(selectedRefreshItem))).findFirst();
+                if (mat.isPresent()) {
+                    WashingMaterials wm = mat.get();
+                    addOverlay(now,
+                            Component.translatable("gui.exmodifier.refreshplus.summary.needcount",
+                                    String.valueOf(selectedRefreshItem.getCount()),
+                                    String.valueOf(wm.NeedCount)),
+                            selectedRefreshItem);
+                    return;
                 }
-                accumulatedHeight += entryHeight;
             }
-            return -1;
+            if (currentPage == 1) {
+                int chance = RefineHelper.of(selectedItemStack).getRefineSuccessChance(selectedRefreshItem);
+                addOverlay(now,
+                        Component.translatable("exmodifier.refine.description.success_chance", String.valueOf(chance)),
+                        selectedRefreshItem);
+                return;
+            }
+            addOverlay(now, Component.translatable("gui.exmodifier.refreshplus.summary.none"), ItemStack.EMPTY);
         }
 
-        private boolean isMouseOverScrollBar(double mouseX) {
-            return mouseX >= bounds.x + bounds.width - SCROLLBAR_WIDTH &&
-                    mouseX <= bounds.x + bounds.width;
+        private void executeAction(float fx, float fy) {
+            if (selectedItemStack.isEmpty() || selectedRefreshItem.isEmpty()) {
+                addOverlay(System.currentTimeMillis(),
+                        Component.translatable("gui.exmodifier.refreshplus.toast.need_select"),
+                        ItemStack.EMPTY);
+                spawnParticles(fx, fy, 8, 0xFFFFFF);
+                return;
+            }
+            int matSlot = findSlot(selectedRefreshItem, selectedItemStack);
+            int tgtSlot = findSlot(selectedItemStack, selectedRefreshItem);
+            if (currentPage == 0) {
+                Exmodifier.PACKET_HANDLER.sendToServer(new RefreshItemMessage(matSlot, tgtSlot));
+            } else {
+                Exmodifier.PACKET_HANDLER.sendToServer(new RefineItemMessage(matSlot, tgtSlot));
+            }
+            addOverlay(System.currentTimeMillis(),
+                    Component.translatable("gui.exmodifier.refreshplus.toast.sent"),
+                    selectedRefreshItem);
+            spawnParticles(fx, fy, 14, 0xFFFFFF);
         }
 
         @Override
-        public boolean isMouseOver(double mouseX, double mouseY) {
-            return bounds.contains(mouseX, mouseY);
+        public boolean mouseClicked(double mx, double my, int btn) {
+            if (mx >= tgtX && mx < tgtX + tgtW && my >= tgtY && my < tgtY + tgtH) {
+                manageSlot = 0;
+                spawnParticles((float) (tgtX + tgtW / 2), (float) (tgtY + tgtH / 2), 7, 0xFFFFFF);
+                rebuildUi();
+                return true;
+            }
+            if (mx >= matX && mx < matX + matW && my >= matY && my < matY + matH) {
+                manageSlot = 1;
+                spawnParticles((float) (matX + matW / 2), (float) (matY + matH / 2), 7, 0xFFFFFF);
+                rebuildUi();
+                return true;
+            }
+            if (mx >= exeX && mx < exeX + exeW && my >= exeY && my < exeY + exeH) {
+                executeAction((float) (exeX + exeW / 2), (float) (exeY + exeH / 2));
+                return true;
+            }
+            if (mx >= infX && mx < infX + infW && my >= infY && my < infY + infH) {
+                showSummaryOverlay();
+                spawnParticles((float) (infX + infW / 2), (float) (infY + infH / 2), 6, 0xFFFFFF);
+                return true;
+            }
+            return false;
         }
 
-        // 其他必要实现
         @Override
-        public List<? extends GuiEventListener> children() {
+        public @NotNull List<? extends GuiEventListener> children() {
             return List.of();
         }
 
@@ -1180,410 +1013,651 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         }
 
         @Override
-        public void updateNarration(NarrationElementOutput output) {
+        public void updateNarration(NarrationElementOutput out) {
+            out.add(NarratedElementType.TITLE, Component.translatable("gui.exmodifier.refreshplus.title"));
         }
     }
 
-
-    // 物品列表查看器组件
-    public class ItemListViewer extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
-
-        public List<ItemStack> items;
+    // ====================================================================
+    // Material panel (right-top)
+    // ====================================================================
+    public class MaterialInfoPanel extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
         private final int x;
-        private int y;
-        private final int width;
-        private final int totalSlotsPerPage;
-        private final int visibleRowsY;
-        private final int visibleRowsX;
-        private int selected = -1;
-        private ContextMenu contextMenu;
-        private boolean showSearchBox = false;
-        private EditBox searchBox;
-        private ResourceLocation searchBackground = WIDGETS_TEXTURE;
-        private int searchBgColor = 0xAA000000;
-        private final List<ItemStack> originalItems;
-        private final int originalY;
+        private final int y;
+        private final int w;
+        private final int h;
 
-        public ItemListViewer(List<ItemStack> items, int x, int y, int width, int height) {
-            this.originalItems = new ArrayList<>(items); // 保存原始列表
-            this.items = new ArrayList<>(items);
+        public MaterialInfoPanel(int x, int y, int w, int h) {
             this.x = x;
-            this.originalY = this.y = y;
-            this.visibleRowsY = (height - (showSearchBox ? 25 : 0)) / ITEM_SLOT_SIZE;
-            this.visibleRowsX = width / ITEM_SLOT_SIZE;
-            this.width = width;
-            this.totalSlotsPerPage = visibleRowsX * visibleRowsY;
-
-            // 初始化搜索框
-            this.searchBox = new EditBox(
-                    font,
-                    x + width - 125, // 初始位置（会在render中调整）
-                    y + 5,
-                    120,
-                    18,
-                    Component.translatable("gui.exmodifier.search")
-            );
-            this.searchBox.setMaxLength(32);
-            this.searchBox.setBordered(false);
-            this.searchBox.setVisible(false);
-            this.searchBox.setResponder(text -> filterItems());
-        }
-
-        private String removeColorCodes(String text) {
-            // 使用正则表达式匹配并替换掉所有颜色代码
-            return text.replaceAll("§[0-9A-FK-ORa-fk-or]", "");
-        }
-
-        private void filterItems() {
-            String query = searchBox.getValue().toLowerCase().trim();
-            items = originalItems.stream()
-                    .filter(stack -> !stack.isEmpty())
-                    .filter(stack -> {
-                        // 名称匹配
-                        String name = stack.getHoverName().getString().toLowerCase();
-                        String cleanText = removeColorCodes(name);
-                        if (cleanText.contains(query.toLowerCase())) return true;
-
-                        // 标签匹配（可选）
-                        return stack.getTags()
-                                .anyMatch(tag -> tag.location().toString().toLowerCase().contains(query.toLowerCase()));
-                    })
-                    .collect(Collectors.toList());
-        }
-
-        // 搜索框可见性控制
-        public void setShowSearchBox(boolean show) {
-            this.showSearchBox = show;
-            this.searchBox.setVisible(show);
-            if (show) {
-                this.searchBox.setFocused(true);
-                this.searchBox.setValue(""); // 清空搜索条件
-            }
-        }
-
-        // 设置搜索框背景
-        public void setSearchBackground(ResourceLocation texture, int color) {
-            this.searchBackground = texture;
-            this.searchBgColor = color;
-        }
-
-        record TooltipToRender(Font font, ItemStack itemStack, int x, int y) {
+            this.y = y;
+            this.w = w;
+            this.h = h;
         }
 
         @Override
-        public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            // 调整Y坐标（为搜索框留出空间）
-            if (showSearchBox) {
-                renderSearchBox(guiGraphics, mouseX, mouseY, partialTick);
+        public void render(GuiGraphics gg, int mx, int my, float pt) {
+            drawRoundedRect(gg, x, y, w, h, COL_CARD);
+            drawBorder(gg, x, y, w, h, COL_BORDER);
+
+            gg.drawString(font, Component.translatable("gui.exmodifier.refreshplus.panel.material"),
+                    x + 6, y + 4, COL_TEXT_SEC, false);
+
+            if (selectedRefreshItem.isEmpty()) {
+                Component empty = Component.translatable("gui.exmodifier.refreshplus.summary.none");
+                gg.drawString(font, empty, x + 6, y + 4 + font.lineHeight + 2, COL_TEXT_SEC, false);
+                return;
             }
 
-            // 绘制背景框
-            guiGraphics.blit(WIDGETS_TEXTURE, x, y, 0, 0,
-                    visibleRowsX * ITEM_SLOT_SIZE + 10,
-                    visibleRowsY * ITEM_SLOT_SIZE + 10,
-                    visibleRowsX * ITEM_SLOT_SIZE + 10, visibleRowsY * ITEM_SLOT_SIZE + 10);
+            int iconX = x + 6;
+            int iconY = y + 4 + font.lineHeight + 2;
+            gg.renderItem(selectedRefreshItem, iconX, iconY);
+            gg.renderItemDecorations(font, selectedRefreshItem, iconX, iconY);
 
-            // 物品渲染逻辑
-            TooltipToRender tooltipToRender = null;
-            int startIndex = (int) (scrollOffset * (items.size() - totalSlotsPerPage));
-            startIndex = Math.max(0, startIndex);
+            String name = font.plainSubstrByWidth(selectedRefreshItem.getHoverName().getString(), w - 32);
+            gg.drawString(font, name, iconX + 20, iconY + 2, COL_TEXT, false);
 
-            for (int i = 0; i < totalSlotsPerPage; i++) {
-                int index = startIndex + i;
-                if (index >= items.size()) break;
-
-                int row = i / visibleRowsX;
-                int col = i % visibleRowsX;
-                int slotX = x + 5 + col * ITEM_SLOT_SIZE;
-                int slotY = y + 5 + row * ITEM_SLOT_SIZE;
-
-                boolean isHovered = isMouseOverSlot(mouseX, mouseY, slotX, slotY);
-
-                // 绘制物品槽
-                if (isHovered) {
-                    guiGraphics.blit(SLOT_ICON_2_1, slotX, slotY,
-                            0, 0, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE);
-                } else {
-                    guiGraphics.blit(SLOT_ICON_2, slotX, slotY,
-                            0, 0, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE, ITEM_SLOT_SIZE);
+            int lineY = iconY + 20;
+            if (currentPage == 0) {
+                Optional<WashingMaterials> mat = ModifierHandle.materialsList.stream()
+                        .filter(m -> m.ItemId.equals(ExUtil.getItemID(selectedRefreshItem))).findFirst();
+                if (mat.isPresent()) {
+                    WashingMaterials wm = mat.get();
+                    gg.drawString(font,
+                            Component.translatable("gui.exmodifier.refreshplus.summary.rarity", String.valueOf(wm.rarity)),
+                            x + 6, lineY, COL_TEXT, false);
+                    lineY += font.lineHeight;
+                    gg.drawString(font,
+                            Component.translatable("gui.exmodifier.refreshplus.summary.exp", String.valueOf(wm.CostExp)),
+                            x + 6, lineY, COL_TEXT, false);
+                    lineY += font.lineHeight;
+                    int countCol = selectedRefreshItem.getCount() >= wm.NeedCount ? COL_SUCCESS : COL_DANGER;
+                    gg.drawString(font,
+                            Component.translatable("gui.exmodifier.refreshplus.summary.needcount",
+                                    String.valueOf(selectedRefreshItem.getCount()),
+                                    String.valueOf(wm.NeedCount)),
+                            x + 6, lineY, countCol, false);
                 }
-                // 绘制物品
-                ItemStack stack = items.get(index);
-                guiGraphics.renderItem(stack, slotX + 2, slotY + 2);
-                guiGraphics.renderItemDecorations(font, stack, slotX + 2, slotY + 2);
-                // renderItemCount(guiGraphics, stack, slotX, slotY);
-
-                // 悬停效果
-                if (isHovered && (contextMenu == null || contextMenu.buttons.isEmpty())) {
-                    guiGraphics.fillGradient(RenderType.guiOverlay(),
-                            slotX, slotY,
-                            slotX + ITEM_SLOT_SIZE, slotY + ITEM_SLOT_SIZE,
-                            -2130706433, -2130706433, 20);
-                    tooltipToRender = new TooltipToRender(font, stack, slotX, slotY);
+            } else {
+                if (!selectedItemStack.isEmpty()) {
+                    RefineHelper helper = RefineHelper.of(selectedItemStack);
+                    Component stars = helper.getRefineTooltip(true);
+                    if (stars != null) {
+                        gg.drawString(font, stars, x + 6, lineY, 0xFFFFCC66, false);
+                        lineY += font.lineHeight;
+                    }
+                    int chance = helper.getRefineSuccessChance(selectedRefreshItem);
+                    gg.drawString(font,
+                            Component.translatable("exmodifier.refine.description.success_chance", String.valueOf(chance)),
+                            x + 6, lineY, chance >= 50 ? COL_SUCCESS : COL_DANGER, false);
                 }
             }
 
-
-            // 渲染提示信息
-            if (tooltipToRender != null) {
-                guiGraphics.renderTooltip(font, tooltipToRender.itemStack(), mouseX, mouseY);
-            }
-
-            // 上下文菜单渲染
-            renderContextMenu(guiGraphics, mouseX, mouseY);
-        }
-
-        private void renderItemCount(GuiGraphics guiGraphics, ItemStack stack, int slotX, int slotY) {
-            int count = stack.getCount();
-            if (count > 1) {
-                String countText = String.valueOf(count);
-                int textX = slotX + 16 - font.width(countText) - 1;
-                int textY = slotY + 16 - 8;
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().translate(0, 0, 200);
-                guiGraphics.drawString(font, countText, textX, textY, 0xFFFFFF, false);
-                guiGraphics.pose().popPose();
+            if (mx >= iconX && mx < iconX + 16 && my >= iconY && my < iconY + 16) {
+                final int fmx = mx;
+                final int fmy = my;
+                deferredTooltips.add(() -> gg.renderTooltip(font, selectedRefreshItem, fmx, fmy));
             }
         }
-
-        private void renderContextMenu(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-            if (contextMenu != null) {
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().translate(0, 0, 600);
-                contextMenu.render(guiGraphics, mouseX, mouseY, 0);
-                guiGraphics.pose().popPose();
-            }
-        }
-
-        private void renderSearchBox(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            // 更新搜索框位置
-            searchBox.setX(x + width - 125);
-            searchBox.setY(originalY + 30);
-
-            // 绘制背景
-            guiGraphics.fillGradient(
-                    x + width - 130, originalY + 2,
-                    x + width - 10, originalY + 22,
-                    searchBgColor, searchBgColor
-            );
-            guiGraphics.blit(
-                    searchBackground,
-                    x + width - 130, originalY + 2,
-                    0, 0,
-                    120, 20,
-                    120, 20
-            );
-
-            // 渲染搜索框
-            searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
-        }
-
-        private boolean isMouseOverSlot(int mouseX, int mouseY, int slotX, int slotY) {
-            return mouseX >= slotX && mouseX <= slotX + ITEM_SLOT_SIZE &&
-                    mouseY >= slotY && mouseY <= slotY + ITEM_SLOT_SIZE;
-        }
-//        private boolean isMouseOverSlot(int mouseX, int mouseY, int index) {
-//            int startIndex = (int)(scrollOffset * (items.size() - visibleRowsY));
-//            int slotY = y + 5 + (index - startIndex) * ITEM_SLOT_SIZE;
-//            return mouseX >= x + 5 && mouseX <= x + 25 &&
-//                    mouseY >= slotY && mouseY <= slotY + ITEM_SLOT_SIZE;
-//        }
 
         @Override
         public @NotNull List<? extends GuiEventListener> children() {
-            List<GuiEventListener> children = new ArrayList<>();
-            if (contextMenu != null) children.addAll(contextMenu.buttons);
-            if (showSearchBox) children.add(searchBox);
-            return children;
+            return List.of();
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (showSearchBox && searchBox.isMouseOver(mouseX, mouseY)) {
-                contextMenu = null; // 关闭上下文菜单
-                searchBox.mouseClicked(mouseX, mouseY, button);
+        public NarrationPriority narrationPriority() {
+            return NarrationPriority.NONE;
+        }
+
+        @Override
+        public void updateNarration(NarrationElementOutput out) {}
+    }
+
+    // ====================================================================
+    // Compact entry list (left-bottom of top area)
+    // ====================================================================
+    public class EntryListPanel extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+        private final int x;
+        private final int y;
+        private final int w;
+        private final int h;
+
+        private List<EntryData> entries = new ArrayList<>();
+        private int scrollOff = 0;
+        private int totalHeight = 0;
+        private int hoverIndex = -1;
+
+        public EntryListPanel(int x, int y, int w, int h) {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
+        }
+
+        public void refreshEntries(List<EntryData> list) {
+            entries = new ArrayList<>(list);
+            totalHeight = entries.size() * (font.lineHeight + 4);
+            scrollOff = Mth.clamp(scrollOff, 0, Math.max(totalHeight - (h - 8), 0));
+        }
+
+        @Override
+        public void render(GuiGraphics gg, int mx, int my, float pt) {
+            drawRoundedRect(gg, x, y, w, h, COL_CARD);
+            drawBorder(gg, x, y, w, h, COL_BORDER);
+            gg.drawString(font, Component.translatable("gui.exmodifier.refreshplus.panel.details"),
+                    x + 6, y + 4, COL_TEXT_SEC, false);
+
+            int bodyY = y + font.lineHeight + 8;
+            int bodyH = h - (font.lineHeight + 12);
+            if (bodyH <= 0) {
+                return;
             }
-            int startIndex = (int) (scrollOffset * (items.size() - totalSlotsPerPage));
-            startIndex = Math.max(0, startIndex);
 
+            if (entries.isEmpty()) {
+                Component msg = Component.translatable("gui.exmodifier.refreshplus.empty.entries");
+                gg.drawString(font, msg, x + 6, bodyY, COL_TEXT_SEC, false);
+                return;
+            }
 
-            // 二维坐标检测
-            for (int i = 0; i < totalSlotsPerPage; i++) {
-                int index = startIndex + i;
-                if (index >= items.size()) break;
+            hoverIndex = -1;
+            gg.enableScissor(x + 1, bodyY, x + w - 1, bodyY + bodyH);
 
-                int row = i / visibleRowsX;
-                int col = i % visibleRowsX;
-
-                int slotX = x + 5 + col * ITEM_SLOT_SIZE;
-                int slotY = y + 5 + row * ITEM_SLOT_SIZE;
-
-                if (isMouseOverSlot((int) mouseX, (int) mouseY, slotX, slotY)) {
-                    selected = index;
-//                    if (button == 0) {
-//                            putItem();
-//                    }
-                    showContextMenu((int) mouseX, (int) mouseY);
-                    return true;
+            int ry = bodyY - scrollOff;
+            int rowH = font.lineHeight + 4;
+            for (int i = 0; i < entries.size(); i++) {
+                if (ry + rowH < bodyY) {
+                    ry += rowH;
+                    continue;
+                }
+                if (ry > bodyY + bodyH) {
+                    break;
                 }
 
+                boolean hover = mx >= x + 2 && mx < x + w - SCROLLBAR_W - 2 && my >= ry && my < ry + rowH;
+                if (hover) {
+                    hoverIndex = i;
+                    gg.fill(x + 2, ry, x + w - SCROLLBAR_W - 2, ry + rowH, COL_HOVER);
+                }
+
+                String t = entries.get(i).title.getString();
+                t = font.plainSubstrByWidth(t, w - SCROLLBAR_W - 16);
+                gg.drawString(font, (i + 1) + ". " + t, x + 6, ry + 2, COL_TEXT, false);
+                ry += rowH;
+            }
+            gg.disableScissor();
+
+            if (totalHeight > bodyH) {
+                int tx = x + w - SCROLLBAR_W;
+                gg.fill(tx, bodyY, tx + SCROLLBAR_W, bodyY + bodyH, COL_SCROLLBAR);
+                int thumbH = Math.max((int) ((float) bodyH / totalHeight * bodyH), 12);
+                int thumbY = bodyY + (int) ((float) scrollOff / (totalHeight - bodyH) * (bodyH - thumbH));
+                gg.fill(tx, thumbY, tx + SCROLLBAR_W, thumbY + thumbH, COL_SCROLLTHUMB);
+            }
+
+            if (hoverIndex >= 0 && hoverIndex < entries.size()) {
+                EntryData e = entries.get(hoverIndex);
+                if (!e.details.isEmpty()) {
+                    final int fmx = mx;
+                    final int fmy = my;
+                    deferredTooltips.add(() -> gg.renderTooltip(font, e.details, ItemStack.EMPTY.getTooltipImage(), fmx, fmy));
+                }
+            }
+        }
+
+        @Override
+        public boolean mouseScrolled(double mx, double my, double delta) {
+            int bodyY = y + font.lineHeight + 8;
+            int bodyH = h - (font.lineHeight + 12);
+            if (mx >= x && mx < x + w && my >= bodyY && my < bodyY + bodyH && totalHeight > bodyH) {
+                scrollOff = (int) Mth.clamp(scrollOff - (delta > 0 ? 14 : -14), 0, Math.max(totalHeight - bodyH, 0));
+                return true;
             }
             return false;
         }
 
         @Override
-        public @NotNull Optional<GuiEventListener> getChildAt(double p_94730_, double p_94731_) {
-
-            return super.getChildAt(p_94730_, p_94731_);
-        }
-
-        private void showContextMenu(int x, int y) {
-            contextMenu = new ContextMenu(x, y, Arrays.asList(
-                    new ActionButton("gui.exmodifier.refresh_menu.selected", b -> {
-                        putItem();
-
-//                        SystemToast.add(Minecraft.getInstance().getToasts(),
-//                                SystemToast.SystemToastIds.PACK_COPY_FAILURE, Component.literal("使用操作"), Component.literal("选择物品"));
-                        contextMenu = null;
-                    }),
-                    new ActionButton("gui.exmodifier.refresh_menu.look", b ->{}
-
-                            //            SystemToast.add(Minecraft.getInstance().getToasts(), SystemToast.SystemToastIds.PACK_COPY_FAILURE, Component.literal("使用操作"), Component.literal("使用物品"))
-                    )
-            ));
-        }
-
-        private void putItem() {
-            if (manageSlot == 0) {
-                selectedItemStack = items.get(selected);
-                if (!selectedItemStack.isEmpty()) {
-                    textList.entries = getTextEntries();
-                    textList.calculateLayout();
-                }
-            }
-            if (manageSlot == 1) {
-                selectedRefreshItem = items.get(selected);
-            }
-        }
-
-
-        @Override
-        public @NotNull NarrationPriority narrationPriority() {
-            return NarrationPriority.HOVERED;
-        }
-
-        @Override
-        public void updateNarration(NarrationElementOutput narrationElementOutput) {
-
-        }
-
-        // 上下文菜单实现
-        private class ContextMenu {
-            private final List<ActionButton> buttons;
-            private final int x;
-            private final int y;
-
-            public ContextMenu(int x, int y, List<ActionButton> buttons) {
-                this.buttons = buttons;
-                this.x = x;
-                this.y = y;
-
-                // 布局按钮
-                for (int i = 0; i < buttons.size(); i++) {
-                    buttons.get(i).setPosition(x, y + i * 20);
-                }
-            }
-
-            public void clickContextMenuButton(double x, double y) {
-                for (ActionButton button : this.buttons) {
-                    if (button.isMouseOver(x, y)) {
-                        button.onPress();
-                        break;
-                    }
-                }
-            }
-
-            public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-                // 绘制背景
-                guiGraphics.blit(WIDGETS_TEXTURE, x, y, 0, 0, 80, buttons.size() * 21, 80, buttons.size() * 21);
-
-                // 渲染按钮
-                buttons.forEach(btn -> btn.render(guiGraphics, mouseX, mouseY, partialTick));
-            }
-
-            public boolean isMouseOver(double mouseX, double mouseY) {
-                return mouseX >= x && mouseX <= x + 100 &&
-                        mouseY >= y && mouseY <= y + buttons.size() * 22;
-            }
-        }
-
-        // 操作按钮组件
-        public static class ActionButton extends Button {
-            public ActionButton(String text, OnPress onPress) {
-                super(builder(Component.translatable(text), onPress)
-                        .size(80, 20)
-                        .createNarration(supplier -> Component.empty()));
-            }
-
-            @Override
-            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-                // 使用自定义按钮贴图
-                if (isHoveredOrFocused()) {
-                    guiGraphics.blit(SIMPLE_BUTTON_TEXTURE_OVER, getX(), getY(), 0, 0, width, height, width, height);
-                } else guiGraphics.blit(SIMPLE_BUTTON_TEXTURE, getX(), getY(), 0, 0, width, height, width, height);
-
-
-                guiGraphics.drawCenteredString(Minecraft.getInstance().font, getMessage(),
-                        getX() + width / 2, getY() + (height - 8) / 2, 0xFFFFFF);
-            }
-        }
-    }
-
-    public class InfoWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
-
-        private List<Component> textList;
-        private int width;
-        private int height;
-        private int x;
-        private int y;
-        private ResourceLocation resourceLocation;
-        private boolean isShowed = false;
-        private ItemListViewer.ActionButton enterButton;
-
-        public InfoWidget(int width, int height, int x, int y, ResourceLocation resourceLocation) {
-            this.width = width;
-            this.height = height;
-            this.x = x;
-            this.y = y;
-            this.resourceLocation = resourceLocation;
-            enterButton = new ItemListViewer.ActionButton("gui.exmodifier.refresh_menu.enter", b -> {
-                if (isShowed) {
-                    this.isShowed = false;
-                }
-            });
-        }
-
-        @Override
-        public void render(GuiGraphics gg, int mx, int my, float pts) {
-            if (isShowed) {
-                gg.blit(resourceLocation, x, y, 0, 0, width, height, width, height);
-
-            }
-        }
-
-        @Override
-        public List<? extends GuiEventListener> children() {
-            return List.of(enterButton);
+        public @NotNull List<? extends GuiEventListener> children() {
+            return List.of();
         }
 
         @Override
         public NarrationPriority narrationPriority() {
-            return NarrationPriority.FOCUSED;
+            return NarrationPriority.NONE;
         }
 
         @Override
-        public void updateNarration(NarrationElementOutput p_169152_) {
+        public void updateNarration(NarrationElementOutput out) {}
+    }
 
+    // ====================================================================
+    // Entry tag panel (right, scroll + collapse)
+    // ====================================================================
+    public class EntryTagPanel extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+        private final int x;
+        private final int y;
+        private final int w;
+        private final int h;
+
+        private List<EntryData> entries = new ArrayList<>();
+        private final Set<Integer> expanded = new HashSet<>();
+        private final List<Integer> rowHeights = new ArrayList<>();
+        private int totalHeight = 0;
+        private int scrollOff = 0;
+        private boolean draggingScrollbar = false;
+
+        public EntryTagPanel(int x, int y, int w, int h) {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
         }
+
+        public void refreshEntries(List<EntryData> list) {
+            entries = new ArrayList<>(list);
+            expanded.removeIf(i -> i < 0 || i >= entries.size());
+            recalc();
+        }
+
+        private int calcDetailHeight(EntryData entry, int width) {
+            int lines = 0;
+            for (Component c : entry.details) {
+                if (c.getString().isEmpty()) {
+                    lines += 1;
+                    continue;
+                }
+                lines += Math.max(1, font.wordWrapHeight(c, width) / font.lineHeight);
+            }
+            return lines * font.lineHeight + 2;
+        }
+
+        private void recalc() {
+            rowHeights.clear();
+            totalHeight = 0;
+            int contentW = w - SCROLLBAR_W - 14;
+            for (int i = 0; i < entries.size(); i++) {
+                int rh = 22;
+                if (expanded.contains(i)) {
+                    rh += calcDetailHeight(entries.get(i), contentW);
+                }
+                rh += 4;
+                rowHeights.add(rh);
+                totalHeight += rh;
+            }
+            scrollOff = Mth.clamp(scrollOff, 0, Math.max(totalHeight - (h - (font.lineHeight + 12)), 0));
+        }
+
+        @Override
+        public void render(GuiGraphics gg, int mx, int my, float pt) {
+            drawRoundedRect(gg, x, y, w, h, COL_CARD);
+            drawBorder(gg, x, y, w, h, COL_BORDER);
+            gg.drawString(font, Component.translatable("gui.exmodifier.refreshplus.panel.tags"),
+                    x + 6, y + 4, COL_TEXT_SEC, false);
+
+            int bodyY = y + font.lineHeight + 8;
+            int bodyH = h - (font.lineHeight + 12);
+            if (bodyH <= 0) {
+                return;
+            }
+
+            if (entries.isEmpty()) {
+                Component msg = Component.translatable("gui.exmodifier.refreshplus.empty.entries");
+                gg.drawString(font, msg, x + 6, bodyY, COL_TEXT_SEC, false);
+                return;
+            }
+
+            gg.enableScissor(x + 1, bodyY, x + w - 1, bodyY + bodyH);
+
+            int ry = bodyY + 2 - scrollOff;
+            int cardW = w - SCROLLBAR_W - 10;
+
+            for (int i = 0; i < entries.size(); i++) {
+                int rh = rowHeights.get(i);
+                if (ry + rh < bodyY) {
+                    ry += rh;
+                    continue;
+                }
+                if (ry > bodyY + bodyH) {
+                    break;
+                }
+
+                EntryData entry = entries.get(i);
+                boolean isExpanded = expanded.contains(i);
+                int headerH = 20;
+                boolean hoverHeader = mx >= x + 3 && mx < x + 3 + cardW && my >= ry && my < ry + headerH;
+
+                drawRoundedRect(gg, x + 3, ry, cardW, rh - 2, COL_PANEL);
+                drawBorder(gg, x + 3, ry, cardW, rh - 2, COL_BORDER);
+                if (hoverHeader) {
+                    gg.fill(x + 4, ry + 1, x + 3 + cardW - 1, ry + headerH, COL_HOVER);
+                }
+
+                String marker = isExpanded ? "v" : ">";
+                gg.drawString(font, marker, x + 8, ry + 6, COL_TEXT_SEC, false);
+                String title = font.plainSubstrByWidth(entry.tagTitle.getString(), cardW - 24);
+                gg.drawString(font, title, x + 16, ry + 6, COL_TEXT, false);
+
+                if (isExpanded && !entry.details.isEmpty()) {
+                    int lineY = ry + headerH;
+                    int maxW = cardW - 8;
+                    for (Component c : entry.details) {
+                        if (c.getString().isEmpty()) {
+                            lineY += font.lineHeight;
+                            continue;
+                        }
+                        List<FormattedCharSequence> wrapped = font.split(c, maxW);
+                        for (FormattedCharSequence seq : wrapped) {
+                            if (lineY + font.lineHeight > ry + rh - 2) {
+                                break;
+                            }
+                            gg.drawString(font, seq, x + 7, lineY, 0xFFFFFFFF, false);
+                            lineY += font.lineHeight;
+                        }
+                    }
+                }
+
+                ry += rh;
+            }
+
+            gg.disableScissor();
+
+            if (totalHeight > bodyH) {
+                int tx = x + w - SCROLLBAR_W - 2;
+                gg.fill(tx, bodyY, tx + SCROLLBAR_W, bodyY + bodyH, COL_SCROLLBAR);
+                int thumbH = Math.max((int) ((float) bodyH / totalHeight * bodyH), 12);
+                int thumbY = bodyY + (int) ((float) scrollOff / (totalHeight - bodyH) * (bodyH - thumbH));
+                gg.fill(tx, thumbY, tx + SCROLLBAR_W, thumbY + thumbH, COL_SCROLLTHUMB);
+            }
+        }
+
+        @Override
+        public boolean mouseScrolled(double mx, double my, double delta) {
+            int bodyY = y + font.lineHeight + 8;
+            int bodyH = h - (font.lineHeight + 12);
+            if (mx >= x && mx < x + w && my >= bodyY && my < bodyY + bodyH && totalHeight > bodyH) {
+                scrollOff = (int) Mth.clamp(scrollOff - (delta > 0 ? 16 : -16), 0, Math.max(totalHeight - bodyH, 0));
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseClicked(double mx, double my, int button) {
+            int bodyY = y + font.lineHeight + 8;
+            int bodyH = h - (font.lineHeight + 12);
+            if (mx < x || mx >= x + w || my < bodyY || my >= bodyY + bodyH) {
+                return false;
+            }
+
+            if (mx >= x + w - SCROLLBAR_W - 2 && mx < x + w - 2) {
+                draggingScrollbar = true;
+                return true;
+            }
+
+            int ry = bodyY + 2 - scrollOff;
+            int cardW = w - SCROLLBAR_W - 10;
+            for (int i = 0; i < entries.size(); i++) {
+                int rh = rowHeights.get(i);
+                int headerH = 20;
+                if (mx >= x + 3 && mx < x + 3 + cardW && my >= ry && my < ry + headerH) {
+                    if (expanded.contains(i)) {
+                        expanded.remove(i);
+                    } else {
+                        expanded.add(i);
+                    }
+                    recalc();
+                    spawnParticles((float) mx, (float) my, 7, 0xFFFFFF);
+                    return true;
+                }
+                ry += rh;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseDragged(double mx, double my, int b, double dx, double dy) {
+            if (!draggingScrollbar) {
+                return false;
+            }
+            int bodyY = y + font.lineHeight + 8;
+            int bodyH = h - (font.lineHeight + 12);
+            if (totalHeight <= bodyH) {
+                scrollOff = 0;
+                return true;
+            }
+            float t = (float) ((my - bodyY) / (double) bodyH);
+            scrollOff = (int) Mth.clamp(t * (totalHeight - bodyH), 0, totalHeight - bodyH);
+            return true;
+        }
+
+        @Override
+        public boolean mouseReleased(double mx, double my, int btn) {
+            draggingScrollbar = false;
+            return false;
+        }
+
+        @Override
+        public @NotNull List<? extends GuiEventListener> children() {
+            return List.of();
+        }
+
+        @Override
+        public NarrationPriority narrationPriority() {
+            return NarrationPriority.HOVERED;
+        }
+
+        @Override
+        public void updateNarration(NarrationElementOutput out) {}
+    }
+
+    // ====================================================================
+    // Inventory panel (bottom, adaptive rows)
+    // ====================================================================
+    public class ModItemListPanel extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+        private final int x;
+        private final int y;
+        private final int w;
+        private final int h;
+        private final int rows;
+
+        private List<ItemStack> items;
+        private float scrollOff = 0f;
+        private final Map<Integer, Float> slotAnim = new HashMap<>();
+        private int hoverSlot = -1;
+        private long lastRender = System.currentTimeMillis();
+
+        public ModItemListPanel(int x, int y, int w, int h, List<ItemStack> items, int rows) {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
+            this.rows = Math.max(rows, 1);
+            this.items = new ArrayList<>(items);
+        }
+
+        public void setItems(List<ItemStack> list) {
+            this.items = new ArrayList<>(list);
+            this.scrollOff = 0f;
+        }
+
+        private int cols() {
+            int usableW = w - 12 - SCROLLBAR_W;
+            return Math.max(usableW / ITEM_SLOT_SZ, 1);
+        }
+
+        private int bodyY() {
+            return y + 20;
+        }
+
+        private int bodyH() {
+            return h - 24;
+        }
+
+        @Override
+        public void render(GuiGraphics gg, int mx, int my, float pt) {
+            long now = System.currentTimeMillis();
+            float dt = Math.min((now - lastRender) / 1000f, 0.1f);
+            lastRender = now;
+
+            if (items.isEmpty()) {
+                List<ItemStack> latest = getActiveItemSource();
+                if (!latest.isEmpty()) {
+                    this.items = new ArrayList<>(latest);
+                }
+            }
+
+            drawRoundedRect(gg, x, y, w, h, COL_CARD);
+            drawBorder(gg, x, y, w, h, COL_BORDER);
+            gg.drawString(font, Component.translatable("gui.exmodifier.refreshplus.panel.inventory"),
+                    x + 6, y + 5, COL_TEXT_SEC, false);
+
+            int bodyY = bodyY();
+            int bodyH = bodyH();
+            int cols = cols();
+            int visibleRows = Math.max(1, Math.min(rows, bodyH / ITEM_SLOT_SZ));
+            int slotsPerPage = cols * visibleRows;
+            int totalRows = Math.max(1, Mth.ceil((float) items.size() / cols));
+            int scrollableRows = Math.max(totalRows - visibleRows, 0);
+            int startRow = scrollableRows == 0 ? 0 : (int) (scrollOff * scrollableRows + 0.0001f);
+            int start = startRow * cols;
+
+            if (!items.isEmpty() && start >= items.size()) {
+                scrollOff = 0f;
+                start = 0;
+            }
+
+            if (items.isEmpty()) {
+                Component msg = Component.translatable("gui.exmodifier.refreshplus.search.no_result");
+                gg.drawString(font, msg, x + 6, bodyY + 4, COL_TEXT_SEC, false);
+                return;
+            }
+
+            hoverSlot = -1;
+            gg.enableScissor(x + 2, bodyY, x + w - 2, bodyY + bodyH);
+
+            int renderCount = Math.min(slotsPerPage, items.size() - start);
+            for (int i = 0; i < renderCount; i++) {
+                int idx = start + i;
+                int row = i / cols;
+                int col = i % cols;
+                int sx = x + 6 + col * ITEM_SLOT_SZ;
+                int sy = bodyY + row * ITEM_SLOT_SZ;
+
+                boolean hover = mx >= sx && mx < sx + ITEM_SLOT_SZ && my >= sy && my < sy + ITEM_SLOT_SZ;
+                float ha = slotAnim.getOrDefault(i, 0f);
+                ha = lerp(ha, hover ? 1f : 0f, dt * 12f);
+                slotAnim.put(i, ha);
+
+                gg.fill(sx, sy, sx + ITEM_SLOT_SZ, sy + ITEM_SLOT_SZ, COL_PANEL);
+                if (ha > 0.01f) {
+                    gg.fill(sx, sy, sx + ITEM_SLOT_SZ, sy + ITEM_SLOT_SZ,
+                            ((int) (ha * 45) << 24) | 0x00FFFFFF);
+                    int ba = (int) (ha * 200);
+                    int bc = (ba << 24) | 0x00FFFFFF;
+                    gg.fill(sx, sy, sx + ITEM_SLOT_SZ, sy + 1, bc);
+                    gg.fill(sx, sy + ITEM_SLOT_SZ - 1, sx + ITEM_SLOT_SZ, sy + ITEM_SLOT_SZ, bc);
+                    gg.fill(sx, sy, sx + 1, sy + ITEM_SLOT_SZ, bc);
+                    gg.fill(sx + ITEM_SLOT_SZ - 1, sy, sx + ITEM_SLOT_SZ, sy + ITEM_SLOT_SZ, bc);
+                }
+
+                ItemStack stack = items.get(idx);
+                int ox = sx + (ITEM_SLOT_SZ - 16) / 2;
+                int oy = sy + (ITEM_SLOT_SZ - 16) / 2;
+                gg.renderItem(stack, ox, oy);
+                gg.renderItemDecorations(font, stack, ox, oy);
+
+                if (hover) {
+                    hoverSlot = idx;
+                }
+            }
+            gg.disableScissor();
+
+            if (totalRows > visibleRows) {
+                int tx = x + w - SCROLLBAR_W - 2;
+                gg.fill(tx, bodyY, tx + SCROLLBAR_W, bodyY + bodyH, COL_SCROLLBAR);
+                int thumbH = Math.max((int) ((float) visibleRows / totalRows * bodyH), 12);
+                int thumbY = bodyY + (int) (scrollOff * (bodyH - thumbH));
+                gg.fill(tx, thumbY, tx + SCROLLBAR_W, thumbY + thumbH, COL_SCROLLTHUMB);
+            }
+
+            if (hoverSlot >= 0 && hoverSlot < items.size()) {
+                ItemStack hs = items.get(hoverSlot);
+                final int fmx = mx;
+                final int fmy = my;
+                deferredTooltips.add(() -> gg.renderTooltip(font, hs, fmx, fmy));
+            }
+        }
+
+        @Override
+        public boolean mouseScrolled(double mx, double my, double delta) {
+            int cols = cols();
+            int visibleRows = Math.max(1, Math.min(rows, bodyH() / ITEM_SLOT_SZ));
+            int totalRows = Math.max(1, Mth.ceil((float) items.size() / cols));
+            if (mx >= x && mx < x + w && my >= bodyY() && my < bodyY() + bodyH() && totalRows > visibleRows) {
+                float step = 1f / Math.max(totalRows - visibleRows, 1);
+                scrollOff = Mth.clamp(scrollOff - (float) delta * step, 0f, 1f);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseClicked(double mx, double my, int btn) {
+            if (mx < x || mx >= x + w || my < bodyY() || my >= bodyY() + bodyH()) {
+                return false;
+            }
+
+            int cols = cols();
+            int visibleRows = Math.max(1, Math.min(rows, bodyH() / ITEM_SLOT_SZ));
+            int slotsPerPage = cols * visibleRows;
+            int totalRows = Math.max(1, Mth.ceil((float) items.size() / cols));
+            int scrollableRows = Math.max(totalRows - visibleRows, 0);
+            int startRow = scrollableRows == 0 ? 0 : (int) (scrollOff * scrollableRows + 0.0001f);
+            int start = startRow * cols;
+
+            int renderCount = Math.min(slotsPerPage, items.size() - start);
+            for (int i = 0; i < renderCount; i++) {
+                int idx = start + i;
+                int row = i / cols;
+                int col = i % cols;
+                int sx = x + 6 + col * ITEM_SLOT_SZ;
+                int sy = bodyY() + row * ITEM_SLOT_SZ;
+                if (mx >= sx && mx < sx + ITEM_SLOT_SZ && my >= sy && my < sy + ITEM_SLOT_SZ) {
+                    selectItem(idx, sx + ITEM_SLOT_SZ / 2f, sy + ITEM_SLOT_SZ / 2f);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void selectItem(int idx, float fx, float fy) {
+            if (idx < 0 || idx >= items.size()) {
+                return;
+            }
+            ItemStack stack = items.get(idx);
+
+            if (manageSlot == 0) {
+                selectedItemStack = stack;
+                syncEntryPanels();
+            } else {
+                selectedRefreshItem = stack;
+            }
+
+            setItems(getActiveItemSource());
+
+            spawnParticles(fx, fy, 9, 0xFFFFFF);
+        }
+
+        @Override
+        public @NotNull List<? extends GuiEventListener> children() {
+            return List.of();
+        }
+
+        @Override
+        public NarrationPriority narrationPriority() {
+            return NarrationPriority.HOVERED;
+        }
+
+        @Override
+        public void updateNarration(NarrationElementOutput out) {}
     }
 }

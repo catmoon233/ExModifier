@@ -1,12 +1,9 @@
 package net.exmo.exmodifier.content.element;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.exmo.exmodifier.util.ExRegistryHelper;
 import net.exmo.exmodifier.util.ItemSelector;
 import net.exmo.exmodifier.util.exSerialize.ExSerialize;
-import net.minecraft.nbt.TagParser;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,16 +19,11 @@ public class DefaultItemElement {
 
     // 正确用法示例
     private List<JsonObject> getExElementInstantsString() {
-        return  exElementInstants.stream().map(ExElementInstant.EX_SERIALIZE::toSingleJson).toList();
+        return ExRegistryHelper.toJsonObjects(exElementInstants, ExElementInstant.EX_SERIALIZE);
     }
     private void setExElementInstantsString(List<JsonObject> configs) {
-        configs.forEach(config -> {
-            // 解析每个配置对象中的 entries 数组
-            var instants = ExElementInstant.EX_SERIALIZE.fromJsonSingle(
-                    config
-            );
-            exElementInstants.add(instants);
-        });
+        exElementInstants.clear();
+        exElementInstants.addAll(ExRegistryHelper.fromJsonObjects(configs, ExElementInstant.EX_SERIALIZE));
     }
     private void setItemSelectorString(JsonObject s) {
         this.itemSelector = (ItemSelector.EX_SERIALIZE.fromJsonSingle(s));

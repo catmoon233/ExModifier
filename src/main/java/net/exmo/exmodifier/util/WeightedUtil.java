@@ -1,10 +1,12 @@
 package net.exmo.exmodifier.util;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 //by canyuesama
 public class WeightedUtil<T> {
+    private static final Set<String> REPORTED_INVALID_WEIGHT_KEYS = Collections.newSetFromMap(new ConcurrentHashMap<>());
     public final Map<T, Float> weights;
     private final List<T> keys;
     private  List<Float> cumulativeWeights;
@@ -40,9 +42,19 @@ public class WeightedUtil<T> {
         Iterator<Map.Entry<T, Float>> iterator = weights.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<T, Float> entry = iterator.next();
-            if (entry.getValue() == null || entry.getValue() <= 0) {
+            Float weight = entry.getValue();
+            if (weight == null || Float.isNaN(weight) || Float.isInfinite(weight) || weight < 0f) {
                 iterator.remove();
-                System.err.println("Warning: Removed invalid weight for key: " + entry.getKey());
+                String key = String.valueOf(entry.getKey());
+                if (REPORTED_INVALID_WEIGHT_KEYS.add(key)) {
+                    System.err.println("Warning: Removed invalid weight for key: " + key);
+                }
+                continue;
+            }
+
+            // 0 权重是合法配置（表示不参与随机），清理即可，不打印警告避免刷屏。
+            if (weight == 0f) {
+                iterator.remove();
             }
         }
 
