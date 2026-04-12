@@ -8,6 +8,7 @@ import mod.arcomit.emberthral.client.filter.Filter;
 import mod.arcomit.emberthral.client.filter.FilterManager;
 import net.exmo.exmodifier.content.attributeEffect.modern.EffectSyncPacket;
 import net.exmo.exmodifier.content.modifier.*;
+import net.exmo.exmodifier.content.specialEffects.SpecialEffectHandle;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
 import net.exmo.exmodifier.events.ExCustomTabEvent;
@@ -213,6 +214,9 @@ public class Exmodifier {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        
+        // 初始化特殊效果系统
+        SpecialEffectHandle.init();
 
 
         CREATIVE_MODE_TABS.register(modEventBus);

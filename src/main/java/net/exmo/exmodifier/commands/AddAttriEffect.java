@@ -37,7 +37,7 @@ public class AddAttriEffect {
     public static void registerCommand(RegisterCommandsEvent event) {
 
         event.getDispatcher().register(
-                Commands.literal("attriEffect").requires(s -> s.hasPermission(4))
+                Commands.literal("attriEffect").requires(s -> s.hasPermission(2))
                         .then(Commands.literal("add").then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("effectid", StringArgumentType.string()).suggests(Suggestion_Effect).then(Commands.argument("level", IntegerArgumentType.integer(1)).then(Commands.argument("duration", IntegerArgumentType.integer(1)).then(Commands.argument("replace", BoolArgumentType.bool())
                         .executes(arguments -> {
             Level world = arguments.getSource().getUnsidedLevel();

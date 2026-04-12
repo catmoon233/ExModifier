@@ -7,6 +7,9 @@ import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.specialEffects.SpecialEffectHandle;
+import net.exmo.exmodifier.content.suit.ExSuit;
+import net.exmo.exmodifier.content.suit.ExSuitHandle;
+import net.exmo.exmodifier.network.ExModifiervaV;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -18,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,14 +29,51 @@ import java.util.function.Consumer;
 
 public class ExUtil {
     public static List<SpecialEffect> getSpecialModifierEntries(LivingEntity entity) {
-        var specialEffects = new java.util.ArrayList<SpecialEffect>();
+        List<SpecialEffect> specialEffects = new ArrayList<>();
         for (var eq : EquipmentSlot.values()) {
             var item = entity.getItemBySlot(eq);
             specialEffects.addAll(ModifierEntryHelper.of(item).getModifierEntriesB().stream()
                     .flatMap(modifierEntry -> modifierEntry.specialTags.stream())
                     .map(SpecialEffectHandle::getSpecialEffect)
+                    .filter(java.util.Objects::nonNull)
                     .toList());
         }
+
+        if (!(entity instanceof Player player)) {
+            return specialEffects;
+        }
+
+        player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+            if (capability.SuitsNum == null || capability.SuitsNum.isEmpty()) {
+                return;
+            }
+
+            capability.SuitsNum.forEach((suitId, suitLevel) -> {
+                if (suitLevel == null || suitLevel <= 0) {
+                    return;
+                }
+
+                ExSuit exSuit = ExSuitHandle.INSTANCE.getAll().get(suitId);
+                if (exSuit == null || exSuit.getSpecialEffects().isEmpty()) {
+                    return;
+                }
+
+                for (int level = 1; level <= suitLevel; level++) {
+                    List<String> levelSpecialEffects = exSuit.getSpecialEffects().get(level);
+                    if (levelSpecialEffects == null || levelSpecialEffects.isEmpty()) {
+                        continue;
+                    }
+
+                    for (String specialEffectId : levelSpecialEffects) {
+                        SpecialEffect specialEffect = SpecialEffectHandle.getSpecialEffect(specialEffectId);
+                        if (specialEffect != null) {
+                            specialEffects.add(specialEffect);
+                        }
+                    }
+                }
+            });
+        });
+
         return specialEffects;
     }
 

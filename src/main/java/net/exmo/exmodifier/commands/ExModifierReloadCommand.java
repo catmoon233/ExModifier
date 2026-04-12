@@ -44,7 +44,7 @@ public class ExModifierReloadCommand {
     public static void registerCommand(RegisterCommandsEvent event) {
         event.getDispatcher().register(
                 Commands.literal("exmodifierreload")
-                        .requires(s -> s.hasPermission(4))
+                        .requires(s -> s.hasPermission(2))
                         .executes(ExModifierReloadCommand::reloadModifiers)
         );
     }

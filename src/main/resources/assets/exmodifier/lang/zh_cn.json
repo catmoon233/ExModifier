@@ -55,6 +55,7 @@
   "attribute.exmodifier.hit_rate": "命中几率",
   "attribute.exmodifier.percent_heal": "攻击百分比回血",
   "attribute.exmodifier.arrow_base_damage": "基础弓箭伤害",
+  "attribute.exmodifier.fall_protect": "摔落保护",
   "attribute.exmodifier.element_resistance_coefficient": "元素抗性系数",
   "attribute.exmodifier.element_conversion_coefficient": "元素转化系数",
   "attribute.exmodifier.all_attribute_boost": "全属性提升",
@@ -161,6 +162,13 @@
   "gui.exmodifier.refreshplus.toast.sent": "请求已发送至服务器",
   "gui.exmodifier.refreshplus.empty.entries": "当前物品没有可显示词条",
   "gui.exmodifier.refreshplus.search.placeholder": "搜索名称或标签...",
-  "gui.exmodifier.refreshplus.search.no_result": "未找到匹配物品"
+  "gui.exmodifier.refreshplus.search.no_result": "未找到匹配物品",
+  "gui.exmodifier.refresh_faiL_xp": "§4经验不足",
+  "modifier.suit.header": "§7—— ",
+  "modifier.suit.progress": " §7[%s/%s]§7",
+  "modifier.suit.footer": " §7——",
+  "modifier.suit.equip_requirement": "装备 %s 件：",
+  "modifier.suit.effect_prefix": "  ",
+  "modifier.suit.active_effect": "§7当前效果：§e%s件套激活"
 
 }

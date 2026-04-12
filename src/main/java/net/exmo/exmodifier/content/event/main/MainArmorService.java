@@ -78,10 +78,15 @@ public final class MainArmorService {
     }
 
     public static boolean handleArmorChange(Player player, ItemStack fromStack, ItemStack toStack, boolean isClientSide) throws ScriptException {
-        if (handleArmorChangeExpectSuit(toStack, isClientSide)) {
-            return false;
+        handleArmorChangeExpectSuit(toStack, isClientSide);
+
+        // Suit layers are rebuilt from current equipment on each equipment change,
+        // which avoids stale cached levels when incremental add/remove misses an edge case.
+        if (!isClientSide) {
+            MainSuitService.rebuildSuitState(player);
+            return true;
         }
-        return MainSuitService.suitOperate(player, toStack, fromStack);
+        return false;
     }
 
     static boolean handleArmorChangeExpectSuit(ItemStack toStack, boolean isClientSide) {

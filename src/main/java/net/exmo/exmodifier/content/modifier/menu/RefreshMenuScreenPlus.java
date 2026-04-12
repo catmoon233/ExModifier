@@ -53,8 +53,8 @@ import java.util.stream.Collectors;
 /**
  * Responsive grayscale reforge/refine UI.
  * Layout:
- * - top left: slot panel + compact entry list
- * - top right: material summary + collapsible entry tag list
+ * - top left: slot panel + material summary
+ * - top right: full-height collapsible entry tag list
  * - bottom: adaptive inventory rows (blank rows removed)
  */
 @OnlyIn(Dist.CLIENT)
@@ -130,7 +130,6 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     // ======================== Widget refs ========================
     private SlotPanel slotPanel;
     private MaterialInfoPanel materialInfoPanel;
-    private EntryListPanel entryListPanel;
     private EntryTagPanel entryTagPanel;
     private ModItemListPanel itemListPanel;
 
@@ -253,9 +252,9 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         leftEntryY = contentY + slotPanelH + GAP;
         leftEntryH = Math.max(48, topRegionH - slotPanelH - GAP);
 
-        materialPanelH = Mth.clamp((int) (topRegionH * 0.36f), 76, 108);
-        tagPanelY = contentY + materialPanelH + GAP;
-        tagPanelH = Math.max(48, topRegionH - materialPanelH - GAP);
+        materialPanelH = leftEntryH;
+        tagPanelY = contentY;
+        tagPanelH = topRegionH;
     }
 
     private void buildPanels() {
@@ -263,13 +262,11 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         List<ItemStack> source = getActiveItemSource();
 
         slotPanel = new SlotPanel(contentX, contentY, leftColW, slotPanelH);
-        entryListPanel = new EntryListPanel(contentX, leftEntryY, leftColW, leftEntryH);
-        materialInfoPanel = new MaterialInfoPanel(rightX, contentY, rightColW, materialPanelH);
+        materialInfoPanel = new MaterialInfoPanel(contentX, leftEntryY, leftColW, materialPanelH);
         entryTagPanel = new EntryTagPanel(rightX, tagPanelY, rightColW, tagPanelH);
         itemListPanel = new ModItemListPanel(contentX, inventoryY, contentW, inventoryH, source, inventoryRows);
 
         addRenderableWidget(slotPanel);
-        addRenderableWidget(entryListPanel);
         addRenderableWidget(materialInfoPanel);
         addRenderableWidget(entryTagPanel);
         addRenderableWidget(itemListPanel);
@@ -306,9 +303,6 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
     private void syncEntryPanels() {
         List<EntryData> normalEntries = buildModifierEntryList();
-        if (entryListPanel != null) {
-            entryListPanel.refreshEntries(normalEntries);
-        }
         if (entryTagPanel != null) {
             List<EntryData> tagEntries = new ArrayList<>(normalEntries);
             EntryData suitEntry = buildSuitFoldEntry();
@@ -331,7 +325,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
                                 .append(Component.translatable("enchantment.level." + mi.getLevel()))
                                 .withStyle(ChatFormatting.GOLD);
                     }
-                    List<Component> tips = ModifierHandle.CommonEvent.generateEntryTooltip(mi, player, selectedItemStack, true);
+                    List<Component> tips = ModifierHandle.CommonEvent.generateEntryTooltip(mi, player, selectedItemStack, true,true);
                     Component relatedTag = txt;
                     if (!mi.getModifierEntry().localDescription.isEmpty()) {
                         relatedTag = Component.translatable(mi.getModifierEntry().localDescription);
@@ -420,7 +414,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         if (p == null) {
             return List.of();
         }
-        return p.getInventory().items.stream()
+        return java.util.stream.Stream.concat(p.getInventory().items.stream(), p.getInventory().armor.stream())
                 .filter(it -> !it.isEmpty() && !ModifierEntry.getType(it).stream()
                         .filter(e -> e != ExType.ALL.get()).toList().isEmpty())
                 .toList();
@@ -445,6 +439,37 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
     private int findSlot(ItemStack target, ItemStack exclude) {
         Inventory inv = player.getInventory();
+
+        // First pass: prefer exact stack object identity, so duplicate items do not pick a wrong slot.
+        for (int i = 0; i < inv.items.size(); i++) {
+            ItemStack s = inv.items.get(i);
+            if (s == exclude) {
+                continue;
+            }
+            if (s == target) {
+                return i;
+            }
+        }
+        for (int i = 0; i < inv.armor.size(); i++) {
+            ItemStack s = inv.armor.get(i);
+            if (s == exclude) {
+                continue;
+            }
+            if (s == target) {
+                return inv.items.size() + i;
+            }
+        }
+        for (int i = 0; i < inv.offhand.size(); i++) {
+            ItemStack s = inv.offhand.get(i);
+            if (s == exclude) {
+                continue;
+            }
+            if (s == target) {
+                return inv.items.size() + inv.armor.size() + i;
+            }
+        }
+
+        // Fallback: match by item+tag and count.
         for (int i = 0; i < inv.items.size(); i++) {
             ItemStack s = inv.items.get(i);
             if (s == exclude) {
@@ -452,6 +477,24 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             }
             if (!s.isEmpty() && s.getCount() == target.getCount() && ItemStack.isSameItemSameTags(target, s)) {
                 return i;
+            }
+        }
+        for (int i = 0; i < inv.armor.size(); i++) {
+            ItemStack s = inv.armor.get(i);
+            if (s == exclude) {
+                continue;
+            }
+            if (!s.isEmpty() && s.getCount() == target.getCount() && ItemStack.isSameItemSameTags(target, s)) {
+                return inv.items.size() + i;
+            }
+        }
+        for (int i = 0; i < inv.offhand.size(); i++) {
+            ItemStack s = inv.offhand.get(i);
+            if (s == exclude) {
+                continue;
+            }
+            if (!s.isEmpty() && s.getCount() == target.getCount() && ItemStack.isSameItemSameTags(target, s)) {
+                return inv.items.size() + inv.armor.size() + i;
             }
         }
         return -1;
@@ -607,13 +650,13 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
             Component content = entry.getValue().getKey();
             ItemStack item = entry.getValue().getValue();
-            int y = (int) (height * 0.18f + line * (font.lineHeight + 6));
+            int y = (int) (height * 0.18f + line * (font.lineHeight + 11));
             int textW = font.width(content);
-            int boxW = textW + (item.isEmpty() ? 18 : 34);
+            int boxW = textW + (item.isEmpty() ? 8 : 26);
             int x = (width - boxW) / 2;
 
-            gg.fill(x - 8, y - 4, x + boxW + 8, y + font.lineHeight + 5, (a << 24) | 0x00323232);
-            drawBorder(gg, x - 8, y - 4, boxW + 16, font.lineHeight + 9, (a / 3 << 24) | 0x00FFFFFF);
+            gg.fill(x - 8, y - 4, x + boxW  , y + font.lineHeight + 5, (a << 24) | 0x00323232);
+            drawBorder(gg, x - 8, y - 4, boxW +8, font.lineHeight + 9, (a / 3 << 24) | 0x00FFFFFF);
 
             if (!item.isEmpty()) {
                 gg.pose().pushPose();
@@ -712,10 +755,8 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
         for (GuiEventListener child : this.children()) {
-            if (child.isMouseOver(mx, my) && child instanceof AbstractContainerEventHandler ace) {
-                if (ace.mouseScrolled(mx, my, delta)) {
-                    return true;
-                }
+            if (child instanceof AbstractContainerEventHandler ace && ace.mouseScrolled(mx, my, delta)) {
+                return true;
             }
         }
         return super.mouseScrolled(mx, my, delta);
@@ -970,9 +1011,9 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             } else {
                 Exmodifier.PACKET_HANDLER.sendToServer(new RefineItemMessage(matSlot, tgtSlot));
             }
-            addOverlay(System.currentTimeMillis(),
-                    Component.translatable("gui.exmodifier.refreshplus.toast.sent"),
-                    selectedRefreshItem);
+//            addOverlay(System.currentTimeMillis(),
+//                    Component.translatable("gui.exmodifier.refreshplus.toast.sent"),
+//                    selectedRefreshItem);
             spawnParticles(fx, fy, 14, 0xFFFFFF);
         }
 

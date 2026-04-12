@@ -7,6 +7,7 @@ import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.modifier.MoConfig;
 import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
+import net.exmo.exmodifier.content.specialEffects.SpecialEffectHandle;
 import net.exmo.exmodifier.content.type.ExType;
 import net.exmo.exmodifier.content.type.ExTypeHandle;
 import net.exmo.exmodifier.content.type.ItemType;
@@ -482,6 +483,12 @@ public class ExSuitHandle extends ExDataModule<String, ExSuit> {
                 }else {
                     Exmodifier.LOGGER.debug("No command Found: " + string.substring(0,2) + key1);
                 }
+                if (suitObj.has("specialEffects")) {
+                    List<String> levelSpecialEffects = processSpecialEffects(moconfig, exSuit, suitObj.get("specialEffects"), i);
+                    if (!levelSpecialEffects.isEmpty()) {
+                        exSuit.setLevelSpecialEffects(i, levelSpecialEffects);
+                    }
+                }
                 if (suitObj.has("attrGethers")) {
                     if (suitObj.getAsJsonObject("attrGethers") != null) {
                         exSuit.setLevelAttriGether(i,processAttrGethers(moconfig, exSuit, suitObj.getAsJsonObject("attrGethers"),i));
@@ -492,6 +499,53 @@ public class ExSuitHandle extends ExDataModule<String, ExSuit> {
         }
         exSuit.CountMaxLevelAndGet();
         entries.add(exSuit);
+    }
+
+    private static List<String> processSpecialEffects(MoConfig moconfig, ExSuit exSuit, JsonElement specialEffectsElement, int level) {
+        List<String> specialEffectIds = new ArrayList<>();
+        if (specialEffectsElement == null || !specialEffectsElement.isJsonArray()) {
+            Exmodifier.LOGGER.Logger.error("specialEffects should be a JSON array. suit=" + exSuit.id + " level=" + level);
+            return specialEffectIds;
+        }
+
+        JsonArray specialEffects = specialEffectsElement.getAsJsonArray();
+        for (JsonElement specialEffectElement : specialEffects) {
+            String specialEffectId = parseSpecialEffectId(specialEffectElement);
+            if (specialEffectId == null || specialEffectId.isEmpty()) {
+                continue;
+            }
+
+            if (SpecialEffectHandle.getSpecialEffect(specialEffectId) == null) {
+                Exmodifier.LOGGER.debug("Suit special effect id not found now: " + specialEffectId + " in suit=" + exSuit.id + " level=" + level);
+            }
+            specialEffectIds.add(specialEffectId);
+        }
+        return specialEffectIds;
+    }
+
+    private static String parseSpecialEffectId(JsonElement specialEffectElement) {
+        if (specialEffectElement == null || specialEffectElement.isJsonNull()) {
+            return null;
+        }
+
+        if (specialEffectElement.isJsonPrimitive()) {
+            return specialEffectElement.getAsString();
+        }
+
+        if (!specialEffectElement.isJsonObject()) {
+            return null;
+        }
+
+        JsonObject specialEffectObject = specialEffectElement.getAsJsonObject();
+        if (specialEffectObject.has("id") && specialEffectObject.get("id").isJsonPrimitive()) {
+            return specialEffectObject.get("id").getAsString();
+        }
+
+        if (specialEffectObject.entrySet().size() == 1) {
+            return specialEffectObject.entrySet().iterator().next().getKey();
+        }
+
+        return null;
     }
 
     private static List<MobEffectInstance> processEffects(MoConfig moconfig, ExSuit exSuit, JsonObject attrGethers) {

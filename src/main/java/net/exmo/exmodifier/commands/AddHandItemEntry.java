@@ -6,7 +6,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 
-import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.content.element.ExElementHandle;
 import net.exmo.exmodifier.content.element.ExElementInstant;
 import net.exmo.exmodifier.content.event.MainEvent;
@@ -14,13 +13,10 @@ import net.exmo.exmodifier.content.helper.ExElementHelper;
 import net.exmo.exmodifier.content.helper.ItemQualityHelper;
 import net.exmo.exmodifier.content.helper.ModifierEntryHelper;
 import net.exmo.exmodifier.content.helper.ModifierSlotHelper;
-import net.exmo.exmodifier.content.modifier.ModifierEntry;
 import net.exmo.exmodifier.content.modifier.ModifierHandle;
 import net.exmo.exmodifier.content.modifier.ModifierInstant;
 import net.exmo.exmodifier.content.quality.ItemQuality;
-import net.exmo.exmodifier.content.quality.ItemQualityHandle;
 import net.exmo.exmodifier.content.slot.ModifierSlotHandle;
-import net.exmo.exmodifier.util.WeightedUtil;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -28,24 +24,14 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.SlotArgument;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.commands.ItemCommands;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 import static net.exmo.exmodifier.content.quality.ItemQualityHandle.itemQualityMap;
 
@@ -74,7 +60,7 @@ public class AddHandItemEntry {
 
     @SubscribeEvent
     public static void registerCommand(RegisterCommandsEvent event) {
-        event.getDispatcher().register(Commands.literal("addHandItemEntryS").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("entryid", StringArgumentType.word()).suggests(Suggestion_Entries).then(Commands.argument("level", IntegerArgumentType.integer(1)).then(Commands.argument("slotid", StringArgumentType.string()).suggests(Suggestion_Slots).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("addHandItemEntryS").requires(s -> s.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("entryid", StringArgumentType.word()).suggests(Suggestion_Entries).then(Commands.argument("level", IntegerArgumentType.integer(1)).then(Commands.argument("slotid", StringArgumentType.string()).suggests(Suggestion_Slots).executes(arguments -> {
             extracted(arguments);
             String _setval = StringArgumentType.getString(arguments, "entryid");
             int level = IntegerArgumentType.getInteger(arguments, "level");
@@ -92,7 +78,7 @@ public class AddHandItemEntry {
             }
             return 0;
         }))))));
-        event.getDispatcher().register(Commands.literal("addHandItemEntry").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("entryid", StringArgumentType.word()).suggests(Suggestion_Entries).then(Commands.argument("level", IntegerArgumentType.integer(1)).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("addHandItemEntry").requires(s -> s.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("entryid", StringArgumentType.word()).suggests(Suggestion_Entries).then(Commands.argument("level", IntegerArgumentType.integer(1)).executes(arguments -> {
             extracted(arguments);
             String _setval = StringArgumentType.getString(arguments, "entryid");
             int level = IntegerArgumentType.getInteger(arguments, "level");
@@ -108,31 +94,36 @@ public class AddHandItemEntry {
             }
             return 0;
         })))));
-        event.getDispatcher().register(Commands.literal("exmo-damageboost").requires(s -> s.hasPermission(4)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("exmo-damageboost").requires(s -> s.hasPermission(2)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
             float level = FloatArgumentType.getFloat(arguments, "amount");
             MainEvent.CommonEvent.damageBoost  = level;
             MainEvent.CommonEvent.hasDamageBoost = true;
             return 0;
         })));
-        event.getDispatcher().register(Commands.literal("exmo-damageboost-amount").requires(s -> s.hasPermission(4)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("exmo-damageboost-amount").requires(s -> s.hasPermission(2)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
              float level = FloatArgumentType.getFloat(arguments, "amount");
               MainEvent.CommonEvent.damageNumber = level;
               MainEvent.CommonEvent.hasDamageNumber = true;
             return 0;
         })));
-        event.getDispatcher().register(Commands.literal("exmo-damageboost-add").requires(s -> s.hasPermission(4)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("exmo-damageboost-add").requires(s -> s.hasPermission(2)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
             float level = FloatArgumentType.getFloat(arguments, "amount");
             MainEvent.CommonEvent.damageBoost  += level;
             MainEvent.CommonEvent.hasDamageBoost = true;
             return 0;
         })));
-        event.getDispatcher().register(Commands.literal("exmo-damageboost-amount-add").requires(s -> s.hasPermission(4)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("exmo-skip-invulnerable").requires(s -> s.hasPermission(2)).executes(arguments -> {
+
+            MainEvent.CommonEvent.skipInvulnerableTime = true;
+            return 0;
+        }));
+        event.getDispatcher().register(Commands.literal("exmo-damageboost-amount-add").requires(s -> s.hasPermission(2)).then(Commands.argument("amount", FloatArgumentType.floatArg()).executes(arguments -> {
              float level = FloatArgumentType.getFloat(arguments, "amount");
               MainEvent.CommonEvent.damageNumber += level;
               MainEvent.CommonEvent.hasDamageNumber = true;
             return 0;
         })));
-        event.getDispatcher().register(Commands.literal("exmo-cooldown").requires(s -> s.hasPermission(4)).then(Commands.argument("entity",EntityArgument.entities()).then(Commands.argument("slot", SlotArgument.slot()).then(Commands.argument("int", IntegerArgumentType.integer()).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("exmo-cooldown").requires(s -> s.hasPermission(2)).then(Commands.argument("entity",EntityArgument.entities()).then(Commands.argument("slot", SlotArgument.slot()).then(Commands.argument("int", IntegerArgumentType.integer()).executes(arguments -> {
             int level = IntegerArgumentType.getInteger(arguments, "int");
             var slot  = SlotArgument.getSlot(arguments, "slot");
              for (var e : EntityArgument.getEntities(arguments, "entity")) {
@@ -142,7 +133,7 @@ public class AddHandItemEntry {
             }
             return 0;
         })))));
-        event.getDispatcher().register(Commands.literal("removeHandItemEntry").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("entryid", StringArgumentType.word()).suggests(Suggestion_Entries).then(Commands.argument("level", IntegerArgumentType.integer(1)).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("removeHandItemEntry").requires(s -> s.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("entryid", StringArgumentType.word()).suggests(Suggestion_Entries).then(Commands.argument("level", IntegerArgumentType.integer(1)).executes(arguments -> {
             extracted(arguments);
             String _setval = StringArgumentType.getString(arguments, "entryid");
             int level = IntegerArgumentType.getInteger(arguments, "level");
@@ -159,7 +150,7 @@ public class AddHandItemEntry {
             }
             return 0;
         })))));
-        event.getDispatcher().register(Commands.literal("setHandItemEntry").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("entryid", StringArgumentType.word()).suggests(Suggestion_Entries).then(Commands.argument("level", IntegerArgumentType.integer(1)).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("setHandItemEntry").requires(s -> s.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("entryid", StringArgumentType.word()).suggests(Suggestion_Entries).then(Commands.argument("level", IntegerArgumentType.integer(1)).executes(arguments -> {
             extracted(arguments);
             String _setval = StringArgumentType.getString(arguments, "entryid");
             int level = IntegerArgumentType.getInteger(arguments, "level");
@@ -175,7 +166,7 @@ public class AddHandItemEntry {
             }
             return 0;
         })))));
-        event.getDispatcher().register(Commands.literal("addHandItemSlot").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("slotid", StringArgumentType.string()).suggests(Suggestion_Slots).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("addHandItemSlot").requires(s -> s.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("slotid", StringArgumentType.string()).suggests(Suggestion_Slots).executes(arguments -> {
             extracted(arguments);
             String _setval = StringArgumentType.getString(arguments, "slotid").replace("\"","");
             Player player = EntityArgument.getPlayer(arguments, "player");
@@ -190,7 +181,7 @@ public class AddHandItemEntry {
             }
             return 0;
         }))));
-        event.getDispatcher().register(Commands.literal("addHandElement").requires(s -> s.hasPermission(4)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("elementId", StringArgumentType.string()).suggests(Suggestion_Elements).then(Commands.argument("level",IntegerArgumentType.integer(-100000)).executes(arguments -> {
+        event.getDispatcher().register(Commands.literal("addHandElement").requires(s -> s.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("elementId", StringArgumentType.string()).suggests(Suggestion_Elements).then(Commands.argument("level",IntegerArgumentType.integer(-100000)).executes(arguments -> {
             extracted(arguments);
             String _setval = StringArgumentType.getString(arguments, "elementId").replace("\"","");
             Player player = EntityArgument.getPlayer(arguments, "player");
@@ -206,7 +197,7 @@ public class AddHandItemEntry {
             }
             return 0;
         })))));
-        event.getDispatcher().register(Commands.literal("addHandItemQuality").requires(s -> s.hasPermission(4)).
+        event.getDispatcher().register(Commands.literal("addHandItemQuality").requires(s -> s.hasPermission(2)).
                 then(Commands.argument("player", EntityArgument.player()).
                         then(Commands.argument("QualityId", StringArgumentType.word())
                                 .suggests(Suggestion_Qualities)

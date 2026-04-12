@@ -55,7 +55,11 @@ public class ExElementRenderEvent {
 
 
         if (event.getEntity() instanceof LivingEntity le && le.getHealth() > 0) {
-            LocalPlayer player = Minecraft.getInstance().player;
+            Minecraft instance = Minecraft.getInstance();
+            if (instance.crosshairPickEntity!=le){
+                return;
+            }
+            LocalPlayer player = instance.player;
             double x1 = le.getX();
             double y1 = le.getY();
             double z1 = le.getZ();

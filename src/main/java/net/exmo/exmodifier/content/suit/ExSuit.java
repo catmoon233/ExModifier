@@ -45,6 +45,23 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
                                 Map.Entry::getKey,
                                 e -> Arrays.asList(e.getValue().split("=-;-="))))
         )
+        .addIntStringMapField("specialEffects",
+            exSuit -> exSuit.getSpecialEffects().entrySet().stream()
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    e -> String.join("=-;-=", e.getValue() == null ? List.of() : e.getValue()))),
+            (exSuit, specialEffects) -> exSuit.specialEffects = specialEffects.entrySet().stream()
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    e -> {
+                        if (e.getValue() == null || e.getValue().isEmpty()) {
+                        return new ArrayList<>();
+                        }
+                        return Arrays.stream(e.getValue().split("=-;-="))
+                            .filter(value -> !value.isEmpty())
+                            .collect(Collectors.toCollection(ArrayList::new));
+                    }))
+        )
         .addIntStringMapField("triggers",
                 exSuit -> exSuit.getTriggers().entrySet().stream()
                         .collect(Collectors.toMap(
@@ -219,6 +236,7 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
     public Map<Integer,String> effectLocalDescription= new HashMap<>();
     public Map<Integer,String> levelDescription= new HashMap<>();
 	public Map<Integer,List<String>> commands = new HashMap<>();
+    public Map<Integer, List<String>> specialEffects = new HashMap<>();
     public int MaxLevel ;
     public boolean visible = true;
 
@@ -242,7 +260,7 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
 
     }
     public static enum Trigger {
-        TICK, ON_HURT, ATTACK, JUMP, SHOOT, EAT, DODGE, CRIT, KILL, DIE,MOVECHANGE,SWING,PROJECTILE_HIT,ON_USE, SWIM, IN_LAVA,DIG;
+        TICK, ON_HURT, ATTACK,ATTACK_START, JUMP, SHOOT, EAT, DODGE, CRIT, KILL, DIE,MOVECHANGE,SWING,PROJECTILE_HIT,ON_USE, SWIM, IN_LAVA,DIG;
     }
 
     @Override
@@ -255,6 +273,7 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
                 ", LocalDescription='" + LocalDescription + '\'' +
                 ", levelDescription=" + levelDescription +
                 ", commands=" + commands +
+                ", specialEffects=" + specialEffects +
                 ", MaxLevel=" + MaxLevel +
                 ", visible=" + visible +
                 ", MainTrigger=" + MainTrigger +
@@ -317,27 +336,24 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
     public int CountMaxLevelAndGet() {
         int maxLevel = 0;
 
-        // Check if attriGether is not null
-        if (attriGether != null) {
-            // Check if effect is not null
-            if (effect != null && !effect.isEmpty()) {
-                // Get the maximum key from effect
-                maxLevel = Collections.max(effect.keySet());
-            }
-
-            // Get the maximum key from attriGether
-            if (!attriGether.isEmpty()) {
-                maxLevel = Math.max(maxLevel, Collections.max(attriGether.keySet()));
-            }
-        }
+        maxLevel = Math.max(maxLevel, getMaxLevel(attriGether));
+        maxLevel = Math.max(maxLevel, getMaxLevel(effect));
+        maxLevel = Math.max(maxLevel, getMaxLevel(specialEffects));
 
         this.MaxLevel = maxLevel;
         return maxLevel;
     }
 
     public void CountMaxLevel(int maxLevel) {
-        this.MaxLevel =Math.max(Collections.max(attriGether.keySet()), Collections.max(effect.keySet()));
+        this.MaxLevel = Math.max(maxLevel, CountMaxLevelAndGet());
 
+    }
+
+    private static int getMaxLevel(Map<Integer, ?> levelMap) {
+        if (levelMap == null || levelMap.isEmpty()) {
+            return 0;
+        }
+        return Collections.max(levelMap.keySet());
     }
     public ExSuit(String id, Map<Integer,List< AttriGetherNormal>> attriGether) {
         this.id = id;
@@ -387,5 +403,21 @@ public static ExSerialize<ExSuit> ExSer = ExSerialize.create(ExSuit::new)
 
     public void setCommands(Map<Integer, List<String>> commands) {
         this.commands = commands;
+    }
+
+    public Map<Integer, List<String>> getSpecialEffects() {
+        return specialEffects;
+    }
+
+    public void setSpecialEffects(Map<Integer, List<String>> specialEffects) {
+        this.specialEffects = specialEffects;
+    }
+
+    public void setLevelSpecialEffects(int level, List<String> levelSpecialEffects) {
+        Exmodifier.LOGGER.debug("setLevelSpecialEffects " + level + " " + levelSpecialEffects);
+        if (levelSpecialEffects == null || levelSpecialEffects.isEmpty()) {
+            return;
+        }
+        specialEffects.put(level, new ArrayList<>(levelSpecialEffects));
     }
 }

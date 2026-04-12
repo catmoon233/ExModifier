@@ -15,6 +15,25 @@ import java.util.function.Consumer;
 public  class SpecialEffectHandle {
     public static Map<String , SpecialEffect> specialEffects = new HashMap<>();
 
+    public static void init() {
+        // 注册嗜血特效
+        registerSpecialEffect(new BloodthirstyEffect());
+        // 注册尖刺特效
+        registerSpecialEffect(new ThornsEffect());
+        // 注册噬魂特效
+        registerSpecialEffect(new SoulEaterEffect());
+        // 注册尸毒特效
+        registerSpecialEffect(new CorpsePoisonEffect());
+        // 注册强盗特效
+        registerSpecialEffect(new BanditEffect());
+        // 注册凝神特效
+        registerSpecialEffect(new ConcussionEffect());
+        // 注册重击特效
+        registerSpecialEffect(new HeavyStrikeEffect());
+        // 注册备用箭特效
+        registerSpecialEffect(new ReserveArrowEffect());
+    }
+
     public static void registerSpecialEffect(SpecialEffect specialEffect) {
         specialEffects.put(specialEffect.id(), specialEffect);
     }

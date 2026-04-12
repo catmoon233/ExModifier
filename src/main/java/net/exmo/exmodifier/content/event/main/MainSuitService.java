@@ -98,6 +98,9 @@ public final class MainSuitService {
         }
 
         player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+            Map<String, Integer> previousSuitLevels = new HashMap<>(capability.SuitsNum == null ? Map.of() : capability.SuitsNum);
+            removeSuitAttributeModifiers(player, previousSuitLevels);
+
             if (capability.SuitsNum == null) {
                 capability.SuitsNum = new HashMap<>();
             } else {
@@ -110,6 +113,31 @@ public final class MainSuitService {
             ItemStack equipped = player.getItemBySlot(slot);
             if (!equipped.isEmpty()) {
                 handleStack(player, equipped, WEAR);
+            }
+        }
+    }
+
+    private static void removeSuitAttributeModifiers(Player player, Map<String, Integer> suitLevels) {
+        if (suitLevels == null || suitLevels.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<String, Integer> entry : suitLevels.entrySet()) {
+            String suitId = entry.getKey();
+            int maxLevel = entry.getValue() == null ? 0 : entry.getValue();
+            ExSuit suit = ExSuitHandle.INSTANCE.getAll().get(suitId);
+            if (suit == null || maxLevel <= 0) {
+                continue;
+            }
+
+            for (int level = 1; level <= maxLevel; level++) {
+                List<AttriGetherNormal> attriGethers = suit.attriGether.get(level);
+                if (attriGethers == null || attriGethers.isEmpty()) {
+                    continue;
+                }
+                for (AttriGetherNormal attrGether : attriGethers) {
+                    EntityAttrUtil.entityAddAttrTF(attrGether.attribute, attrGether.getModifier(), player, TAKE);
+                }
             }
         }
     }

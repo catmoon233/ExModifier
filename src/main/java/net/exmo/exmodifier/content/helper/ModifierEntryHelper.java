@@ -15,6 +15,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -54,6 +56,7 @@ public class ModifierEntryHelper extends ExHelper {
                 ItemStack result = inputItem;
                 boolean effectApplied = false;
 
+                int levelCost = 0;
                 // 处理洗涤材料逻辑
                 for (WashingMaterials material : ModifierHandle.materialsList) {
                     if (material.item.equals(washItem.getItem()) && washItem.getCount() >= material.NeedCount) {
@@ -63,6 +66,11 @@ public class ModifierEntryHelper extends ExHelper {
 
                         processExistingEntries(modifierHelper, material);
 
+                        if (serverPlayer.experienceLevel < material.CostExp){
+                            Exmodifier.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refresh_faiL_xp")));
+                            return ItemStack.EMPTY;
+                        }
+                        levelCost = (int) material.CostExp;
                         int finalRarity = calculateFinalRarity(material);
                         applyNewEntries(player, result, material, finalRarity);
                         processItemLevels(result, material);
@@ -79,7 +87,9 @@ public class ModifierEntryHelper extends ExHelper {
                 }
                 PlayerRefreshScreenOverMessageMessage message1;
                 if (effectApplied) {
+                    serverPlayer.giveExperienceLevels(-levelCost);
                     message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refresh_success"));
+                    serverPlayer.playNotifySound(SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS, 0.55f, 1f);
                 } else {
                     message1 = new PlayerRefreshScreenOverMessageMessage(ItemStack.EMPTY, Component.translatable("gui.exmodifier.refresh_fail"));
                 }

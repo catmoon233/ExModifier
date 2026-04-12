@@ -3,6 +3,7 @@ package net.exmo.exmodifier.init;
 
 import net.exmo.exmodifier.Exmodifier;
 import net.exmo.exmodifier.events.ExDodgeEvent;
+import net.exmo.exmodifier.util.TickCooldown;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 
@@ -61,8 +62,12 @@ public class ExAttribute {
     public static final RegistryObject<Attribute> ELEMENT_CONVERSION_COEFFICIENT;
     public static final RegistryObject<Attribute> ELEMENT_RESISTANCE_COEFFICIENT;
     public static final RegistryObject<Attribute> ALL_ATTRIBUTE_BOOST;
+    public static final RegistryObject<Attribute> FALL_PROTECT;
+
 
     static {
+
+        FALL_PROTECT = registerAttribute("fall_protect", 1, 0, 2);
 
         ALL_ATTRIBUTE_BOOST = registerAttribute("all_attribute_boost", 1, 0, 100000000);
 
@@ -113,6 +118,7 @@ public class ExAttribute {
 
         // 魔法保护
         MAGIC_PROTECTION = registerAttribute("magic_protection", 0, -100000, 10000000);
+
     }
 
 
@@ -146,6 +152,7 @@ public class ExAttribute {
             event.add(e, ELEMENT_CONVERSION_COEFFICIENT.get());
             event.add(e, ELEMENT_RESISTANCE_COEFFICIENT.get());
             event.add(e, ALL_ATTRIBUTE_BOOST.get());
+            event.add(e, FALL_PROTECT.get());
             if (e.equals(EntityType.PLAYER)) {
                 event.add(e, MAX_DODGE.get());
                 event.add(e, FIREWORK_DAMAGE.get());
@@ -225,6 +232,11 @@ public class ExAttribute {
             if (event.getSource().is(DamageTypes.GENERIC_KILL))return;
             LivingEntity entity = event.getEntity();
             float FinallyDanage = event.getAmount();
+            if (event.getSource().is(DamageTypes.FALL)) {
+                if (entity.getAttributes().hasAttribute(ExAttribute.FALL_PROTECT.get())){
+                    FinallyDanage = (float) (FinallyDanage * (2- entity.getAttributeValue(ExAttribute.FALL_PROTECT.get())));
+                }
+            }
             LivingEntity attacker = event.getSource().getEntity() instanceof LivingEntity ? (LivingEntity) event.getSource().getEntity() : null;
             if (event.getSource().getEntity() instanceof LivingEntity) {
                 if (isLookingBehindTarget(event.getEntity(), event.getSource().getSourcePosition())) {
@@ -274,6 +286,8 @@ public class ExAttribute {
                     FinallyDanage = (float) Math.max(0, FinallyDanage - v);
                 }
             }
+
+            
             event.setAmount(FinallyDanage);
         }
 
@@ -293,6 +307,7 @@ public class ExAttribute {
             newP.getAttribute(FIREWORK_DAMAGE.get()).setBaseValue(oldP.getAttribute(FIREWORK_DAMAGE.get()).getBaseValue());
             newP.getAttribute(ELEMENT_CONVERSION_COEFFICIENT.get()).setBaseValue(oldP.getAttribute(ELEMENT_RESISTANCE_COEFFICIENT.get()).getBaseValue());
             newP.getAttribute(ELEMENT_RESISTANCE_COEFFICIENT.get()).setBaseValue(oldP.getAttribute(ELEMENT_RESISTANCE_COEFFICIENT.get()).getBaseValue());
+            newP.getAttribute(FALL_PROTECT.get()).setBaseValue(oldP.getAttribute(FALL_PROTECT.get()).getBaseValue());
         }
     }
 }

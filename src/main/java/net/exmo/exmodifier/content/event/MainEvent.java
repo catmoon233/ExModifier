@@ -82,6 +82,9 @@ public class MainEvent {
         public static float damageNumber = 0;
         public static boolean hasDamageBoost = false;
         public static boolean hasDamageNumber = false;
+        public static boolean skipInvulnerableTime = false;
+
+        public static int cache_invulnerableTime_time = 0;
 
         public static Pair<List<Component>, Integer> EntryInfoTooltip(ItemStack stack, List<Component> tooltip, Player player) {
             return EntryTooltipHelper.appendEntryInfo(stack, tooltip, player);

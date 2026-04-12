@@ -2,21 +2,18 @@ package net.exmo.exmodifier.content.event.main;
 
 import net.exmo.exmodifier.content.event.MainEvent;
 import net.exmo.exmodifier.content.event.parameter.EventParameter;
-import net.exmo.exmodifier.content.specialEffects.SpecialEffect;
 import net.exmo.exmodifier.content.suit.ExSuit;
 import net.exmo.exmodifier.events.ExDodgeEvent;
 import net.exmo.exmodifier.events.LivingPlayerSwimEvent;
 import net.exmo.exmodifier.events.LivingSwingEvent;
 import net.exmo.exmodifier.util.ExUtil;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.event.level.BlockEvent;
@@ -37,7 +34,11 @@ public final class MainSuitTriggerEventHandlers {
             return;
         }
 
-        if (event.getEntity() instanceof Player player) {
+        LivingEntity entity = event.getEntity();
+        if (entity instanceof Player player) {
+            if (MainEvent.CommonEvent.cache_invulnerableTime_time !=0){
+                player.invulnerableTime = MainEvent.CommonEvent.cache_invulnerableTime_time;
+            }
             ExUtil.getSpecialModifierEntries(player).forEach(specialEffect -> specialEffect.hurt(event));
             List<EventParameter<?>> eventParameters = new ArrayList<>(2);
             eventParameters.add(new EventParameter<>("amount", event.getAmount()));
@@ -48,17 +49,35 @@ public final class MainSuitTriggerEventHandlers {
         }
 
         if (event.getSource().getEntity() instanceof Player player) {
+            if (MainEvent.CommonEvent.cache_invulnerableTime_time !=0){
+                entity.invulnerableTime = MainEvent.CommonEvent.cache_invulnerableTime_time;
+            }
             ExUtil.getSpecialModifierEntries(player).forEach(specialEffect -> specialEffect.attackEntity(event));
             List<EventParameter<?>> eventParameters = new ArrayList<>(2);
             eventParameters.add(new EventParameter<>("amount", event.getAmount()));
             eventParameters.add(new EventParameter<>("max_health", player.getAttributeValue(Attributes.MAX_HEALTH)));
             MainEvent.CommonEvent.addx(player, eventParameters, "ATTACK");
-            if (event.getEntity() != null) {
-                player.getPersistentData().putString("hurtentity-uuid", event.getEntity().getUUID().toString());
+            if (entity != null) {
+                player.getPersistentData().putString("hurtentity-uuid", entity.getUUID().toString());
             }
             MainSuitRuntimeContext.withLivingHurtEvent(event,
                     () -> MainEvent.CommonEvent.ApplySuitEffect(player, ExSuit.Trigger.ATTACK));
             player.getPersistentData().putString("hurtentity-uuid", "null");
+        }
+    }
+    @SubscribeEvent
+    public static void playerAttack(LivingAttackEvent event) {
+        if (event.getSource().getEntity() instanceof Player player) {
+            ExUtil.getSpecialModifierEntries(player).forEach(specialEffect -> specialEffect.attackStart(event));
+            List<EventParameter<?>> eventParameters = new ArrayList<>();
+            MainEvent.CommonEvent.addx(player, eventParameters, "ATTACK_START");
+            MainEvent.CommonEvent.ApplySuitEffect(player, ExSuit.Trigger.ATTACK_START);
+            if (MainEvent.CommonEvent.skipInvulnerableTime){
+                MainEvent.CommonEvent.skipInvulnerableTime = false;;
+                MainEvent.CommonEvent.cache_invulnerableTime_time = event.getEntity().invulnerableTime ;
+                event.getEntity().invulnerableTime = 0;
+
+            }
         }
     }
 

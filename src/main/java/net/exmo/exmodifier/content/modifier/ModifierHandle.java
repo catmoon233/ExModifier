@@ -204,26 +204,86 @@ public class ModifierHandle {
             if (!list.isEmpty()) {
                 ExModifiervaV.PlayerVariables pv = player.getCapability(ExModifiervaV.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ExModifiervaV.PlayerVariables());
                 if (!Config.compact_tooltip) tooltips.add(Component.translatable("modifier.entry.suit"));
-
+        
                 for (ExSuit suit : list){
                     if (suit.visible) {
-                        Integer integer = pv.SuitsNum.getOrDefault(suit.id,0);
-                        tooltips.add(Component.translatable("modifier.entry.suit." + suit.id).append(Component.literal("§6(" + integer + "/" + suit.getMaxLevel() + ")")));
-                        if (!suit.LocalDescription.isEmpty())
-                            tooltips.addAll(TooltipUtil.sprit(Component.translatable(suit.LocalDescription)));
-                        if (showSuitDec){
+                        Integer currentNum = pv.SuitsNum.getOrDefault(suit.id,0);
+                        int maxLevel = suit.getMaxLevel();
+                        if (showSuitDec) {
+                        // 套装标题行: §7—— 炎阳套裝 [2/4] ——
+                        MutableComponent suitNameComponent = Component.translatable("modifier.entry.suit." + suit.id);
+                        tooltips.add(Component.translatable("modifier.suit.header")
+                            .append(suitNameComponent)
+                            .append(Component.translatable("modifier.suit.progress", currentNum, maxLevel).withStyle(ChatFormatting.GOLD))
+                            .append(Component.translatable("modifier.suit.footer")));
+                                
+                        // 显示各级套装效果
 
+                            var levelDescriptions = suit.getLevelDescription();
+                            if (!levelDescriptions.isEmpty()) {
+                                // 按等级排序
+                                var sortedLevels = levelDescriptions.keySet().stream().sorted().toList();
+
+                                for (int level : sortedLevels) {
+                                    String descriptionKey = levelDescriptions.get(level);
+                                    if (descriptionKey != null && !descriptionKey.isEmpty()) {
+                                        // 装备x件：标题（金色）- 使用translatable本地化
+                                        if (currentNum >= level) {
+                                            tooltips.add(Component.translatable("modifier.suit.equip_requirement", level).withStyle(ChatFormatting.GOLD));
+                                        } else {
+                                            tooltips.add(Component.translatable("modifier.suit.equip_requirement", level).withStyle(ChatFormatting.GRAY));
+                                        }
+                                        // 效果描述（黄色，带缩进）- 使用translatable保持本地化支持
+                                        List<Component> descLines = TooltipUtil.sprit(Component.translatable(descriptionKey));
+                                        for (Component line : descLines) {
+                                            tooltips.add(Component.translatable("modifier.suit.effect_prefix").append(line).withStyle(ChatFormatting.YELLOW));
+                                        }
+                                    }
+                                }
+                            }
+                        }else {
+                            // 套装标题行: §7[ §6{套装名} §7| §a{当前件数}§7/§e{总件数} §7]
+                            MutableComponent suitNameComponent = Component.translatable("modifier.entry.suit." + suit.id).withStyle(ChatFormatting.GOLD);
+                            MutableComponent currentNumComponent = Component.literal(String.valueOf(currentNum)).withStyle(ChatFormatting.YELLOW);
+                            MutableComponent maxLevelComponent = Component.literal(String.valueOf(maxLevel)).withStyle(ChatFormatting.YELLOW);
+                            tooltips.add(Component.literal("§7[ ")
+                                    .append(suitNameComponent)
+                                    .append(Component.literal(" §7| "))
+                                    .append(currentNumComponent)
+                                    .append(Component.literal("§7/"))
+                                    .append(maxLevelComponent)
+                                    .append(Component.literal(" §7]")));
+
+                            if (!suit.LocalDescription.isEmpty()) {
+                                tooltips.addAll(TooltipUtil.sprit(Component.translatable(suit.LocalDescription)));
+                            }
                         }
-                        //.append(Component.translatable("modifier.entry.suit.color"))
+//                        // 当前激活效果提示
+//                        if (currentNum > 0) {
+//                            // 找到当前激活的最大套装等级
+//                            int activeLevel = 0;
+//                            for (int level : suit.getLevelDescription().keySet()) {
+//                                if (currentNum >= level && level > activeLevel) {
+//                                    activeLevel = level;
+//                                }
+//                            }
+//
+//                            if (activeLevel > 0) {
+//                                tooltips.add(Component.translatable("modifier.suit.active_effect", activeLevel));
+//                            }
+//                        }
+                                
+                        // 如果showSuitDec为true且还有LocalDescription，也显示
+
                     }
                 }
-
-
+        
+        
             }
             return tooltips;
         }
         public static List<Component> generateEntryTooltip(ModifierInstant modifierEntryInstant, Player player, ItemStack itemStack, boolean skinFold) {
-            return generateEntryTooltip(modifierEntryInstant, player, itemStack, skinFold,false);
+            return generateEntryTooltip(modifierEntryInstant, player, itemStack, skinFold,Screen.hasShiftDown());
 
         }
         public static List<Component> generateEntryTooltip(ModifierInstant modifierEntryInstant, Player player, ItemStack itemStack, boolean skinFold,boolean showSuitEffect) {

@@ -6,10 +6,7 @@ import net.exmo.exmodifier.util.MobEffectInstantBuilder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.event.level.BlockEvent;
 
@@ -30,6 +27,9 @@ public  class SpecialEffect {
     }
 
     public void jump(LivingEvent.LivingJumpEvent event) {
+
+    }
+    public void attackStart(LivingAttackEvent event) {
 
     }
     public void projectileHit(ProjectileImpactEvent event) {
