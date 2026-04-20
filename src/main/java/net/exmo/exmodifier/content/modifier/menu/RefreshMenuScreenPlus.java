@@ -41,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,7 @@ import java.util.stream.Collectors;
  * Layout:
  * - top left: slot panel + material summary
  * - top right: full-height collapsible entry tag list
- * - bottom: adaptive inventory rows (blank rows removed)
+ * - bottom: full Minecraft inventory (armor on sides, main grid, hotbar, off-hand)
  */
 @OnlyIn(Dist.CLIENT)
 public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPlus> implements ContainerListener {
@@ -109,7 +110,6 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     private int topRegionH;
     private int inventoryY;
     private int inventoryH;
-    private int inventoryRows;
 
     private int slotPanelH;
     private int leftEntryY;
@@ -131,7 +131,7 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     private SlotPanel slotPanel;
     private MaterialInfoPanel materialInfoPanel;
     private EntryTagPanel entryTagPanel;
-    private ModItemListPanel itemListPanel;
+    private FullInventoryPanel fullInventoryPanel;
 
     // ======================== Tabs ========================
     private record TabDef(String langKey) {}
@@ -226,24 +226,14 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         leftColW = Mth.clamp((int) (contentW * 0.34f), 140, 220);
         rightColW = contentW - leftColW - GAP;
 
-        int inventoryCols = Math.max((contentW - 12 - SCROLLBAR_W) / ITEM_SLOT_SZ, 1);
-        int totalItems = getActiveItemSource().size();
-        int neededRows = Math.max(1, Mth.ceil((float) totalItems / inventoryCols));
-
-        int minTopRegion = 140;
-        int inventoryChrome = 28;
-        int maxRowsByHeight = Math.max(1, (contentH - minTopRegion - GAP - inventoryChrome) / ITEM_SLOT_SZ);
-        inventoryRows = Mth.clamp(neededRows, 1, maxRowsByHeight);
-
-        inventoryH = inventoryChrome + inventoryRows * ITEM_SLOT_SZ;
+        // Full inventory panel: header(20) + 3 main rows + gap(4) + hotbar row + bottom padding(4)
+        inventoryH = 20 + 3 * ITEM_SLOT_SZ + 4 + ITEM_SLOT_SZ + 4;  // = 116 px
         topRegionH = contentH - inventoryH - GAP;
 
+        int minTopRegion = 140;
         if (topRegionH < minTopRegion) {
-            int deficit = minTopRegion - topRegionH;
-            int dropRows = Mth.ceil((float) deficit / ITEM_SLOT_SZ);
-            inventoryRows = Math.max(1, inventoryRows - dropRows);
-            inventoryH = inventoryChrome + inventoryRows * ITEM_SLOT_SZ;
-            topRegionH = contentH - inventoryH - GAP;
+            // grow the window height by shrinking nothing – the UI is already at max; just clamp.
+            topRegionH = minTopRegion;
         }
 
         inventoryY = contentY + topRegionH + GAP;
@@ -259,17 +249,16 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
 
     private void buildPanels() {
         int rightX = contentX + leftColW + GAP;
-        List<ItemStack> source = getActiveItemSource();
 
         slotPanel = new SlotPanel(contentX, contentY, leftColW, slotPanelH);
         materialInfoPanel = new MaterialInfoPanel(contentX, leftEntryY, leftColW, materialPanelH);
         entryTagPanel = new EntryTagPanel(rightX, tagPanelY, rightColW, tagPanelH);
-        itemListPanel = new ModItemListPanel(contentX, inventoryY, contentW, inventoryH, source, inventoryRows);
+        fullInventoryPanel = new FullInventoryPanel(contentX, inventoryY, contentW, inventoryH);
 
         addRenderableWidget(slotPanel);
         addRenderableWidget(materialInfoPanel);
         addRenderableWidget(entryTagPanel);
-        addRenderableWidget(itemListPanel);
+        addRenderableWidget(fullInventoryPanel);
 
         syncEntryPanels();
     }
@@ -414,14 +403,20 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         if (p == null) {
             return List.of();
         }
-        return java.util.stream.Stream.concat(p.getInventory().items.stream(), p.getInventory().armor.stream())
+        return java.util.stream.Stream.of(
+                        p.getInventory().items.stream(),
+                        p.getInventory().armor.stream(),
+                        p.getInventory().offhand.stream())
+                .flatMap(s -> s)
                 .filter(it -> !it.isEmpty() && !ModifierEntry.getType(it).stream()
                         .filter(e -> e != ExType.ALL.get()).toList().isEmpty())
                 .toList();
     }
 
     public List<ItemStack> filterMaterialItems() {
-        return player.getInventory().items.stream()
+        return java.util.stream.Stream.concat(
+                        player.getInventory().items.stream(),
+                        player.getInventory().offhand.stream())
                 .filter(it -> it != selectedItemStack && !it.isEmpty()
                         && (ModifierHandle.materialsList.stream()
                         .anyMatch(m -> m.ItemId.equals(ExUtil.getItemID(it)))
@@ -431,7 +426,9 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     }
 
     public List<ItemStack> filterRefineItems() {
-        return player.getInventory().items.stream()
+        return java.util.stream.Stream.concat(
+                        player.getInventory().items.stream(),
+                        player.getInventory().offhand.stream())
                 .filter(it -> it != selectedItemStack && !it.isEmpty()
                         && RefineHelper.of(selectedItemStack).canRefine(it))
                 .toList();
@@ -1491,46 +1488,109 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
     }
 
     // ====================================================================
-    // Inventory panel (bottom, adaptive rows)
+    // Full Inventory Panel (bottom) - full MC inventory layout
+    // Left column  : armor[3]=helmet, armor[2]=chestplate, armor[1]=leggings (rows 0-2)
+    //                armor[0]=boots (hotbar row)
+    // Centre       : inv.items[9..35] in 3 rows + inv.items[0..8] hotbar
+    // Right column : inv.offhand[0] (hotbar row)
+    // Valid/selectable items  → bright with animated pulsing border
+    // Invalid items           → dark dim overlay
+    // Currently selected item → glowing animated border
     // ====================================================================
-    public class ModItemListPanel extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+    public class FullInventoryPanel extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+
+        private static final int SZ           = ITEM_SLOT_SZ; // 22 px per slot
+        private static final int ARMOR_GAP    = 4;  // gap between armor col and main grid
+        private static final int OFFHAND_GAP  = 4;  // gap between main grid and offhand col
+        private static final int HOTBAR_GAP   = 4;  // vertical gap between main rows and hotbar
+
         private final int x;
         private final int y;
         private final int w;
         private final int h;
-        private final int rows;
 
-        private List<ItemStack> items;
-        private float scrollOff = 0f;
-        private final Map<Integer, Float> slotAnim = new HashMap<>();
+        // Grid anchor positions (computed once in constructor)
+        private final int armorColX;   // x of the 1-wide armor column
+        private final int mainGridX;   // x of the 9-wide main/hotbar grid
+        private final int offhandX;    // x of the off-hand slot
+        private final int mainGridY;   // y of the first main-inventory row
+        private final int hotbarY;     // y of the hotbar / boots / offhand row
+
+        // Per-slot hover animation (slot key 0-40, see getSlotPos())
+        private final Map<Integer, Float> slotHoverAnim = new HashMap<>();
+
+        // Global animation counters
+        private float validPulse   = 0f;   // drives the pulsing border on valid slots
+        private float selGlow      = 0f;   // drives the glow on the selected slot
+        private float scanPhase    = 0f;   // slow scanline across valid items
+
         private int hoverSlot = -1;
         private long lastRender = System.currentTimeMillis();
 
-        public ModItemListPanel(int x, int y, int w, int h, List<ItemStack> items, int rows) {
+        public FullInventoryPanel(int x, int y, int w, int h) {
             this.x = x;
             this.y = y;
             this.w = w;
             this.h = h;
-            this.rows = Math.max(rows, 1);
-            this.items = new ArrayList<>(items);
+
+            // Total grid width = armorCol + gap + 9×SZ + gap + offhandCol = 22+4+198+4+22 = 250
+            int gridW      = SZ + ARMOR_GAP + SZ * 9 + OFFHAND_GAP + SZ;
+            int offsetX    = Math.max(6, (w - gridW) / 2);
+            armorColX  = x + offsetX;
+            mainGridX  = armorColX + SZ + ARMOR_GAP;
+            offhandX   = mainGridX + SZ * 9 + OFFHAND_GAP;
+            mainGridY  = y + 20;           // 20 px header
+            hotbarY    = mainGridY + 3 * SZ + HOTBAR_GAP;
         }
 
-        public void setItems(List<ItemStack> list) {
-            this.items = new ArrayList<>(list);
-            this.scrollOff = 0f;
+        // ---- Slot key mapping (mirrors MC slot indices) -----------------
+        // 0-8   : hotbar      (inv.items[0..8])
+        // 9-35  : main inv    (inv.items[9..35])
+        // 36-39 : armor       (inv.armor[0..3], 36=boots, 39=helmet)
+        // 40    : off-hand    (inv.offhand[0])
+
+        private ItemStack getSlotStack(int key) {
+            Inventory inv = player.getInventory();
+            if (key <= 35)          return inv.items.get(key);
+            if (key <= 39)          return inv.armor.get(key - 36);
+            if (key == 40)          return inv.offhand.isEmpty() ? ItemStack.EMPTY : inv.offhand.get(0);
+            return ItemStack.EMPTY;
         }
 
-        private int cols() {
-            int usableW = w - 12 - SCROLLBAR_W;
-            return Math.max(usableW / ITEM_SLOT_SZ, 1);
+        /** Returns {sx, sy} for the top-left pixel of a slot, or null if not shown. */
+        private int[] getSlotPos(int key) {
+            if (key >= 0 && key <= 8) {
+                // Hotbar
+                return new int[]{mainGridX + key * SZ, hotbarY};
+            }
+            if (key >= 9 && key <= 35) {
+                int row = (key - 9) / 9;
+                int col = (key - 9) % 9;
+                return new int[]{mainGridX + col * SZ, mainGridY + row * SZ};
+            }
+            if (key >= 36 && key <= 39) {
+                // 36=boots→hotbar row, 37=legs→row2, 38=chest→row1, 39=helmet→row0
+                int armorIdx = key - 36;
+                int sy = (armorIdx == 0) ? hotbarY : mainGridY + (3 - armorIdx) * SZ;
+                return new int[]{armorColX, sy};
+            }
+            if (key == 40) {
+                return new int[]{offhandX, hotbarY};
+            }
+            return null;
         }
 
-        private int bodyY() {
-            return y + 20;
-        }
-
-        private int bodyH() {
-            return h - 24;
+        /** Build an identity-based set of valid/selectable ItemStacks. */
+        private Set<ItemStack> buildSelectableSet() {
+            List<ItemStack> list;
+            if (manageSlot == 0) {
+                list = filterEquipItems();
+            } else {
+                list = currentPage == 0 ? filterMaterialItems() : filterRefineItems();
+            }
+            Set<ItemStack> set = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+            set.addAll(list);
+            return set;
         }
 
         @Override
@@ -1539,152 +1599,176 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
             float dt = Math.min((now - lastRender) / 1000f, 0.1f);
             lastRender = now;
 
-            if (items.isEmpty()) {
-                List<ItemStack> latest = getActiveItemSource();
-                if (!latest.isEmpty()) {
-                    this.items = new ArrayList<>(latest);
-                }
-            }
+            validPulse += dt * 2.8f;
+            selGlow    += dt * 5.0f;
+            scanPhase  += dt * 0.5f;
 
+            // Panel background
             drawRoundedRect(gg, x, y, w, h, COL_CARD);
             drawBorder(gg, x, y, w, h, COL_BORDER);
             gg.drawString(font, Component.translatable("gui.exmodifier.refreshplus.panel.inventory"),
                     x + 6, y + 5, COL_TEXT_SEC, false);
 
-            int bodyY = bodyY();
-            int bodyH = bodyH();
-            int cols = cols();
-            int visibleRows = Math.max(1, Math.min(rows, bodyH / ITEM_SLOT_SZ));
-            int slotsPerPage = cols * visibleRows;
-            int totalRows = Math.max(1, Mth.ceil((float) items.size() / cols));
-            int scrollableRows = Math.max(totalRows - visibleRows, 0);
-            int startRow = scrollableRows == 0 ? 0 : (int) (scrollOff * scrollableRows + 0.0001f);
-            int start = startRow * cols;
+            // Subtle separator between armor column and main grid
+            gg.fill(armorColX + SZ + 1, mainGridY - 1, armorColX + SZ + 2, hotbarY + SZ + 1, COL_BORDER);
+            // Separator between main grid and offhand column
+            gg.fill(offhandX - 2, mainGridY - 1, offhandX - 1, hotbarY + SZ + 1, COL_BORDER);
+            // Horizontal separator between main rows and hotbar
+            gg.fill(armorColX, hotbarY - 2, offhandX + SZ, hotbarY - 1, COL_BORDER);
 
-            if (!items.isEmpty() && start >= items.size()) {
-                scrollOff = 0f;
-                start = 0;
-            }
-
-            if (items.isEmpty()) {
-                Component msg = Component.translatable("gui.exmodifier.refreshplus.search.no_result");
-                gg.drawString(font, msg, x + 6, bodyY + 4, COL_TEXT_SEC, false);
-                return;
-            }
+            Set<ItemStack> validSet = buildSelectableSet();
+            ItemStack activeSelected = manageSlot == 0 ? selectedItemStack : selectedRefreshItem;
 
             hoverSlot = -1;
-            gg.enableScissor(x + 2, bodyY, x + w - 2, bodyY + bodyH);
+            for (int key = 0; key <= 40; key++) {
+                int[] pos = getSlotPos(key);
+                if (pos == null) continue;
+                int sx = pos[0], sy = pos[1];
 
-            int renderCount = Math.min(slotsPerPage, items.size() - start);
-            for (int i = 0; i < renderCount; i++) {
-                int idx = start + i;
-                int row = i / cols;
-                int col = i % cols;
-                int sx = x + 6 + col * ITEM_SLOT_SZ;
-                int sy = bodyY + row * ITEM_SLOT_SZ;
+                ItemStack stack = getSlotStack(key);
+                boolean hov = mx >= sx && mx < sx + SZ && my >= sy && my < sy + SZ;
+                float ha = lerp(slotHoverAnim.getOrDefault(key, 0f), hov ? 1f : 0f, dt * 14f);
+                slotHoverAnim.put(key, ha);
 
-                boolean hover = mx >= sx && mx < sx + ITEM_SLOT_SZ && my >= sy && my < sy + ITEM_SLOT_SZ;
-                float ha = slotAnim.getOrDefault(i, 0f);
-                ha = lerp(ha, hover ? 1f : 0f, dt * 12f);
-                slotAnim.put(i, ha);
+                if (hov && !stack.isEmpty()) hoverSlot = key;
 
-                gg.fill(sx, sy, sx + ITEM_SLOT_SZ, sy + ITEM_SLOT_SZ, COL_PANEL);
-                if (ha > 0.01f) {
-                    gg.fill(sx, sy, sx + ITEM_SLOT_SZ, sy + ITEM_SLOT_SZ,
-                            ((int) (ha * 45) << 24) | 0x00FFFFFF);
-                    int ba = (int) (ha * 200);
-                    int bc = (ba << 24) | 0x00FFFFFF;
-                    gg.fill(sx, sy, sx + ITEM_SLOT_SZ, sy + 1, bc);
-                    gg.fill(sx, sy + ITEM_SLOT_SZ - 1, sx + ITEM_SLOT_SZ, sy + ITEM_SLOT_SZ, bc);
-                    gg.fill(sx, sy, sx + 1, sy + ITEM_SLOT_SZ, bc);
-                    gg.fill(sx + ITEM_SLOT_SZ - 1, sy, sx + ITEM_SLOT_SZ, sy + ITEM_SLOT_SZ, bc);
-                }
+                boolean valid    = !stack.isEmpty() && validSet.contains(stack);
+                boolean selected = !stack.isEmpty() && stack == activeSelected;
 
-                ItemStack stack = items.get(idx);
-                int ox = sx + (ITEM_SLOT_SZ - 16) / 2;
-                int oy = sy + (ITEM_SLOT_SZ - 16) / 2;
-                gg.renderItem(stack, ox, oy);
-                gg.renderItemDecorations(font, stack, ox, oy);
-
-                if (hover) {
-                    hoverSlot = idx;
-                }
-            }
-            gg.disableScissor();
-
-            if (totalRows > visibleRows) {
-                int tx = x + w - SCROLLBAR_W - 2;
-                gg.fill(tx, bodyY, tx + SCROLLBAR_W, bodyY + bodyH, COL_SCROLLBAR);
-                int thumbH = Math.max((int) ((float) visibleRows / totalRows * bodyH), 12);
-                int thumbY = bodyY + (int) (scrollOff * (bodyH - thumbH));
-                gg.fill(tx, thumbY, tx + SCROLLBAR_W, thumbY + thumbH, COL_SCROLLTHUMB);
+                renderInventorySlot(gg, sx, sy, stack, valid, selected, ha);
             }
 
-            if (hoverSlot >= 0 && hoverSlot < items.size()) {
-                ItemStack hs = items.get(hoverSlot);
-                final int fmx = mx;
-                final int fmy = my;
-                deferredTooltips.add(() -> gg.renderTooltip(font, hs, fmx, fmy));
+            // Armor column small labels (top-left corner of each slot)
+            renderArmorLabels(gg);
+
+            // Off-hand label
+            renderOffhandLabel(gg);
+
+            // Tooltip for hovered slot
+            if (hoverSlot >= 0) {
+                ItemStack hs = getSlotStack(hoverSlot);
+                if (!hs.isEmpty()) {
+                    final int fmx = mx, fmy = my;
+                    deferredTooltips.add(() -> gg.renderTooltip(font, hs, fmx, fmy));
+                }
             }
         }
 
-        @Override
-        public boolean mouseScrolled(double mx, double my, double delta) {
-            int cols = cols();
-            int visibleRows = Math.max(1, Math.min(rows, bodyH() / ITEM_SLOT_SZ));
-            int totalRows = Math.max(1, Mth.ceil((float) items.size() / cols));
-            if (mx >= x && mx < x + w && my >= bodyY() && my < bodyY() + bodyH() && totalRows > visibleRows) {
-                float step = 1f / Math.max(totalRows - visibleRows, 1);
-                scrollOff = Mth.clamp(scrollOff - (float) delta * step, 0f, 1f);
-                return true;
+        private void renderInventorySlot(GuiGraphics gg, int sx, int sy,
+                                         ItemStack stack, boolean valid,
+                                         boolean selected, float hoverAnim) {
+            // --- Slot background ---
+            gg.fill(sx, sy, sx + SZ, sy + SZ, COL_PANEL);
+
+            // --- Selected: glowing animated border (drawn before the item) ---
+            if (selected) {
+                float g = 0.55f + 0.35f * (float) Math.sin(selGlow);
+                int ga = (int) (g * 255);
+                int gc = (ga << 24) | 0x00FFFFFF;
+                // Outer glow ring
+                gg.fill(sx - 1, sy - 1, sx + SZ + 1, sy,          gc);
+                gg.fill(sx - 1, sy + SZ, sx + SZ + 1, sy + SZ + 1, gc);
+                gg.fill(sx - 1, sy,      sx,           sy + SZ,     gc);
+                gg.fill(sx + SZ, sy,     sx + SZ + 1,  sy + SZ,     gc);
+                // Inner fill tint
+                int ig = (int) (g * 0.25f * 255);
+                gg.fill(sx, sy, sx + SZ, sy + SZ, (ig << 24) | 0x00FFFFFF);
             }
-            return false;
+
+            // --- Item rendering ---
+            if (!stack.isEmpty()) {
+                int ox = sx + (SZ - 16) / 2;
+                int oy = sy + (SZ - 16) / 2;
+                gg.renderItem(stack, ox, oy);
+                gg.renderItemDecorations(font, stack, ox, oy);
+
+                if (!valid && !selected) {
+                    // Invalid: dark desaturating overlay
+                    gg.fill(sx, sy, sx + SZ, sy + SZ, 0xAA000000);
+                }
+            }
+
+            // --- Valid-item animated pulsing border ---
+            if (valid && !selected && !stack.isEmpty()) {
+                float pa = 0.18f + 0.12f * (float) Math.sin(validPulse + sx * 0.07f);
+                int pv = (int) (pa * 255);
+                int pc = (pv << 24) | 0x00FFFFFF;
+                gg.fill(sx,          sy,          sx + SZ,     sy + 1,      pc);
+                gg.fill(sx,          sy + SZ - 1, sx + SZ,     sy + SZ,     pc);
+                gg.fill(sx,          sy,          sx + 1,      sy + SZ,     pc);
+                gg.fill(sx + SZ - 1, sy,          sx + SZ,     sy + SZ,     pc);
+
+                // Subtle scanline shimmer across valid items
+                // SCAN_WIDTH = 9 main cols + 1 offhand = SZ * 10
+                float scanPos = (scanPhase % 1.0f) * (SZ * 10);  // moves across slots
+                float distToScan = Math.abs((sx - mainGridX) - scanPos);
+                if (distToScan < SZ * 1.5f) {
+                    float shimmer = (1f - distToScan / (SZ * 1.5f)) * 0.18f;
+                    int sv = (int) (shimmer * 255);
+                    gg.fill(sx + 1, sy + 1, sx + SZ - 1, sy + SZ - 1, (sv << 24) | 0x00FFFFFF);
+                }
+            }
+
+            // --- Hover highlight (drawn on top) ---
+            if (hoverAnim > 0.01f) {
+                gg.fill(sx, sy, sx + SZ, sy + SZ, ((int) (hoverAnim * 55) << 24) | 0x00FFFFFF);
+                int ba = (int) (hoverAnim * 210);
+                int bc = (ba << 24) | 0x00FFFFFF;
+                gg.fill(sx,          sy,          sx + SZ,     sy + 1,      bc);
+                gg.fill(sx,          sy + SZ - 1, sx + SZ,     sy + SZ,     bc);
+                gg.fill(sx,          sy,          sx + 1,      sy + SZ,     bc);
+                gg.fill(sx + SZ - 1, sy,          sx + SZ,     sy + SZ,     bc);
+            }
+
+            // Default border (drawn last so it frames everything cleanly)
+            if (!selected) {
+                drawBorder(gg, sx, sy, SZ, SZ, COL_BORDER);
+            }
+        }
+
+        /** Small "A" markers at the corner of armor slots to identify them. */
+        private void renderArmorLabels(GuiGraphics gg) {
+            // Keys: 39=helmet (row 0), 38=chest (row 1), 37=legs (row 2), 36=boots (hotbar row)
+            int[] armorKeys = {39, 38, 37, 36};
+            for (int key : armorKeys) {
+                int[] pos = getSlotPos(key);
+                if (pos == null) continue;
+                // 1-pixel mini marker in top-left corner of slot
+                gg.fill(pos[0] + 1, pos[1] + 1, pos[0] + 3, pos[1] + 3, 0x55FFFFFF);
+            }
+        }
+
+        /** Small marker on the off-hand slot. */
+        private void renderOffhandLabel(GuiGraphics gg) {
+            int[] pos = getSlotPos(40);
+            if (pos == null) return;
+            gg.fill(pos[0] + 1, pos[1] + 1, pos[0] + 3, pos[1] + 3, 0x5500D0FF);
         }
 
         @Override
         public boolean mouseClicked(double mx, double my, int btn) {
-            if (mx < x || mx >= x + w || my < bodyY() || my >= bodyY() + bodyH()) {
-                return false;
-            }
-
-            int cols = cols();
-            int visibleRows = Math.max(1, Math.min(rows, bodyH() / ITEM_SLOT_SZ));
-            int slotsPerPage = cols * visibleRows;
-            int totalRows = Math.max(1, Mth.ceil((float) items.size() / cols));
-            int scrollableRows = Math.max(totalRows - visibleRows, 0);
-            int startRow = scrollableRows == 0 ? 0 : (int) (scrollOff * scrollableRows + 0.0001f);
-            int start = startRow * cols;
-
-            int renderCount = Math.min(slotsPerPage, items.size() - start);
-            for (int i = 0; i < renderCount; i++) {
-                int idx = start + i;
-                int row = i / cols;
-                int col = i % cols;
-                int sx = x + 6 + col * ITEM_SLOT_SZ;
-                int sy = bodyY() + row * ITEM_SLOT_SZ;
-                if (mx >= sx && mx < sx + ITEM_SLOT_SZ && my >= sy && my < sy + ITEM_SLOT_SZ) {
-                    selectItem(idx, sx + ITEM_SLOT_SZ / 2f, sy + ITEM_SLOT_SZ / 2f);
-                    return true;
+            for (int key = 0; key <= 40; key++) {
+                int[] pos = getSlotPos(key);
+                if (pos == null) continue;
+                int sx = pos[0], sy = pos[1];
+                if (mx >= sx && mx < sx + SZ && my >= sy && my < sy + SZ) {
+                    ItemStack stack = getSlotStack(key);
+                    if (!stack.isEmpty()) {
+                        selectSlot(stack, sx + SZ / 2f, sy + SZ / 2f);
+                        return true;
+                    }
                 }
             }
             return false;
         }
 
-        private void selectItem(int idx, float fx, float fy) {
-            if (idx < 0 || idx >= items.size()) {
-                return;
-            }
-            ItemStack stack = items.get(idx);
-
+        private void selectSlot(ItemStack stack, float fx, float fy) {
             if (manageSlot == 0) {
                 selectedItemStack = stack;
                 syncEntryPanels();
             } else {
                 selectedRefreshItem = stack;
             }
-
-            setItems(getActiveItemSource());
-
             spawnParticles(fx, fy, 9, 0xFFFFFF);
         }
 
@@ -1699,6 +1783,8 @@ public class RefreshMenuScreenPlus extends AbstractContainerScreen<RefreshMenuPl
         }
 
         @Override
-        public void updateNarration(NarrationElementOutput out) {}
+        public void updateNarration(NarrationElementOutput out) {
+            out.add(NarratedElementType.TITLE, Component.translatable("gui.exmodifier.refreshplus.panel.inventory"));
+        }
     }
 }
