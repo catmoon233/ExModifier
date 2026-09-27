@@ -1,0 +1,10 @@
+{
+  "damage_bonus": 0.04,
+  "damage_resist": 0.09,
+  "color": 12302013,
+  "school": "irons_spellbooks:blood",
+  "damage_types": ["irons_spellbooks:blood_magic"],
+  "restrain": {
+    "exmodifier:holy": 0.8
+  }
+}

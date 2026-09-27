@@ -1,0 +1,8 @@
+{
+  "max_refine": 3,
+  "tooltip_key": "tooltip.exmodifier.quality.common",
+  "weight": 80,
+  "rarity": 0,
+  "grow_value": 0.0,
+  "show_in_head_tooltip": false
+}

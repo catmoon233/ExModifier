@@ -1,0 +1,7 @@
+{
+  "damage_bonus": 0.07,
+  "damage_resist": 0.04,
+  "color": 16763594,
+  "school": "irons_spellbooks:evocation",
+  "damage_types": ["irons_spellbooks:evocation_magic"]
+}

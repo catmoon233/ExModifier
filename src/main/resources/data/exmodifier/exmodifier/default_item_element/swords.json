@@ -1,0 +1,6 @@
+{
+  "items": ["minecraft:iron_sword", "minecraft:diamond_sword"],
+  "elements": {
+    "exmodifier:fire": 1
+  }
+}

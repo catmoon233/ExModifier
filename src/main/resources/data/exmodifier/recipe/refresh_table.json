@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": { "item": "minecraft:lapis_lazuli" },
+    "P": { "item": "minecraft:paper" },
+    "B": { "item": "minecraft:book" }
+  },
+  "pattern": [
+    " L ",
+    "PBP",
+    " L "
+  ],
+  "result": {
+    "count": 1,
+    "id": "exmodifier:refresh_table"
+  }
+}

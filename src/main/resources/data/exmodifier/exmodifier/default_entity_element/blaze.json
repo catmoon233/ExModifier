@@ -1,0 +1,6 @@
+{
+  "entities": ["minecraft:blaze"],
+  "elements": {
+    "irons_spellbooks:fire": 8.0
+  }
+}

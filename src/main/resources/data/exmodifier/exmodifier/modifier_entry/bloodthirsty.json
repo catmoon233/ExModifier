@@ -1,0 +1,8 @@
+{
+  "item_types": ["exmodifier:weapon"],
+  "weight": 4,
+  "max_level": 1,
+  "random": true,
+  "special_effects": ["exmodifier:bloodthirsty"],
+  "description_key": "tooltip.exmodifier.entry.bloodthirsty"
+}

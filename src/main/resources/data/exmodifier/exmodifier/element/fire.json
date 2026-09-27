@@ -1,0 +1,10 @@
+{
+  "damage_bonus": 0.1,
+  "damage_resist": 0.05,
+  "color": 16733491,
+  "school": "irons_spellbooks:fire",
+  "damage_types": ["irons_spellbooks:fire_magic"],
+  "restrain": {
+    "exmodifier:nature": 1.5
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "item_types": ["exmodifier:armor"],
+  "weight": 6,
+  "max_level": 3,
+  "random": true,
+  "attributes": [
+    {
+      "attribute": "exmodifier:dodge",
+      "amount": 0.05,
+      "amount_per_level": 0.03,
+      "operation": "add_value"
+    }
+  ],
+  "description_key": "tooltip.exmodifier.entry.swift"
+}

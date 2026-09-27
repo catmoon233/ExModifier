@@ -1,0 +1,8 @@
+{
+  "item_types": ["exmodifier:weapon"],
+  "weight": 2,
+  "max_level": 1,
+  "random": true,
+  "special_effects": ["exmodifier:soul_eater"],
+  "description_key": "tooltip.exmodifier.entry.soul_eater"
+}

@@ -1,0 +1,36 @@
+{
+  "entries": ["exmodifier:sharp"],
+  "levels": [
+    {
+      "pieces": 1,
+      "trigger": "exmodifier:tick",
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.attack_speed",
+          "amount": 0.05,
+          "operation": "add_value"
+        }
+      ],
+      "effects": [
+        {
+          "effect": "minecraft:speed",
+          "duration": 40,
+          "amplifier": 0,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "pieces": 2,
+      "trigger": "exmodifier:tick",
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.attack_damage",
+          "amount": 0.1,
+          "amount_per_level": 0.1,
+          "operation": "add_multiplied_base"
+        }
+      ]
+    }
+  ]
+}

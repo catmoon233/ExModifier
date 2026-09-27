@@ -1,0 +1,7 @@
+{
+  "damage_bonus": 0.06,
+  "damage_resist": 0.06,
+  "color": 11184640,
+  "school": "irons_spellbooks:eldritch",
+  "damage_types": ["irons_spellbooks:eldritch_magic"]
+}

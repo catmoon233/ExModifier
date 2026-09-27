@@ -1,0 +1,6 @@
+{
+  "entities": ["minecraft:evoker", "minecraft:vindicator", "minecraft:illusioner"],
+  "elements": {
+    "irons_spellbooks:evocation": 8.0
+  }
+}

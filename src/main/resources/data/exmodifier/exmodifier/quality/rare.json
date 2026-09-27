@@ -1,0 +1,8 @@
+{
+  "max_refine": 5,
+  "tooltip_key": "tooltip.exmodifier.quality.rare",
+  "weight": 20,
+  "rarity": 2,
+  "grow_value": 0.12,
+  "show_in_head_tooltip": true
+}

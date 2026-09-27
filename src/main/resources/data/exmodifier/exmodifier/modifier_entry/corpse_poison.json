@@ -1,0 +1,8 @@
+{
+  "item_types": ["exmodifier:weapon"],
+  "weight": 3,
+  "max_level": 1,
+  "random": true,
+  "special_effects": ["exmodifier:corpse_poison"],
+  "description_key": "tooltip.exmodifier.entry.corpse_poison"
+}

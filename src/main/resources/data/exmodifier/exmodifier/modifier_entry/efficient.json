@@ -1,0 +1,15 @@
+{
+  "item_types": ["exmodifier:tool"],
+  "weight": 10,
+  "max_level": 5,
+  "random": true,
+  "attributes": [
+    {
+      "attribute": "exmodifier:dig_speed",
+      "amount": 0.2,
+      "amount_per_level": 0.1,
+      "operation": "add_value"
+    }
+  ],
+  "description_key": "tooltip.exmodifier.entry.efficient"
+}

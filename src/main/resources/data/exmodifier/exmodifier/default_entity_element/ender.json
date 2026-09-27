@@ -1,0 +1,6 @@
+{
+  "entities": ["minecraft:enderman", "minecraft:endermite", "minecraft:shulker"],
+  "elements": {
+    "irons_spellbooks:ender": 8.0
+  }
+}

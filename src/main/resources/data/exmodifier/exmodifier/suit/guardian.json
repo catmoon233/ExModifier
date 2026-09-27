@@ -1,0 +1,28 @@
+{
+  "entries": ["exmodifier:guard"],
+  "levels": [
+    {
+      "pieces": 1,
+      "trigger": "exmodifier:tick",
+      "attributes": [
+        {
+          "attribute": "exmodifier:defense",
+          "amount": 2.0,
+          "operation": "add_value"
+        }
+      ]
+    },
+    {
+      "pieces": 2,
+      "trigger": "exmodifier:on_hurt",
+      "effects": [
+        {
+          "effect": "minecraft:regeneration",
+          "duration": 40,
+          "amplifier": 0,
+          "visible": false
+        }
+      ]
+    }
+  ]
+}

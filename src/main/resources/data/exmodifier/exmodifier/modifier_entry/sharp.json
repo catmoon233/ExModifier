@@ -1,0 +1,17 @@
+{
+  "item_types": ["exmodifier:weapon"],
+  "slots": ["exmodifier:front"],
+  "weight": 10,
+  "max_level": 5,
+  "random": true,
+  "attributes": [
+    {
+      "attribute": "minecraft:generic.attack_damage",
+      "amount": 1.0,
+      "amount_per_level": 0.5,
+      "operation": "add_value"
+    }
+  ],
+  "special_effects": ["exmodifier:heavy_strike"],
+  "description_key": "tooltip.exmodifier.entry.sharp"
+}

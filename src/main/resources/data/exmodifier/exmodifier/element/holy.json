@@ -1,0 +1,11 @@
+{
+  "damage_bonus": 0.05,
+  "damage_resist": 0.06,
+  "color": 16777164,
+  "school": "irons_spellbooks:holy",
+  "damage_types": ["irons_spellbooks:holy_magic"],
+  "restrain": {
+    "exmodifier:blood": 1.5,
+    "exmodifier:eldritch": 1.3
+  }
+}

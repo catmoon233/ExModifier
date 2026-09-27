@@ -1,0 +1,15 @@
+{
+  "item_types": ["exmodifier:armor"],
+  "weight": 10,
+  "max_level": 5,
+  "random": true,
+  "attributes": [
+    {
+      "attribute": "minecraft:generic.armor",
+      "amount": 1.0,
+      "amount_per_level": 0.5,
+      "operation": "add_value"
+    }
+  ],
+  "description_key": "tooltip.exmodifier.entry.guard"
+}
