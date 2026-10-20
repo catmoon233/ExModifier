@@ -103,8 +103,14 @@ tasks.register('apiCodecTest', JavaExec) {
     mainClass = 'net.exmo.exmodifier.api.ExModifierApiTestHarness'
 }
 
+tasks.register('packEditorTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'net.exmo.exmodifier.pack.PackEditorTestHarness'
+}
+
 tasks.named('check') {
-    dependsOn 'apiCodecTest'
+    dependsOn 'apiCodecTest', 'packEditorTest'
 }
 
 publishing {

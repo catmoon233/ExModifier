@@ -3,6 +3,8 @@ package net.exmo.exmodifier;
 import net.exmo.exmodifier.client.ExModifierClient;
 import net.exmo.exmodifier.content.ExModifierContent;
 import net.exmo.exmodifier.content.command.ExModifierCommands;
+import net.exmo.exmodifier.content.command.TokenArgument;
+import net.exmo.exmodifier.pack.PackNetwork;
 import net.exmo.exmodifier.content.special.SpecialEffects;
 import net.exmo.exmodifier.core.attachment.ExModifierAttachments;
 import net.exmo.exmodifier.core.component.ExModifierComponents;
@@ -36,6 +38,8 @@ public final class Exmodifier {
         ExModifierContent.register(modBus);
         ExModifierComponents.register(modBus);
         ExModifierAttachments.register(modBus);
+        TokenArgument.register(modBus);
+        modBus.addListener(PackNetwork::register);
         modBus.addListener(ExModifierDatapack::register);
         NeoForge.EVENT_BUS.register(ExModifierRuntime.class);
         NeoForge.EVENT_BUS.register(AttributeCombat.class);
@@ -47,6 +51,7 @@ public final class Exmodifier {
         NeoForge.EVENT_BUS.register(CustomEffectsRuntime.class);
         NeoForge.EVENT_BUS.register(TickCooldown.class);
         NeoForge.EVENT_BUS.addListener(Exmodifier::commands);
+        NeoForge.EVENT_BUS.addListener(PackNetwork::logout);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ExModifierClient.register(modBus);
         }

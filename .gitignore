@@ -7,3 +7,4 @@ out/
 .idea/
 *.iml
 src/generated/
+logs/

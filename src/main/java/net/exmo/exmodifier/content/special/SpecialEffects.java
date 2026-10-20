@@ -38,6 +38,18 @@ import java.util.List;
 /** Built-in special-effect ids referenced from datapack `special_effects`. */
 public final class SpecialEffects {
     private SpecialEffects() {}
+    public static java.util.List<net.minecraft.resources.ResourceLocation> knownIds() {
+        return java.util.List.of(
+                Exmodifier.id("bloodthirsty"),
+                Exmodifier.id("soul_eater"),
+                Exmodifier.id("corpse_poison"),
+                Exmodifier.id("heavy_strike"),
+                Exmodifier.id("thorns"),
+                Exmodifier.id("concussion"),
+                Exmodifier.id("bandit"),
+                Exmodifier.id("reserve_arrow"));
+    }
+
 
     public static boolean has(LivingEntity entity, String path) {
         return has(entity, Exmodifier.id(path));

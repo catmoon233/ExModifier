@@ -4,6 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.exmo.exmodifier.api.ExModifierApi;
+import net.exmo.exmodifier.pack.PackAccess;
+import net.exmo.exmodifier.pack.PackCommands;
 import net.exmo.exmodifier.core.attachment.EntityElements;
 import net.exmo.exmodifier.core.component.EntryBook;
 import net.exmo.exmodifier.core.component.ItemLevelState;
@@ -127,9 +129,11 @@ public final class ExModifierCommands {
                             ExModifierCatalog.bind(ctx.getSource().getServer().registryAccess());
                             ctx.getSource().sendSuccess(() -> Component.translatable("command.exmodifier.reloaded"), true);
                             return 1;
-                        }));
+                        }))
+                .then(PackCommands.packLiteral());
         dispatcher.register(root);
         registerLegacyAliases(dispatcher);
+        dispatcher.register(PackCommands.fill(Commands.literal("exmodpack").requires(PackAccess::allowed)));
     }
 
     private static void registerLegacyAliases(CommandDispatcher<CommandSourceStack> dispatcher) {

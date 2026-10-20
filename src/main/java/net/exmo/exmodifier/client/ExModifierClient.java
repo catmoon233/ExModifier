@@ -4,6 +4,7 @@ import net.exmo.exmodifier.Config;
 import net.exmo.exmodifier.api.AppliedModifierView;
 import net.exmo.exmodifier.api.ExModifierApi;
 import net.exmo.exmodifier.content.ExModifierContent;
+import net.exmo.exmodifier.client.pack.PackEditorClient;
 import net.exmo.exmodifier.core.component.ItemLevelState;
 import net.exmo.exmodifier.core.component.RefineState;
 import net.exmo.exmodifier.core.data.ItemLevelDefinition;
@@ -38,6 +39,7 @@ public final class ExModifierClient {
         bus.addListener(ExModifierClient::renderers);
         bus.addListener(ExModifierClient::decorators);
         bus.addListener(ExModifierClient::guiLayers);
+        PackEditorClient.register(bus);
     }
 
     private static void renderers(net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) {

@@ -6,6 +6,7 @@ import net.exmo.exmodifier.content.block.RefreshTableBlock;
 import net.exmo.exmodifier.content.block.entity.EmbeddedTableEntity;
 import net.exmo.exmodifier.content.block.entity.RefreshTableEntity;
 import net.exmo.exmodifier.content.item.EntryItem;
+import net.exmo.exmodifier.content.item.PackEditorItem;
 import net.exmo.exmodifier.content.menu.EmbeddedMenu;
 import net.exmo.exmodifier.content.menu.RefreshMenu;
 import net.exmo.exmodifier.init.ExAttributes;
@@ -50,6 +51,8 @@ public final class ExModifierContent {
 
     public static final DeferredItem<Item> ENTRY_ITEM = ITEMS.register("entry_item", () -> new EntryItem(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<Item> ENTRY_ITEM_EMPTY = ITEMS.register("entry_item_empty", () -> new Item(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<Item> PACK_EDITOR = ITEMS.register("pack_editor",
+            () -> new PackEditorItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<BlockItem> REFRESH_TABLE_ITEM = ITEMS.register("refresh_table",
             () -> new BlockItem(REFRESH_TABLE.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> EMBEDDED_TABLE_ITEM = ITEMS.register("embedded_table",
@@ -84,6 +87,7 @@ public final class ExModifierContent {
                 output.accept(ENTRY_ITEM_EMPTY.get());
                 output.accept(REFRESH_TABLE_ITEM.get());
                 output.accept(EMBEDDED_TABLE_ITEM.get());
+                output.accept(PACK_EDITOR.get());
             }).build());
 
     private ExModifierContent() {}

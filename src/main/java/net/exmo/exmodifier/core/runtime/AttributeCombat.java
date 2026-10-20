@@ -25,17 +25,17 @@ public final class AttributeCombat {
 
     @SubscribeEvent
     public static void incoming(LivingIncomingDamageEvent event) {
-        if (event.getSource().is(DamageTypes.GENERIC_KILL)) return;
+        if (bypassesImmunity(event)) return;
         LivingEntity victim = event.getEntity();
         ModifierLivingHurtBaseDamage base = new ModifierLivingHurtBaseDamage(victim, event.getAmount());
         NeoForge.EVENT_BUS.post(base);
-        event.setAmount(base.getDamage());
+        event.setAmount(finite(base.getDamage(), event.getOriginalAmount()));
         LivingEntity attacker = event.getSource().getEntity() instanceof LivingEntity living ? living : null;
 
-        if (attacker != null && !event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)
+        if (attacker != null
                 && !event.getSource().is(DamageTypes.MAGIC) && !event.getSource().is(DamageTypes.INDIRECT_MAGIC)
                 && !event.getSource().is(DamageTypes.LAVA)) {
-            double dodge = ExAttributes.value(victim, ExAttributes.DODGE, 1.0D);
+            double dodge = capped(ExAttributes.value(victim, ExAttributes.DODGE, 1.0D), ExAttributes.value(victim, ExAttributes.MAX_DODGE, 1.85D), 1.0D);
             double hit = ExAttributes.value(attacker, ExAttributes.HIT_RATE, 1.0D);
             double chance = dodge - hit;
             if (chance > 0 && victim.getRandom().nextDouble() <= chance) {
@@ -72,11 +72,8 @@ public final class AttributeCombat {
         if (attacker != null && event.getSource().is(DamageTypes.FIREWORKS)) {
             amount *= (float) ExAttributes.value(attacker, ExAttributes.FIREWORK_DAMAGE, 1.0D);
         }
-        double defense = ExAttributes.value(victim, ExAttributes.DEFENSE, 0);
-        if (defense != 0) {
-            amount *= (float) (Math.round(100 * (100 / (defense - 1 + 100))) * 0.01D);
-        }
-        double injury = ExAttributes.value(victim, ExAttributes.INJURY_FREE, 1.0D);
+        amount *= defenseFactor(ExAttributes.value(victim, ExAttributes.DEFENSE, 0));
+        double injury = capped(ExAttributes.value(victim, ExAttributes.INJURY_FREE, 1.0D), ExAttributes.value(victim, ExAttributes.MAX_INJURY_FREE, 1.85D), 1.0D);
         if (injury != 1.0D) {
             amount *= (float) (2.0D - injury);
         }
@@ -86,11 +83,36 @@ public final class AttributeCombat {
         }
         if (attacker != null) {
             double heal = ExAttributes.value(attacker, ExAttributes.PERCENT_HEAL, 1.0D);
-            if (heal != 1.0D && attacker.getAttributes().hasAttribute(Attributes.MAX_HEALTH)) {
+            if (heal != 1.0D && Double.isFinite(heal) && attacker.getAttributes().hasAttribute(Attributes.MAX_HEALTH)) {
                 attacker.heal((float) (attacker.getAttributeValue(Attributes.MAX_HEALTH) * (heal - 1.0D)));
             }
         }
-        event.setAmount(Math.max(0.0F, amount));
+        event.setAmount(Math.max(0.0F, finite(amount, event.getOriginalAmount())));
+    }
+
+    static boolean bypassesImmunity(LivingIncomingDamageEvent event) {
+        return event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY) || event.getSource().is(DamageTypes.GENERIC_KILL);
+    }
+
+    static double capped(double value, double max, double fallback) {
+        if (!Double.isFinite(value)) return fallback;
+        if (!Double.isFinite(max)) return value;
+        return Math.min(value, max);
+    }
+
+    static float defenseFactor(double defense) {
+        if (defense == 0.0D || !Double.isFinite(defense)) return 1.0F;
+        double denom = defense + 99.0D;
+        if (denom == 0.0D || !Double.isFinite(denom)) return 1.0F;
+        double raw = 100.0D / denom;
+        if (!Double.isFinite(raw) || raw <= 0.0D) return raw < 0.0D ? 0.0F : 1.0F;
+        double rounded = Math.round(raw * 100.0D) / 100.0D;
+        if (rounded <= 0.0D) rounded = Math.min(raw, 0.01D);
+        return (float) rounded;
+    }
+
+    private static float finite(float value, float fallback) {
+        return Float.isFinite(value) ? value : (Float.isFinite(fallback) ? fallback : 0.0F);
     }
 
     @SubscribeEvent
